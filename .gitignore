@@ -1,0 +1,12 @@
+# Composer
+vendor/
+
+# Systems
+.DS_Store
+
+#Tools
+
+# App
+.bouncer-key
+.cache/
+*.log
