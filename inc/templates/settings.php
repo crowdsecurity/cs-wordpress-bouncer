@@ -1,5 +1,5 @@
 <div class="wrap">
-	<h1>CrowdSec Settings</h1>
+	<h1>Configure your CrowdSec Bouncer</h1>
 	<?php settings_errors(); ?>
 	<div class="tab-content">
 		<div id="tab-1" class="tab-pane active">

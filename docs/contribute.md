@@ -1,6 +1,6 @@
 # Contribute to this plugin
 
-## Installation for development purpose
+## Install the stack for development purpose
 
 Run containers:
 
@@ -11,7 +11,6 @@ docker-compose up -d
 Visit the wordpress instance here: http://localhost:8081
 
 Admin account: admin / ThisSecretIsKnown!
-
 
 # Init deps
 
@@ -65,6 +64,3 @@ docker-compose ps # list running containers
 docker-compose stop # stop
 docker-compose rm # destroy
 ```
-
-Sources :
-- Creating WP environnement https://www.serverlab.ca/tutorials/osx/wordpress-development-on-osx-using-docker/

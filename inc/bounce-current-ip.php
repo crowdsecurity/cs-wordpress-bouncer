@@ -134,6 +134,7 @@ function bounceCurrentIp()
         if (!isset($_SESSION["captchaResolved"]) || !$_SESSION["captchaResolved"]) {
             displayCaptchaPage($ip);
         }
+        // TODO P3 handle the case the user fill a captcha then the remediation expires then a new captcha remediation is asked, while the PHP session is active no captcha will never be ask again.
     }
 
     function handleRemediation(string $remediation, string $ip, Bouncer $bouncer)

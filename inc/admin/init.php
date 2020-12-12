@@ -44,13 +44,16 @@ if (is_admin()) {
             return isset($input);
         }
 
-        add_menu_page('Crowdsec Plugin', 'Crowdsec', 'manage_options', 'crowdsec_plugin', function () {
+        /*add_menu_page('Crowdsec Plugin', 'Crowdsec', 'manage_options', 'crowdsec_plugin', function () {
             require_once(CROWDSEC_PLUGIN_PATH . "/templates/dashboard.php");
         }, 'dashicons-shield', 110);
-
         add_submenu_page('crowdsec_plugin', 'Settings', 'Settings', 'manage_options', 'crowdsec_settings', function () {
             require_once(CROWDSEC_PLUGIN_PATH . "/templates/settings.php");
         });
+        */
+        add_menu_page('Crowdsec Plugin', 'Crowdsec', 'manage_options', 'crowdsec_plugin', function () {
+            require_once(CROWDSEC_PLUGIN_PATH . "/templates/settings.php");
+        }, 'dashicons-shield', 110);
         add_submenu_page('crowdsec_plugin', 'Advanced', 'Advanced', 'manage_options', 'crowdsec_advanced_settings', function () {
             require_once(CROWDSEC_PLUGIN_PATH . "/templates/advanced-settings.php");
         });

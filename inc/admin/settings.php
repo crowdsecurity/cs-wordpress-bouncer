@@ -72,7 +72,7 @@ function adminSettings()
      ** Section "Bouncing refinements" **
      ***********************************/
 
-    add_settings_section('crowdsec_admin_boucing', 'How to bounce?', function () {
+    add_settings_section('crowdsec_admin_boucing', 'Bouncing', function () {
         echo "Refine boucing according to your needs.";
     }, 'crowdsec_settings');
 
