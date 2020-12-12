@@ -11,9 +11,15 @@ if (is_admin()) {
 
     function clear_bouncer_cache()
     {
-        // TODO P1 Clear cache with lib
-        AdminNotice::displaySuccess(__('Cache is now empty!'));
-        // TODO P3 i18n the whole lib https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
+        try {
+            $bouncer = getBouncerInstance();
+            $bouncer->clearCache();
+            AdminNotice::displaySuccess(__('Cache is now empty!'));
+            // TODO P3 i18n the whole lib https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
+        } catch (WordpressCrowdsecBouncerException $e) {
+            // TODO log error for debug mode only.
+            AdminNotice::displayError($e->getMessage());
+        }
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
     }
@@ -58,7 +64,7 @@ if (is_admin()) {
             require_once(CROWDSEC_PLUGIN_PATH . "/templates/advanced-settings.php");
         });
 
-        add_action('admin_init', function() {
+        add_action('admin_init', function () {
             adminSettings();
             adminAdvancedSettings();
         });

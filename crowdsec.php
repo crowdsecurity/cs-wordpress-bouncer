@@ -27,6 +27,7 @@ class WordpressCrowdsecBouncerException extends \RuntimeException
 
 require_once __DIR__ . '/inc/constants.php';
 require_once __DIR__ . '/inc/plugin-setup.php';
+require_once __DIR__ . '/inc/bouncer-instance.php';
 require_once __DIR__ . '/inc/admin/init.php';
 require_once __DIR__ . '/inc/bounce-current-ip.php';
 
