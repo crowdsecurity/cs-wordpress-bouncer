@@ -16,7 +16,7 @@ if (is_admin()) {
             $bouncer->clearCache();
             AdminNotice::displaySuccess(__('Cache is now empty!'));
             // TODO P3 i18n the whole lib https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
-        } catch (WordpressCrowdsecBouncerException $e) {
+        } catch (WordpressCrowdSecBouncerException $e) {
             // TODO log error for debug mode only.
             AdminNotice::displayError($e->getMessage());
         }
@@ -50,14 +50,14 @@ if (is_admin()) {
             return isset($input);
         }
 
-        /*add_menu_page('Crowdsec Plugin', 'Crowdsec', 'manage_options', 'crowdsec_plugin', function () {
+        /*add_menu_page('CrowdSec Plugin', 'CrowdSec', 'manage_options', 'crowdsec_plugin', function () {
             require_once(CROWDSEC_PLUGIN_PATH . "/templates/dashboard.php");
         }, 'dashicons-shield', 110);
         add_submenu_page('crowdsec_plugin', 'Settings', 'Settings', 'manage_options', 'crowdsec_settings', function () {
             require_once(CROWDSEC_PLUGIN_PATH . "/templates/settings.php");
         });
         */
-        add_menu_page('Crowdsec Plugin', 'Crowdsec', 'manage_options', 'crowdsec_plugin', function () {
+        add_menu_page('CrowdSec Plugin', 'CrowdSec', 'manage_options', 'crowdsec_plugin', function () {
             require_once(CROWDSEC_PLUGIN_PATH . "/templates/settings.php");
         }, 'dashicons-shield', 110);
         add_submenu_page('crowdsec_plugin', 'Advanced', 'Advanced', 'manage_options', 'crowdsec_advanced_settings', function () {

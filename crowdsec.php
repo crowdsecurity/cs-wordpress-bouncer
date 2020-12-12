@@ -21,7 +21,7 @@ Text Domain: crowdsec-wp
 session_start();
 require_once __DIR__ . '/vendor/autoload.php';
 
-class WordpressCrowdsecBouncerException extends \RuntimeException
+class WordpressCrowdSecBouncerException extends \RuntimeException
 {
 }
 

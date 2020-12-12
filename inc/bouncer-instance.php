@@ -20,14 +20,14 @@ function getCacheAdapterInstance(): AbstractAdapter
         case CROWDSEC_CACHE_SYSTEM_MEMCACHED:
             $memcachedDsn = get_option('crowdsec_memcached_dsn');
             if (empty($memcachedDsn)) {
-                throw new WordpressCrowdsecBouncerException('Memcached selected but no DSN provided.');
+                throw new WordpressCrowdSecBouncerException('Memcached selected but no DSN provided.');
             }
             return new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn));
 
         case CROWDSEC_CACHE_SYSTEM_REDIS:
             $redisDsn = get_option('crowdsec_redis_dsn');
             if (empty($redisDsn)) {
-                throw new WordpressCrowdsecBouncerException('Redis selected but no DSN provided.');
+                throw new WordpressCrowdSecBouncerException('Redis selected but no DSN provided.');
             }
             return new RedisAdapter(RedisAdapter::createConnection($redisDsn));
     }
@@ -39,11 +39,11 @@ function getBouncerInstance(): Bouncer
 
     $apiUrl = get_option('crowdsec_api_url');
     if (empty($apiUrl)) {
-        throw new WordpressCrowdsecBouncerException('Bouncer enabled but no API URL provided');
+        throw new WordpressCrowdSecBouncerException('Bouncer enabled but no API URL provided');
     }
     $apiKey = get_option('crowdsec_api_key');
     if (empty($apiKey)) {
-        throw new WordpressCrowdsecBouncerException('Bouncer enabled but no API key provided');
+        throw new WordpressCrowdSecBouncerException('Bouncer enabled but no API key provided');
     }
     $isStreamMode = (bool)(int)get_option('crowdsec_stream_mode');
     $cleanIpCacheDuration = (int)get_option('crowdsec_clean_ip_cache_duration');

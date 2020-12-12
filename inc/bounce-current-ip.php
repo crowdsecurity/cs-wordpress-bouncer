@@ -79,7 +79,7 @@ function bounceCurrentIp()
             $bouncer = getBouncerInstance();
             $remediation = $bouncer->getRemediationForIp($ip);
             handleRemediation($remediation, $ip, $bouncer);
-        } catch (WordpressCrowdsecBouncerException $e) {
+        } catch (WordpressCrowdSecBouncerException $e) {
             // TODO log error for debug mode only.
         }
     }
