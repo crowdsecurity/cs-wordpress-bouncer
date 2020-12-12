@@ -1,21 +1,22 @@
-name: build-package
+# name: build-package
 
-on:
-  release:
-    types: prereleased
+# on:
+#   release:
+#     types: released
 
-jobs:
+# jobs:
 
-  build-package:
-    name: Create and upload package
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - name: Create zip package
-      run: zip -r "cs-wordpress-blocker.zip" . -x "./tests/**" -x ".git/**" -x "./github/**"
-    - name: Upload to release
-      uses: JasonEtco/upload-to-release@master
-      with:
-        args: cs-wordpress-blocker.zip application/zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#   build-package:
+#     name: Create and upload package
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v1
+#     # TODO P2 composer --no-dev
+#     - name: Create zip package
+#       run: zip -r "cs-wordpress-bouncer.zip" . -x "./.github/**" -x "./docs/**"
+#     - name: Upload to release
+#       uses: JasonEtco/upload-to-release@master
+#       with:
+#         args: cs-wordpress-bouncer.zip application/zip
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
