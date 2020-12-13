@@ -9,12 +9,23 @@ add_action('admin_notices', [new AdminNotice(), 'displayAdminNotice']);
 
 if (is_admin()) {
 
-    function clear_bouncer_cache()
+    function clearBouncerCache()
     {
         try {
             $bouncer = getBouncerInstance();
             $bouncer->clearCache();
-            AdminNotice::displaySuccess(__('Cache is now empty!'));
+            $message = __('CrowdSec cache has just been cleared.');
+            update_option("crowdsec_stream_mode_warmed_up", false);
+
+            // In stream mode, immediatelly warm the cache up.
+            if (get_option("crowdsec_stream_mode")) {
+                $bouncer->refreshBlocklistCache();
+                $message .= __(' As the stream is enabled, the cache has just been warmed up.');
+                update_option("crowdsec_stream_mode_warmed_up", true);
+            }
+
+            AdminNotice::displaySuccess($message);
+
             // TODO P3 i18n the whole lib https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
         } catch (WordpressCrowdSecBouncerException $e) {
             // TODO log error for debug mode only.
@@ -25,7 +36,7 @@ if (is_admin()) {
     }
 
     // ACTIONS
-    add_action('admin_post_refresh_cache', 'clear_bouncer_cache');
+    add_action('admin_post_refresh_cache', 'clearBouncerCache');
 
     // THEME
     add_action('admin_enqueue_scripts', function () {

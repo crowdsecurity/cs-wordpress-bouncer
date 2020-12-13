@@ -15,9 +15,9 @@ function activate_crowdsec_plugin()
     add_option("crowdsec_api_key", '');
 
     add_option("crowdsec_bouncing_level", "2");
-    add_option("crowdsec_public_website_only", "1");
+    add_option("crowdsec_public_website_only", true);
 
-    add_option("crowdsec_stream_mode", "0");
+    add_option("crowdsec_stream_mode", false);
     add_option("crowdsec_stream_mode_refresh_frequency", "30");
     
     add_option("crowdsec_cache_system", "0");
@@ -26,6 +26,9 @@ function activate_crowdsec_plugin()
     add_option("crowdsec_captcha_technology", "0");
     add_option("crowdsec_clean_ip_cache_duration", Constants::CACHE_EXPIRATION_FOR_CLEAN_IP);
     add_option("crowdsec_fallback_remediation", Constants::REMEDIATION_CAPTCHA);
+
+    // state options
+    add_option("crowdsec_stream_mode_warmed_up", false);
 }
 
 register_activation_hook(__FILE__, 'activate_crowdsec_plugin');
@@ -41,7 +44,7 @@ function deactivate_crowdsec_plugin()
 
     // Clear the bouncer cache.
 
-    clear_bouncer_cache();
+    clearBouncerCache();
 
     // Clean options.
     

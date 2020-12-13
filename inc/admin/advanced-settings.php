@@ -31,7 +31,22 @@ function adminAdvancedSettings()
         'label_for' => 'crowdsec_stream_mode',
         'class' => 'ui-toggle'
     ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode', 'sanitizeCheckbox');
+    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode', function ($input) {
+        $streamModeEnabled = sanitizeCheckbox($input);
+
+        // Ensure cache is warmed up.
+        $cacheWarmedUp = get_option("crowdsec_stream_mode_warmed_up");
+        if ($streamModeEnabled) {
+            if (!$cacheWarmedUp) {
+                $bouncer = getBouncerInstance();
+                $bouncer->refreshBlocklistCache();
+                AdminNotice::displaySuccess(__('Stream mode: cache has been warmed up.'));
+                update_option("crowdsec_stream_mode_warmed_up", true);
+            }
+        }
+
+        return $streamModeEnabled;
+    });
 
     // Field "crowdsec_stream_mode_refresh_frequency"
     add_settings_field('crowdsec_stream_mode_refresh_frequency', 'Resync decisions each', function ($args) {
@@ -63,7 +78,7 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_cache_system"
     add_settings_field('crowdsec_cache_system', 'Caching technology', function ($args) {
-    ?>
+?>
         <select name="crowdsec_cache_system">
             <option value="<?php echo CROWDSEC_CACHE_SYSTEM_PHPFS ?>" <?php selected(get_option('crowdsec_cache_system'), CROWDSEC_CACHE_SYSTEM_PHPFS); ?>>File system</option>
             <option value="<?php echo CROWDSEC_CACHE_SYSTEM_REDIS ?>" <?php selected(get_option('crowdsec_cache_system'), CROWDSEC_CACHE_SYSTEM_REDIS); ?>>Redis</option>
@@ -189,7 +204,7 @@ function adminAdvancedSettings()
     ));
     register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_clean_ip_cache_duration', function ($input) {
         $input = (int)esc_attr($input);
-        if ($input <=0) {
+        if ($input <= 0) {
             add_settings_error("Recheck clean IPs each", "crowdsec_error", "Minimum cache duration is 1 second.");
             return "1";
         }
@@ -205,7 +220,7 @@ function adminAdvancedSettings()
             <?php endforeach; ?>
         </select>
         <p>
-        Which remediation to apply when CrowdSec advise a unhandled remediation.<br>
+            Which remediation to apply when CrowdSec advise a unhandled remediation.<br>
         </p>
 <?php
     }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(

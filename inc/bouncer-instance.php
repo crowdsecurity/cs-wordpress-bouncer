@@ -33,8 +33,16 @@ function getCacheAdapterInstance(): AbstractAdapter
     }
 }
 
+$bouncer = null;
+
 function getBouncerInstance(): Bouncer
 {
+    // Singleton for this function
+    global $bouncer;
+    if ($bouncer) {
+        return $bouncer;
+    }
+    
     // Parse Wordpress Options.
 
     $apiUrl = get_option('crowdsec_api_url');
