@@ -10,19 +10,13 @@ function bounceCurrentIp()
 {
     $ip = $_SERVER["REMOTE_ADDR"];
 
-    function displayCaptchaPage($ip)
+    function displayCaptchaPage($ip, $error = false)
     {
         $captcha = new CaptchaBuilder;
         $_SESSION['phrase'] = $captcha->getPhrase();
         $img = $captcha->build()->inline();
-        echo "<html>";
-        echo "<form method=\"post\">";
-        echo "<img src=\"$img\" />";
-        echo "<input type=\"text\" name=\"phrase\" />";
-        echo "<input type=\"submit\" />";
-        echo "</form>";
-        echo "</html>";
-        wp_die("You use IP: $ip. Please fill the captcha.");
+        require_once(__DIR__ . "/templates/remediations/captcha.php");
+        die();
     }
 
     function handleBanRemediation(Bouncer $bouncer, $ip)
@@ -37,15 +31,14 @@ function bounceCurrentIp()
         $captchaCorrectlyFilled = ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['phrase']) && PhraseBuilder::comparePhrases($_SESSION['phrase'], $_POST['phrase']));
         if (!$captchaCorrectlyFilled) {
             $_SESSION["captchaResolved"] = false;
-            echo "Invalid captcha!"; // TODO P2 Improve error template.
-            displayCaptchaPage($ip);
+            displayCaptchaPage($ip, true);
         }
 
         $_SESSION["captchaResolved"] = true;
         unset($_SESSION['phrase']);
     }
 
-    function handleCaptchaRemediation($ip)
+    function handleCaptchaRemediation(string $ip)
     {
         if (!isset($_SESSION["captchaResolved"]) || !$_SESSION["captchaResolved"]) {
             displayCaptchaPage($ip);
@@ -59,7 +52,7 @@ function bounceCurrentIp()
             case Constants::REMEDIATION_BYPASS:
                 return;
             case Constants::REMEDIATION_CAPTCHA:
-                handleCaptchaRemediation($bouncer, $ip);
+                handleCaptchaRemediation($ip);
                 break;
             case Constants::REMEDIATION_BAN:
                 handleBanRemediation($bouncer, $ip);
