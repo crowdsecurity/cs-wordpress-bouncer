@@ -5,6 +5,9 @@ use Gregwar\Captcha\PhraseBuilder;
 use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\Constants;
 
+// Captcha repeat delay in seconds
+define('CROWDSEC_CAPTCHA_REPEAT_MIN_DELAY', 15 * 60);// TODO P3 Dynamize this value
+
 
 function bounceCurrentIp()
 {
@@ -12,9 +15,11 @@ function bounceCurrentIp()
 
     function displayCaptchaPage($ip, $error = false)
     {
-        $captcha = new CaptchaBuilder;
-        $_SESSION['phrase'] = $captcha->getPhrase();
-        $img = $captcha->build()->inline();
+        if (!isset($_SESSION['phrase'])) {
+            $captcha = new CaptchaBuilder;
+            $_SESSION['phrase'] = $captcha->getPhrase();
+            $_SESSION['img'] = $captcha->build()->inline();
+        }
         require_once(__DIR__ . "/templates/remediations/captcha.php");
         die();
     }
@@ -28,22 +33,53 @@ function bounceCurrentIp()
     {
         //error_log("crowdsec-wp: " . $ip . " is in captcha mode"); TODO P2 check how 
 
-        $captchaCorrectlyFilled = ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['phrase']) && PhraseBuilder::comparePhrases($_SESSION['phrase'], $_POST['phrase']));
-        if (!$captchaCorrectlyFilled) {
-            $_SESSION["captchaResolved"] = false;
-            displayCaptchaPage($ip, true);
-        }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crowdsec_captcha'])) {
 
-        $_SESSION["captchaResolved"] = true;
-        unset($_SESSION['phrase']);
+            // Handle image refresh.
+            $refreshImage = (isset($_POST['refresh']) && (bool)(int)$_POST['refresh']);
+
+            if ($refreshImage) {
+                // generate new image
+                $captcha = new CaptchaBuilder;
+                $_SESSION['phrase'] = $captcha->getPhrase();
+                $_SESSION['img'] = $captcha->build()->inline();
+
+                // display captcha page
+                $_SESSION["captchaResolved"] = false;
+                displayCaptchaPage($ip, true);
+            }
+
+
+            // Handle captcha resolve.
+            $captchaCorrectlyFilled = (isset($_POST['phrase']) && PhraseBuilder::comparePhrases($_SESSION['phrase'], $_POST['phrase']));
+            if ($captchaCorrectlyFilled) {
+                $_SESSION["captchaResolved"] = true;
+                $_SESSION["captchaResolvedAt"] = time();
+                unset($_SESSION['phrase']);
+                return;
+            }
+        }
+        $_SESSION["captchaResolved"] = false;
+        displayCaptchaPage($ip, true);
     }
 
     function handleCaptchaRemediation(string $ip)
     {
-        if (!isset($_SESSION["captchaResolved"]) || !$_SESSION["captchaResolved"]) {
+        // Never displayed to user.
+        if (!isset($_SESSION["captchaResolved"])) {
             displayCaptchaPage($ip);
         }
-        // TODO P3 handle the case the user fill a captcha then the remediation expires then a new captcha remediation is asked, while the PHP session is active no captcha will never be ask again.
+        // User was unable to resolve.
+        if (!$_SESSION["captchaResolved"]) {
+            displayCaptchaPage($ip);
+        }
+
+
+        // User resolved too long ago.
+        $resolvedTooLongAgo = ((time() - $_SESSION["captchaResolvedAt"]) > CROWDSEC_CAPTCHA_REPEAT_MIN_DELAY);
+        if ($resolvedTooLongAgo) {
+            displayCaptchaPage($ip);
+        }
     }
 
     function handleRemediation(string $remediation, string $ip, Bouncer $bouncer)

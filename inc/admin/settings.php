@@ -90,8 +90,8 @@ function adminSettings()
             <ul>
                 <li><i>Bouncing disabled</i>: No ban or Captcha display to users. The road is free, even for attackers.</li>
                 <li><i>Flex bouncing</i>: Display Captcha only, even if CrowdSec advise to ban the IP.</li>
-                <li><i>Normal bouncing</i>: Follow CrowdSec advises (ban or Captcha).</li>
-                <li><i>Paranoid mode</i>: Ban IP when there are in CrowdSec database, even if CrowdSec advise to diplay a Captcha.</li>
+                <li><i>Normal bouncing</i>: Follow CrowdSec advices (ban or Captcha).</li>
+                <li><i>Paranoid mode</i>: Ban IPs when there are in CrowdSec database, even if CrowdSec advise to diplay a Captcha.</li>
 
             </ul>
         </p>

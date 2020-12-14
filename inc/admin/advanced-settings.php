@@ -59,7 +59,7 @@ function adminAdvancedSettings()
         }
         echo '<input style="width: 115px;" type="number" class="regular-text" name="' . $name . '"' .
             ' value="' . $value . '" placeholder="' . $placeholder . '">' .
-            '<p>In seconds. Our advise is 60sec (according to WP_CRON_LOCK_TIMEOUT)';
+            '<p>In seconds. Our advice is 60sec (according to WP_CRON_LOCK_TIMEOUT)';
     }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
         'label_for' => 'crowdsec_stream_mode_refresh_frequency',
         'placeholder' => '...',
@@ -201,7 +201,7 @@ function adminAdvancedSettings()
         $value = esc_attr(get_option("crowdsec_clean_ip_cache_duration"));
         echo '<input style="width: 115px;" type="number" class="regular-text"' .
             'name="' . $name . '" value="' . $value . '" placeholder="' . $placeholder . '">' .
-            '<p>The duration (in seconds) between re-asking LAPI about an already checked IP.<br>Our advise is between 1 and 60 seconds.';
+            '<p>The duration (in seconds) between re-asking LAPI about an already checked IP.<br>Our advice is between 1 and 60 seconds.';
     }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
         'label_for' => 'crowdsec_clean_ip_cache_duration',
         'placeholder' => '...',
