@@ -27,7 +27,9 @@ function bounceCurrentIp()
 
     function handleBanRemediation(Bouncer $bouncer, $ip)
     {
-        die($bouncer->getDefault403Template());
+        // TODO P3 make a function instead of this
+        require_once(__DIR__ . "/templates/remediations/403.php");
+        die();
     }
 
     function checkCaptcha(string $ip)
