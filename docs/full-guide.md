@@ -6,7 +6,7 @@ This scenario exposes you the main features this plugin is capable of.
 
 We will start using "live" mode. You'll understand what it is after try the stream mode.
 
-* Install the stack before (cf contribute.md).
+* Install the stack before using the [stack install guide](contribute.md).
 
 * open a terminal to display LAPI logs in realtime:
 
