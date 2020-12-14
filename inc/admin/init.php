@@ -9,7 +9,7 @@ add_action('admin_notices', [new AdminNotice(), 'displayAdminNotice']);
 
 if (is_admin()) {
 
-    function clearBouncerCache()
+    function clearBouncerCache($dislaySuccessFlashMessage = true, $noWarmup = false)
     {
         try {
             $bouncer = getBouncerInstance();
@@ -17,24 +17,28 @@ if (is_admin()) {
             $message = __('CrowdSec cache has just been cleared.');
 
             // In stream mode, immediatelly warm the cache up.
-            if (get_option("crowdsec_stream_mode")) {
+            if (!$noWarmup && get_option("crowdsec_stream_mode")) {
                 $bouncer->refreshBlocklistCache();
                 $message .= __(' As the stream is enabled, the cache has just been warmed up.');
             }
 
-            AdminNotice::displaySuccess($message);
+            if ($dislaySuccessFlashMessage) {
+                AdminNotice::displaySuccess($message);
+            }
 
             // TODO P3 i18n the whole lib https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
         } catch (WordpressCrowdSecBouncerException $e) {
             // TODO log error for debug mode only.
             AdminNotice::displayError($e->getMessage());
         }
-        header("Location: {$_SERVER['HTTP_REFERER']}");
-        exit(0);
     }
 
     // ACTIONS
-    add_action('admin_post_refresh_cache', 'clearBouncerCache');
+    add_action('admin_post_refresh_cache', function () {
+        clearBouncerCache();
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
 
     // THEME
     add_action('admin_enqueue_scripts', function () {

@@ -10,9 +10,10 @@ use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 
 
-function getCacheAdapterInstance(): AbstractAdapter
+function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdapter
 {
-    switch (esc_attr(get_option('crowdsec_cache_system'))) {
+    $cacheSystem = $forcedCacheSystem ?: esc_attr(get_option('crowdsec_cache_system'));
+    switch ($cacheSystem) {
 
         case CROWDSEC_CACHE_SYSTEM_PHPFS:
             return new PhpFilesAdapter('', 0, __DIR__ . '/.cache');
@@ -28,6 +29,7 @@ function getCacheAdapterInstance(): AbstractAdapter
             $redisDsn = esc_attr(get_option('crowdsec_redis_dsn'));
             if (empty($redisDsn)) {
                 throw new WordpressCrowdSecBouncerException('Redis selected but no DSN provided.');
+                // TODO P2 fix: when redis is selected and the dsn is filled at the same moment, this error is thrown or it should not be.
             }
             return new RedisAdapter(RedisAdapter::createConnection($redisDsn));
     }
@@ -35,14 +37,15 @@ function getCacheAdapterInstance(): AbstractAdapter
 
 $bouncer = null;
 
-function getBouncerInstance(): Bouncer
+function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
 {
     // Singleton for this function
+    
     global $bouncer;
-    if ($bouncer) {
+    if (!$forcedCacheSystem && $bouncer) {
         return $bouncer;
     }
-    
+
     // Parse Wordpress Options.
 
     $apiUrl = esc_attr(get_option('crowdsec_api_url'));
@@ -85,7 +88,7 @@ function getBouncerInstance(): Bouncer
 
     // Instanciate the bouncer
     $bouncer = new Bouncer($logger);
-    $cacheAdapter = getCacheAdapterInstance();
+    $cacheAdapter = getCacheAdapterInstance($forcedCacheSystem);
     $bouncer->configure([
         'api_key' => $apiKey,
         'api_url' => $apiUrl,

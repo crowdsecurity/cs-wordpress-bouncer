@@ -20,6 +20,7 @@ function bounceCurrentIp()
             $_SESSION['phrase'] = $captcha->getPhrase();
             $_SESSION['img'] = $captcha->build()->inline();
         }
+        // TODO P3 make a function instead of this
         require_once(__DIR__ . "/templates/remediations/captcha.php");
         die();
     }

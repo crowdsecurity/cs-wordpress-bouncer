@@ -85,6 +85,25 @@ docker-compose exec crowdsec cscli decisions add --ip ${CS_WP_HOST} --duration 4
 
 Conclusion: with the stream mode, LAPI is never call directly when the website user arrives for the first time.
 
+# Try Redis or Memcached
+
+In order to get better performances, you can switch the cache technology.
+
+The docker-compose file started 2 container not used until now, redis and memcached.
+
+Let's try **Redis**!
+
+- Just go to the [advanced settings](http://localhost/wp-admin/admin.php?page=crowdsec_advanced_settings) page
+- select the **Caching technology** named "Redis" and
+- type `redis://redis:6379` in the "Redis DSN" field.
+
+Very similar with **Memcached**!
+
+- Just go to the [advanced settings](http://localhost/wp-admin/admin.php?page=crowdsec_advanced_settings) page
+- select the **Caching technology** named "Memcached" and
+- type `memcached://memcached:11211` in the "Memcached DSN" field.
+
+
 # Statistics
 
 The bouncer has a stats page indicating each time :

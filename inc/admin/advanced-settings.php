@@ -97,6 +97,7 @@ function adminAdvancedSettings()
         'class' => 'ui-toggle'
     ));
     register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_cache_system', function ($input) {
+        $previousState = esc_attr(get_option("crowdsec_stream_mode_refresh_frequency"));
         $input = esc_attr($input);
         if (!in_array($input, [
             CROWDSEC_CACHE_SYSTEM_PHPFS,
@@ -105,14 +106,30 @@ function adminAdvancedSettings()
         ])) {
             $input = CROWDSEC_CACHE_SYSTEM_PHPFS;
         }
+
+        // On cache system change
+        if ($previousState !== $input) {
+
+            // Clear old cache before changing system (don't display message and don't warmup)
+            clearBouncerCache(false, true);
+            AdminNotice::displaySuccess('Cache system changed. Previous cache data has been cleared.');
+
+            // Update wp-cron schedule if stream mode is enabled
+            if ((bool)get_option("crowdsec_stream_mode")) {
+                $bouncer = getBouncerInstance($input); // Reload bouncer instance with the new cache system
+                $bouncer->warmBlocklistCacheUp();
+                scheduleBlocklistRefresh();
+            }
+        }
+
         return $input;
     });
 
-    // Field "crowdsec_stream_mode_redis_dsn"
-    add_settings_field('crowdsec_stream_mode_redis_dsn', 'Redis DSN<br>(if applicable)', function ($args) {
+    // Field "crowdsec_redis_dsn"
+    add_settings_field('crowdsec_redis_dsn', 'Redis DSN<br>(if applicable)', function ($args) {
         $name = $args["label_for"];
         $placeholder = $args["placeholder"];
-        $value = esc_attr(get_option("crowdsec_stream_mode_redis_dsn"));
+        $value = esc_attr(get_option("crowdsec_redis_dsn"));
 
         if (false) { // TODO check if it's a valid DSN
             echo "Incorrect ... " . $value . ".\n";
@@ -122,13 +139,13 @@ function adminAdvancedSettings()
             ' value="' . $value . '" placeholder="' . $placeholder . '">' .
             '<p>Fill in this field only if you have chosen the Redis cache.<br>Example of DSN: redis://localhost:6379.';
     }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
-        'label_for' => 'crowdsec_stream_mode_redis_dsn',
+        'label_for' => 'crowdsec_redis_dsn',
         'placeholder' => 'redis://...',
     ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode_redis_dsn', function ($input) {
+    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_redis_dsn', function ($input) {
         $input = esc_attr($input);
         if (false) { // P2 check if its it's a valid DSN
-            $crowdsec_activated = esc_attr(get_option("crowdsec_stream_mode_redis_dsn"));
+            $crowdsec_activated = esc_attr(get_option("crowdsec_redis_dsn"));
             if ($crowdsec_activated) {
                 add_settings_error("Redis DSN", "crowdsec_error", "error message...");
                 return $input;
@@ -137,11 +154,11 @@ function adminAdvancedSettings()
         return $input;
     });
 
-    // Field "crowdsec_stream_mode_memcached_dsn"
-    add_settings_field('crowdsec_stream_mode_memcached_dsn', 'Memcached DSN<br>(if applicable)', function ($args) {
+    // Field "crowdsec_memcached_dsn"
+    add_settings_field('crowdsec_memcached_dsn', 'Memcached DSN<br>(if applicable)', function ($args) {
         $name = $args["label_for"];
         $placeholder = $args["placeholder"];
-        $value = esc_attr(get_option("crowdsec_stream_mode_memcached_dsn"));
+        $value = esc_attr(get_option("crowdsec_memcached_dsn"));
 
         if (false) { // TODO check if it's a valid DSN
             echo "Incorrect ... " . $value . ".\n";
@@ -150,13 +167,13 @@ function adminAdvancedSettings()
             ' value="' . $value . '"placeholder="' . $placeholder . '">' .
             '<p>Fill in this field only if you have chosen the Memcached cache.<br>Example of DSN: memcached://localhost:11211.';
     }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
-        'label_for' => 'crowdsec_stream_mode_memcached_dsn',
+        'label_for' => 'crowdsec_memcached_dsn',
         'placeholder' => 'memcached://...',
     ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode_memcached_dsn', function ($input) {
+    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_memcached_dsn', function ($input) {
         $input = esc_attr($input);
         if (false) { // P2 check if its it's a valid DSN
-            $crowdsec_activated = esc_attr(get_option("crowdsec_stream_mode_memcached_dsn"));
+            $crowdsec_activated = esc_attr(get_option("crowdsec_memcached_dsn"));
             if ($crowdsec_activated) {
                 add_settings_error("Memcached DSN", "crowdsec_error", "error message...");
                 return $input;
