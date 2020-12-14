@@ -12,20 +12,20 @@ use Monolog\Logger;
 
 function getCacheAdapterInstance(): AbstractAdapter
 {
-    switch (get_option('crowdsec_cache_system')) {
+    switch (esc_attr(get_option('crowdsec_cache_system'))) {
 
         case CROWDSEC_CACHE_SYSTEM_PHPFS:
             return new PhpFilesAdapter('', 0, __DIR__ . '/.cache');
 
         case CROWDSEC_CACHE_SYSTEM_MEMCACHED:
-            $memcachedDsn = get_option('crowdsec_memcached_dsn');
+            $memcachedDsn = esc_attr(get_option('crowdsec_memcached_dsn'));
             if (empty($memcachedDsn)) {
                 throw new WordpressCrowdSecBouncerException('Memcached selected but no DSN provided.');
             }
             return new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn));
 
         case CROWDSEC_CACHE_SYSTEM_REDIS:
-            $redisDsn = get_option('crowdsec_redis_dsn');
+            $redisDsn = esc_attr(get_option('crowdsec_redis_dsn'));
             if (empty($redisDsn)) {
                 throw new WordpressCrowdSecBouncerException('Redis selected but no DSN provided.');
             }
@@ -45,21 +45,20 @@ function getBouncerInstance(): Bouncer
     
     // Parse Wordpress Options.
 
-    $apiUrl = get_option('crowdsec_api_url');
+    $apiUrl = esc_attr(get_option('crowdsec_api_url'));
     if (empty($apiUrl)) {
         throw new WordpressCrowdSecBouncerException('Bouncer enabled but no API URL provided');
     }
-    $apiKey = get_option('crowdsec_api_key');
+    $apiKey = esc_attr(get_option('crowdsec_api_key'));
     if (empty($apiKey)) {
         throw new WordpressCrowdSecBouncerException('Bouncer enabled but no API key provided');
     }
-    $isStreamMode = (bool)(int)get_option('crowdsec_stream_mode');
+    $isStreamMode = !empty(get_option('crowdsec_stream_mode'));
     $cleanIpCacheDuration = (int)get_option('crowdsec_clean_ip_cache_duration');
-    $fallbackRemediation = get_option('crowdsec_fallback_remediation');
-    $bouncingLevel = get_option("crowdsec_bouncing_level");
+    $fallbackRemediation = esc_attr(get_option('crowdsec_fallback_remediation'));
+    $bouncingLevel = esc_attr(get_option("crowdsec_bouncing_level"));
 
     // Init Bouncer instance
-
 
     switch ($bouncingLevel) {
         case CROWDSEC_BOUNCING_LEVEL_FLEX:
@@ -72,6 +71,8 @@ function getBouncerInstance(): Bouncer
             $maxRemediationLevel = Constants::REMEDIATION_BAN;
             // TODO P2 add "minimum remediation" feature in lib + set it to ban in this case
             break;
+        default:
+            throw new Exception("Unknown $bouncingLevel");
     }
 
     // Display Library log in debug mode

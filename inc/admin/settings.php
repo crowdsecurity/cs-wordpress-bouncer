@@ -32,7 +32,7 @@ function adminSettings()
     register_setting('crowdsec_plugin_settings', 'crowdsec_api_url', function ($input) {
         $input = esc_attr($input);
         if (false) { // P2 TODO ping API to see if it's available
-            $crowdsec_activated = get_option("crowdsec_api_url");
+            $crowdsec_activated = esc_attr(get_option("crowdsec_api_url"));
             if ($crowdsec_activated) {
                 add_settings_error("LAPI URL", "crowdsec_error", "LAPI URL " . $input . " is not reachable.");
                 return $input;
@@ -51,7 +51,7 @@ function adminSettings()
             echo "Incorrect URL " . $value . ".\n";
         }
         echo '<input style="width: 250px;" type="text" class="regular-text" name="' . $name . '"' .
-            ' value="' . $value . '" placeholder="' . $placeholder . '"><p>Generated with the cscli command.</p>';
+            ' value="' . $value . '" placeholder="' . $placeholder . '"><p>Generated with the cscli command, ex: <em>cscli bouncers add wordpress-bouncer</em></p>';
     }, 'crowdsec_settings', 'crowdsec_admin_connection', array(
         'label_for' => 'crowdsec_api_key',
         'placeholder' => 'Your bouncer key',
@@ -59,7 +59,7 @@ function adminSettings()
     register_setting('crowdsec_plugin_settings', 'crowdsec_api_key', function ($input) {
         $input = esc_attr($input);
         if (false) { // P2 TODO check api key length and format (regex)
-            $crowdsec_activated = get_option("crowdsec_api_key");
+            $crowdsec_activated = esc_attr(get_option("crowdsec_api_key"));
             if ($crowdsec_activated) {
                 add_settings_error("LAPI URL", "crowdsec_error", "LAPI URL " . $input . " is not reachable.");
                 return $input;
@@ -95,7 +95,7 @@ function adminSettings()
 
             </ul>
         </p>
-    <?php
+<?php
     }, 'crowdsec_settings', 'crowdsec_admin_boucing', array(
         'label_for' => 'crowdsec_bouncing_level',
         'class' => 'ui-toggle'
@@ -118,7 +118,7 @@ function adminSettings()
         $name = $args['label_for'];
         $classes = $args['class'];
         $checkbox = get_option($name);
-        $options = get_option('crowdsec_public_website_only');
+        $options = esc_attr(get_option('crowdsec_public_website_only'));
         echo '<div class="' . $classes . '"><input type="checkbox" id="' . $name . '" name="' . $name . '"' .
             ' value="' . $options . '" class="" ' . ($checkbox ? 'checked' : '') . '>' .
             '<label for="' . $name . '"><div></div></label></div>' .
@@ -128,5 +128,4 @@ function adminSettings()
         'class' => 'ui-toggle'
     ));
     register_setting('crowdsec_plugin_settings', 'crowdsec_public_website_only', 'sanitizeCheckbox');
-
 }

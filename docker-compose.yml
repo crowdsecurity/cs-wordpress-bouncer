@@ -10,11 +10,12 @@ services:
         links:
         - mysql
         environment:
-        - WORDPRESS_DB_PASSWORD=super_secret_password
-        - WORDPRESS_DEBUG=1
+          - WORDPRESS_DB_PASSWORD=super_secret_password
+          - WORDPRESS_DEBUG=1
+          #- WORDPRESS_CONFIG_EXTRA=define('DISABLE_WP_CRON', true);
         # more here https://hub.docker.com/_/wordpress
         ports:
-        - "8081:80"
+        - "80:80"
         volumes:
         - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer
 

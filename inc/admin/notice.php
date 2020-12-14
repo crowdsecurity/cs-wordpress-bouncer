@@ -2,7 +2,7 @@
 
 class AdminNotice
 {
-    const NOTICE_FIELD = 'my_admin_notice_message';
+    const NOTICE_FIELD = 'crowdsec_admin_notice_message';
 
     public function displayAdminNotice()
     {

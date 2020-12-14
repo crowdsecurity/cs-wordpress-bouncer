@@ -15,13 +15,11 @@ if (is_admin()) {
             $bouncer = getBouncerInstance();
             $bouncer->clearCache();
             $message = __('CrowdSec cache has just been cleared.');
-            update_option("crowdsec_stream_mode_warmed_up", false);
 
             // In stream mode, immediatelly warm the cache up.
             if (get_option("crowdsec_stream_mode")) {
                 $bouncer->refreshBlocklistCache();
                 $message .= __(' As the stream is enabled, the cache has just been warmed up.');
-                update_option("crowdsec_stream_mode_warmed_up", true);
             }
 
             AdminNotice::displaySuccess($message);

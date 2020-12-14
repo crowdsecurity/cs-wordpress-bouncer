@@ -8,7 +8,7 @@ Run containers:
 docker-compose up -d
 ```
 
-Visit the wordpress instance here: http://localhost:8081
+Visit the wordpress instance here: http://localhost
 
 Admin account: admin / ThisSecretIsKnown!
 

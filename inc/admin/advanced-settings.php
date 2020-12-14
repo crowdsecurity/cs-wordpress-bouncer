@@ -16,8 +16,8 @@ function adminAdvancedSettings()
     add_settings_field('crowdsec_stream_mode', 'Enable "Stream" mode', function ($args) {
         $name = $args['label_for'];
         $classes = $args['class'];
-        $checkbox = get_option($name);
-        $options = get_option('crowdsec_stream_mode');
+        $checkbox = esc_attr(get_option($name));
+        $options = esc_attr(get_option('crowdsec_stream_mode'));
         echo '<div class="' . $classes . '">' .
             '<input type="checkbox" id="' . $name . '" name="' . $name . '" value="' . $options . '"' .
             ' class="" ' . ($checkbox ? 'checked' : '') . '>' .
@@ -32,17 +32,17 @@ function adminAdvancedSettings()
         'class' => 'ui-toggle'
     ));
     register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode', function ($input) {
+        $previousState = esc_attr(get_option("crowdsec_stream_mode"));
         $streamModeEnabled = sanitizeCheckbox($input);
 
-        // Ensure cache is warmed up.
-        $cacheWarmedUp = get_option("crowdsec_stream_mode_warmed_up");
-        if ($streamModeEnabled) {
-            if (!$cacheWarmedUp) {
-                $bouncer = getBouncerInstance();
-                $bouncer->refreshBlocklistCache();
-                AdminNotice::displaySuccess(__('Stream mode: cache has been warmed up.'));
-                update_option("crowdsec_stream_mode_warmed_up", true);
-            }
+        // Stream mode just activated.
+        if (!$previousState && $streamModeEnabled) {
+            scheduleBlocklistRefresh();
+        }
+
+        // Stream mode just deactivated.
+        if ($previousState && !$streamModeEnabled) {
+            unscheduleBlocklistRefresh();
         }
 
         return $streamModeEnabled;
@@ -59,19 +59,23 @@ function adminAdvancedSettings()
         }
         echo '<input style="width: 115px;" type="number" class="regular-text" name="' . $name . '"' .
             ' value="' . $value . '" placeholder="' . $placeholder . '">' .
-            '<p>In seconds. Our advise is between 1 and 30 seconds.';
+            '<p>In seconds. Our advise is 60sec (according to WP_CRON_LOCK_TIMEOUT)';
     }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
         'label_for' => 'crowdsec_stream_mode_refresh_frequency',
         'placeholder' => '...',
     ));
     register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode_refresh_frequency', function ($input) {
-        $input = esc_attr($input);
-        if (false) { // P2 check if its number
-            $crowdsec_activated = get_option("crowdsec_stream_mode_refresh_frequency");
-            if ($crowdsec_activated) {
-                add_settings_error("Resync decisions each", "crowdsec_error", "error message...");
-                return $input;
-            }
+        $previousState = (int)(get_option("crowdsec_stream_mode_refresh_frequency"));
+        $input = (int)$input;
+        if ($input < 60) {
+            $input = 60;
+            add_settings_error("Resync decisions each", "crowdsec_error", 'The "Resync decisions each" value should be more than 60sec (WP_CRON_LOCK_TIMEOUT). We just reset the frequency to 60sec.');
+            return $input;
+        }
+
+        // Update wp-cron schedule.
+        if (($previousState !== $input) && (bool)(get_option("crowdsec_stream_mode"))) {
+            scheduleBlocklistRefresh();
         }
         return $input;
     });
@@ -124,7 +128,7 @@ function adminAdvancedSettings()
     register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode_redis_dsn', function ($input) {
         $input = esc_attr($input);
         if (false) { // P2 check if its it's a valid DSN
-            $crowdsec_activated = get_option("crowdsec_stream_mode_redis_dsn");
+            $crowdsec_activated = esc_attr(get_option("crowdsec_stream_mode_redis_dsn"));
             if ($crowdsec_activated) {
                 add_settings_error("Redis DSN", "crowdsec_error", "error message...");
                 return $input;
@@ -152,7 +156,7 @@ function adminAdvancedSettings()
     register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode_memcached_dsn', function ($input) {
         $input = esc_attr($input);
         if (false) { // P2 check if its it's a valid DSN
-            $crowdsec_activated = get_option("crowdsec_stream_mode_memcached_dsn");
+            $crowdsec_activated = esc_attr(get_option("crowdsec_stream_mode_memcached_dsn"));
             if ($crowdsec_activated) {
                 add_settings_error("Memcached DSN", "crowdsec_error", "error message...");
                 return $input;
@@ -205,7 +209,7 @@ function adminAdvancedSettings()
     register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_clean_ip_cache_duration', function ($input) {
         $input = (int)esc_attr($input);
         if ($input <= 0) {
-            add_settings_error("Recheck clean IPs each", "crowdsec_error", "Minimum cache duration is 1 second.");
+            add_settings_error("Recheck clean IPs each", "crowdsec_error", "Recheck clean IPs each: Minimum is 1 second.");
             return "1";
         }
         return (string)$input;

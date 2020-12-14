@@ -37,7 +37,7 @@ function bounceCurrentIp()
         $captchaCorrectlyFilled = ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['phrase']) && PhraseBuilder::comparePhrases($_SESSION['phrase'], $_POST['phrase']));
         if (!$captchaCorrectlyFilled) {
             $_SESSION["captchaResolved"] = false;
-            echo "Invalid captcha!";// TODO P2 Improve error template.
+            echo "Invalid captcha!"; // TODO P2 Improve error template.
             displayCaptchaPage($ip);
         }
 
@@ -71,7 +71,7 @@ function bounceCurrentIp()
         checkCaptcha($ip);
     }
 
-    $bouncingLevel = get_option("crowdsec_bouncing_level");
+    $bouncingLevel = esc_attr(get_option("crowdsec_bouncing_level"));
     $shouldBounce = ($bouncingLevel !== CROWDSEC_BOUNCING_LEVEL_DISABLED);
 
     if ($shouldBounce) {
@@ -92,7 +92,11 @@ function safelyBounceCurrentIp()
 {
     // TODO P3 check that every kind of errors are catched.
     try {
-        bounceCurrentIp();
+        $everywhere = empty(get_option('crowdsec_public_website_only'));
+        $shoudRun = ($everywhere || !is_admin());
+        if ($shoudRun) {
+            bounceCurrentIp();
+        }
     } catch (\Exception $e) {
         if (WP_DEBUG) {
             throw $e;
