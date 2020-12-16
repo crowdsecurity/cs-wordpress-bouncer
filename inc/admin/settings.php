@@ -10,7 +10,7 @@ function adminSettings()
      *********************************/
 
     add_settings_section('crowdsec_admin_connection', 'Connection details', function () {
-        echo 'Connect Wordpress to you CrowdSec LAPI.';
+        echo 'Connect WordPress to your CrowdSec LAPI.';
     }, 'crowdsec_settings');
 
     // Field "crowdsec_api_url"
@@ -24,7 +24,7 @@ function adminSettings()
         }
         echo '<input type="text" class="regular-text" name="' . $name . '" value="' . $value . '"' .
             ' placeholder="' . $placeholder . '">' .
-            '<p>If the CrowdSec Agent is installed on this server, you will set this field to: http://localhost:8080.</p>';
+            '<p>If the CrowdSec Agent is installed on this server, you will set this field to http://localhost:8080.</p>';
     }, 'crowdsec_settings', 'crowdsec_admin_connection', array(
         'label_for' => 'crowdsec_api_url',
         'placeholder' => 'Your LAPI URL',
@@ -50,7 +50,7 @@ function adminSettings()
         if (false) { // TODO check api key format / ping api
             echo "Incorrect URL " . $value . ".\n";
         }
-        echo '<input style="width: 250px;" type="text" class="regular-text" name="' . $name . '"' .
+        echo '<input style="width: 280px;" type="text" class="regular-text" name="' . $name . '"' .
             ' value="' . $value . '" placeholder="' . $placeholder . '"><p>Generated with the cscli command, ex: <em>cscli bouncers add wordpress-bouncer</em></p>';
     }, 'crowdsec_settings', 'crowdsec_admin_connection', array(
         'label_for' => 'crowdsec_api_key',
@@ -73,7 +73,7 @@ function adminSettings()
      ***********************************/
 
     add_settings_section('crowdsec_admin_boucing', 'Bouncing', function () {
-        echo "Refine boucing according to your needs.";
+        echo "Refine bouncing according to your needs.";
     }, 'crowdsec_settings');
 
     // Field "crowdsec_bouncing_level"
@@ -89,10 +89,9 @@ function adminSettings()
             Select one of the four bouncing modes:<br>
             <ul>
                 <li><i>Bouncing disabled</i>: No ban or Captcha display to users. The road is free, even for attackers.</li>
-                <li><i>Flex bouncing</i>: Display Captcha only, even if CrowdSec advise to ban the IP.</li>
-                <li><i>Normal bouncing</i>: Follow CrowdSec advices (ban or Captcha).</li>
-                <li><i>Paranoid mode</i>: Ban IPs when there are in CrowdSec database, even if CrowdSec advise to diplay a Captcha.</li>
-
+                <li><i>Flex bouncing</i>: Display Captcha only, even if CrowdSec advises to ban the IP.</li>
+                <li><i>Normal bouncing</i>: Follow CrowdSec advice (Ban or Captcha).</li>
+                <li><i>Paranoid mode</i>: Ban IPs when there are in the CrowdSec database, even if CrowdSec advises to display a Captcha.</li>
             </ul>
         </p>
 <?php

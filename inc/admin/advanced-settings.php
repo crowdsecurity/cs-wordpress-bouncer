@@ -9,11 +9,11 @@ function adminAdvancedSettings()
      *************************************/
 
     add_settings_section('crowdsec_admin_advanced', 'Cache configuration', function () {
-        echo "Leave these parameters as they are, except in special cases.";
+        echo "Leave these parameters as they are, except in special cases. ";
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_stream_mode"
-    add_settings_field('crowdsec_stream_mode', 'Enable "Stream" mode', function ($args) {
+    add_settings_field('crowdsec_stream_mode', 'Enable the "Stream" mode', function ($args) {
         $name = $args['label_for'];
         $classes = $args['class'];
         $checkbox = esc_attr(get_option($name));
@@ -22,10 +22,10 @@ function adminAdvancedSettings()
             '<input type="checkbox" id="' . $name . '" name="' . $name . '" value="' . $options . '"' .
             ' class="" ' . ($checkbox ? 'checked' : '') . '>' .
             '<label for="' . $name . '"><div></div></label></div>' .
-            '<p>With this mode, all decisions are retrieved with an asynchronous way, using <em>LAPI stream mode</em> feature.' .
+            '<p>With this mode, all decisions are retrieved in an asynchronous way, using <em>LAPI stream mode</em> feature.' .
             '<br>Advantages:<br>- Ultrashort latency<br>- IP verifications work even if LAPI is down.<br>' .
             'Limits:<br>- If traffic is low, the cache refresh of all decisions can be late.' .
-            '<br>- A delay to take decisions in account is added.' .
+            '<br>- A delay to take decisions into account is added.' .
             '</p>';
     }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
         'label_for' => 'crowdsec_stream_mode',
@@ -58,8 +58,8 @@ function adminAdvancedSettings()
             echo "Incorrect ... " . $value . ".\n";
         }
         echo '<input style="width: 115px;" type="number" class="regular-text" name="' . $name . '"' .
-            ' value="' . $value . '" placeholder="' . $placeholder . '">' .
-            '<p>In seconds. Our advice is 60sec (according to WP_CRON_LOCK_TIMEOUT)';
+            ' value="' . $value . '" placeholder="' . $placeholder . '"> seconds.' .
+            '<p>Our advice is 60sec (according to WP_CRON_LOCK_TIMEOUT)';
     }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
         'label_for' => 'crowdsec_stream_mode_refresh_frequency',
         'placeholder' => '...',
@@ -89,7 +89,7 @@ function adminAdvancedSettings()
             <option value="<?php echo CROWDSEC_CACHE_SYSTEM_MEMCACHED ?>" <?php selected(get_option('crowdsec_cache_system'), CROWDSEC_CACHE_SYSTEM_MEMCACHED); ?>>Memcached</option>
         </select>
         <p>
-            File system cache is faster than calling LAPI. Redis or Memcached are faster than file system.<br>
+            The File system cache is faster than calling LAPI. Redis or Memcached is faster than the File System cache.<br>
         </p>
     <?php
     }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
@@ -241,7 +241,7 @@ function adminAdvancedSettings()
             <?php endforeach; ?>
         </select>
         <p>
-            Which remediation to apply when CrowdSec advise a unhandled remediation.<br>
+            Which remediation to apply when CrowdSec advises unhandled remediation.<br>
         </p>
 <?php
     }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(

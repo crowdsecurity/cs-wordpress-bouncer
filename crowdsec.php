@@ -2,7 +2,7 @@
 /*
 Plugin Name: CrowdSec
 Plugin URI: https://www.crowdsec.net/
-Description: Wordpressp plugin that doesn't allow IP according to crowdsec
+Description: Safer Together. Protect your WordPress application with CrowdSec.
 Tags: security, firewall, malware scanner, two factor authentication, captcha, waf, web app firewall, mfa, 2fa
 Version 0.0.1
 Author: CrowdSec
