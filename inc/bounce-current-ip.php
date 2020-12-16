@@ -6,7 +6,7 @@ use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\Constants;
 
 // Captcha repeat delay in seconds
-define('CROWDSEC_CAPTCHA_REPEAT_MIN_DELAY', 15 * 60);// TODO P3 Dynamize this value
+define('CROWDSEC_CAPTCHA_REPEAT_MIN_DELAY', 15 * 60); // TODO P3 Dynamize this value
 
 
 function bounceCurrentIp()
@@ -20,8 +20,9 @@ function bounceCurrentIp()
             $_SESSION['phrase'] = $captcha->getPhrase();
             $_SESSION['img'] = $captcha->build()->inline();
         }
-        // TODO P3 make a function instead of this
-        require_once(__DIR__ . "/templates/remediations/captcha.php");
+        $captchaImageSrc = $_SESSION['img'];
+        $captchaResolutionFormUrl = '';
+        echo Bouncer::getCaptchaHtmlTemplate($error, $captchaImageSrc, $captchaResolutionFormUrl);
         die();
     }
 
@@ -29,7 +30,7 @@ function bounceCurrentIp()
     {
         // TODO P3 make a function instead of this
         header('HTTP/1.0 403 Forbidden');
-        require_once(__DIR__ . "/templates/remediations/403.php");
+        echo Bouncer::getAccessForbiddenHtmlTemplate();
         die();
     }
 
