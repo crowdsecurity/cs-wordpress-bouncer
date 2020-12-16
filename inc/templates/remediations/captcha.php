@@ -120,7 +120,6 @@
 
             <button type="submit" />CONTINUE</button>
 
-            <p>Your IP address is <?php echo $ip ?>.</p>
             <p class="powered">This security check has been powered by
                     <svg class="logo" width="33.92" height="33.76" viewBox="0 0 254.4 253.2">
                         <defs>
