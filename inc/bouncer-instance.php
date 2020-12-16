@@ -79,12 +79,10 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
     }
 
     // Display Library log in debug mode
-    $logger = null;
-    if (WP_DEBUG) {
-        $logger = new Logger('wordpress');
-        $fileHandler = new RotatingFileHandler(__DIR__ . '/crowdsec.log', 0, Logger::DEBUG);
-        $logger->pushHandler($fileHandler);
-    }
+    $loggerLevel = WP_DEBUG ? Logger::DEBUG : Logger::INFO;
+    $logger = new Logger('wp_bouncer');
+    $fileHandler = new RotatingFileHandler(__DIR__ . '/../logs/crowdsec.log', 0, $loggerLevel);
+    $logger->pushHandler($fileHandler);
 
     // Instanciate the bouncer
     $bouncer = new Bouncer($logger);
