@@ -85,7 +85,10 @@ Limits:<br>- If traffic is low, the cache refresh (new or deleted decisions sinc
      ********************/
 
     add_settings_section('crowdsec_admin_advanced_cache', 'Caching configuration', function () {
-        echo "The File system cache is faster than calling LAPI. Redis or Memcached is faster than the File System cache.";
+        ?>
+        <p>The File system cache is faster than calling LAPI. Redis or Memcached is faster than the File System cache.</p>
+        <p><input type="button" value="Clear the cache" class="button button-secondary button-small" onclick="if (confirm('Are you sure you want to completely clear the cache?')) document.getElementById('crowdsec_ation_clear_cache').submit();"></p>
+        <?php
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_cache_system"

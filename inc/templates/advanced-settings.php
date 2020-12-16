@@ -14,9 +14,8 @@
 		</form>
 		
 		<br/>
-		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" onsubmit="return confirm('Are you sure you want to completely clear the cache?')">
+		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_ation_clear_cache">
 			<input type="hidden" name="action" value="refresh_cache">
-			<input type="submit" value="Clear the cache" class="button button-primary">
 		</form>
 		</div>
 	</div>
