@@ -40,7 +40,7 @@ $bouncer = null;
 function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
 {
     // Singleton for this function
-    
+
     global $bouncer;
     if (!$forcedCacheSystem && $bouncer) {
         return $bouncer;
@@ -82,6 +82,9 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
     $loggerLevel = WP_DEBUG ? Logger::DEBUG : Logger::INFO;
     $logger = new Logger('wp_bouncer');
     $fileHandler = new RotatingFileHandler(__DIR__ . '/../logs/crowdsec.log', 0, $loggerLevel);
+    if (WP_DEBUG) {
+        $fileHandler->setFormatter(new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, "[%datetime%] %message% %context%\n", 'H:i:s'));
+    }
     $logger->pushHandler($fileHandler);
 
     // Instanciate the bouncer
