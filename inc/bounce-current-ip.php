@@ -1,7 +1,5 @@
 <?php
 
-use Gregwar\Captcha\CaptchaBuilder;
-use Gregwar\Captcha\PhraseBuilder;
 use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\Constants;
 
@@ -16,9 +14,9 @@ function bounceCurrentIp()
     function displayCaptchaPage($ip, $error = false)
     {
         if (!isset($_SESSION['phrase'])) {
-            $captcha = new CaptchaBuilder;
-            $_SESSION['phrase'] = $captcha->getPhrase();
-            $_SESSION['img'] = $captcha->build()->inline();
+            $captchaCouple = Bouncer::buildCaptchaCouple();
+            $_SESSION['phrase'] = $captchaCouple['phrase'];
+            $_SESSION['img'] = $captchaCouple['inlineImage'];
         }
         $captchaImageSrc = $_SESSION['img'];
         $captchaResolutionFormUrl = '';
@@ -45,9 +43,9 @@ function bounceCurrentIp()
 
             if ($refreshImage) {
                 // generate new image
-                $captcha = new CaptchaBuilder;
-                $_SESSION['phrase'] = $captcha->getPhrase();
-                $_SESSION['img'] = $captcha->build()->inline();
+                $captchaCouple = Bouncer::buildCaptchaCouple();
+                $_SESSION['phrase'] = $captchaCouple['phrase'];
+                $_SESSION['img'] = $captchaCouple['inlineImage'];
 
                 // display captcha page
                 $_SESSION["captchaResolved"] = false;
@@ -56,7 +54,7 @@ function bounceCurrentIp()
 
 
             // Handle captcha resolve.
-            $captchaCorrectlyFilled = (isset($_POST['phrase']) && PhraseBuilder::comparePhrases($_SESSION['phrase'], $_POST['phrase']));
+            $captchaCorrectlyFilled = (isset($_POST['phrase']) && Bouncer::checkCaptcha($_SESSION['phrase'], $_POST['phrase']));
             if ($captchaCorrectlyFilled) {
                 $_SESSION["captchaResolved"] = true;
                 $_SESSION["captchaResolvedAt"] = time();
