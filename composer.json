@@ -12,6 +12,10 @@
         "crowdsec/bouncer": "^0.4.3",
         "gregwar/captcha": "^1.1"
     },
+    "require-dev": {
+        "bramus/monolog-colored-line-formatter": "^3.0",
+        "symfony/var-dumper": "^5.2"
+    },
     "autoload": {
         "psr-4": {
             "": "./"

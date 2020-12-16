@@ -29,11 +29,9 @@ Admin account: admin / ThisSecretIsKnown!
 cd cs-wordpress-blocker
 docker-compose exec sh composer install
 
-rm -rf vendor/crowdsec/bouncer
-cd vendor/crowdsec
+rm vendor/crowdsec/bouncer
 # "absolute" is required for usage in Docker containers
-ln -s ${CS_PHPLIB_ABS_PATH}  bouncer
-cd -
+cd vendor/crowdsec && ln -s ${CS_PHPLIB_ABS_PATH}  bouncer && cd -
 
 # Install plugin and configure it
 
