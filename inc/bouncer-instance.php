@@ -86,6 +86,7 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
     }
     $isStreamMode = !empty(get_option('crowdsec_stream_mode'));
     $cleanIpCacheDuration = (int)get_option('crowdsec_clean_ip_cache_duration');
+    $badIpCacheDuration = (int)get_option('crowdsec_bad_ip_cache_duration');
     $fallbackRemediation = esc_attr(get_option('crowdsec_fallback_remediation'));
     $bouncingLevel = esc_attr(get_option("crowdsec_bouncing_level"));
 
@@ -119,7 +120,8 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
         'live_mode' => !$isStreamMode,
         'max_remediation_level' => $maxRemediationLevel,
         'fallback_remediation' => $fallbackRemediation,
-        'cache_expiration_for_clean_ip' => $cleanIpCacheDuration
+        'cache_expiration_for_clean_ip' => $cleanIpCacheDuration,
+        'cache_expiration_for_bad_ip' => $badIpCacheDuration, 
     ], $cacheAdapter);
     return $bouncer;
 }

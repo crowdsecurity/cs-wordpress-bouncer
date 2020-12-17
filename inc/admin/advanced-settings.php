@@ -101,7 +101,16 @@ Limits:<br>- If traffic is low, the cache refresh (new or deleted decisions sinc
             return "1";
         }
         return $input;
-    }, ' seconds. <p>The duration (in seconds) between re-asking LAPI about an already checked IP.<br>Minimum 1 second.', '...', 'width: 115px;', 'number');
+    }, ' seconds. <p>The duration (in seconds) between re-asking LAPI about an already checked clean IP.<br>Minimum 1 second.', '...', 'width: 115px;', 'number');
+
+    // Field "crowdsec_bad_ip_cache_duration"
+    addFieldString('crowdsec_bad_ip_cache_duration', 'Recheck bad IPs each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        if ((int)$input <= 0) {
+            add_settings_error("Recheck bad IPs each", "crowdsec_error", "Recheck bad IPs each: Minimum is 1 second.");
+            return "1";
+        }
+        return $input;
+    }, ' seconds. <p>The duration (in seconds) between re-asking LAPI about an already checked bad IP.<br>Minimum 1 second.', '...', 'width: 115px;', 'number');
 
     /***************************
      ** Section "Remediation" **
