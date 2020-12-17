@@ -104,7 +104,7 @@ if (is_admin()) {
 
                 if ($previousState !== $currentState) {
                     $currentState = $onChange($currentState);
-                    getCrowdSecLoggerInstance()->info(null, ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState, $previousState, $currentState]);
+                    getCrowdSecLoggerInstance()->info(null, ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
                 }
 
                 return $currentState;
@@ -118,6 +118,32 @@ if (is_admin()) {
                 'label_for' => $optionName,
                 'placeholder' => $placeholder,
             ));
+        }
+
+        function addFieldSelect(string $optionName, string $label, string $optionGroup, string $pageName, string $sectionName, callable $onChange, string $descriptionHtml, array $choices)
+        {
+            $previousState = esc_attr(get_option($optionName));
+            register_setting($optionGroup, $optionName, function ($input) use ($onChange, $optionName, $previousState) {
+                $currentState = esc_attr($input);
+
+
+                if ($previousState !== $currentState) {
+                    $currentState = $onChange($currentState);
+                    getCrowdSecLoggerInstance()->info(null, ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
+                }
+
+                return $currentState;
+            });
+            add_settings_field($optionName, $label, function () use ($descriptionHtml, $optionName, $previousState, $choices) {
+?>
+                <select name="<?php echo $optionName ?>">
+                    <?php foreach ($choices as $key => $value) : ?>
+                        <option value="<?php echo $key ?>" <?php selected($previousState, $key); ?>><?php echo $value; ?></option>
+                    <?php endforeach; ?>
+                </select>
+<?php
+                echo $descriptionHtml;
+            }, $pageName, $sectionName);
         }
 
         /*add_menu_page('CrowdSec Plugin', 'CrowdSec', 'manage_options', 'crowdsec_plugin', function () {

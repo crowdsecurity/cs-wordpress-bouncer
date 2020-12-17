@@ -35,30 +35,7 @@ function adminSettings()
     }, 'crowdsec_settings');
 
     // Field "crowdsec_bouncing_level"
-    add_settings_field('crowdsec_bouncing_level', 'Bouncing level', function ($args) {
-?>
-        <select name="crowdsec_bouncing_level">
-            <option value="<?php echo CROWDSEC_BOUNCING_LEVEL_DISABLED ?>" <?php selected(get_option('crowdsec_bouncing_level'), CROWDSEC_BOUNCING_LEVEL_DISABLED); ?>>🚫 Bouncing disabled</option>
-            <option value="<?php echo CROWDSEC_BOUNCING_LEVEL_FLEX ?>" <?php selected(get_option('crowdsec_bouncing_level'), CROWDSEC_BOUNCING_LEVEL_FLEX); ?>>😎 Flex bouncing</option>
-            <option value="<?php echo CROWDSEC_BOUNCING_LEVEL_NORMAL ?>" <?php selected(get_option('crowdsec_bouncing_level'), CROWDSEC_BOUNCING_LEVEL_NORMAL); ?>>🛡️ Normal bouncing</option>
-            <option value="<?php echo CROWDSEC_BOUNCING_LEVEL_PARANOID ?>" <?php selected(get_option('crowdsec_bouncing_level'), CROWDSEC_BOUNCING_LEVEL_PARANOID); ?>>🕵️ Paranoid mode</option>
-        </select>
-        <p>
-            Select one of the four bouncing modes:<br>
-            <ul>
-                <li><i>Bouncing disabled</i>: No ban or Captcha display to users. The road is free, even for attackers.</li>
-                <li><i>Flex bouncing</i>: Display Captcha only, even if CrowdSec advises to ban the IP.</li>
-                <li><i>Normal bouncing</i>: Follow CrowdSec advice (Ban or Captcha).</li>
-                <li><i>Paranoid mode</i>: Ban IPs when there are in the CrowdSec database, even if CrowdSec advises to display a Captcha.</li>
-            </ul>
-        </p>
-<?php
-    }, 'crowdsec_settings', 'crowdsec_admin_boucing', array(
-        'label_for' => 'crowdsec_bouncing_level',
-        'class' => 'ui-toggle'
-    ));
-    register_setting('crowdsec_plugin_settings', 'crowdsec_bouncing_level', function ($input) {
-        $input = esc_attr($input);
+    addFieldSelect('crowdsec_bouncing_level', 'Bouncing level', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_boucing', function ($input) {
         if (!in_array($input, [
             CROWDSEC_BOUNCING_LEVEL_DISABLED,
             CROWDSEC_BOUNCING_LEVEL_NORMAL,
@@ -66,9 +43,23 @@ function adminSettings()
             CROWDSEC_BOUNCING_LEVEL_PARANOID
         ])) {
             $input = CROWDSEC_BOUNCING_LEVEL_DISABLED;
+            // TODO P3 throw error
         }
         return $input;
-    });
+    }, '<p>
+    Select one of the four bouncing modes:<br>
+    <ul>
+        <li><i>Bouncing disabled</i>: No ban or Captcha display to users. The road is free, even for attackers.</li>
+        <li><i>Flex bouncing</i>: Display Captcha only, even if CrowdSec advises to ban the IP.</li>
+        <li><i>Normal bouncing</i>: Follow CrowdSec advice (Ban or Captcha).</li>
+        <li><i>Paranoid mode</i>: Ban IPs when there are in the CrowdSec database, even if CrowdSec advises to display a Captcha.</li>
+    </ul>
+</p>', [
+        CROWDSEC_BOUNCING_LEVEL_DISABLED => '🚫 Bouncing disabled',
+        CROWDSEC_BOUNCING_LEVEL_FLEX => '😎 Flex bouncing',
+        CROWDSEC_BOUNCING_LEVEL_NORMAL => '🛡️ Normal bouncing',
+        CROWDSEC_BOUNCING_LEVEL_PARANOID => '🕵️ Paranoid mode',
+    ]);
 
 
 
