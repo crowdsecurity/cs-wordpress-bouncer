@@ -123,10 +123,12 @@ function bounceCurrentIp()
  */
 function safelyBounceCurrentIp()
 {
-    // TODO P3 check that every kind of errors are catched.
     try {
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+            throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
+        });
         // avoid useless bouncing
-        if ($_SERVER['REQUEST_URI'] !== '/favicon.ico') {
+        if ($_SERVER['REQUEST_URI'] === '/favicon.ico') {
             return;
         }
 
@@ -135,10 +137,18 @@ function safelyBounceCurrentIp()
         if ($shoudRun) {
             bounceCurrentIp();
         }
+        restore_error_handler();
+        
     } catch (\Exception $e) {
+        getCrowdSecLoggerInstance()->error(null, [
+            'type' => 'WP_EXCEPTION_WHILE_BOUNCING',
+            'messsage' => $e->getMessage(),
+            'code' => $e->getCode(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
         if (WP_DEBUG) {
             throw $e;
         }
-        // TODO P3 log error if something has been catched here
     }
 }
