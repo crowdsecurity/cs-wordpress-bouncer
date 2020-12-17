@@ -18,54 +18,17 @@ Limits:<br>- If traffic is low, the cache refresh (new or deleted decisions sinc
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_stream_mode"
-    add_settings_field('crowdsec_stream_mode', 'Enable the "Stream" mode', function ($args) {
-        $name = $args['label_for'];
-        $classes = $args['class'];
-        $checkbox = esc_attr(get_option($name));
-        $options = esc_attr(get_option('crowdsec_stream_mode'));
-        echo '<div class="' . $classes . '">' .
-            '<input type="checkbox" id="' . $name . '" name="' . $name . '" value="' . $options . '"' .
-            ' class="" ' . ($checkbox ? 'checked' : '') . '>' .
-            '<label for="' . $name . '"><div></div></label></div>';
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', array(
-        'label_for' => 'crowdsec_stream_mode',
-        'class' => 'ui-toggle'
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode', function ($input) {
-        $previousState = esc_attr(get_option("crowdsec_stream_mode"));
-        $streamModeEnabled = sanitizeCheckbox($input);
 
+    addFieldCheckbox('crowdsec_stream_mode', 'Enable the "Stream" mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', function () {
         // Stream mode just activated.
-        if (!$previousState && $streamModeEnabled) {
-            scheduleBlocklistRefresh();
-        }
-
+        scheduleBlocklistRefresh();
+    }, function () {
         // Stream mode just deactivated.
-        if ($previousState && !$streamModeEnabled) {
-            unscheduleBlocklistRefresh();
-        }
-
-        return $streamModeEnabled;
-    });
+        unscheduleBlocklistRefresh();
+    }, '');
 
     // Field "crowdsec_stream_mode_refresh_frequency"
-    add_settings_field('crowdsec_stream_mode_refresh_frequency', 'Resync decisions each', function ($args) {
-        $name = $args["label_for"];
-        $placeholder = $args["placeholder"];
-        $value = esc_attr(get_option("crowdsec_stream_mode_refresh_frequency"));
-
-        if (false) { // TODO check if its number
-            echo "Incorrect ... " . $value . ".\n";
-        }
-        echo '<input style="width: 115px;" type="number" class="regular-text" name="' . $name . '"' .
-            ' value="' . $value . '" placeholder="' . $placeholder . '"> seconds.' .
-            '<p>Our advice is 60 seconds (according to WP_CRON_LOCK_TIMEOUT)';
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', array(
-        'label_for' => 'crowdsec_stream_mode_refresh_frequency',
-        'placeholder' => '...',
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode_refresh_frequency', function ($input) {
-        $previousState = (int)(get_option("crowdsec_stream_mode_refresh_frequency"));
+    addFieldString('crowdsec_stream_mode_refresh_frequency', 'Resync decisions each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         $input = (int)$input;
         if ($input < 60) {
             $input = 60;
@@ -74,26 +37,26 @@ Limits:<br>- If traffic is low, the cache refresh (new or deleted decisions sinc
         }
 
         // Update wp-cron schedule.
-        if (($previousState !== $input) && (bool)(get_option("crowdsec_stream_mode"))) {
+        if ((bool)get_option("crowdsec_stream_mode")) {
             scheduleBlocklistRefresh();
         }
         return $input;
-    });
+    }, ' seconds. <p>Our advice is 60 seconds (according to WP_CRON_LOCK_TIMEOUT).</p>', '...', 'width: 115px;', 'number');
 
     /*********************
      ** Section "Cache" **
      ********************/
 
     add_settings_section('crowdsec_admin_advanced_cache', 'Caching configuration', function () {
-        ?>
+?>
         <p>The File system cache is faster than calling LAPI. Redis or Memcached is faster than the File System cache.</p>
         <p><input type="button" value="Clear the cache" class="button button-secondary button-small" onclick="if (confirm('Are you sure you want to completely clear the cache?')) document.getElementById('crowdsec_ation_clear_cache').submit();"></p>
-        <?php
+    <?php
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_cache_system"
     add_settings_field('crowdsec_cache_system', 'Technology', function ($args) {
-?>
+    ?>
         <select name="crowdsec_cache_system">
             <option value="<?php echo CROWDSEC_CACHE_SYSTEM_PHPFS ?>" <?php selected(get_option('crowdsec_cache_system'), CROWDSEC_CACHE_SYSTEM_PHPFS); ?>>File system</option>
             <option value="<?php echo CROWDSEC_CACHE_SYSTEM_REDIS ?>" <?php selected(get_option('crowdsec_cache_system'), CROWDSEC_CACHE_SYSTEM_REDIS); ?>>Redis</option>
@@ -134,61 +97,16 @@ Limits:<br>- If traffic is low, the cache refresh (new or deleted decisions sinc
     });
 
     // Field "crowdsec_redis_dsn"
-    add_settings_field('crowdsec_redis_dsn', 'Redis DSN<br>(if applicable)', function ($args) {
-        $name = $args["label_for"];
-        $placeholder = $args["placeholder"];
-        $value = esc_attr(get_option("crowdsec_redis_dsn"));
-
-        if (false) { // TODO check if it's a valid DSN
-            echo "Incorrect ... " . $value . ".\n";
-        }
-        //MEMCACHED_DSN: memcached://localhost:11211
-        echo '<input type="string" class="regular-text" name="' . $name . '"' .
-            ' value="' . $value . '" placeholder="' . $placeholder . '">' .
-            '<p>Fill in this field only if you have chosen the Redis cache.<br>Example of DSN: redis://localhost:6379.';
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', array(
-        'label_for' => 'crowdsec_redis_dsn',
-        'placeholder' => 'redis://...',
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_redis_dsn', function ($input) {
-        $input = esc_attr($input);
-        if (false) { // P2 check if its it's a valid DSN
-            $crowdsec_activated = esc_attr(get_option("crowdsec_redis_dsn"));
-            if ($crowdsec_activated) {
-                add_settings_error("Redis DSN", "crowdsec_error", "error message...");
-                return $input;
-            }
-        }
+    addFieldString('crowdsec_redis_dsn', 'Redis DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        // TODO P2 check if it's a valid DSN
         return $input;
-    });
+    }, '<p>Fill in this field only if you have chosen the Redis cache.<br>Example of DSN: redis://localhost:6379.', 'redis://...', '');
 
     // Field "crowdsec_memcached_dsn"
-    add_settings_field('crowdsec_memcached_dsn', 'Memcached DSN<br>(if applicable)', function ($args) {
-        $name = $args["label_for"];
-        $placeholder = $args["placeholder"];
-        $value = esc_attr(get_option("crowdsec_memcached_dsn"));
-
-        if (false) { // TODO check if it's a valid DSN
-            echo "Incorrect ... " . $value . ".\n";
-        }
-        echo '<input type="string" class="regular-text" name="' . $name . '"' .
-            ' value="' . $value . '"placeholder="' . $placeholder . '">' .
-            '<p>Fill in this field only if you have chosen the Memcached cache.<br>Example of DSN: memcached://localhost:11211.';
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', array(
-        'label_for' => 'crowdsec_memcached_dsn',
-        'placeholder' => 'memcached://...',
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_memcached_dsn', function ($input) {
-        $input = esc_attr($input);
-        if (false) { // P2 check if its it's a valid DSN
-            $crowdsec_activated = esc_attr(get_option("crowdsec_memcached_dsn"));
-            if ($crowdsec_activated) {
-                add_settings_error("Memcached DSN", "crowdsec_error", "error message...");
-                return $input;
-            }
-        }
+    addFieldString('crowdsec_memcached_dsn', 'Memcached DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        // TODO P2 check if it's a valid DSN
         return $input;
-    });
+    }, '<p>Fill in this field only if you have chosen the Memcached cache.<br>Example of DSN: memcached://localhost:11211.', 'memcached://...', '');
 
     // Field "crowdsec_captcha_technology"
     /*
@@ -220,25 +138,13 @@ Limits:<br>- If traffic is low, the cache refresh (new or deleted decisions sinc
         });*/
 
     // Field "crowdsec_clean_ip_cache_duration"
-    add_settings_field('crowdsec_clean_ip_cache_duration', 'Recheck clean IPs each', function ($args) {
-        $name = $args["label_for"];
-        $placeholder = $args["placeholder"];
-        $value = esc_attr(get_option("crowdsec_clean_ip_cache_duration"));
-        echo '<input style="width: 115px;" type="number" class="regular-text"' .
-            'name="' . $name . '" value="' . $value . '" placeholder="' . $placeholder . '">' .
-            '<p>The duration (in seconds) between re-asking LAPI about an already checked IP.<br>Minimum 1 second.';
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', array(
-        'label_for' => 'crowdsec_clean_ip_cache_duration',
-        'placeholder' => '...',
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_clean_ip_cache_duration', function ($input) {
-        $input = (int)esc_attr($input);
-        if ($input <= 0) {
+    addFieldString('crowdsec_clean_ip_cache_duration', 'Recheck clean IPs each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        if ((int)$input <= 0) {
             add_settings_error("Recheck clean IPs each", "crowdsec_error", "Recheck clean IPs each: Minimum is 1 second.");
             return "1";
         }
-        return (string)$input;
-    });
+        return $input;
+    }, ' seconds. <p>The duration (in seconds) between re-asking LAPI about an already checked IP.<br>Minimum 1 second.', '...', 'width: 115px;', 'number');
 
     /***************************
      ** Section "Remediation" **
