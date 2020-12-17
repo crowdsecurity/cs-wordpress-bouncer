@@ -19,12 +19,6 @@ services:
             - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer
-
-            # Optional (only if your want to make changes to library source code in the same time)
-            # Set the absolute path to the source of the library below to both sides of the volume.
-            # This technique is required when symlinking in docker containers, as mentionned here.
-            # https://stackoverflow.com/questions/38485607/mount-host-directory-with-a-symbolic-link-inside-in-docker-container/40322275#40322275
-            - ${CS_PHPLIB_ABS_PATH}:${CS_PHPLIB_ABS_PATH}
     crowdsec:
         image: crowdsecurity/crowdsec:v1.0.0
         environment:

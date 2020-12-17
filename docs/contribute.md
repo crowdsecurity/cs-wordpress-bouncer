@@ -1,13 +1,6 @@
 # Contribute to this plugin
 
 ## Install the stack for development purpose
-
-To allow you use a local repository of the library and develop in the two repository at the same time, set the local path to the clone of the php library:
-example :
-
-```bash
-export CS_PHPLIB_ABS_PATH=/path/to/the/local/clone/of/the/php/cs/lib
-```
 ## Select the PHP version you want to use (7.2, 7.3, 7.4, 8.0)
 
 ```bash
@@ -24,14 +17,17 @@ Visit the wordpress instance here: http://localhost
 
 Admin account: admin / ThisSecretIsKnown!
 
-# Init deps
+# Init deps for dev environment
 
-cd cs-wordpress-blocker
-docker-compose exec sh composer install
+In `composer.json`, replace `"crowdsec/bouncer": "^..."` with `"crowdsec/bouncer": "dev-<a-dev-branch>"`.
 
-rm vendor/crowdsec/bouncer
-# "absolute" is required for usage in Docker containers
-cd vendor/crowdsec && ln -s ${CS_PHPLIB_ABS_PATH}  bouncer && cd -
+> Important: Don't forget to replace this value by the new lib release tag when finishing the feature).
+
+```bash
+docker-compose exec web composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
+```
+
+> In this dev environment, we use `--prefer-source` to be able to develop the bouncer library at the same time. Composer will may ask you for your own Github token to download sources instead of using dist packages.
 
 # Install plugin and configure it
 
