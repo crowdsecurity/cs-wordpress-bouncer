@@ -9,6 +9,34 @@ use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 
+/** @var Logger|null */
+$crowdSecLogger = null;
+
+function getCrowdSecLoggerInstance(): Logger
+{
+    // Singleton for this function
+
+    global $crowdSecLogger;
+    if ($crowdSecLogger) {
+        return $crowdSecLogger;
+    }
+
+    // Log more data if WP_DEBUG=1
+
+    $loggerLevel = WP_DEBUG ? Logger::DEBUG : Logger::INFO;
+    $logger = new Logger('wp_bouncer');
+    $fileHandler = new RotatingFileHandler(__DIR__ . '/../logs/crowdsec.log', 0, $loggerLevel);
+    
+    // Set custom readble logger for WP_DEBUG=1
+    if (WP_DEBUG) {
+        $fileHandler->setFormatter(new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, "[%datetime%] %message% %context%\n", 'H:i:s'));
+    }
+    $logger->pushHandler($fileHandler);
+
+    return $logger;
+}
+
+
 
 function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdapter
 {
@@ -35,15 +63,15 @@ function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdap
     }
 }
 
-$bouncer = null;
+$crowdSecBouncer = null;
 
 function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
 {
     // Singleton for this function
 
-    global $bouncer;
-    if (!$forcedCacheSystem && $bouncer) {
-        return $bouncer;
+    global $crowdSecBouncer;
+    if (!$forcedCacheSystem && $crowdSecBouncer) {
+        return $crowdSecBouncer;
     }
 
     // Parse Wordpress Options.
@@ -78,14 +106,7 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
             throw new Exception("Unknown $bouncingLevel");
     }
 
-    // Display Library log in debug mode
-    $loggerLevel = WP_DEBUG ? Logger::DEBUG : Logger::INFO;
-    $logger = new Logger('wp_bouncer');
-    $fileHandler = new RotatingFileHandler(__DIR__ . '/../logs/crowdsec.log', 0, $loggerLevel);
-    if (WP_DEBUG) {
-        $fileHandler->setFormatter(new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, "[%datetime%] %message% %context%\n", 'H:i:s'));
-    }
-    $logger->pushHandler($fileHandler);
+    $logger = getCrowdSecLoggerInstance();
 
     // Instanciate the bouncer
     $bouncer = new Bouncer($logger);

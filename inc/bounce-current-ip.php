@@ -54,7 +54,8 @@ function bounceCurrentIp()
 
 
             // Handle captcha resolve.
-            $captchaCorrectlyFilled = (isset($_POST['phrase']) && Bouncer::checkCaptcha($_SESSION['phrase'], $_POST['phrase']));
+            $bouncer = getBouncerInstance();
+            $captchaCorrectlyFilled = (isset($_POST['phrase']) && $bouncer->checkCaptcha($_SESSION['phrase'], $_POST['phrase'], $ip));
             if ($captchaCorrectlyFilled) {
                 $_SESSION["captchaResolved"] = true;
                 $_SESSION["captchaResolvedAt"] = time();
@@ -124,6 +125,11 @@ function safelyBounceCurrentIp()
 {
     // TODO P3 check that every kind of errors are catched.
     try {
+        // avoid useless bouncing
+        if ($_SERVER['REQUEST_URI'] !== '/favicon.ico') {
+            return;
+        }
+
         $everywhere = empty(get_option('crowdsec_public_website_only'));
         $shoudRun = ($everywhere || !is_admin());
         if ($shoudRun) {
