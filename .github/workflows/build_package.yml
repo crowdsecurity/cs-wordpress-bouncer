@@ -1,4 +1,4 @@
-# name: build-package
+# name: package-plugin
 
 # on:
 #   release:
@@ -13,7 +13,7 @@
 #     - uses: actions/checkout@v1
 #     # TODO P2 composer --no-dev
 #     - name: Create zip package
-#       run: zip -r "cs-wordpress-bouncer.zip" . -x "./.github/**" -x "./docs/**"
+#       run: zip -r "cs-wordpress-bouncer.zip" . -x "./.github/**" -x "./docker/**" -x "./docs/**"
 #     - name: Upload to release
 #       uses: JasonEtco/upload-to-release@master
 #       with:
