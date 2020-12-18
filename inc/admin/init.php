@@ -9,7 +9,7 @@ add_action('admin_notices', [new AdminNotice(), 'displayAdminNotice']);
 
 if (is_admin()) {
 
-    function clearBouncerCache($dislaySuccessFlashMessage = true, $noWarmup = false)
+    function clearBouncerCacheInAdminPage()
     {
         try {
             $bouncer = getBouncerInstance();
@@ -17,25 +17,84 @@ if (is_admin()) {
             $message = __('CrowdSec cache has just been cleared.');
 
             // In stream mode, immediatelly warm the cache up.
-            if (!$noWarmup && get_option("crowdsec_stream_mode")) {
-                $bouncer->refreshBlocklistCache();
-                $message .= __(' As the stream is enabled, the cache has just been warmed up.');
+            if (get_option("crowdsec_stream_mode")) {
+                $result = $bouncer->warmBlocklistCacheUp();
+                $message .= __(' As the stream mode is enabled, the cache has just been warmed up, ' . ($result > 0 ? 'there are now '. $result . ' decisions' : 'there is now '. $result . ' decision') . ' in cache.');
             }
 
-            if ($dislaySuccessFlashMessage) {
-                AdminNotice::displaySuccess($message);
-            }
+            AdminNotice::displaySuccess($message);
 
             // TODO P3 i18n the whole lib https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
         } catch (WordpressCrowdSecBouncerException $e) {
-            // TODO log error for debug mode only.
-            AdminNotice::displayError($e->getMessage());
+            getCrowdSecLoggerInstance()->error(null, [
+                'type' => 'WP_EXCEPTION_WHILE_CLEARING_CACHE',
+                'messsage' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            AdminNotice::displayError('Technical error while clearing the cache: ' . $e->getMessage());
+        }
+    }
+
+    function refreshBouncerCacheInAdminPage()
+    {
+        try {
+            if (!get_option("crowdsec_stream_mode")) {
+                return false;
+            }
+
+            // In stream mode, immediatelly warm the cache up.
+            if (get_option("crowdsec_stream_mode")) {
+                $bouncer = getBouncerInstance();
+                $result = $bouncer->refreshBlocklistCache();
+                getCrowdSecLoggerInstance()->error(var_export($result, true));
+                AdminNotice::displaySuccess(__(' The cache has just been refreshed (' . ($result['new'] > 0 ? $result['new'] . ' new decisions' : $result['new'] . ' new decision') . ', '.$result['deleted'].' deleted).'));
+            }
+        } catch (WordpressCrowdSecBouncerException $e) {
+            getCrowdSecLoggerInstance()->error(null, [
+                'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
+                'messsage' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            AdminNotice::displayError('Technical error while refreshing the cache: ' . $e->getMessage());
+        }
+    }
+
+    function pruneBouncerCacheInAdminPage()
+    {
+        try {
+            $bouncer = getBouncerInstance();
+            $bouncer->pruneCache();
+
+            AdminNotice::displaySuccess(__('CrowdSec cache has just been pruned.'));
+        } catch (WordpressCrowdSecBouncerException $e) {
+            getCrowdSecLoggerInstance()->error(null, [
+                'type' => 'WP_EXCEPTION_WHILE_PRUNING',
+                'messsage' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            AdminNotice::displayError('Technical error while pruning the cache: ' . $e->getMessage());
         }
     }
 
     // ACTIONS
+    add_action('admin_post_clear_cache', function () {
+        clearBouncerCacheInAdminPage();
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
     add_action('admin_post_refresh_cache', function () {
-        clearBouncerCache();
+        refreshBouncerCacheInAdminPage();
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
+    add_action('admin_post_prune_cache', function () {
+        pruneBouncerCacheInAdminPage();
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
     });

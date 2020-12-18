@@ -46,7 +46,7 @@ function deactivate_crowdsec_plugin()
     $apiKey = esc_attr(get_option('crowdsec_api_key'));
     if (!empty($apiUrl) && !empty($apiKey)) {
         // Clear the bouncer cache.
-        clearBouncerCache();
+        clearBouncerCacheInAdminPage();
     }
 
     // Clean options.
