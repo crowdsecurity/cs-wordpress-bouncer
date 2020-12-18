@@ -3,91 +3,111 @@
 use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\Constants;
 
-// Captcha repeat delay in seconds
-define('CROWDSEC_CAPTCHA_REPEAT_MIN_DELAY', 15 * 60); // TODO P3 Dynamize this value
-
 
 function bounceCurrentIp()
 {
     $ip = $_SERVER["REMOTE_ADDR"];
 
-    function displayCaptchaPage($ip, $error = false)
+    function displayCaptchaWall()
     {
-        if (!isset($_SESSION['phrase'])) {
-            $captchaCouple = Bouncer::buildCaptchaCouple();
-            $_SESSION['phrase'] = $captchaCouple['phrase'];
-            $_SESSION['img'] = $captchaCouple['inlineImage'];
-        }
-        $captchaImageSrc = $_SESSION['img'];
-        $captchaResolutionFormUrl = '';
-        echo Bouncer::getCaptchaHtmlTemplate($error, $captchaImageSrc, $captchaResolutionFormUrl);
+        header('HTTP/1.0 401 Unauthorized');
+        echo Bouncer::getCaptchaHtmlTemplate($_SESSION["crowdsec_captcha_resolution_failed"], $_SESSION['crowdsec_captcha_inline_image'], '');
         die();
     }
 
-    function handleBanRemediation(Bouncer $bouncer, $ip)
+    function handleBanRemediation()
     {
-        // TODO P3 make a function instead of this
         header('HTTP/1.0 403 Forbidden');
         echo Bouncer::getAccessForbiddenHtmlTemplate();
         die();
     }
 
-    function checkCaptcha(string $ip)
+    function storeNewCaptchaCoupleInSession()
     {
-        //error_log("crowdsec-wp: " . $ip . " is in captcha mode"); TODO P2 check how 
+        $captchaCouple = Bouncer::buildCaptchaCouple();
+        $_SESSION['crowdsec_captcha_phrase_to_guess'] = $captchaCouple['phrase'];
+        $_SESSION['crowdsec_captcha_inline_image'] = $captchaCouple['inlineImage'];
+    }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crowdsec_captcha'])) {
+    function clearCaptchaSessionContext()
+    {
+        unset($_SESSION['crowdsec_captcha_has_to_be_resolved']);
+        unset($_SESSION['crowdsec_captcha_phrase_to_guess']);
+        unset($_SESSION['crowdsec_captcha_inline_image']);
+        unset($_SESSION['crowdsec_captcha_resolution_failed']);
+    }
 
-            // Handle image refresh.
-            $refreshImage = (isset($_POST['refresh']) && (bool)(int)$_POST['refresh']);
+    function handleCaptchaResolutionForm(string $ip)
+    {
+        // Early return if no captcha has to be resolved.
+        if (!isset($_SESSION["crowdsec_captcha_has_to_be_resolved"])) {
+            return;
+        }
 
-            if ($refreshImage) {
-                // generate new image
-                $captchaCouple = Bouncer::buildCaptchaCouple();
-                $_SESSION['phrase'] = $captchaCouple['phrase'];
-                $_SESSION['img'] = $captchaCouple['inlineImage'];
+        // Captcha already resolved.
+        if (!$_SESSION["crowdsec_captcha_has_to_be_resolved"]) {
+            return;
+        }
 
-                // display captcha page
-                $_SESSION["captchaResolved"] = false;
-                displayCaptchaPage($ip, true);
-            }
+        // Early return if no form captcha form has been filled.
+        if (($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['crowdsec_captcha']))) {
+            return;
+        }
 
+        // Handle image refresh.
+        if (isset($_POST['refresh']) && (bool)(int)$_POST['refresh']) {
+            // Generate new captcha image for the user
+            storeNewCaptchaCoupleInSession();
+            $_SESSION["crowdsec_captcha_resolution_failed"] = false;
+            return;
+        }
 
-            // Handle captcha resolve.
+        // Handle a captcha resolution try
+        if (isset($_POST['phrase'])) {
             $bouncer = getBouncerInstance();
-            $captchaCorrectlyFilled = (isset($_POST['phrase']) && $bouncer->checkCaptcha($_SESSION['phrase'], $_POST['phrase'], $ip));
-            if ($captchaCorrectlyFilled) {
-                $_SESSION["captchaResolved"] = true;
-                $_SESSION["captchaResolvedAt"] = time();
-                unset($_SESSION['phrase']);
-                return;
+            if ($bouncer->checkCaptcha($_SESSION['crowdsec_captcha_phrase_to_guess'], $_POST['phrase'], $ip)) {
+
+                // User has correctly fill the captcha
+
+                $_SESSION["crowdsec_captcha_has_to_be_resolved"] = false;
+                unset($_SESSION['crowdsec_captcha_phrase_to_guess']);
+                unset($_SESSION['crowdsec_captcha_inline_image']);
+                unset($_SESSION['crowdsec_captcha_resolution_failed']);
+            } else {
+
+                // The user failed to resolve the captcha.
+
+                $_SESSION["crowdsec_captcha_resolution_failed"] = true;
             }
         }
-        $_SESSION["captchaResolved"] = false;
-        displayCaptchaPage($ip, true);
     }
 
-    function handleCaptchaRemediation(string $ip)
+    function handleCaptchaRemediation($ip)
     {
-        // Never displayed to user.
-        if (!isset($_SESSION["captchaResolved"])) {
-            displayCaptchaPage($ip);
-        }
-        // User was unable to resolve.
-        if (!$_SESSION["captchaResolved"]) {
-            displayCaptchaPage($ip);
+
+        // Check captcha resolution form
+        handleCaptchaResolutionForm($ip);
+
+        if (!isset($_SESSION["crowdsec_captcha_has_to_be_resolved"])) {
+
+            // Setup the first captcha remediation.
+
+            storeNewCaptchaCoupleInSession();
+            $_SESSION["crowdsec_captcha_has_to_be_resolved"] = true;
+            $_SESSION["crowdsec_captcha_resolution_failed"] = false;
         }
 
-
-        // User resolved too long ago.
-        $resolvedTooLongAgo = ((time() - $_SESSION["captchaResolvedAt"]) > CROWDSEC_CAPTCHA_REPEAT_MIN_DELAY);
-        if ($resolvedTooLongAgo) {
-            displayCaptchaPage($ip);
+        // Display captcha page if this is required.
+        if ($_SESSION["crowdsec_captcha_has_to_be_resolved"]) {
+            displayCaptchaWall();
         }
     }
 
-    function handleRemediation(string $remediation, string $ip, Bouncer $bouncer)
+    function handleRemediation(string $remediation, string $ip)
     {
+        if ($remediation !== Constants::REMEDIATION_CAPTCHA && isset($_SESSION["crowdsec_captcha_has_to_be_resolved"])) {
+            clearCaptchaSessionContext();
+        }
         switch ($remediation) {
             case Constants::REMEDIATION_BYPASS:
                 return;
@@ -95,13 +115,8 @@ function bounceCurrentIp()
                 handleCaptchaRemediation($ip);
                 break;
             case Constants::REMEDIATION_BAN:
-                handleBanRemediation($bouncer, $ip);
+                handleBanRemediation();
         }
-    }
-
-    // Control Captcha
-    if (isset($_SESSION['phrase'])) {
-        checkCaptcha($ip);
     }
 
     $bouncingLevel = esc_attr(get_option("crowdsec_bouncing_level"));
@@ -111,7 +126,7 @@ function bounceCurrentIp()
         try {
             $bouncer = getBouncerInstance();
             $remediation = $bouncer->getRemediationForIp($ip);
-            handleRemediation($remediation, $ip, $bouncer);
+            handleRemediation($remediation, $ip);
         } catch (WordpressCrowdSecBouncerException $e) {
             // TODO log error for debug mode only.
         }
@@ -138,7 +153,6 @@ function safelyBounceCurrentIp()
             bounceCurrentIp();
         }
         restore_error_handler();
-        
     } catch (\Exception $e) {
         getCrowdSecLoggerInstance()->error(null, [
             'type' => 'WP_EXCEPTION_WHILE_BOUNCING',
