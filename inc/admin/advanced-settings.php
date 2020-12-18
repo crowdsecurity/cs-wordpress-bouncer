@@ -4,219 +4,134 @@ use CrowdSecBouncer\Constants;
 
 function adminAdvancedSettings()
 {
-    /**************************************
-     ** Section "Advanced Configuration" **
-     *************************************/
+    /***************************
+     ** Section "Stream mode" **
+     **************************/
 
-    add_settings_section('crowdsec_admin_advanced', 'Cache configuration', function () {
-        echo "Leave these parameters as they are, except in special cases.";
+    add_settings_section('crowdsec_admin_advanced_stream_mode', 'Communication mode to the API', function () {
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_stream_mode"
-    add_settings_field('crowdsec_stream_mode', 'Enable "Stream" mode', function ($args) {
-        $name = $args['label_for'];
-        $classes = $args['class'];
-        $checkbox = get_option($name);
-        $options = get_option('crowdsec_stream_mode');
-        echo '<div class="' . $classes . '">' .
-            '<input type="checkbox" id="' . $name . '" name="' . $name . '" value="' . $options . '"' .
-            ' class="" ' . ($checkbox ? 'checked' : '') . '>' .
-            '<label for="' . $name . '"><div></div></label></div>' .
-            '<p>With this mode, all decisions are retrieved with an asynchronous way, using <em>LAPI stream mode</em> feature.' .
-            '<br>Advantages:<br>- Ultrashort latency<br>- IP verifications work even if LAPI is down.<br>' .
-            'Limits:<br>- If traffic is low, the cache refresh of all decisions can be late.' .
-            '<br>- A delay to take decisions in account is added.' .
-            '</p>';
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
-        'label_for' => 'crowdsec_stream_mode',
-        'class' => 'ui-toggle'
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode', 'sanitizeCheckbox');
+    addFieldCheckbox('crowdsec_stream_mode', 'Enable the "Stream" mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', function () {
+        // Stream mode just activated.
+        scheduleBlocklistRefresh();
+    }, function () {
+        // Stream mode just deactivated.
+        unscheduleBlocklistRefresh();
+    }, '
+    <p>With the stream mode, every decision is retrieved in an asynchronous way. 3 advantages: <br>&nbsp;1) Inivisible latency when loading pages<br>&nbsp;2) The IP verifications works even if your CrowdSec is not reachable.<br>&nbsp;3) The API can never be overloaded by the WordPress traffic</p>
+    <p>Note: This method has one limit: for maximum 60 seconds, all the new decisions may not be taken into account.</p>' .
+        (get_option("crowdsec_stream_mode") ?
+            '<p><input style="margin-right:10px" type="button" value="Refresh the cache now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_ation_refresh_cache\').submit();"></p>' :
+            '<p><input style="margin-right:10px" type="button" disabled="disabled" value="Refresh the cache now" class="button button-secondary button-small"></p>'));
 
     // Field "crowdsec_stream_mode_refresh_frequency"
-    add_settings_field('crowdsec_stream_mode_refresh_frequency', 'Resync decisions each', function ($args) {
-        $name = $args["label_for"];
-        $placeholder = $args["placeholder"];
-        $value = esc_attr(get_option("crowdsec_stream_mode_refresh_frequency"));
-
-        if (false) { // TODO check if its number
-            echo "Incorrect ... " . $value . ".\n";
+    addFieldString('crowdsec_stream_mode_refresh_frequency', 'Resync decisions each<br>(stream mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', function ($input) {
+        $input = (int)$input;
+        if ($input < 60) {
+            $input = 60;
+            add_settings_error("Resync decisions each", "crowdsec_error", 'The "Resync decisions each" value should be more than 60sec (WP_CRON_LOCK_TIMEOUT). We just reset the frequency to 60 seconds.');
+            return $input;
         }
-        echo '<input style="width: 115px;" type="number" class="regular-text" name="' . $name . '"' .
-            ' value="' . $value . '" placeholder="' . $placeholder . '">' .
-            '<p>In seconds. Our advise is between 1 and 30 seconds.';
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
-        'label_for' => 'crowdsec_stream_mode_refresh_frequency',
-        'placeholder' => '...',
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode_refresh_frequency', function ($input) {
-        $input = esc_attr($input);
-        if (false) { // P2 check if its number
-            $crowdsec_activated = get_option("crowdsec_stream_mode_refresh_frequency");
-            if ($crowdsec_activated) {
-                add_settings_error("Resync decisions each", "crowdsec_error", "error message...");
-                return $input;
-            }
+
+        // Update wp-cron schedule.
+        if ((bool)get_option("crowdsec_stream_mode")) {
+            scheduleBlocklistRefresh();
         }
         return $input;
-    });
+    }, ' seconds. <p>Our advice is 60 seconds (according to WP_CRON_LOCK_TIMEOUT).</p>', '...', 'width: 115px;', 'number');
+
+    /*********************
+     ** Section "Cache" **
+     ********************/
+
+    add_settings_section('crowdsec_admin_advanced_cache', 'Caching configuration <input style="margin-left: 7px;margin-top: -3px;" type="button" value="Clear now" class="button button-secondary button-small" onclick="if (confirm(\'Are you sure you want to completely clear the cache?\')) document.getElementById(\'crowdsec_ation_clear_cache\').submit();">', function () {
+?>
+        <p>Polish the decisions cache settings by selecting the best technology or the cache durations best suited to your use.</p>
+<?php
+    }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_cache_system"
-    add_settings_field('crowdsec_cache_system', 'Caching technology', function ($args) {
-    ?>
-        <select name="crowdsec_cache_system">
-            <option value="<?php echo CROWDSEC_CACHE_SYSTEM_PHPFS ?>" <?php selected(get_option('crowdsec_cache_system'), CROWDSEC_CACHE_SYSTEM_PHPFS); ?>>File system</option>
-            <option value="<?php echo CROWDSEC_CACHE_SYSTEM_REDIS ?>" <?php selected(get_option('crowdsec_cache_system'), CROWDSEC_CACHE_SYSTEM_REDIS); ?>>Redis</option>
-            <option value="<?php echo CROWDSEC_CACHE_SYSTEM_MEMCACHED ?>" <?php selected(get_option('crowdsec_cache_system'), CROWDSEC_CACHE_SYSTEM_MEMCACHED); ?>>Memcached</option>
-        </select>
-        <p>
-            File system cache is faster than calling LAPI. Redis or Memcached are faster than file system.<br>
-        </p>
-    <?php
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
-        'label_for' => 'crowdsec_cache_system',
-        'class' => 'ui-toggle'
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_cache_system', function ($input) {
-        $input = esc_attr($input);
-        if (!in_array($input, [
-            CROWDSEC_CACHE_SYSTEM_PHPFS,
-            CROWDSEC_CACHE_SYSTEM_REDIS,
-            CROWDSEC_CACHE_SYSTEM_MEMCACHED
-        ])) {
+    addFieldSelect('crowdsec_cache_system', 'Technology', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        if (!in_array($input, [CROWDSEC_CACHE_SYSTEM_PHPFS, CROWDSEC_CACHE_SYSTEM_REDIS, CROWDSEC_CACHE_SYSTEM_MEMCACHED])) {
             $input = CROWDSEC_CACHE_SYSTEM_PHPFS;
+            // TODO P3 throw error
         }
+
+        // TODO P1 big bug: fatal error when changing techno without dsn already set at previous state. Quick fix: Add error if no dsn and ask to set dsn then save then select techno.
+
+        $bouncer = getBouncerInstance();
+        $bouncer->clearCache();
+        $message = __('Cache system changed. Previous cache data has been cleared.');
+
+        // Update wp-cron schedule if stream mode is enabled
+        if ((bool)get_option("crowdsec_stream_mode")) {
+            $bouncer = getBouncerInstance($input); // Reload bouncer instance with the new cache system
+            $result = $bouncer->warmBlocklistCacheUp();
+            $message .= __(' As the stream mode is enabled, the cache has just been warmed up, ' . ($result > 0 ? 'there are now ' . $result . ' decisions' : 'there is now ' . $result . ' decision') . ' in cache.');
+            scheduleBlocklistRefresh();
+        }
+
+        AdminNotice::displaySuccess($message);
+
+
         return $input;
-    });
+    }, ((get_option("crowdsec_cache_system") === CROWDSEC_CACHE_SYSTEM_PHPFS) ?
+        '<input style="margin-right:10px" type="button" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_ation_prune_cache\').submit();">' : '') .
+        '<p>The File system cache is faster than calling LAPI. Redis or Memcached is faster than the File System cache.</p>', [
+        CROWDSEC_CACHE_SYSTEM_PHPFS => 'File system',
+        CROWDSEC_CACHE_SYSTEM_REDIS => 'Redis',
+        CROWDSEC_CACHE_SYSTEM_MEMCACHED => 'Memcached',
+    ]);
 
-    // Field "crowdsec_stream_mode_redis_dsn"
-    add_settings_field('crowdsec_stream_mode_redis_dsn', 'Redis DSN<br>(if applicable)', function ($args) {
-        $name = $args["label_for"];
-        $placeholder = $args["placeholder"];
-        $value = esc_attr(get_option("crowdsec_stream_mode_redis_dsn"));
-
-        if (false) { // TODO check if it's a valid DSN
-            echo "Incorrect ... " . $value . ".\n";
-        }
-        //MEMCACHED_DSN: memcached://localhost:11211
-        echo '<input type="string" class="regular-text" name="' . $name . '"' .
-            ' value="' . $value . '" placeholder="' . $placeholder . '">' .
-            '<p>Fill in this field only if you have chosen the Redis cache.<br>Example of DSN: redis://localhost:6379.';
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
-        'label_for' => 'crowdsec_stream_mode_redis_dsn',
-        'placeholder' => 'redis://...',
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode_redis_dsn', function ($input) {
-        $input = esc_attr($input);
-        if (false) { // P2 check if its it's a valid DSN
-            $crowdsec_activated = get_option("crowdsec_stream_mode_redis_dsn");
-            if ($crowdsec_activated) {
-                add_settings_error("Redis DSN", "crowdsec_error", "error message...");
-                return $input;
-            }
-        }
+    // Field "crowdsec_redis_dsn"
+    addFieldString('crowdsec_redis_dsn', 'Redis DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        // TODO P2 check if it's a valid DSN
         return $input;
-    });
+    }, '<p>Fill in this field only if you have chosen the Redis cache.<br>Example of DSN: redis://localhost:6379.', 'redis://...', '');
 
-    // Field "crowdsec_stream_mode_memcached_dsn"
-    add_settings_field('crowdsec_stream_mode_memcached_dsn', 'Memcached DSN<br>(if applicable)', function ($args) {
-        $name = $args["label_for"];
-        $placeholder = $args["placeholder"];
-        $value = esc_attr(get_option("crowdsec_stream_mode_memcached_dsn"));
-
-        if (false) { // TODO check if it's a valid DSN
-            echo "Incorrect ... " . $value . ".\n";
-        }
-        echo '<input type="string" class="regular-text" name="' . $name . '"' .
-            ' value="' . $value . '"placeholder="' . $placeholder . '">' .
-            '<p>Fill in this field only if you have chosen the Memcached cache.<br>Example of DSN: memcached://localhost:11211.';
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
-        'label_for' => 'crowdsec_stream_mode_memcached_dsn',
-        'placeholder' => 'memcached://...',
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_stream_mode_memcached_dsn', function ($input) {
-        $input = esc_attr($input);
-        if (false) { // P2 check if its it's a valid DSN
-            $crowdsec_activated = get_option("crowdsec_stream_mode_memcached_dsn");
-            if ($crowdsec_activated) {
-                add_settings_error("Memcached DSN", "crowdsec_error", "error message...");
-                return $input;
-            }
-        }
+    // Field "crowdsec_memcached_dsn"
+    addFieldString('crowdsec_memcached_dsn', 'Memcached DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        // TODO P2 check if it's a valid DSN
         return $input;
-    });
-
-    // Field "crowdsec_captcha_technology"
-    /*
-    add_settings_field('crowdsec_captcha_technology', 'Captcha technology', function ($args) {
-        ?>
-            <select name="crowdsec_captcha_technology">
-                <option value="<?php echo CROWDSEC_CAPTCHA_TECHNOLOGY_LOCAL ?>"
-                <?php selected(get_option('crowdsec_captcha_technology'), CROWDSEC_CAPTCHA_TECHNOLOGY_LOCAL); ?>>Local</option>
-                <option value="<?php echo CROWDSEC_CAPTCHA_TECHNOLOGY_RECAPTCHA ?>"
-                <?php selected(get_option('crowdsec_captcha_technology'), CROWDSEC_CAPTCHA_TECHNOLOGY_RECAPTCHA); ?>>Recaptha</option>
-            </select>
-            <p>
-                Local is the classical way to display a captcha. Recaptcha is the standard way.
-            </p>
-    <?php
-        }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
-            'label_for' => 'crowdsec_captcha_technology',
-            'class' => 'ui-toggle'
-        ));
-        register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_captcha_technology', function ($input) {
-            $input = esc_attr($input);
-            if (!in_array($input, [
-                CROWDSEC_CAPTCHA_TECHNOLOGY_LOCAL,
-                CROWDSEC_CAPTCHA_TECHNOLOGY_RECAPTCHA
-            ])) {
-                $input = CROWDSEC_CACHE_SYSTEM_PHPFS;
-            }
-            return $input;
-        });*/
+    }, '<p>Fill in this field only if you have chosen the Memcached cache.<br>Example of DSN: memcached://localhost:11211.', 'memcached://...', '');
 
     // Field "crowdsec_clean_ip_cache_duration"
-    add_settings_field('crowdsec_clean_ip_cache_duration', 'Recheck clean IPs each', function ($args) {
-        $name = $args["label_for"];
-        $placeholder = $args["placeholder"];
-        $value = esc_attr(get_option("crowdsec_clean_ip_cache_duration"));
-        echo '<input style="width: 115px;" type="number" class="regular-text"' .
-            'name="' . $name . '" value="' . $value . '" placeholder="' . $placeholder . '">' .
-            '<p>The duration (in seconds) between re-asking LAPI about an already checked IP.<br>Our advise is between 1 and 60 seconds.';
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
-        'label_for' => 'crowdsec_clean_ip_cache_duration',
-        'placeholder' => '...',
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_clean_ip_cache_duration', function ($input) {
-        $input = (int)esc_attr($input);
-        if ($input <=0) {
-            add_settings_error("Recheck clean IPs each", "crowdsec_error", "Minimum cache duration is 1 second.");
+    addFieldString('crowdsec_clean_ip_cache_duration', 'Recheck clean IPs each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        if ((int)$input <= 0) {
+            add_settings_error("Recheck clean IPs each", "crowdsec_error", "Recheck clean IPs each: Minimum is 1 second.");
             return "1";
         }
-        return (string)$input;
-    });
+        return $input;
+    }, ' seconds. <p>The duration (in seconds) between re-asking LAPI about an already checked clean IP.<br>Minimum 1 second.', '...', 'width: 115px;', 'number');
 
-    // Field "crowdsec_fallback_remediation"
-    add_settings_field('crowdsec_fallback_remediation', 'Fallback remediation', function ($args) {
-    ?>
-        <select name="crowdsec_fallback_remediation">
-            <?php foreach (Constants::ORDERED_REMEDIATIONS as $remediation) : ?>
-                <option value="<?php echo $remediation ?>" <?php selected(get_option('crowdsec_fallback_remediation'), $remediation); ?>><?php echo $remediation ?></option>
-            <?php endforeach; ?>
-        </select>
-        <p>
-        Which remediation to apply when CrowdSec advise a unhandled remediation.<br>
-        </p>
-<?php
-    }, 'crowdsec_advanced_settings', 'crowdsec_admin_advanced', array(
-        'label_for' => 'crowdsec_fallback_remediation',
-        'class' => 'ui-toggle'
-    ));
-    register_setting('crowdsec_plugin_advanced_settings', 'crowdsec_fallback_remediation', function ($input) {
-        $input = esc_attr($input);
-        if (!in_array($input, Constants::ORDERED_REMEDIATIONS)) {
-            $input = Constants::REMEDIATION_CAPTCHA;
+    // Field "crowdsec_bad_ip_cache_duration"
+    addFieldString('crowdsec_bad_ip_cache_duration', 'Recheck bad IPs each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        if ((int)$input <= 0) {
+            add_settings_error("Recheck bad IPs each", "crowdsec_error", "Recheck bad IPs each: Minimum is 1 second.");
+            return "1";
         }
         return $input;
-    });
+    }, ' seconds. <p>The duration (in seconds) between re-asking LAPI about an already checked bad IP.<br>Minimum 1 second.', '...', 'width: 115px;', 'number');
+
+    /***************************
+     ** Section "Remediation" **
+     **************************/
+
+    add_settings_section('crowdsec_admin_advanced_remediations', 'Remediations', function () {
+        echo "Configuration some details about remediations.";
+    }, 'crowdsec_advanced_settings');
+
+    // Field "crowdsec_fallback_remediation"
+    $choice = [];
+    foreach (Constants::ORDERED_REMEDIATIONS as $remediation) {
+        $choice[$remediation] = $remediation;
+    }
+    addFieldSelect('crowdsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        if (!in_array($input, Constants::ORDERED_REMEDIATIONS)) {
+            $input = CROWDSEC_BOUNCING_LEVEL_DISABLED;
+            // TODO P3 throw error
+        }
+        return $input;
+    }, '<p>Which remediation to apply when CrowdSec advises unhandled remediation.</p>', $choice);
 }

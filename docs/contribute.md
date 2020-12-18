@@ -1,6 +1,11 @@
 # Contribute to this plugin
 
-## Installation for development purpose
+## Install the stack for development purpose
+## Select the PHP version you want to use (7.2, 7.3, 7.4, 8.0)
+
+```bash
+export CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2
+```
 
 Run containers:
 
@@ -8,27 +13,29 @@ Run containers:
 docker-compose up -d
 ```
 
-Visit the wordpress instance here: http://localhost:8081
+Visit the wordpress instance here: http://localhost
 
 Admin account: admin / ThisSecretIsKnown!
 
+# Init deps for dev environment
 
-# Init deps
+In `composer.json`, replace `"crowdsec/bouncer": "^..."` with `"crowdsec/bouncer": "dev-<a-dev-branch>"`.
 
-cd cs-wordpress-blocker
-composer install
+> Important: Don't forget to replace this value by the new lib release tag when finishing the feature).
 
-rm -rf vendor/crowdsec/bouncer
-cd vendor/crowdsec
-# "absolute" is required for usage in Docker containers
-ln -s <absolute_path_to_lib_source>  bouncer
-cd -
+```bash
+docker-compose exec web composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
+```
+
+> In this dev environment, we use `--prefer-source` to be able to develop the bouncer library at the same time. Composer will may ask you for your own Github token to download sources instead of using dist packages.
 
 # Install plugin and configure it
 
 To get a bouncer key:
 
+```bash
 docker-compose exec crowdsec cscli bouncers add wordpress-bouncer
+```
 
 The LAPI URL is:
 
@@ -66,5 +73,11 @@ docker-compose stop # stop
 docker-compose rm # destroy
 ```
 
-Sources :
-- Creating WP environnement https://www.serverlab.ca/tutorials/osx/wordpress-development-on-osx-using-docker/
+### Use another PHP version
+
+```bash
+docker-compose down
+docker images | grep wordpress-bouncer_web # to get the container id
+docker rmi 145c1ed0e4df
+CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2 docker-compose up -d --build --force-recreate
+```

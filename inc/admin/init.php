@@ -9,17 +9,95 @@ add_action('admin_notices', [new AdminNotice(), 'displayAdminNotice']);
 
 if (is_admin()) {
 
-    function clear_bouncer_cache()
+    function clearBouncerCacheInAdminPage()
     {
-        // TODO P1 Clear cache with lib
-        AdminNotice::displaySuccess(__('Cache is now empty!'));
-        // TODO P3 i18n the whole lib https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
-        header("Location: {$_SERVER['HTTP_REFERER']}");
-        exit(0);
+        try {
+            $bouncer = getBouncerInstance();
+            $bouncer->clearCache();
+            $message = __('CrowdSec cache has just been cleared.');
+
+            // In stream mode, immediatelly warm the cache up.
+            if (get_option("crowdsec_stream_mode")) {
+                $result = $bouncer->warmBlocklistCacheUp();
+                $message .= __(' As the stream mode is enabled, the cache has just been warmed up, ' . ($result > 0 ? 'there are now '. $result . ' decisions' : 'there is now '. $result . ' decision') . ' in cache.');
+            }
+
+            AdminNotice::displaySuccess($message);
+
+            // TODO P3 i18n the whole lib https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
+        } catch (WordpressCrowdSecBouncerException $e) {
+            getCrowdSecLoggerInstance()->error(null, [
+                'type' => 'WP_EXCEPTION_WHILE_CLEARING_CACHE',
+                'messsage' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            AdminNotice::displayError('Technical error while clearing the cache: ' . $e->getMessage());
+        }
+    }
+
+    function refreshBouncerCacheInAdminPage()
+    {
+        try {
+            if (!get_option("crowdsec_stream_mode")) {
+                return false;
+            }
+
+            // In stream mode, immediatelly warm the cache up.
+            if (get_option("crowdsec_stream_mode")) {
+                $bouncer = getBouncerInstance();
+                $result = $bouncer->refreshBlocklistCache();
+                getCrowdSecLoggerInstance()->error(var_export($result, true));
+                AdminNotice::displaySuccess(__(' The cache has just been refreshed (' . ($result['new'] > 0 ? $result['new'] . ' new decisions' : $result['new'] . ' new decision') . ', '.$result['deleted'].' deleted).'));
+            }
+        } catch (WordpressCrowdSecBouncerException $e) {
+            getCrowdSecLoggerInstance()->error(null, [
+                'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
+                'messsage' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            AdminNotice::displayError('Technical error while refreshing the cache: ' . $e->getMessage());
+        }
+    }
+
+    function pruneBouncerCacheInAdminPage()
+    {
+        try {
+            $bouncer = getBouncerInstance();
+            $bouncer->pruneCache();
+
+            AdminNotice::displaySuccess(__('CrowdSec cache has just been pruned.'));
+        } catch (WordpressCrowdSecBouncerException $e) {
+            getCrowdSecLoggerInstance()->error(null, [
+                'type' => 'WP_EXCEPTION_WHILE_PRUNING',
+                'messsage' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            AdminNotice::displayError('Technical error while pruning the cache: ' . $e->getMessage());
+        }
     }
 
     // ACTIONS
-    add_action('admin_post_refresh_cache', 'clear_bouncer_cache');
+    add_action('admin_post_clear_cache', function () {
+        clearBouncerCacheInAdminPage();
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
+    add_action('admin_post_refresh_cache', function () {
+        refreshBouncerCacheInAdminPage();
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
+    add_action('admin_post_prune_cache', function () {
+        pruneBouncerCacheInAdminPage();
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
 
     // THEME
     add_action('admin_enqueue_scripts', function () {
@@ -44,18 +122,104 @@ if (is_admin()) {
             return isset($input);
         }
 
-        add_menu_page('Crowdsec Plugin', 'Crowdsec', 'manage_options', 'crowdsec_plugin', function () {
+        function addFieldCheckbox(string $optionName, string $label, string $optionGroup, string $pageName, string $sectionName, callable $onActivation, callable $onDeactivation, $descriptionHtml)
+        {
+            register_setting($optionGroup, $optionName, function ($input) use ($optionName, $onActivation, $onDeactivation) {
+                $input = esc_attr($input);
+                $previousState = !empty(get_option($optionName));
+                $currentState = !empty($input);
+
+                if ($previousState !== $currentState) {
+                    if (!$previousState && $currentState) {
+                        $onActivation();
+                    }
+                    if ($previousState && !$currentState) {
+                        $onDeactivation();
+                    }
+                    getCrowdSecLoggerInstance()->info(null, ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
+                }
+
+                return $input;
+            });
+            add_settings_field($optionName, $label, function ($args) use ($optionName, $descriptionHtml) {
+                $name = $args['label_for'];
+                $classes = $args['class'];
+                $checked = !empty(get_option($optionName));
+                echo '<div class="' . $classes . '">' .
+                    '<input type="checkbox" id="' . $name . '" name="' . $name . '" ' . ($checked ? 'checked' : '') .
+                    ' class=" ' . ($checked ? 'checked' : '') . '">' .
+                    '<label for="' . $name . '"><div></div></label></div>' . $descriptionHtml;
+            }, $pageName, $sectionName, array(
+                'label_for' => $optionName,
+                'class' => 'ui-toggle'
+            ));
+        }
+
+        function addFieldString(string $optionName, string $label, string $optionGroup, string $pageName, string $sectionName, callable $onChange, $descriptionHtml, $placeholder, $inputStyle, $inputType = 'text')
+        {
+            register_setting($optionGroup, $optionName, function ($input) use ($onChange, $optionName) {
+                $currentState = esc_attr($input);
+                $previousState = esc_attr(get_option($optionName));
+
+                if ($previousState !== $currentState) {
+                    $currentState = $onChange($currentState);
+                    getCrowdSecLoggerInstance()->info(null, ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
+                }
+
+                return $currentState;
+            });
+            add_settings_field($optionName, $label, function ($args) use ($descriptionHtml, $optionName, $inputStyle, $inputType) {
+                $name = $args["label_for"];
+                $placeholder = $args["placeholder"];
+                $value = esc_attr(get_option($optionName));
+                echo "<input style=\"$inputStyle\" type=\"$inputType\" class=\"regular-text\" name=\"$name\" value=\"$value\" placeholder=\"$placeholder\">$descriptionHtml";
+            }, $pageName, $sectionName, array(
+                'label_for' => $optionName,
+                'placeholder' => $placeholder,
+            ));
+        }
+
+        function addFieldSelect(string $optionName, string $label, string $optionGroup, string $pageName, string $sectionName, callable $onChange, string $descriptionHtml, array $choices)
+        {
+            $previousState = esc_attr(get_option($optionName));
+            register_setting($optionGroup, $optionName, function ($input) use ($onChange, $optionName, $previousState) {
+                $currentState = esc_attr($input);
+
+
+                if ($previousState !== $currentState) {
+                    $currentState = $onChange($currentState);
+                    getCrowdSecLoggerInstance()->info(null, ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
+                }
+
+                return $currentState;
+            });
+            add_settings_field($optionName, $label, function () use ($descriptionHtml, $optionName, $previousState, $choices) {
+?>
+                <select name="<?php echo $optionName ?>">
+                    <?php foreach ($choices as $key => $value) : ?>
+                        <option value="<?php echo $key ?>" <?php selected($previousState, $key); ?>><?php echo $value; ?></option>
+                    <?php endforeach; ?>
+                </select>
+<?php
+                echo $descriptionHtml;
+            }, $pageName, $sectionName);
+        }
+
+        /*add_menu_page('CrowdSec Plugin', 'CrowdSec', 'manage_options', 'crowdsec_plugin', function () {
             require_once(CROWDSEC_PLUGIN_PATH . "/templates/dashboard.php");
         }, 'dashicons-shield', 110);
-
         add_submenu_page('crowdsec_plugin', 'Settings', 'Settings', 'manage_options', 'crowdsec_settings', function () {
             require_once(CROWDSEC_PLUGIN_PATH . "/templates/settings.php");
         });
+        */
+        add_menu_page('CrowdSec Plugin', 'CrowdSec', 'manage_options', 'crowdsec_plugin', function () {
+            require_once(CROWDSEC_PLUGIN_PATH . "/templates/settings.php");
+        }, 'dashicons-shield', 110);
         add_submenu_page('crowdsec_plugin', 'Advanced', 'Advanced', 'manage_options', 'crowdsec_advanced_settings', function () {
             require_once(CROWDSEC_PLUGIN_PATH . "/templates/advanced-settings.php");
         });
 
-        add_action('admin_init', function() {
+        add_action('admin_init', function () {
             adminSettings();
             adminAdvancedSettings();
         });

@@ -14,9 +14,14 @@
 		</form>
 		
 		<br/>
-		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post">
+		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_ation_clear_cache">
+			<input type="hidden" name="action" value="clear_cache">
+		</form>
+		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_ation_refresh_cache">
 			<input type="hidden" name="action" value="refresh_cache">
-			<input type="submit" value="Refresh Cache" class="button button-primary">
+		</form>
+		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_ation_prune_cache">
+			<input type="hidden" name="action" value="prune_cache">
 		</form>
 		</div>
 	</div>

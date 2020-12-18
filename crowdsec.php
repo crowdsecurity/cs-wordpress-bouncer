@@ -2,7 +2,7 @@
 /*
 Plugin Name: CrowdSec
 Plugin URI: https://www.crowdsec.net/
-Description: Wordpressp plugin that doesn't allow IP according to crowdsec
+Description: Safer Together. Protect your WordPress application with CrowdSec.
 Tags: security, firewall, malware scanner, two factor authentication, captcha, waf, web app firewall, mfa, 2fa
 Version 0.0.1
 Author: CrowdSec
@@ -21,18 +21,18 @@ Text Domain: crowdsec-wp
 session_start();
 require_once __DIR__ . '/vendor/autoload.php';
 
-class WordpressCrowdsecBouncerException extends \RuntimeException
+class WordpressCrowdSecBouncerException extends \RuntimeException
 {
 }
 
 require_once __DIR__ . '/inc/constants.php';
+require_once __DIR__ . '/inc/scheduling.php';
 require_once __DIR__ . '/inc/plugin-setup.php';
+register_activation_hook(__FILE__, 'activate_crowdsec_plugin');
+register_deactivation_hook(__FILE__, 'deactivate_crowdsec_plugin');
+require_once __DIR__ . '/inc/bouncer-instance.php';
 require_once __DIR__ . '/inc/admin/init.php';
 require_once __DIR__ . '/inc/bounce-current-ip.php';
 
-// Set CRON
-//$apiUrl = get_option('crowdsec_stream_mode_refresh_frequency'); TODO P2 set cron task
-
 // Apply bouncing
-$blockWhen = (get_option('crowdsec_public_website_only') === "") ? 'init' : 'wp';
-add_action($blockWhen, "safelyBounceCurrentIp");
+add_action('plugins_loaded', "safelyBounceCurrentIp");
