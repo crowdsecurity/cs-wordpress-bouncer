@@ -8,13 +8,7 @@ function adminAdvancedSettings()
      ** Section "Stream mode" **
      **************************/
 
-    add_settings_section('crowdsec_admin_advanced_stream_mode', 'Stream mode vs Live mode', function () {
-        echo "
-<p>With the stream mode, all decisions are retrieved in an asynchronous way, using <em>LAPI stream mode</em> feature
-<br>Advantages:<br>- Ultrashort latency<br>- IP verifications work even if LAPI is down.<br>
-Limits:<br>- If traffic is low, the cache refresh (new or deleted decisions since last time) can be late.
-<br>- A delay to take decisions into account is added.
-</p>";
+    add_settings_section('crowdsec_admin_advanced_stream_mode', 'Communication method to the API', function () {
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_stream_mode"
@@ -25,7 +19,10 @@ Limits:<br>- If traffic is low, the cache refresh (new or deleted decisions sinc
     }, function () {
         // Stream mode just deactivated.
         unscheduleBlocklistRefresh();
-    }, '');
+    }, '
+    <p>With the stream mode, every decision is retrieved in an asynchronous way. 3 advantages: <br>&nbsp;1) Inivisible latency when loading pages<br>&nbsp;2) The IP verifications works even if your CrowdSec is not reachable.<br>&nbsp;3) The API can never be overloaded by the WordPress traffic</p>
+    <p>Note: This method has one limit: for maximum 60 seconds, all the new decisions may not be taken into account.</p>
+');
 
     // Field "crowdsec_stream_mode_refresh_frequency"
     addFieldString('crowdsec_stream_mode_refresh_frequency', 'Resync decisions each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
