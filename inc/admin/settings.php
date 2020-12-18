@@ -49,10 +49,10 @@ function adminSettings()
     }, '<p>
     Select one of the four bouncing modes:<br>
     <ul>
-        <li><i>Bouncing disabled</i>: No ban or Captcha display to users. The road is free, even for attackers.</li>
-        <li><i>Flex bouncing</i>: Display Captcha only, even if CrowdSec advises to ban the IP.</li>
-        <li><i>Normal bouncing</i>: Follow CrowdSec advice (Ban or Captcha).</li>
-        <li><i>Paranoid mode</i>: Ban IPs when there are in the CrowdSec database, even if CrowdSec advises to display a Captcha.</li>
+        <li><strong>Bouncing disabled</strong>: No ban or Captcha display to users. The road is free, even for attackers.</li>
+        <li><strong>Flex bouncing</strong>: Display Captcha only, even if CrowdSec advises to ban the IP.</li>
+        <li><strong>Normal bouncing</strong>: Follow CrowdSec advice (Ban or Captcha).</li>
+        <li><strong>Paranoid mode</strong>: Ban IPs when there are in the CrowdSec database, even if CrowdSec advises to display a Captcha.</li>
     </ul>
 </p>', [
         CROWDSEC_BOUNCING_LEVEL_DISABLED => '🚫 Bouncing disabled',

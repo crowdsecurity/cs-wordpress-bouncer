@@ -8,7 +8,7 @@ function adminAdvancedSettings()
      ** Section "Stream mode" **
      **************************/
 
-    add_settings_section('crowdsec_admin_advanced_stream_mode', 'Communication method to the API', function () {
+    add_settings_section('crowdsec_admin_advanced_stream_mode', 'Communication mode to the API', function () {
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_stream_mode"
