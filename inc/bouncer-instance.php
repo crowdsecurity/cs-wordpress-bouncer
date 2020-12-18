@@ -110,8 +110,8 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
     $logger = getCrowdSecLoggerInstance();
 
     // Instanciate the bouncer
-    $bouncer = new Bouncer($logger);
     $cacheAdapter = getCacheAdapterInstance($forcedCacheSystem);
+    $bouncer = new Bouncer($cacheAdapter, $logger);
     $bouncer->configure([
         'api_key' => $apiKey,
         'api_url' => $apiUrl,
