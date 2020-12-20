@@ -28,6 +28,8 @@ function activate_crowdsec_plugin()
     update_option("crowdsec_clean_ip_cache_duration", Constants::CACHE_EXPIRATION_FOR_CLEAN_IP);
     update_option("crowdsec_bad_ip_cache_duration", Constants::CACHE_EXPIRATION_FOR_BAD_IP);
     update_option("crowdsec_fallback_remediation", Constants::REMEDIATION_CAPTCHA);
+
+    update_option("crowdsec_hide_mentions", false);
 }
 
 
@@ -67,4 +69,6 @@ function deactivate_crowdsec_plugin()
     delete_option("crowdsec_clean_ip_cache_duration");
     delete_option("crowdsec_bad_ip_cache_duration");
     delete_option("crowdsec_fallback_remediation");
+
+    delete_option("crowdsec_hide_mentions");
 }

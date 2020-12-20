@@ -11,14 +11,14 @@ function bounceCurrentIp()
     function displayCaptchaWall()
     {
         header('HTTP/1.0 401 Unauthorized');
-        echo Bouncer::getCaptchaHtmlTemplate($_SESSION["crowdsec_captcha_resolution_failed"], $_SESSION['crowdsec_captcha_inline_image'], '');
+        echo Bouncer::getCaptchaHtmlTemplate($_SESSION["crowdsec_captcha_resolution_failed"], $_SESSION['crowdsec_captcha_inline_image'], '', !get_option('crowdsec_hide_mentions'));
         die();
     }
 
     function handleBanRemediation()
     {
         header('HTTP/1.0 403 Forbidden');
-        echo Bouncer::getAccessForbiddenHtmlTemplate();
+        echo Bouncer::getAccessForbiddenHtmlTemplate(!get_option('crowdsec_hide_mentions'));
         die();
     }
 

@@ -127,11 +127,21 @@ function adminAdvancedSettings()
     foreach (Constants::ORDERED_REMEDIATIONS as $remediation) {
         $choice[$remediation] = $remediation;
     }
-    addFieldSelect('crowdsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+    addFieldSelect('crowdsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function ($input) {
         if (!in_array($input, Constants::ORDERED_REMEDIATIONS)) {
             $input = CROWDSEC_BOUNCING_LEVEL_DISABLED;
             // TODO P3 throw error
         }
         return $input;
     }, '<p>Which remediation to apply when CrowdSec advises unhandled remediation.</p>', $choice);
+
+    // Field "crowdsec_hide_mentions"
+    addFieldCheckbox('crowdsec_hide_mentions', 'Hide CrowdSec mentions', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function () {
+        // Stream mode just activated.
+        scheduleBlocklistRefresh();
+    }, function () {
+        // Stream mode just deactivated.
+        unscheduleBlocklistRefresh();
+    }, '
+    <p>Enable if you want to hide CrowdSec mentions on the Ban and Captcha pages</p>');
 }
