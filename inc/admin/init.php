@@ -24,7 +24,6 @@ if (is_admin()) {
 
             AdminNotice::displaySuccess($message);
 
-            // TODO P3 i18n the whole lib https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
         } catch (WordpressCrowdSecBouncerException $e) {
             getCrowdSecLoggerInstance()->error(null, [
                 'type' => 'WP_EXCEPTION_WHILE_CLEARING_CACHE',

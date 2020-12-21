@@ -55,10 +55,8 @@ function adminAdvancedSettings()
     addFieldSelect('crowdsec_cache_system', 'Technology', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         if (!in_array($input, [CROWDSEC_CACHE_SYSTEM_PHPFS, CROWDSEC_CACHE_SYSTEM_REDIS, CROWDSEC_CACHE_SYSTEM_MEMCACHED])) {
             $input = CROWDSEC_CACHE_SYSTEM_PHPFS;
-            // TODO P3 throw error
+            add_settings_error("Technology", "crowdsec_error", "Technology: Incorrect cache technology selected.");
         }
-
-        // TODO P1 big bug: fatal error when changing techno without dsn already set at previous state. Quick fix: Add error if no dsn and ask to set dsn then save then select techno.
 
         $bouncer = getBouncerInstance();
         $bouncer->clearCache();
@@ -86,13 +84,11 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_redis_dsn"
     addFieldString('crowdsec_redis_dsn', 'Redis DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        // TODO P2 check if it's a valid DSN
         return $input;
     }, '<p>Fill in this field only if you have chosen the Redis cache.<br>Example of DSN: redis://localhost:6379.', 'redis://...', '');
 
     // Field "crowdsec_memcached_dsn"
     addFieldString('crowdsec_memcached_dsn', 'Memcached DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        // TODO P2 check if it's a valid DSN
         return $input;
     }, '<p>Fill in this field only if you have chosen the Memcached cache.<br>Example of DSN: memcached://localhost:11211.', 'memcached://...', '');
 
@@ -127,11 +123,21 @@ function adminAdvancedSettings()
     foreach (Constants::ORDERED_REMEDIATIONS as $remediation) {
         $choice[$remediation] = $remediation;
     }
-    addFieldSelect('crowdsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+    addFieldSelect('crowdsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function ($input) {
         if (!in_array($input, Constants::ORDERED_REMEDIATIONS)) {
             $input = CROWDSEC_BOUNCING_LEVEL_DISABLED;
-            // TODO P3 throw error
+            add_settings_error("Fallback to", "crowdsec_error", "Fallback to: Incorrect Fallback selected.");
         }
         return $input;
     }, '<p>Which remediation to apply when CrowdSec advises unhandled remediation.</p>', $choice);
+
+    // Field "crowdsec_hide_mentions"
+    addFieldCheckbox('crowdsec_hide_mentions', 'Hide CrowdSec mentions', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function () {
+        // Stream mode just activated.
+        scheduleBlocklistRefresh();
+    }, function () {
+        // Stream mode just deactivated.
+        unscheduleBlocklistRefresh();
+    }, '
+    <p>Enable if you want to hide CrowdSec mentions on the Ban and Captcha pages</p>');
 }
