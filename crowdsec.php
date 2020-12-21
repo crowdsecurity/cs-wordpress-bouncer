@@ -17,6 +17,9 @@ Text Domain: crowdsec-wp
 session_start();
 require_once __DIR__.'/vendor/autoload.php';
 
+define('CROWDSEC_PLUGIN_PATH', __DIR__);
+define('CROWDSEC_PLUGIN_URL', plugin_dir_url(__FILE__));
+
 class WordpressCrowdSecBouncerException extends \RuntimeException
 {
 }

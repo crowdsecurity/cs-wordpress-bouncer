@@ -25,7 +25,7 @@ function getCrowdSecLoggerInstance(): Logger
 
     $loggerLevel = WP_DEBUG ? Logger::DEBUG : Logger::INFO;
     $logger = new Logger('wp_bouncer');
-    $fileHandler = new RotatingFileHandler(__DIR__.'/../logs/crowdsec.log', 0, $loggerLevel);
+    $fileHandler = new RotatingFileHandler(CROWDSEC_LOG_PATH, 0, $loggerLevel);
 
     // Set custom readble logger for WP_DEBUG=1
     if (WP_DEBUG) {
@@ -36,29 +36,45 @@ function getCrowdSecLoggerInstance(): Logger
     return $logger;
 }
 
+/** @var AbstractAdapter|null */
+$crowdSecCacheAdapterInstance = null;
+
 function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdapter
 {
+    // Singleton for this function
+
+    global $crowdSecCacheAdapterInstance;
+    if (!$forcedCacheSystem && $crowdSecCacheAdapterInstance) {
+        return $crowdSecCacheAdapterInstance;
+    }
+
     $cacheSystem = $forcedCacheSystem ?: esc_attr(get_option('crowdsec_cache_system'));
     switch ($cacheSystem) {
         case CROWDSEC_CACHE_SYSTEM_PHPFS:
-            return new PhpFilesAdapter('', 0, __DIR__.'/.cache');
+            $crowdSecCacheAdapterInstance = new PhpFilesAdapter('', 0, CROWDSEC_CACHE_PATH);
+            break;
 
         case CROWDSEC_CACHE_SYSTEM_MEMCACHED:
             $memcachedDsn = esc_attr(get_option('crowdsec_memcached_dsn'));
             if (empty($memcachedDsn)) {
-                throw new WordpressCrowdSecBouncerException('Memcached selected but no DSN provided.');
+                throw new WordpressCrowdSecBouncerException('The selected cache technology is Memcached.'.
+                ' Please set a Memcached DSN or select another cache technology.');
             }
 
-            return new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn));
+            $crowdSecCacheAdapterInstance = new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn));
+            break;
 
         case CROWDSEC_CACHE_SYSTEM_REDIS:
             $redisDsn = esc_attr(get_option('crowdsec_redis_dsn'));
             if (empty($redisDsn)) {
-                throw new WordpressCrowdSecBouncerException('Redis selected but no DSN provided.');
+                throw new WordpressCrowdSecBouncerException('The selected cache technology is Redis.'.
+                ' Please set a Redis DSN or select another cache technology.');
             }
 
-            return new RedisAdapter(RedisAdapter::createConnection($redisDsn));
+            $crowdSecCacheAdapterInstance = new RedisAdapter(RedisAdapter::createConnection($redisDsn));
+            break;
     }
+    return $crowdSecCacheAdapterInstance;
 }
 
 $crowdSecBouncer = null;
@@ -91,6 +107,9 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
     // Init Bouncer instance
 
     switch ($bouncingLevel) {
+        case CROWDSEC_BOUNCING_LEVEL_DISABLED:
+            $maxRemediationLevel = Constants::REMEDIATION_BYPASS;
+            break;
         case CROWDSEC_BOUNCING_LEVEL_FLEX:
             $maxRemediationLevel = Constants::REMEDIATION_CAPTCHA;
             break;

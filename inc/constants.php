@@ -1,7 +1,7 @@
 <?php
 
-define('CROWDSEC_PLUGIN_PATH', __DIR__);
-define('CROWDSEC_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('CROWDSEC_LOG_PATH', CROWDSEC_PLUGIN_PATH.'/logs/crowdsec.log');
+define('CROWDSEC_CACHE_PATH', CROWDSEC_PLUGIN_PATH.'/.cache');
 
 define('CROWDSEC_BOUNCING_LEVEL_DISABLED', 'bouncing_disabled');
 define('CROWDSEC_BOUNCING_LEVEL_FLEX', 'flex_boucing');

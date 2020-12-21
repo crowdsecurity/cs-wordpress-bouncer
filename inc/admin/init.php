@@ -225,10 +225,10 @@ if (is_admin()) {
         });
         */
         add_menu_page('CrowdSec Plugin', 'CrowdSec', 'manage_options', 'crowdsec_plugin', function () {
-            require_once CROWDSEC_PLUGIN_PATH.'/templates/settings.php';
+            require_once CROWDSEC_PLUGIN_PATH.'/inc/templates/settings.php';
         }, 'dashicons-shield', 110);
         add_submenu_page('crowdsec_plugin', 'Advanced', 'Advanced', 'manage_options', 'crowdsec_advanced_settings', function () {
-            require_once CROWDSEC_PLUGIN_PATH.'/templates/advanced-settings.php';
+            require_once CROWDSEC_PLUGIN_PATH.'/inc/templates/advanced-settings.php';
         });
 
         add_action('admin_init', function () {
