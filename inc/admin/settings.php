@@ -15,14 +15,12 @@ function adminSettings()
 
     // Field "crowdsec_api_url"
     addFieldString('crowdsec_api_url', 'LAPI URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
-        // P2 TODO ping API to see if it's available if not: add_settings_error("LAPI URL", "crowdsec_error", "LAPI URL " . $input . " is not reachable.");
         return $input;
     }, '<p>If the CrowdSec Agent is installed on this server, you will set this field to http://localhost:8080.</p>', 'Your LAPI URL', '');
 
 
     // Field "crowdsec_api_key"
     addFieldString('crowdsec_api_key', 'Bouncer API key', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
-        // TODO check api key format / ping api  if not: add_settings_error("LAPI URL", "crowdsec_error", "LAPI URL " . $input . " is not reachable.");
         return $input;
     }, '<p>Generated with the cscli command, ex: <em>cscli bouncers add wordpress-bouncer</em></p>', 'Your bouncer key', 'width: 280px;', 'text');
 
@@ -43,7 +41,7 @@ function adminSettings()
             CROWDSEC_BOUNCING_LEVEL_PARANOID
         ])) {
             $input = CROWDSEC_BOUNCING_LEVEL_DISABLED;
-            // TODO P3 throw error
+            add_settings_error("Bouncing level", "crowdsec_error", "Bouncing level: Incorrect bouncing level selected.");
         }
         return $input;
     }, '<p>

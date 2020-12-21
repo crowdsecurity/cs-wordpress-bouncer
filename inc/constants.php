@@ -15,4 +15,4 @@ define('CROWDSEC_CACHE_SYSTEM_MEMCACHED', "memcached");
 define('CROWDSEC_CAPTCHA_TECHNOLOGY_LOCAL', "local");
 define('CROWDSEC_CAPTCHA_TECHNOLOGY_RECAPTCHA', "recaptcha");
 
-define('CROWDSEC_BOUNCER_USER_AGENT', "Wordpress CrowdSec Bouncer/0.0.1");// TODO P1 SET THE CORRECT VERSION ON BUILD
+define('CROWDSEC_BOUNCER_USER_AGENT', "Wordpress CrowdSec Bouncer/0.0.1");

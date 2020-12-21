@@ -57,7 +57,6 @@ function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdap
             $redisDsn = esc_attr(get_option('crowdsec_redis_dsn'));
             if (empty($redisDsn)) {
                 throw new WordpressCrowdSecBouncerException('Redis selected but no DSN provided.');
-                // TODO P2 fix: when redis is selected and the dsn is filled at the same moment, this error is thrown or it should not be.
             }
             return new RedisAdapter(RedisAdapter::createConnection($redisDsn));
     }
@@ -101,7 +100,6 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
             break;
         case CROWDSEC_BOUNCING_LEVEL_PARANOID:
             $maxRemediationLevel = Constants::REMEDIATION_BAN;
-            // TODO P2 add "minimum remediation" feature in lib + set it to ban in this case
             break;
         default:
             throw new Exception("Unknown $bouncingLevel");
@@ -116,7 +114,6 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
         'api_key' => $apiKey,
         'api_url' => $apiUrl,
         'api_user_agent' => CROWDSEC_BOUNCER_USER_AGENT,
-        //'api_timeout' => null // TODO P3 make a advanced settings
         'live_mode' => !$isStreamMode,
         'max_remediation_level' => $maxRemediationLevel,
         'fallback_remediation' => $fallbackRemediation,

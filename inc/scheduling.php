@@ -4,7 +4,6 @@ define('CROWDSEC_REFRESH_BLOCKLIST_CRON_HOOK', 'crowdsec_refresh_blocklist_cron_
 define('CROWDSEC_REFRESH_BLOCKLIST_CRON_INTERVAL', 'crowdsec_refresh_blocklist_cron_interval');
 
 // Create a WP custom cron interval (ovewrite previous if any).
-// TODO P3 create get_bool_option / get_int_option / get_string_option etc to sanitize theme all.
 add_filter('cron_schedules', function ($schedules) {
     $refreshFrequency = (int)get_option("crowdsec_stream_mode_refresh_frequency");
     if ($refreshFrequency > 0) {
@@ -22,7 +21,6 @@ function crowdSecRefreshBlocklist()
         $bouncer = getBouncerInstance();
         $bouncer->refreshBlocklistCache();
     } catch (WordpressCrowdSecBouncerException $e) {
-        // TODO log error for debug mode only.
     }
 }
 

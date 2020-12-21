@@ -14,9 +14,6 @@ Stable tag: 0.0.1
 Text Domain: crowdsec-wp
 */
 
-// TODO P2 check WP minimum compatible version + add a tag: "Requires at least: X.Y"
-// TODO P2 check WP maximum compatible version + add a tag: "Tested up to: 4.8"
-
 
 session_start();
 require_once __DIR__ . '/vendor/autoload.php';
