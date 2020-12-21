@@ -6,8 +6,8 @@ class AdminNotice
 
     public function displayAdminNotice()
     {
-        $option      = get_option(self::NOTICE_FIELD);
-        $message     = isset($option['message']) ? $option['message'] : false;
+        $option = get_option(self::NOTICE_FIELD);
+        $message = isset($option['message']) ? $option['message'] : false;
         $noticeLevel = !empty($option['notice-level']) ? $option['notice-level'] : 'notice-error';
 
         if ($message) {
@@ -40,7 +40,7 @@ class AdminNotice
     {
         update_option(self::NOTICE_FIELD, [
             'message' => $message,
-            'notice-level' => $noticeLevel
+            'notice-level' => $noticeLevel,
         ]);
     }
 }

@@ -1,10 +1,7 @@
 <?php
 
-use CrowdSecBouncer\Constants;
-
 function adminSettings()
 {
-
     /**********************************
      ** Section "Connection details" **
      *********************************/
@@ -18,7 +15,6 @@ function adminSettings()
         return $input;
     }, '<p>If the CrowdSec Agent is installed on this server, you will set this field to http://localhost:8080.</p>', 'Your LAPI URL', '');
 
-
     // Field "crowdsec_api_key"
     addFieldString('crowdsec_api_key', 'Bouncer API key', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
         return $input;
@@ -29,7 +25,7 @@ function adminSettings()
      ***********************************/
 
     add_settings_section('crowdsec_admin_boucing', 'Bouncing', function () {
-        echo "Refine bouncing according to your needs.";
+        echo 'Refine bouncing according to your needs.';
     }, 'crowdsec_settings');
 
     // Field "crowdsec_bouncing_level"
@@ -38,11 +34,12 @@ function adminSettings()
             CROWDSEC_BOUNCING_LEVEL_DISABLED,
             CROWDSEC_BOUNCING_LEVEL_NORMAL,
             CROWDSEC_BOUNCING_LEVEL_FLEX,
-            CROWDSEC_BOUNCING_LEVEL_PARANOID
+            CROWDSEC_BOUNCING_LEVEL_PARANOID,
         ])) {
             $input = CROWDSEC_BOUNCING_LEVEL_DISABLED;
-            add_settings_error("Bouncing level", "crowdsec_error", "Bouncing level: Incorrect bouncing level selected.");
+            add_settings_error('Bouncing level', 'crowdsec_error', 'Bouncing level: Incorrect bouncing level selected.');
         }
+
         return $input;
     }, '<p>
     Select one of the four bouncing modes:<br>
@@ -58,8 +55,6 @@ function adminSettings()
         CROWDSEC_BOUNCING_LEVEL_NORMAL => '🛡️ Normal bouncing',
         //CROWDSEC_BOUNCING_LEVEL_PARANOID => '🕵️ Paranoid mode',
     ]);
-
-
 
     addFieldCheckbox('crowdsec_public_website_only', 'Public website only', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_boucing', function () {
         // Stream mode just activated.

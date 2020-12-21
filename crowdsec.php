@@ -14,22 +14,21 @@ Stable tag: 0.2.0
 Text Domain: crowdsec-wp
 */
 
-
 session_start();
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__.'/vendor/autoload.php';
 
 class WordpressCrowdSecBouncerException extends \RuntimeException
 {
 }
 
-require_once __DIR__ . '/inc/constants.php';
-require_once __DIR__ . '/inc/scheduling.php';
-require_once __DIR__ . '/inc/plugin-setup.php';
+require_once __DIR__.'/inc/constants.php';
+require_once __DIR__.'/inc/scheduling.php';
+require_once __DIR__.'/inc/plugin-setup.php';
 register_activation_hook(__FILE__, 'activate_crowdsec_plugin');
 register_deactivation_hook(__FILE__, 'deactivate_crowdsec_plugin');
-require_once __DIR__ . '/inc/bouncer-instance.php';
-require_once __DIR__ . '/inc/admin/init.php';
-require_once __DIR__ . '/inc/bounce-current-ip.php';
+require_once __DIR__.'/inc/bouncer-instance.php';
+require_once __DIR__.'/inc/admin/init.php';
+require_once __DIR__.'/inc/bounce-current-ip.php';
 
 // Apply bouncing
-add_action('plugins_loaded', "safelyBounceCurrentIp");
+add_action('plugins_loaded', 'safelyBounceCurrentIp');
