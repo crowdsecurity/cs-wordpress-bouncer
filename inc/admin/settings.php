@@ -50,13 +50,13 @@ function adminSettings()
         <li><strong>Bouncing disabled</strong>: No ban or Captcha display to users. The road is free, even for attackers.</li>
         <li><strong>Flex bouncing</strong>: Display Captcha only, even if CrowdSec advises to ban the IP.</li>
         <li><strong>Normal bouncing</strong>: Follow CrowdSec advice (Ban or Captcha).</li>
-        <li><strong>Paranoid mode</strong>: Ban IPs when there are in the CrowdSec database, even if CrowdSec advises to display a Captcha.</li>
+        <!--<li><strong>Paranoid mode</strong>: Ban IPs when there are in the CrowdSec database, even if CrowdSec advises to display a Captcha.</li>-->
     </ul>
 </p>', [
         CROWDSEC_BOUNCING_LEVEL_DISABLED => '🚫 Bouncing disabled',
         CROWDSEC_BOUNCING_LEVEL_FLEX => '😎 Flex bouncing',
         CROWDSEC_BOUNCING_LEVEL_NORMAL => '🛡️ Normal bouncing',
-        CROWDSEC_BOUNCING_LEVEL_PARANOID => '🕵️ Paranoid mode',
+        //CROWDSEC_BOUNCING_LEVEL_PARANOID => '🕵️ Paranoid mode',
     ]);
 
 
