@@ -4,13 +4,13 @@ Plugin Name: CrowdSec
 Plugin URI: https://www.crowdsec.net/
 Description: Safer Together. Protect your WordPress application with CrowdSec.
 Tags: security, firewall, malware scanner, two factor authentication, captcha, waf, web app firewall, mfa, 2fa
-Version 0.0.1
+Version 0.1.0
 Author: CrowdSec
 Author URI: https://www.crowdsec.net/
 Github: https://github.com/crowdsecurity/cs-wordpress-blocker
 License: MIT
 Requires PHP: 7.2
-Stable tag: 0.0.1
+Stable tag: 0.1.0
 Text Domain: crowdsec-wp
 */
 
