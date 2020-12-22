@@ -126,7 +126,11 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
     $logger = getCrowdSecLoggerInstance();
 
     // Instanciate the bouncer
-    $cacheAdapter = getCacheAdapterInstance($forcedCacheSystem);
+    try {
+        $cacheAdapter = getCacheAdapterInstance($forcedCacheSystem);
+    } catch (Symfony\Component\Cache\Exception\InvalidArgumentException $e) {
+        throw new WordpressCrowdSecBouncerException($e->getMessage());
+    }
     $bouncer = new Bouncer($cacheAdapter, $logger);
     $bouncer->configure([
         'api_key' => $apiKey,

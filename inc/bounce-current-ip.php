@@ -144,12 +144,12 @@ function safelyBounceCurrentIp()
 
         $everywhere = empty(get_option('crowdsec_public_website_only'));
         $shoudRun = ($everywhere || !is_admin());
-        if ($shoudRun) {
+        if ($shoudRun && isBouncerConfigOk()) {
             bounceCurrentIp();
         }
         restore_error_handler();
     } catch (\Exception $e) {
-        getCrowdSecLoggerInstance()->error(null, [
+        getCrowdSecLoggerInstance()->error('', [
             'type' => 'WP_EXCEPTION_WHILE_BOUNCING',
             'messsage' => $e->getMessage(),
             'code' => $e->getCode(),

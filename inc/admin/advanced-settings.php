@@ -60,19 +60,23 @@ function adminAdvancedSettings()
             add_settings_error('Technology', 'crowdsec_error', 'Technology: Incorrect cache technology selected.');
         }
 
-        $bouncer = getBouncerInstance();
-        $bouncer->clearCache();
-        $message = __('Cache system changed. Previous cache data has been cleared.');
+        
+        try {
+            $bouncer = getBouncerInstance();
+            $bouncer->clearCache();
+            $message = __('Cache system changed. Previous cache data has been cleared.');
 
-        // Update wp-cron schedule if stream mode is enabled
-        if ((bool) get_option('crowdsec_stream_mode')) {
-            $bouncer = getBouncerInstance($input); // Reload bouncer instance with the new cache system
-            $result = $bouncer->warmBlocklistCacheUp();
-            $message .= __(' As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
-            scheduleBlocklistRefresh();
+            // Update wp-cron schedule if stream mode is enabled
+            if ((bool) get_option('crowdsec_stream_mode')) {
+                $bouncer = getBouncerInstance($input); // Reload bouncer instance with the new cache system
+                $result = $bouncer->warmBlocklistCacheUp();
+                $message .= __(' As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+                scheduleBlocklistRefresh();
+            }
+            AdminNotice::displaySuccess($message);
+        } catch (WordpressCrowdSecBouncerException $e) {
+            AdminNotice::displayError($e->getMessage());
         }
-
-        AdminNotice::displaySuccess($message);
 
         return $input;
     }, ((CROWDSEC_CACHE_SYSTEM_PHPFS === get_option('crowdsec_cache_system')) ?

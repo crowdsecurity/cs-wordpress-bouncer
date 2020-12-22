@@ -25,6 +25,7 @@ class WordpressCrowdSecBouncerException extends \RuntimeException
 }
 
 require_once __DIR__.'/inc/constants.php';
+require_once __DIR__.'/inc/check-config.php';
 require_once __DIR__.'/inc/scheduling.php';
 require_once __DIR__.'/inc/plugin-setup.php';
 register_activation_hook(__FILE__, 'activate_crowdsec_plugin');

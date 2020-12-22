@@ -8,15 +8,16 @@ require_once __DIR__.'/settings.php';
 add_action('admin_notices', [new AdminNotice(), 'displayAdminNotice']);
 
 if (is_admin()) {
+
     function wrapErrorMessage(string $errorMessage)
     {
-        return "There is a problem in your CrowdSec configuration. $errorMessage";
+        return "CrowdSec: $errorMessage";
     }
 
     function wrapBlockingErrorMessage(string $errorMessage)
     {
         return wrapErrorMessage($errorMessage).
-        ' <br><br>Important note: Until you fix this problem, you will not be protected against attacks.';
+    '<br>Important: Until you fix this problem, <strong>the website will not be protected against attacks</strong>.';
     }
 
     if (false) {
@@ -40,7 +41,7 @@ if (is_admin()) {
 
             AdminNotice::displaySuccess($message);
         } catch (WordpressCrowdSecBouncerException $e) {
-            getCrowdSecLoggerInstance()->error(null, [
+            getCrowdSecLoggerInstance()->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_CLEARING_CACHE',
                 'messsage' => $e->getMessage(),
                 'code' => $e->getCode(),
@@ -62,11 +63,10 @@ if (is_admin()) {
             if (get_option('crowdsec_stream_mode')) {
                 $bouncer = getBouncerInstance();
                 $result = $bouncer->refreshBlocklistCache();
-                getCrowdSecLoggerInstance()->error(var_export($result, true));
                 AdminNotice::displaySuccess(__(' The cache has just been refreshed ('.($result['new'] > 0 ? $result['new'].' new decisions' : $result['new'].' new decision').', '.$result['deleted'].' deleted).'));
             }
         } catch (WordpressCrowdSecBouncerException $e) {
-            getCrowdSecLoggerInstance()->error(null, [
+            getCrowdSecLoggerInstance()->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
                 'messsage' => $e->getMessage(),
                 'code' => $e->getCode(),
@@ -85,7 +85,7 @@ if (is_admin()) {
 
             AdminNotice::displaySuccess(__('CrowdSec cache has just been pruned.'));
         } catch (WordpressCrowdSecBouncerException $e) {
-            getCrowdSecLoggerInstance()->error(null, [
+            getCrowdSecLoggerInstance()->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_PRUNING',
                 'messsage' => $e->getMessage(),
                 'code' => $e->getCode(),
@@ -116,8 +116,8 @@ if (is_admin()) {
     // THEME
     add_action('admin_enqueue_scripts', function () {
         // enqueue all our scripts
-        wp_enqueue_style('mypluginstyle', CROWDSEC_PLUGIN_URL.'assets/crowdsec.css');
-        wp_enqueue_script('mypluginscript', CROWDSEC_PLUGIN_URL.'assets/crowdsec.js');
+        wp_enqueue_style('mypluginstyle', CROWDSEC_PLUGIN_URL.'/inc/assets/crowdsec.css');
+        wp_enqueue_script('mypluginscript', CROWDSEC_PLUGIN_URL.'inc/assets/crowdsec.js');
     });
 
     // PLUGINS LIST
@@ -149,7 +149,7 @@ if (is_admin()) {
                     if ($previousState && !$currentState) {
                         $onDeactivation();
                     }
-                    getCrowdSecLoggerInstance()->info(null, ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
+                    getCrowdSecLoggerInstance()->info('', ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
                 }
 
                 return $input;
@@ -176,7 +176,7 @@ if (is_admin()) {
 
                 if ($previousState !== $currentState) {
                     $currentState = $onChange($currentState);
-                    getCrowdSecLoggerInstance()->info(null, ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
+                    getCrowdSecLoggerInstance()->info('', ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
                 }
 
                 return $currentState;
@@ -200,7 +200,7 @@ if (is_admin()) {
 
                 if ($previousState !== $currentState) {
                     $currentState = $onChange($currentState);
-                    getCrowdSecLoggerInstance()->info(null, ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
+                    getCrowdSecLoggerInstance()->info('', ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
                 }
 
                 return $currentState;
