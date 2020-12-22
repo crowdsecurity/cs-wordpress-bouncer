@@ -64,6 +64,12 @@ docker-compose logs crowdsec
 
 ```
 
+# WP Scan pass
+
+```bash
+docker-compose run --rm wpscan --url http://web/
+```
+
 ### Docker-compose cheets sheet
 
 ```bash

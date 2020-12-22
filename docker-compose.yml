@@ -34,3 +34,5 @@ services:
             - "6379:6379"
     memcached:
         image: memcached:1-alpine
+    wpscan:
+        image: wpscanteam/wpscan
