@@ -56,15 +56,11 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_redis_dsn"
     addFieldString('crowdsec_redis_dsn', 'Redis DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        // TODO P1 block remove if cache set to redis
-        // TODO P1 Display an error in all sections (settings and advanced) when a cache config can not work.
         return $input;
     }, '<p>Fill in this field only if you have chosen the Redis cache.<br>Example of DSN: redis://localhost:6379.', 'redis://...', '');
 
     // Field "crowdsec_memcached_dsn"
     addFieldString('crowdsec_memcached_dsn', 'Memcached DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        // TODO P1 block remove if cache set to memcached
-        // TODO P1 Display an error in all sections (settings and advanced) when a cache config can not work.
         return $input;
     }, '<p>Fill in this field only if you have chosen the Memcached cache.<br>Example of DSN: memcached://localhost:11211.', 'memcached://...', '');
 
@@ -174,7 +170,8 @@ function adminAdvancedSettings()
     foreach (Constants::ORDERED_REMEDIATIONS as $remediation) {
         $choice[$remediation] = $remediation;
     }
-    addFieldSelect('crowdsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function ($input) {
+    addFieldSelect('crowdsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
+    'crowdsec_admin_advanced_remediations', function ($input) {
         if (!in_array($input, Constants::ORDERED_REMEDIATIONS)) {
             $input = CROWDSEC_BOUNCING_LEVEL_DISABLED;
             add_settings_error('Fallback to', 'crowdsec_error', 'Fallback to: Incorrect Fallback selected.');
@@ -182,6 +179,64 @@ function adminAdvancedSettings()
 
         return $input;
     }, '<p>Which remediation to apply when CrowdSec advises unhandled remediation.</p>', $choice);
+
+    function cidrToLongBounds(int $longIp, int $factor): array
+    {
+        $range = [];
+        $range[0] = (($longIp) & ((-1 << (32 - $factor))));
+        $range[1] = ((($range[0])) + pow(2, (32 - $factor)) - 1);
+
+        return $range;
+    }
+
+    function convertInlineIpRangesToLongArray(string $inlineIpRanges): array
+    {
+        $longIpBoundsList = [];
+        $stringRangeArray = explode(',', $inlineIpRanges);
+        foreach ($stringRangeArray as $stringRange) {
+            $stringRange = trim($stringRange);
+            if (false !== strpos($stringRange, '/')) {
+                $stringRange = explode('/', $stringRange);
+                $longIp = ip2long($stringRange[0]);
+                $factor = (int) $stringRange[1];
+                if (false === $longIp) {
+                    throw new WordpressCrowdSecBouncerException('Invalid IP List format.');
+                }
+                if (0 === (int) $factor) {
+                    throw new WordpressCrowdSecBouncerException('Invalid IP List format.');
+                }
+                $longBounds = cidrToLongBounds($longIp, $factor);
+                $longIpBoundsList = array_merge($longIpBoundsList, [$longBounds]);
+            } else {
+                $long = ip2long($stringRange);
+                if (false === $long) {
+                    throw new WordpressCrowdSecBouncerException('Invalid IP List format.');
+                }
+                $longIpBoundsList = array_merge($longIpBoundsList, [[$long, $long]]);
+            }
+        }
+        return $longIpBoundsList;
+    }
+
+    // Field "crowdsec_trust_ip_forward"
+    addFieldString('crowdsec_trust_ip_forward_list', 'Trust these CDN IPs<br>(or Load Balancer, HTTP Proxy)', 'crowdsec_plugin_advanced_settings',
+    'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function ($input) {
+        try {
+            $longList = convertInlineIpRangesToLongArray($input);
+            update_option('crowdsec_trust_ip_forward_array', $longList);
+            AdminNotice::displaySuccess('Ips with XFF to trust successfully saved.');
+        } catch (WordpressCrowdSecBouncerException $e) {
+            update_option('crowdsec_trust_ip_forward_array', []);
+            add_settings_error('Trust these CDN IPs', 'crowdsec_error', 'Trust these CDN IPs: Invalid IP List format.');
+
+            return '';
+        }
+
+        return $input;
+    }, '<p>The <em><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For" '.
+    'target="_blank">X-forwarded-For</a></em> HTTP Header will be trust only when the client IP is in this list.'.
+    '<br><strong>Comma (,)</strong> separated ips or ips ranges. Example: 1.2.3.4/24, 2.3.4.5, 3.4.5.6/27',
+    'fill the IPs or IPs ranges here...', '');
 
     // Field "crowdsec_hide_mentions"
     addFieldCheckbox('crowdsec_hide_mentions', 'Hide CrowdSec mentions', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function () {
