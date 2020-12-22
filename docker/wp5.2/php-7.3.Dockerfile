@@ -1,4 +1,4 @@
-FROM wordpress:5.6-php8.0
+FROM wordpress:5.2-php7.3
 
 RUN apt-get update && apt-get install -y git libmemcached-dev zlib1g-dev \
 && pecl install -o -f redis memcached \

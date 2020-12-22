@@ -10,7 +10,7 @@ export CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2
 Run containers:
 
 ```bash
-docker-compose up -d
+docker-compose up -d wordpress crowdsec mysql redis memcached
 ```
 
 Visit the wordpress instance here: http://localhost
@@ -24,7 +24,7 @@ In `composer.json`, replace `"crowdsec/bouncer": "^..."` with `"crowdsec/bouncer
 > Important: Don't forget to replace this value by the new lib release tag when finishing the feature).
 
 ```bash
-docker-compose exec web composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
+docker-compose exec wordpress composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
 ```
 
 > In this dev environment, we use `--prefer-source` to be able to develop the bouncer library at the same time. Composer will may ask you for your own Github token to download sources instead of using dist packages.
@@ -67,13 +67,13 @@ docker-compose logs crowdsec
 # WP Scan pass
 
 ```bash
-docker-compose run --rm wpscan --url http://web/
+docker-compose run --rm wpscan --url http://wordpress/
 ```
 
 ### Docker-compose cheets sheet
 
 ```bash
-docker-compose run web sh # run sh on wordpress container
+docker-compose run wordpress sh # run sh on wordpress container
 docker-compose ps # list running containers
 docker-compose stop # stop
 docker-compose rm # destroy
@@ -83,9 +83,46 @@ docker-compose rm # destroy
 
 ```bash
 docker-compose down
-docker images | grep wordpress-bouncer_web # to get the container id
+docker images | grep wordpress-bouncer_wordpress # to get the container id
 docker rmi 145c1ed0e4df
 CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2 docker-compose up -d --build --force-recreate
+```
+
+### Use another Worpress version
+
+In end 2020, [more than 90% of the wordpress websites](https://wordpress.org/about/stats/) was using Wordpress versions:
+
+- 5.6
+- 5.5
+- 5.4
+- 5.3
+- 5.2
+- 5.1
+- 5.0
+- 4.9
+
+The plugin is tested under each of these versions.
+
+#### Add support for a new WordPress version
+
+This is a sheet cheet to help testing briefly the support:
+
+```bash
+
+# To install a specific version
+docker-compose up -d wordpress<X.X> crowdsec mysql redis memcached && docker-compose exec crowdsec cscli bouncers add wordpress-bouncer
+
+# To display the captcha wall
+
+export CS_WP_HOST=`docker-compose exec crowdsec /sbin/ip route|awk '/default/ { printf $3 }'` && docker-compose exec crowdsec cscli decisions add --ip ${CS_WP_HOST} --duration 15m --type captcha
+
+# To delete the image in order to rebuild it
+
+docker-compose down && docker rmi wordpress-bouncer_wordpress<X.X>
+
+# To debug inside the container
+
+docker-compose run wordpress<X.X> bash
 ```
 
 #### New feature
