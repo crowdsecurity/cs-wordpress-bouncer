@@ -5,13 +5,14 @@ define('CROWDSEC_REFRESH_BLOCKLIST_CRON_INTERVAL', 'crowdsec_refresh_blocklist_c
 
 // Create a WP custom cron interval (ovewrite previous if any).
 add_filter('cron_schedules', function ($schedules) {
-    $refreshFrequency = (int)get_option("crowdsec_stream_mode_refresh_frequency");
+    $refreshFrequency = (int) get_option('crowdsec_stream_mode_refresh_frequency');
     if ($refreshFrequency > 0) {
-        $schedules[CROWDSEC_REFRESH_BLOCKLIST_CRON_INTERVAL] = array(
+        $schedules[CROWDSEC_REFRESH_BLOCKLIST_CRON_INTERVAL] = [
             'interval' => $refreshFrequency,
-            'display'  => esc_html__('Every ' . $refreshFrequency . ' second(s)'),
-        );
+            'display' => esc_html__('Every '.$refreshFrequency.' second(s)'),
+        ];
     }
+
     return $schedules;
 });
 
@@ -21,6 +22,13 @@ function crowdSecRefreshBlocklist()
         $bouncer = getBouncerInstance();
         $bouncer->refreshBlocklistCache();
     } catch (WordpressCrowdSecBouncerException $e) {
+        getCrowdSecLoggerInstance()->error('', [
+            'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
+            'messsage' => $e->getMessage(),
+            'code' => $e->getCode(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
     }
 }
 

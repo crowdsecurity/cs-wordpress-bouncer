@@ -60,16 +60,15 @@ global $wpdb;
 
 $results = $wpdb->get_results($sql);
 
-
 // output data of each row
-foreach ($results as $result){
-$split = explode("_", $result->option_name);
-echo "<tbody>";
-echo "<tr>";
-echo "<td data-title='IP Address'>" . end($split) . "</td>";
-echo "</tr>";
+foreach ($results as $result) {
+    $split = explode('_', $result->option_name);
+    echo '<tbody>';
+    echo '<tr>';
+    echo "<td data-title='IP Address'>".end($split).'</td>';
+    echo '</tr>';
 }
-echo "</tbody>";
-echo "</table>";
-echo "</div>"
+echo '</tbody>';
+echo '</table>';
+echo '</div>';
 ?>

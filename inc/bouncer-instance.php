@@ -1,13 +1,15 @@
 <?php
 
 use CrowdSecBouncer\Bouncer;
+use CrowdSecBouncer\BouncerException;
 use CrowdSecBouncer\Constants;
-use Symfony\Component\Cache\Adapter\AbstractAdapter;
-use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
-use Symfony\Component\Cache\Adapter\MemcachedAdapter;
-use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
+use Symfony\Component\Cache\Adapter\AbstractAdapter;
+use Symfony\Component\Cache\Adapter\MemcachedAdapter;
+use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Symfony\Component\Cache\Exception\InvalidArgumentException;
 
 /** @var Logger|null */
 $crowdSecLogger = null;
@@ -25,8 +27,8 @@ function getCrowdSecLoggerInstance(): Logger
 
     $loggerLevel = WP_DEBUG ? Logger::DEBUG : Logger::INFO;
     $logger = new Logger('wp_bouncer');
-    $fileHandler = new RotatingFileHandler(__DIR__ . '/../logs/crowdsec.log', 0, $loggerLevel);
-    
+    $fileHandler = new RotatingFileHandler(CROWDSEC_LOG_PATH, 0, $loggerLevel);
+
     // Set custom readble logger for WP_DEBUG=1
     if (WP_DEBUG) {
         $fileHandler->setFormatter(new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, "[%datetime%] %message% %context%\n", 'H:i:s'));
@@ -36,30 +38,54 @@ function getCrowdSecLoggerInstance(): Logger
     return $logger;
 }
 
-
+/** @var AbstractAdapter|null */
+$crowdSecCacheAdapterInstance = null;
 
 function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdapter
 {
+    // Singleton for this function
+
+    global $crowdSecCacheAdapterInstance;
+    if (!$forcedCacheSystem && $crowdSecCacheAdapterInstance) {
+        return $crowdSecCacheAdapterInstance;
+    }
+
     $cacheSystem = $forcedCacheSystem ?: esc_attr(get_option('crowdsec_cache_system'));
     switch ($cacheSystem) {
-
         case CROWDSEC_CACHE_SYSTEM_PHPFS:
-            return new PhpFilesAdapter('', 0, __DIR__ . '/.cache');
+            $crowdSecCacheAdapterInstance = new PhpFilesAdapter('', 0, CROWDSEC_CACHE_PATH);
+            break;
 
         case CROWDSEC_CACHE_SYSTEM_MEMCACHED:
             $memcachedDsn = esc_attr(get_option('crowdsec_memcached_dsn'));
             if (empty($memcachedDsn)) {
-                throw new WordpressCrowdSecBouncerException('Memcached selected but no DSN provided.');
+                throw new WordpressCrowdSecBouncerException('The selected cache technology is Memcached.'.
+                ' Please set a Memcached DSN or select another cache technology.');
             }
-            return new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn));
+
+            $crowdSecCacheAdapterInstance = new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn));
+            break;
 
         case CROWDSEC_CACHE_SYSTEM_REDIS:
             $redisDsn = esc_attr(get_option('crowdsec_redis_dsn'));
             if (empty($redisDsn)) {
-                throw new WordpressCrowdSecBouncerException('Redis selected but no DSN provided.');
+                throw new WordpressCrowdSecBouncerException('The selected cache technology is Redis.'.
+                ' Please set a Redis DSN or select another cache technology.');
             }
-            return new RedisAdapter(RedisAdapter::createConnection($redisDsn));
+
+            try {
+                $crowdSecCacheAdapterInstance = new RedisAdapter(RedisAdapter::createConnection($redisDsn));
+            } catch (InvalidArgumentException $e) {
+                throw new WordpressCrowdSecBouncerException('Error when connecting to Redis.'.
+                ' Please fix the Redis DSN or select another cache technology.');
+            }
+
+            break;
+        default:
+            throw new WordpressCrowdSecBouncerException('Unknow selected cache technology.');
     }
+
+    return $crowdSecCacheAdapterInstance;
 }
 
 $crowdSecBouncer = null;
@@ -84,14 +110,17 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
         throw new WordpressCrowdSecBouncerException('Bouncer enabled but no API key provided');
     }
     $isStreamMode = !empty(get_option('crowdsec_stream_mode'));
-    $cleanIpCacheDuration = (int)get_option('crowdsec_clean_ip_cache_duration');
-    $badIpCacheDuration = (int)get_option('crowdsec_bad_ip_cache_duration');
+    $cleanIpCacheDuration = (int) get_option('crowdsec_clean_ip_cache_duration');
+    $badIpCacheDuration = (int) get_option('crowdsec_bad_ip_cache_duration');
     $fallbackRemediation = esc_attr(get_option('crowdsec_fallback_remediation'));
-    $bouncingLevel = esc_attr(get_option("crowdsec_bouncing_level"));
+    $bouncingLevel = esc_attr(get_option('crowdsec_bouncing_level'));
 
     // Init Bouncer instance
 
     switch ($bouncingLevel) {
+        case CROWDSEC_BOUNCING_LEVEL_DISABLED:
+            $maxRemediationLevel = Constants::REMEDIATION_BYPASS;
+            break;
         case CROWDSEC_BOUNCING_LEVEL_FLEX:
             $maxRemediationLevel = Constants::REMEDIATION_CAPTCHA;
             break;
@@ -108,9 +137,15 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
     $logger = getCrowdSecLoggerInstance();
 
     // Instanciate the bouncer
-    $cacheAdapter = getCacheAdapterInstance($forcedCacheSystem);
-    $bouncer = new Bouncer($cacheAdapter, $logger);
-    $bouncer->configure([
+    try {
+        $cacheAdapter = getCacheAdapterInstance($forcedCacheSystem);
+    } catch (Symfony\Component\Cache\Exception\InvalidArgumentException $e) {
+        throw new WordpressCrowdSecBouncerException($e->getMessage());
+    }
+
+    try {
+        $bouncer = new Bouncer($cacheAdapter, $logger);
+        $bouncer->configure([
         'api_key' => $apiKey,
         'api_url' => $apiUrl,
         'api_user_agent' => CROWDSEC_BOUNCER_USER_AGENT,
@@ -118,7 +153,11 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
         'max_remediation_level' => $maxRemediationLevel,
         'fallback_remediation' => $fallbackRemediation,
         'cache_expiration_for_clean_ip' => $cleanIpCacheDuration,
-        'cache_expiration_for_bad_ip' => $badIpCacheDuration, 
+        'cache_expiration_for_bad_ip' => $badIpCacheDuration,
     ], $cacheAdapter);
+    } catch (BouncerException $e) {
+        throw new WordpressCrowdSecBouncerException($e->getMessage());
+    }
+
     return $bouncer;
 }
