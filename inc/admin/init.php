@@ -20,12 +20,6 @@ if (is_admin()) {
     '<br>Important: Until you fix this problem, <strong>the website will not be protected against attacks</strong>.';
     }
 
-    if (false) {
-        // TODO P1
-        $message = wrapBlockingErrorMessage('Please fill the Redis DSN or select another cache technology.');
-        AdminNotice::displayError($message);
-    }
-
     function clearBouncerCacheInAdminPage()
     {
         try {

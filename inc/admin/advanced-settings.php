@@ -1,5 +1,6 @@
 <?php
 
+use CrowdSecBouncer\BouncerException;
 use CrowdSecBouncer\Constants;
 
 function adminAdvancedSettings()
@@ -53,40 +54,6 @@ function adminAdvancedSettings()
 <?php
     }, 'crowdsec_advanced_settings');
 
-    // Field "crowdsec_cache_system"
-    addFieldSelect('crowdsec_cache_system', 'Technology', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        if (!in_array($input, [CROWDSEC_CACHE_SYSTEM_PHPFS, CROWDSEC_CACHE_SYSTEM_REDIS, CROWDSEC_CACHE_SYSTEM_MEMCACHED])) {
-            $input = CROWDSEC_CACHE_SYSTEM_PHPFS;
-            add_settings_error('Technology', 'crowdsec_error', 'Technology: Incorrect cache technology selected.');
-        }
-
-        
-        try {
-            $bouncer = getBouncerInstance();
-            $bouncer->clearCache();
-            $message = __('Cache system changed. Previous cache data has been cleared.');
-
-            // Update wp-cron schedule if stream mode is enabled
-            if ((bool) get_option('crowdsec_stream_mode')) {
-                $bouncer = getBouncerInstance($input); // Reload bouncer instance with the new cache system
-                $result = $bouncer->warmBlocklistCacheUp();
-                $message .= __(' As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
-                scheduleBlocklistRefresh();
-            }
-            AdminNotice::displaySuccess($message);
-        } catch (WordpressCrowdSecBouncerException $e) {
-            AdminNotice::displayError($e->getMessage());
-        }
-
-        return $input;
-    }, ((CROWDSEC_CACHE_SYSTEM_PHPFS === get_option('crowdsec_cache_system')) ?
-        '<input style="margin-right:10px" type="button" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_ation_prune_cache\').submit();">' : '').
-        '<p>The File system cache is faster than calling LAPI. Redis or Memcached is faster than the File System cache.</p>', [
-        CROWDSEC_CACHE_SYSTEM_PHPFS => 'File system',
-        CROWDSEC_CACHE_SYSTEM_REDIS => 'Redis',
-        CROWDSEC_CACHE_SYSTEM_MEMCACHED => 'Memcached',
-    ]);
-
     // Field "crowdsec_redis_dsn"
     addFieldString('crowdsec_redis_dsn', 'Redis DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         // TODO P1 block remove if cache set to redis
@@ -100,6 +67,77 @@ function adminAdvancedSettings()
         // TODO P1 Display an error in all sections (settings and advanced) when a cache config can not work.
         return $input;
     }, '<p>Fill in this field only if you have chosen the Memcached cache.<br>Example of DSN: memcached://localhost:11211.', 'memcached://...', '');
+
+    // Field "crowdsec_cache_system"
+    addFieldSelect('crowdsec_cache_system', 'Technology', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        if (!in_array($input, [CROWDSEC_CACHE_SYSTEM_PHPFS, CROWDSEC_CACHE_SYSTEM_REDIS, CROWDSEC_CACHE_SYSTEM_MEMCACHED])) {
+            $input = CROWDSEC_CACHE_SYSTEM_PHPFS;
+            add_settings_error('Technology', 'crowdsec_error', 'Technology: Incorrect cache technology selected.');
+        }
+
+        try {
+            $bouncer = getBouncerInstance();
+            try {
+                $bouncer->clearCache();
+            } catch (BouncerException $e) {
+                $cacheSystem = esc_attr(get_option('crowdsec_cache_system'));
+                switch ($cacheSystem) {
+                    case CROWDSEC_CACHE_SYSTEM_MEMCACHED:
+                        throw new WordpressCrowdSecBouncerException('Unable to connect Memcached.'.
+                            ' Please fix the Memcached DSN or select another cache technology.');
+                        break;
+
+                    case CROWDSEC_CACHE_SYSTEM_REDIS:
+                        throw new WordpressCrowdSecBouncerException('Unable to connect Redis.'.
+                            ' Please fix the Redis DSN or select another cache technology.');
+                    default:
+                    throw new WordpressCrowdSecBouncerException('Unable to connect the cache system: '.$e->getMessage());
+                }
+            }
+
+            $message = __('Cache system changed. Previous cache data has been cleared.');
+        } catch (WordpressCrowdSecBouncerException $e) {
+        }
+
+        try {
+            // Reload bouncer instance with the new cache system and so test if dsn is correct.
+            getCacheAdapterInstance($input);
+            try {
+                // Try the adapter connection (Redis or Memcached will crash if the connection is incorrect)
+                $bouncer = getBouncerInstance($input);
+                $bouncer->testConnection();
+            } catch (BouncerException $e) {
+                throw new WordpressCrowdSecBouncerException($e->getMessage());
+            }
+        } catch (WordpressCrowdSecBouncerException $e) {
+            AdminNotice::displayError($e->getMessage());
+        }
+
+        try {
+            try {
+                //Update wp-cron schedule if stream mode is enabled
+                if ((bool) get_option('crowdsec_stream_mode')) {
+                    $bouncer = getBouncerInstance($input); // Reload bouncer instance with the new cache system
+                    $result = $bouncer->warmBlocklistCacheUp();
+                    $message = __('As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+                    AdminNotice::displaySuccess($message);
+                    scheduleBlocklistRefresh();
+                }
+            } catch (WordpressCrowdSecBouncerException $e) {
+                AdminNotice::displayError($e->getMessage());
+            }
+        } catch (BouncerException $e) {
+            AdminNotice::displayError($e->getMessage());
+        }
+
+        return $input;
+    }, ((CROWDSEC_CACHE_SYSTEM_PHPFS === get_option('crowdsec_cache_system')) ?
+        '<input style="margin-right:10px" type="button" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_ation_prune_cache\').submit();">' : '').
+        '<p>The File system cache is faster than calling LAPI. Redis or Memcached is faster than the File System cache.</p>', [
+        CROWDSEC_CACHE_SYSTEM_PHPFS => 'File system',
+        CROWDSEC_CACHE_SYSTEM_REDIS => 'Redis',
+        CROWDSEC_CACHE_SYSTEM_MEMCACHED => 'Memcached',
+    ]);
 
     // Field "crowdsec_clean_ip_cache_duration"
     addFieldString('crowdsec_clean_ip_cache_duration', 'Recheck clean IPs each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {

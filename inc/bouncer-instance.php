@@ -1,6 +1,7 @@
 <?php
 
 use CrowdSecBouncer\Bouncer;
+use CrowdSecBouncer\BouncerException;
 use CrowdSecBouncer\Constants;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
@@ -8,6 +9,7 @@ use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
 use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Symfony\Component\Cache\Exception\InvalidArgumentException;
 
 /** @var Logger|null */
 $crowdSecLogger = null;
@@ -71,9 +73,18 @@ function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdap
                 ' Please set a Redis DSN or select another cache technology.');
             }
 
-            $crowdSecCacheAdapterInstance = new RedisAdapter(RedisAdapter::createConnection($redisDsn));
+            try {
+                $crowdSecCacheAdapterInstance = new RedisAdapter(RedisAdapter::createConnection($redisDsn));
+            } catch (InvalidArgumentException $e) {
+                throw new WordpressCrowdSecBouncerException('Error when connecting to Redis.'.
+                ' Please fix the Redis DSN or select another cache technology.');
+            }
+
             break;
+        default:
+            throw new WordpressCrowdSecBouncerException('Unknow selected cache technology.');
     }
+
     return $crowdSecCacheAdapterInstance;
 }
 
@@ -131,8 +142,10 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
     } catch (Symfony\Component\Cache\Exception\InvalidArgumentException $e) {
         throw new WordpressCrowdSecBouncerException($e->getMessage());
     }
-    $bouncer = new Bouncer($cacheAdapter, $logger);
-    $bouncer->configure([
+
+    try {
+        $bouncer = new Bouncer($cacheAdapter, $logger);
+        $bouncer->configure([
         'api_key' => $apiKey,
         'api_url' => $apiUrl,
         'api_user_agent' => CROWDSEC_BOUNCER_USER_AGENT,
@@ -142,6 +155,9 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
         'cache_expiration_for_clean_ip' => $cleanIpCacheDuration,
         'cache_expiration_for_bad_ip' => $badIpCacheDuration,
     ], $cacheAdapter);
+    } catch (BouncerException $e) {
+        throw new WordpressCrowdSecBouncerException($e->getMessage());
+    }
 
     return $bouncer;
 }
