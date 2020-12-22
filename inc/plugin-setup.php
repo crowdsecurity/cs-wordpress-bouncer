@@ -29,6 +29,8 @@ function activate_crowdsec_plugin()
     update_option('crowdsec_fallback_remediation', Constants::REMEDIATION_CAPTCHA);
 
     update_option('crowdsec_hide_mentions', false);
+    update_option('crowdsec_trust_ip_forward', '');
+    update_option('crowdsec_trust_ip_forward_array', []);
 }
 
 /**
@@ -68,4 +70,6 @@ function deactivate_crowdsec_plugin()
     delete_option('crowdsec_fallback_remediation');
 
     delete_option('crowdsec_hide_mentions');
+    delete_option('crowdsec_trust_ip_forward');
+    delete_option('crowdsec_trust_ip_forward_array');
 }

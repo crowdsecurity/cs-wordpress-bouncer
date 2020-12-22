@@ -5,7 +5,34 @@ use CrowdSecBouncer\Constants;
 
 function bounceCurrentIp()
 {
+    function shouldTrustXforwardedFor(string $ip): bool
+    {
+        $longIp = ip2long($ip);
+        foreach (get_option('crowdsec_trust_ip_forward_array') as $longBounds) {
+            if ($longIp >= $longBounds[0] && $longIp <= $longBounds[1]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     $ip = $_SERVER['REMOTE_ADDR'];
+
+    // X-Forwarded-For override
+    if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
+        $ipList = array_map('trim', array_values(array_filter(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']))));
+        $forwardedIp = end($ipList);
+        if (shouldTrustXforwardedFor($ip)) {
+            $ip = $forwardedIp;
+        } else {
+            getCrowdSecLoggerInstance()->warning('', [
+                'type' => 'WP_NON_AUTHORIZED_X_FORWARDED_FOR_USAGE',
+                'original_ip' => $ip,
+                'x_forwarded_for_ip' => $forwardedIp,
+            ]);
+        }
+    }
 
     function displayCaptchaWall()
     {
