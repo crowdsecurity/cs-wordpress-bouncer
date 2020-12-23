@@ -9,7 +9,7 @@ const ADMIN_LOGIN = "admin";
 const ADMIN_PASSWORD = "my_very_very_secret_admin_password";
 const LAPI_URL = process.env.LAPI_URL_FROM_CONTAINERS;
 const NOTIFY = !!process.env.DEBUG;
-const TIMEOUT = (!!process.env.DEBUG ? 5 * 60 : 5) * 1000;
+const TIMEOUT = (!!process.env.DEBUG ? 5 * 60 : 8) * 1000;
 
 const notify = (message) => {
 	if (NOTIFY) {

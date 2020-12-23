@@ -63,8 +63,10 @@ docker-compose logs crowdsec
 
 DEBUG ./tests-local.sh
 
-#All the version
-
+# All the version
+./tests-local.sh; ./tests-local-wp5.5.sh; ./tests-local-wp5.4.sh; \
+./tests-local-wp5.3.sh; ./tests-local-wp5.2.sh; ./tests-local-wp5.1.sh; \
+./tests-local-wp5.0.sh; ./tests-local-wp4.9.sh
 ```
 
 > Note: you can add `await jestPlaywright.debug();` at the moment you want to pause the process.
