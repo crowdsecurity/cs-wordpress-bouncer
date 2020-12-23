@@ -5,7 +5,7 @@ WATCHER_LOGIN='watcherLogin'
 WATCHER_PASSWORD='watcherPassword'
 
 # Run stack
-docker-compose down --remove-orphans --timeout 0
+docker-compose down --remove-orphans
 docker-compose up -d wordpress$WORDPRESS_VERSION crowdsec mysql redis memcached
 
 # Setup CrowdSec

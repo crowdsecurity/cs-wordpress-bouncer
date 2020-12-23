@@ -58,18 +58,27 @@ docker-compose logs crowdsec
 
 ## Run functionnal tests
 
+Headless mode (speed up):
+
 ```bash
-./tests-local.sh # headless mode for speed up
+./tests-local.sh
+```
 
+Debug mode (add tests):
+
+```bash
 DEBUG ./tests-local.sh
-
-# All the version
-./tests-local.sh; ./tests-local-wp5.5.sh; ./tests-local-wp5.4.sh; \
-./tests-local-wp5.3.sh; ./tests-local-wp5.2.sh; ./tests-local-wp5.1.sh; \
-./tests-local-wp5.0.sh; ./tests-local-wp4.9.sh
 ```
 
 > Note: you can add `await jestPlaywright.debug();` at the moment you want to pause the process.
+
+All the versions:
+
+```bash
+./tests-local-wpall.sh
+```
+
+> Note: If you have some problems while running tests, `docker system prune --volumes` can help.
 
 # WP Scan pass
 
@@ -97,7 +106,7 @@ CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2 docker-compose up -d --build --force-recrea
 
 ### Use another Worpress version
 
-In end 2020, [more than 90% of the wordpress websites](https://wordpress.org/about/stats/) was using Wordpress versions:
+In end 2020, [more than 90% of the wordpress websites](https://wordpress.org/about/stats/) was using WordPress versions:
 
 The plugin is tested under each of these versions: `5.6`, `5.5`, `5.4`, `5.3`, `5.2`, `5.1`, `5.0`, `4.9`.
 

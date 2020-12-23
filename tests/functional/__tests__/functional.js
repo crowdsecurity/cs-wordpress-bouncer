@@ -36,7 +36,7 @@ const WP51 = WORDPRESS_VERSION === "5.1";
 const WP50 = WORDPRESS_VERSION === "5.0";
 const WP49 = WORDPRESS_VERSION === "4.9";
 
-describe(`Install Stack: WordPress ${WORDPRESS_VERSION} + the CrowdSec plugin`, () => {
+describe(`Run CrowdSec plugin on WordPress ${WORDPRESS_VERSION}`, () => {
 	beforeAll(async () => {});
 
 	afterAll(async () => {
