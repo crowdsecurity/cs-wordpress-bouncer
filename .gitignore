@@ -5,6 +5,7 @@ vendor/
 .DS_Store
 
 #Tools
+node_modules/
 
 # App
 .bouncer-key

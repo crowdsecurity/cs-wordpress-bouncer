@@ -6,6 +6,15 @@
 ```bash
 export CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2
 ```
+## Run tests
+
+```bash
+./tests-local.sh # headless mode for speed up
+
+DEBUG ./tests-local.sh
+```
+
+> Note: you can add `await jestPlaywright.debug();` at the moment you want to pause the process.
 
 Run containers:
 
