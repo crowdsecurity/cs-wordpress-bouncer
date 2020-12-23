@@ -61,7 +61,6 @@ docker-compose exec crowdsec cscli decisions delete --all
 
 # View CrowdSec logs:
 docker-compose logs crowdsec
-
 ```
 
 # WP Scan pass
@@ -125,6 +124,12 @@ docker-compose down && docker rmi wordpress-bouncer_wordpress<X.X>
 docker-compose run wordpress<X.X> bash
 ```
 
+### Display the plugin logs
+
+```bash
+tail -f logs/*
+```
+
 #### New feature
 
 ```bash
@@ -133,7 +138,7 @@ git commit # as much as necessary.
 
 # Rename branch if necessary
 git branch -m <new-name>
-git push origin :<old-name> && git push origin <new-name>
+git push origin :<old-name> && git push -u origin <new-name>
 
 # Create PR
 gh pr create --fill

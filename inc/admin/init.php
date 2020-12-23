@@ -8,7 +8,6 @@ require_once __DIR__.'/settings.php';
 add_action('admin_notices', [new AdminNotice(), 'displayAdminNotice']);
 
 if (is_admin()) {
-
     function wrapErrorMessage(string $errorMessage)
     {
         return "CrowdSec: $errorMessage";
@@ -162,7 +161,7 @@ if (is_admin()) {
             ]);
         }
 
-        function addFieldString(string $optionName, string $label, string $optionGroup, string $pageName, string $sectionName, callable $onChange, $descriptionHtml, $placeholder, $inputStyle, $inputType = 'text')
+        function addFieldString(string $optionName, string $label, string $optionGroup, string $pageName, string $sectionName, callable $onChange, $descriptionHtml, $placeholder, $inputStyle, $inputType = 'text', $disabled = false)
         {
             register_setting($optionGroup, $optionName, function ($input) use ($onChange, $optionName) {
                 $currentState = esc_attr($input);
@@ -175,11 +174,11 @@ if (is_admin()) {
 
                 return $currentState;
             });
-            add_settings_field($optionName, $label, function ($args) use ($descriptionHtml, $optionName, $inputStyle, $inputType) {
+            add_settings_field($optionName, $label, function ($args) use ($descriptionHtml, $optionName, $inputStyle, $inputType, $disabled) {
                 $name = $args['label_for'];
                 $placeholder = $args['placeholder'];
                 $value = esc_attr(get_option($optionName));
-                echo "<input style=\"$inputStyle\" type=\"$inputType\" class=\"regular-text\" name=\"$name\" value=\"$value\" placeholder=\"$placeholder\">$descriptionHtml";
+                echo '<input '.($disabled ? 'disabled="disabled"' : '')." style=\"$inputStyle\" type=\"$inputType\" class=\"regular-text\" name=\"$name\" value=\"$value\" placeholder=\"$placeholder\">$descriptionHtml";
             }, $pageName, $sectionName, [
                 'label_for' => $optionName,
                 'placeholder' => $placeholder,

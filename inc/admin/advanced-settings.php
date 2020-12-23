@@ -15,13 +15,17 @@ function adminAdvancedSettings()
     // Field "crowdsec_stream_mode"
     addFieldCheckbox('crowdsec_stream_mode', 'Enable the "Stream" mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', function () {
         // Stream mode just activated.
+        $bouncer = getBouncerInstance();
+        $result = $bouncer->warmBlocklistCacheUp();
+        $message = __('As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+        AdminNotice::displaySuccess($message);
         scheduleBlocklistRefresh();
     }, function () {
         // Stream mode just deactivated.
         unscheduleBlocklistRefresh();
     }, '
     <p>With the stream mode, every decision is retrieved in an asynchronous way. 3 advantages: <br>&nbsp;1) Inivisible latency when loading pages<br>&nbsp;2) The IP verifications works even if your CrowdSec is not reachable.<br>&nbsp;3) The API can never be overloaded by the WordPress traffic</p>
-    <p>Note: This method has one limit: for maximum 60 seconds, all the new decisions may not be taken into account.</p>'.
+    <p>Note: This method has one limit: all the decisions updates since the previous resync will not be taken in account until the next resync.</p>'.
         (get_option('crowdsec_stream_mode') ?
             '<p><input style="margin-right:10px" type="button" value="Refresh the cache now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_ation_refresh_cache\').submit();"></p>' :
             '<p><input style="margin-right:10px" type="button" disabled="disabled" value="Refresh the cache now" class="button button-secondary button-small"></p>'));
@@ -29,20 +33,29 @@ function adminAdvancedSettings()
     // Field "crowdsec_stream_mode_refresh_frequency"
     addFieldString('crowdsec_stream_mode_refresh_frequency', 'Resync decisions each<br>(stream mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', function ($input) {
         $input = (int) $input;
-        if ($input < 60) {
-            $input = 60;
-            add_settings_error('Resync decisions each', 'crowdsec_error', 'The "Resync decisions each" value should be more than 60sec (WP_CRON_LOCK_TIMEOUT). We just reset the frequency to 60 seconds.');
+        if ($input < 1) {
+            $input = 1;
+            add_settings_error('Resync decisions each', 'crowdsec_error', 'The "Resync decisions each" value should be more than 1sec (WP_CRON_LOCK_TIMEOUT). We just reset the frequency to 1 seconds.');
 
             return $input;
         }
 
         // Update wp-cron schedule.
         if ((bool) get_option('crowdsec_stream_mode')) {
+            $bouncer = getBouncerInstance();
+            $result = $bouncer->warmBlocklistCacheUp();
+            $message = __('As the stream mode refresh duration changed, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+            AdminNotice::displaySuccess($message);
             scheduleBlocklistRefresh();
         }
 
         return $input;
-    }, ' seconds. <p>Our advice is 60 seconds (according to WP_CRON_LOCK_TIMEOUT).</p>', '...', 'width: 115px;', 'number');
+    }, ' seconds. <p>Our advice is 60 seconds (as WordPress ignores durations under this value <a href="https://wordpress.stackexchange.com/questions/100104/better-handling-of-wp-cron-server-load-abuse" target="_blank">see WP_CRON_LOCK_TIMEOUT</a>).<br>'.
+    ' If you need a shorter delay between each resync, you can <strong>go down to 1 sec</strong>.<br>'.
+    ' But as mentionned is the WordPress Developer Documentation, you should considere hooking WP-Cron Into the System Task Scheduler'.
+    ' by yourself and reduce the WP_CRON_LOCK_TIMEOUT value to the same value as you set here. '.
+    '<a href="https://developer.wordpress.org/plugins/cron/hooking-wp-cron-into-the-system-task-scheduler/" target="_blank">'.
+    'Here is explained how</a>.</p>', '...', 'width: 115px;', 'number');
 
     /*********************
      ** Section "Cache" **
@@ -136,7 +149,7 @@ function adminAdvancedSettings()
     ]);
 
     // Field "crowdsec_clean_ip_cache_duration"
-    addFieldString('crowdsec_clean_ip_cache_duration', 'Recheck clean IPs each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+    addFieldString('crowdsec_clean_ip_cache_duration', 'Recheck clean IPs each<br>(live mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         if ((int) $input <= 0) {
             add_settings_error('Recheck clean IPs each', 'crowdsec_error', 'Recheck clean IPs each: Minimum is 1 second.');
 
@@ -144,10 +157,10 @@ function adminAdvancedSettings()
         }
 
         return $input;
-    }, ' seconds. <p>The duration (in seconds) between re-asking LAPI about an already checked clean IP.<br>Minimum 1 second.', '...', 'width: 115px;', 'number');
+    }, ' seconds. <p>The duration between re-asking LAPI about an already checked clean IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
     // Field "crowdsec_bad_ip_cache_duration"
-    addFieldString('crowdsec_bad_ip_cache_duration', 'Recheck bad IPs each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+    addFieldString('crowdsec_bad_ip_cache_duration', 'Recheck bad IPs each<br>(live mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         if ((int) $input <= 0) {
             add_settings_error('Recheck bad IPs each', 'crowdsec_error', 'Recheck bad IPs each: Minimum is 1 second.');
 
@@ -155,7 +168,7 @@ function adminAdvancedSettings()
         }
 
         return $input;
-    }, ' seconds. <p>The duration (in seconds) between re-asking LAPI about an already checked bad IP.<br>Minimum 1 second.', '...', 'width: 115px;', 'number');
+    }, ' seconds. <p>The duration between re-asking LAPI about an already checked bad IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
     /***************************
      ** Section "Remediation" **
@@ -215,6 +228,7 @@ function adminAdvancedSettings()
                 $longIpBoundsList = array_merge($longIpBoundsList, [[$long, $long]]);
             }
         }
+
         return $longIpBoundsList;
     }
 
@@ -239,12 +253,6 @@ function adminAdvancedSettings()
     'fill the IPs or IPs ranges here...', '');
 
     // Field "crowdsec_hide_mentions"
-    addFieldCheckbox('crowdsec_hide_mentions', 'Hide CrowdSec mentions', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function () {
-        // Stream mode just activated.
-        scheduleBlocklistRefresh();
-    }, function () {
-        // Stream mode just deactivated.
-        unscheduleBlocklistRefresh();
-    }, '
+    addFieldCheckbox('crowdsec_hide_mentions', 'Hide CrowdSec mentions', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function () {}, function () {}, '
     <p>Enable if you want to hide CrowdSec mentions on the Ban and Captcha pages</p>');
 }

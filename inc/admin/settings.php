@@ -62,5 +62,5 @@ function adminSettings()
     }, function () {
         // Stream mode just deactivated.
         unscheduleBlocklistRefresh();
-    }, '<p>If enabled, this wp-admin is not bounced, only the public website.</p>');
+    }, '<p>If enabled, the wp-admin is not bounced, only the public website</p><p><strong>Important note:</strong> the login page is a common page to both sections. If you want to bounce it, you have to disable "Public website only".</p>');
 }

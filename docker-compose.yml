@@ -10,9 +10,10 @@ services:
             - redis
             - memcached
         environment:
-            - WORDPRESS_DB_PASSWORD=super_secret_password
-            - WORDPRESS_DEBUG=1
-            #- WORDPRESS_CONFIG_EXTRA=define('DISABLE_WP_CRON', true);
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
             - "80:80"
@@ -29,9 +30,10 @@ services:
             - redis
             - memcached
         environment:
-            - WORDPRESS_DB_PASSWORD=super_secret_password
-            - WORDPRESS_DEBUG=1
-            #- WORDPRESS_CONFIG_EXTRA=define('DISABLE_WP_CRON', true);
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
             - "80:80"
@@ -48,9 +50,10 @@ services:
             - redis
             - memcached
         environment:
-            - WORDPRESS_DB_PASSWORD=super_secret_password
-            - WORDPRESS_DEBUG=1
-            #- WORDPRESS_CONFIG_EXTRA=define('DISABLE_WP_CRON', true);
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
             - "80:80"
@@ -67,9 +70,10 @@ services:
             - redis
             - memcached
         environment:
-            - WORDPRESS_DB_PASSWORD=super_secret_password
-            - WORDPRESS_DEBUG=1
-            #- WORDPRESS_CONFIG_EXTRA=define('DISABLE_WP_CRON', true);
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
             - "80:80"
@@ -86,9 +90,10 @@ services:
             - redis
             - memcached
         environment:
-            - WORDPRESS_DB_PASSWORD=super_secret_password
-            - WORDPRESS_DEBUG=1
-            #- WORDPRESS_CONFIG_EXTRA=define('DISABLE_WP_CRON', true);
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
             - "80:80"
@@ -105,9 +110,10 @@ services:
             - redis
             - memcached
         environment:
-            - WORDPRESS_DB_PASSWORD=super_secret_password
-            - WORDPRESS_DEBUG=1
-            #- WORDPRESS_CONFIG_EXTRA=define('DISABLE_WP_CRON', true);
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
             - "80:80"
@@ -124,9 +130,10 @@ services:
             - redis
             - memcached
         environment:
-            - WORDPRESS_DB_PASSWORD=super_secret_password
-            - WORDPRESS_DEBUG=1
-            #- WORDPRESS_CONFIG_EXTRA=define('DISABLE_WP_CRON', true);
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
             - "80:80"
@@ -143,9 +150,10 @@ services:
             - redis
             - memcached
         environment:
-            - WORDPRESS_DB_PASSWORD=super_secret_password
-            - WORDPRESS_DEBUG=1
-            #- WORDPRESS_CONFIG_EXTRA=define('DISABLE_WP_CRON', true);
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
             - "80:80"
