@@ -1,20 +1,12 @@
 # Contribute to this plugin
 
 ## Install the stack for development purpose
-## Select the PHP version you want to use (7.2, 7.3, 7.4, 8.0)
+
+Select the PHP version you want to use (7.2, 7.3, 7.4, 8.0) :
 
 ```bash
 export CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2
 ```
-## Run tests
-
-```bash
-./tests-local.sh # headless mode for speed up
-
-DEBUG ./tests-local.sh
-```
-
-> Note: you can add `await jestPlaywright.debug();` at the moment you want to pause the process.
 
 Run containers:
 
@@ -22,15 +14,9 @@ Run containers:
 docker-compose up -d wordpress crowdsec mysql redis memcached
 ```
 
-Visit the wordpress instance here: http://localhost
-
-Admin account: admin / ThisSecretIsKnown!
+Visit the wordpress instance here: http://localhost and install the wordpress instance.
 
 # Init deps for dev environment
-
-In `composer.json`, replace `"crowdsec/bouncer": "^..."` with `"crowdsec/bouncer": "dev-<a-dev-branch>"`.
-
-> Important: Don't forget to replace this value by the new lib release tag when finishing the feature).
 
 ```bash
 docker-compose exec wordpress composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
@@ -50,9 +36,7 @@ The LAPI URL is:
 
 http://crowdsec:8080
 
-docker-compose run crowdsec
-
-# Play with crowdsec container
+# Play with crowdsec state
 
 ```bash
 # Get the Docker host IP from inside the crowdsec container
@@ -72,13 +56,23 @@ docker-compose exec crowdsec cscli decisions delete --all
 docker-compose logs crowdsec
 ```
 
+## Run functionnal tests
+
+```bash
+./tests-local.sh # headless mode for speed up
+
+DEBUG ./tests-local.sh
+```
+
+> Note: you can add `await jestPlaywright.debug();` at the moment you want to pause the process.
+
 # WP Scan pass
 
 ```bash
 docker-compose run --rm wpscan --url http://wordpress/
 ```
 
-### Docker-compose cheets sheet
+### Quick `docker-compose` cheet sheet
 
 ```bash
 docker-compose run wordpress sh # run sh on wordpress container
@@ -87,7 +81,7 @@ docker-compose stop # stop
 docker-compose rm # destroy
 ```
 
-### Use another PHP version
+### Try the plugin with another PHP version
 
 ```bash
 docker-compose down
@@ -100,16 +94,7 @@ CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2 docker-compose up -d --build --force-recrea
 
 In end 2020, [more than 90% of the wordpress websites](https://wordpress.org/about/stats/) was using Wordpress versions:
 
-- 5.6
-- 5.5
-- 5.4
-- 5.3
-- 5.2
-- 5.1
-- 5.0
-- 4.9
-
-The plugin is tested under each of these versions.
+The plugin is tested under each of these versions: `5.6`, `5.5`, `5.4`, `5.3`, `5.2`, `5.1`, `5.0`, `4.9`.
 
 #### Add support for a new WordPress version
 
@@ -139,7 +124,7 @@ docker-compose run wordpress<X.X> bash
 tail -f logs/*
 ```
 
-#### New feature
+#### New feature workflow
 
 ```bash
 git checkout -b <branch-name>
@@ -155,7 +140,7 @@ gh pr create --fill
 
 > Note: after the merge, don't forget to delete to branch.
 
-#### New release
+#### New release workflow
 
 ```bash
 git checkout main && git pull && git co -
