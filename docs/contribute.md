@@ -62,6 +62,9 @@ docker-compose logs crowdsec
 ./tests-local.sh # headless mode for speed up
 
 DEBUG ./tests-local.sh
+
+#All the version
+
 ```
 
 > Note: you can add `await jestPlaywright.debug();` at the moment you want to pause the process.

@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Context
-WORDPRESS_VERSION=5.5
-
 # Default variables
 WATCHER_LOGIN='watcherLogin'
 WATCHER_PASSWORD='watcherPassword'
@@ -23,4 +20,7 @@ done
 
 
 # Run tests
-WORDPRESS_VERSION=$WORDPRESS_VERSION WATCHER_LOGIN=$WATCHER_LOGIN WATCHER_PASSWORD=$WATCHER_PASSWORD LAPI_URL_FROM_CONTAINERS='http://crowdsec:8080' LAPI_URL_FROM_HOST='http://localhost:8080' yarn --cwd ./tests/functional test --detectOpenHandles --runInBand
+WORDPRESS_VERSION=$WORDPRESS_VERSION WATCHER_LOGIN=$WATCHER_LOGIN WATCHER_PASSWORD=$WATCHER_PASSWORD \
+LAPI_URL_FROM_CONTAINERS='http://crowdsec:8080' LAPI_URL_FROM_HOST='http://localhost:8080' \
+yarn --cwd ./tests/functional test \
+--detectOpenHandles --runInBand --json --outputFile=.test-results-$WORDPRESS_VERSION.json

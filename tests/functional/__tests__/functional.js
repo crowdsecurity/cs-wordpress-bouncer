@@ -27,6 +27,15 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 jest.setTimeout(TIMEOUT);
 
+const WP56 = WORDPRESS_VERSION === "";
+const WP55 = WORDPRESS_VERSION === "5.5";
+const WP54 = WORDPRESS_VERSION === "5.4";
+const WP53 = WORDPRESS_VERSION === "5.3";
+const WP52 = WORDPRESS_VERSION === "5.2";
+const WP51 = WORDPRESS_VERSION === "5.1";
+const WP50 = WORDPRESS_VERSION === "5.0";
+const WP49 = WORDPRESS_VERSION === "4.9";
+
 describe(`Install Stack: WordPress ${WORDPRESS_VERSION} + the CrowdSec plugin`, () => {
 	beforeAll(async () => {});
 
@@ -42,17 +51,21 @@ describe(`Install Stack: WordPress ${WORDPRESS_VERSION} + the CrowdSec plugin`, 
 		// Go to home
 		await page.goto(`${BASE_URL}`);
 
-		// "Language selection" page
-
-		await page.click('option[lang="en"]');
-		await page.click("#language-continue");
-		await waitForNavigation;
+		if (WP54 || WP55 || WP56) {
+			// "Language selection" page
+			await page.click('option[lang="en"]');
+			await page.click("#language-continue");
+			await waitForNavigation;
+		}
 
 		// "Account creation" page
-
 		await page.fill("#weblog_title", "My website");
 		await page.fill("#user_login", ADMIN_LOGIN);
-		await page.fill("#pass1", ADMIN_PASSWORD);
+		if (WP53 ||WP54 ||WP55 ||WP56) {
+			await page.fill("#pass1", ADMIN_PASSWORD);
+		} else {
+			await page.fill("#pass1-text", ADMIN_PASSWORD);
+		}
 		await page.fill("#admin_email", "admin@admin.admin");
 		await page.click("#submit");
 		await waitForNavigation;
@@ -78,7 +91,12 @@ describe(`Install Stack: WordPress ${WORDPRESS_VERSION} + the CrowdSec plugin`, 
 		notify("Install CrowdSec plugin");
 		// "Plugins" page
 		await page.goto(`${BASE_URL}/wp-admin/plugins.php'`);
-		await page.click("#activate-crowdsec");
+		if (WP55 || WP56) {
+			await page.click("#activate-crowdsec");
+		} else {
+			await page.click('[aria-label="Activate CrowdSec"]');
+		}
+
 		await waitForNavigation;
 		await expect(page).toHaveText("#message", "Plugin activated.");
 	});

@@ -6,6 +6,7 @@ vendor/
 
 #Tools
 node_modules/
+.test-results*
 
 # App
 .bouncer-key

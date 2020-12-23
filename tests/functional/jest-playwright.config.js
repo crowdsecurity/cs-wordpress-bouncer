@@ -4,7 +4,7 @@ module.exports = {
 		headless: !debug,
 		devtools: debug,
 	},
-	connectOptions: debug ? {slowMo: 400} : {},
+	connectOptions: debug ? {slowMo: 150} : {},
 	exitOnPageError: !debug,
 	contextOptions: {
 		ignoreHTTPSErrors: true,
