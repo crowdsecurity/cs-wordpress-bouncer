@@ -1,7 +1,5 @@
 FROM wordpress:5.1-php7.4
 
-RUN a2disconf remoteip && a2dismod remoteip && service apache2 restart
-
 RUN apt-get update && apt-get install -y git libmemcached-dev zlib1g-dev \
 && pecl install -o -f redis memcached \
 &&  rm -rf /tmp/pear \
