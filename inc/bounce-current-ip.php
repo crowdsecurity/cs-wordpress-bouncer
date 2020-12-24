@@ -170,7 +170,7 @@ function safelyBounceCurrentIp()
         }
 
         $everywhere = empty(get_option('crowdsec_public_website_only'));
-        $shoudRun = ($everywhere || !is_admin());
+        $shoudRun = ($everywhere || (!is_admin() && !in_array($GLOBALS['pagenow'], ['wp-login.php', 'wp-cron.php'])));
         if ($shoudRun && isBouncerConfigOk()) {
             bounceCurrentIp();
         }

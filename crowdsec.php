@@ -10,6 +10,8 @@ Author URI: https://www.crowdsec.net/
 Github: https://github.com/crowdsecurity/cs-wordpress-blocker
 License: MIT
 Requires PHP: 7.2
+Requires at least: 4.9
+Tested up to: 5.6
 Stable tag: 0.3.0
 Text Domain: crowdsec-wp
 */

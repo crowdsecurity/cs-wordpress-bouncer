@@ -1,28 +1,171 @@
 version: "3"
 services:
-    web:
+    wordpress:
         build:
             context: .
             dockerfile: ./docker/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
-        links:
+        depends_on:
             - crowdsec
             - mysql
             - redis
             - memcached
-
         environment:
-            - WORDPRESS_DB_PASSWORD=super_secret_password
-            - WORDPRESS_DEBUG=1
-            #- WORDPRESS_CONFIG_EXTRA=define('DISABLE_WP_CRON', true);
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
             - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer
+
+    wordpress5.5:
+        build:
+            context: .
+            dockerfile: ./docker/wp5.5/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        depends_on:
+            - crowdsec
+            - mysql
+            - redis
+            - memcached
+        environment:
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
+        # more here https://hub.docker.com/_/wordpress
+        ports:
+            - "80:80"
+        volumes:
+            - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer
+    
+    wordpress5.4:
+        build:
+            context: .
+            dockerfile: ./docker/wp5.4/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        depends_on:
+            - crowdsec
+            - mysql
+            - redis
+            - memcached
+        environment:
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
+        # more here https://hub.docker.com/_/wordpress
+        ports:
+            - "80:80"
+        volumes:
+            - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer
+    
+    wordpress5.3:
+        build:
+            context: .
+            dockerfile: ./docker/wp5.3/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        depends_on:
+            - crowdsec
+            - mysql
+            - redis
+            - memcached
+        environment:
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
+        # more here https://hub.docker.com/_/wordpress
+        ports:
+            - "80:80"
+        volumes:
+            - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer
+
+    wordpress5.2:
+        build:
+            context: .
+            dockerfile: ./docker/wp5.2/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        depends_on:
+            - crowdsec
+            - mysql
+            - redis
+            - memcached
+        environment:
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
+        # more here https://hub.docker.com/_/wordpress
+        ports:
+            - "80:80"
+        volumes:
+            - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer
+
+    wordpress5.1:
+        build:
+            context: .
+            dockerfile: ./docker/wp5.1/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        depends_on:
+            - crowdsec
+            - mysql
+            - redis
+            - memcached
+        environment:
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
+        # more here https://hub.docker.com/_/wordpress
+        ports:
+            - "80:80"
+        volumes:
+            - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer
+
+    wordpress5.0:
+        build:
+            context: .
+            dockerfile: ./docker/wp5.0/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        depends_on:
+            - crowdsec
+            - mysql
+            - redis
+            - memcached
+        environment:
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
+        # more here https://hub.docker.com/_/wordpress
+        ports:
+            - "80:80"
+        volumes:
+            - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer
+
+    wordpress4.9:
+        build:
+            context: .
+            dockerfile: ./docker/wp4.9/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        depends_on:
+            - crowdsec
+            - mysql
+            - redis
+            - memcached
+        environment:
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
+        # more here https://hub.docker.com/_/wordpress
+        ports:
+            - "80:80"
+        volumes:
+            - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer
+
     crowdsec:
         image: crowdsecurity/crowdsec:latest
         environment:
             - DISABLE_AGENT=true
+        ports:
+            - "8080:8080"
     mysql:
         image: mysql:5.7
         environment:
@@ -34,3 +177,5 @@ services:
             - "6379:6379"
     memcached:
         image: memcached:1-alpine
+    wpscan:
+        image: wpscanteam/wpscan

@@ -8,3 +8,15 @@
 - Choose your zipped plugins file and install it
 - Now you can activate it and see a new menu named "CrowdSec"
 ```
+
+## Demo guide
+
+Follow the [Demo Guide](docs/full-guide.md) to discover the main features this plugin is capable of.
+
+## How to contribute?
+
+Look at the [Contributor guide](docs/contribute.md).
+
+## FAQ
+
+Look at the [FAQ of this plugin](docs/faq.md).

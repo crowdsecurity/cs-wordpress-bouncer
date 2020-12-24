@@ -1,4 +1,4 @@
-FROM wordpress:5.6-php7.3
+FROM wordpress:5.5-php7.2
 
 RUN a2disconf remoteip && a2dismod remoteip && service apache2 restart
 

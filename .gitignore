@@ -5,6 +5,8 @@ vendor/
 .DS_Store
 
 #Tools
+node_modules/
+.test-results*
 
 # App
 .bouncer-key
