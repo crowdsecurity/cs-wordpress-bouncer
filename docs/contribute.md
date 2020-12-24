@@ -70,7 +70,7 @@ Debug mode (add tests):
 DEBUG ./tests-local.sh
 ```
 
-> Note: you can add `await jestPlaywright.debug();` at the moment you want to pause the process.
+> Note: you can add `await jestPlaywright.debug()` at the moment you want to pause the process.
 
 All the versions:
 

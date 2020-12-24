@@ -10,6 +10,7 @@ const ADMIN_PASSWORD = "my_very_very_secret_admin_password";
 const LAPI_URL = process.env.LAPI_URL_FROM_CONTAINERS;
 const NOTIFY = !!process.env.DEBUG;
 const TIMEOUT = (!!process.env.DEBUG ? 5 * 60 : 8) * 1000;
+const OTHER_IP = "1.2.3.4";
 
 const notify = (message) => {
 	if (NOTIFY) {
@@ -159,9 +160,13 @@ const publicHomepageShouldBeAccessible = async () => {
 	await expect(title).toContain("Just another WordPress site");
 };
 
-const banOwnIpForSeconds = async (seconds) => {
-	await addDecision(CLIENT_IP, "ban", seconds + "s");
+const banIpForSeconds = async (ip, seconds) => {
+	await addDecision(ip, "ban", seconds + "s");
 	await wait(1000);
+};
+
+const banOwnIpForSeconds = async (seconds) => {
+	await banIpForSeconds(CLIENT_IP, seconds);
 };
 
 const captchaOwnIpForSeconds = async (seconds) => {
@@ -304,11 +309,13 @@ describe(`Run in Live mode`, () => {
 	});
 
 	it('Should display a captcha wall instead of a ban wall in Flex mode"', async () => {
-		
 		// set Flex mode
 		await goToAdmin();
 		await onAdminGoToSettingsPage();
-		page.selectOption('select[name=crowdsec_bouncing_level]', 'flex_boucing');
+		await page.selectOption(
+			"[name=crowdsec_bouncing_level]",
+			"flex_boucing"
+		);
 		await onAdminSaveSettings();
 
 		// Should be a captcha wall
@@ -316,11 +323,13 @@ describe(`Run in Live mode`, () => {
 	});
 
 	it('Should be accessible in Disabled mode"', async () => {
-		
 		// set Disabled mode
 		await goToAdmin();
 		await onAdminGoToSettingsPage();
-		page.selectOption('select[name=crowdsec_bouncing_level]', 'bouncing_disabled');
+		await page.selectOption(
+			"[name=crowdsec_bouncing_level]",
+			"bouncing_disabled"
+		);
 		await onAdminSaveSettings();
 
 		// Should be accessible
@@ -329,7 +338,10 @@ describe(`Run in Live mode`, () => {
 		// Go back to normal mode
 		await goToAdmin();
 		await onAdminGoToSettingsPage();
-		page.selectOption('select[name=crowdsec_bouncing_level]', 'normal_boucing');
+		await page.selectOption(
+			"[name=crowdsec_bouncing_level]",
+			"normal_boucing"
+		);
 		await onAdminSaveSettings();
 
 		// Should be a ban wall
@@ -339,6 +351,26 @@ describe(`Run in Live mode`, () => {
 	it('Should display back the homepage with no remediation"', async () => {
 		await removeAllDecisions();
 		await publicHomepageShouldBeAccessible();
+	});
+
+	it('Should handle X-Forwarded-For header for whitelisted IPs only"', async () => {
+		await banIpForSeconds(OTHER_IP, 15 * 60);
+
+		// Should be banned as current IP is not trust by CDN
+		page.setExtraHTTPHeaders({ "X-Forwarded-For": OTHER_IP });
+		await publicHomepageShouldBeAccessible();
+
+		// Add the current IP to the CDN list (via a range)
+		await goToAdmin();
+		await onAdminGoToAdvancedPage();
+		await fillInput("crowdsec_trust_ip_forward_list", CLIENT_IP + "/30");
+		await onAdminSaveSettings();
+
+		// // Should be banned
+		await publicHomepageShouldBeBanWall();
+		
+		// // Remove the XFF header for next requests
+		page.setExtraHTTPHeaders({});
 	});
 });
 
@@ -406,13 +438,6 @@ Refresh cache
 # Fallback
 
 (to write)
-
-# CDN IP
-
-ban IP 1.2.3.4
-In CDN list, add a large range including the current IP
-Try to access homepage simulating 1.2.3.4 via the CDN : const page = await browser.newPage({ extraHTTPHeaders: 'X-Forwarded-For': '1.2.3.4' })
-Should be banned
 
 
 # Recheck clean IP

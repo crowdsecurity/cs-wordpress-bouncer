@@ -236,6 +236,11 @@ function adminAdvancedSettings()
     addFieldString('crowdsec_trust_ip_forward_list', 'Trust these CDN IPs<br>(or Load Balancer, HTTP Proxy)', 'crowdsec_plugin_advanced_settings',
     'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function ($input) {
         try {
+            if ('' === $input) {
+                update_option('crowdsec_trust_ip_forward_array', []);
+
+                return $input;
+            }
             $longList = convertInlineIpRangesToLongArray($input);
             update_option('crowdsec_trust_ip_forward_array', $longList);
             AdminNotice::displaySuccess('Ips with XFF to trust successfully saved.');
