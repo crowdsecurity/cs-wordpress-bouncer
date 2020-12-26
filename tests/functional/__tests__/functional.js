@@ -353,7 +353,23 @@ describe(`Run in Live mode`, () => {
 		await publicHomepageShouldBeAccessible();
 	});
 
+	it("Should fallback to the selected remedition for unknown remediation", async () => {
+		await removeAllDecisions();
+		await addDecision(CLIENT_IP, "mfa", (15 * 60)+"s");
+		await wait(1000);
+		await publicHomepageShouldBeCaptchaWall();
+		await goToAdmin();
+		await onAdminGoToAdvancedPage();
+		await page.selectOption(
+			"[name=crowdsec_fallback_remediation]",
+			"bypass"
+		);
+		await onAdminSaveSettings();
+		await publicHomepageShouldBeAccessible();
+	});
+
 	it('Should handle X-Forwarded-For header for whitelisted IPs only"', async () => {
+		await removeAllDecisions();
 		await banIpForSeconds(OTHER_IP, 15 * 60);
 
 		// Should be banned as current IP is not trust by CDN
@@ -371,6 +387,46 @@ describe(`Run in Live mode`, () => {
 		
 		// // Remove the XFF header for next requests
 		page.setExtraHTTPHeaders({});
+	});
+
+	it("Should prune the File system cache", async () => {
+		await goToAdmin();
+		await onAdminGoToAdvancedPage();
+		await page.click("#crowdsec_prune_cache");
+		await waitForNavigation;
+
+		await expect(page).toHaveText(
+			"#wpbody-content > div.wrap > div.notice.notice-success",
+			"CrowdSec cache has just been pruned."
+		);
+	});
+
+	it("Should clear the cache on demand", async () => {
+		await onAdminGoToAdvancedPage();
+		await onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo(60);
+		await onAdminAdvancedSettingsPageSetBadIpCacheDurationTo(60);
+		await onAdminSaveSettings();
+		await banOwnIpForSeconds(15 * 60);
+		await publicHomepageShouldBeBanWall();
+		wait(2000);
+		await publicHomepageShouldBeBanWall();
+		await removeAllDecisions();
+		wait(2000);
+		await publicHomepageShouldBeBanWall();
+
+		await goToAdmin();
+		await onAdminGoToAdvancedPage();
+		await page.on('dialog', async (dialog) => {
+			await dialog.accept();
+		});
+		await page.click("#crowdsec_clear_cache");
+		await waitForNavigation;
+
+		await expect(page).toHaveText(
+			"#wpbody-content > div.wrap > div.notice.notice-success",
+			"CrowdSec cache has just been cleared."
+		);
+		await publicHomepageShouldBeAccessible();
 	});
 });
 
@@ -398,6 +454,77 @@ describe(`Run in Stream mode`, () => {
 		await forceCronRun();
 		await publicHomepageShouldBeAccessible();
 	});
+
+	it("Should refresh the cache", async () => {
+		await goToAdmin();
+		await onAdminGoToAdvancedPage();
+		await page.click("#crowdsec_refresh_cache");
+		await waitForNavigation;
+
+		await expect(page).toHaveText(
+			"#wpbody-content > div.wrap > div.notice.notice-success",
+			"The cache has just been refreshed (0 new decision, 0 deleted)."
+		);
+	});
+});
+
+describe(`Use Redis technology`, () => {
+	it('Should be able to use Redis cache"', async () => {
+		notify("Use Redis technology");
+
+		// TODO (+ bad DSN format, + DSN down)
+
+		await goToAdmin();
+		await onAdminGoToAdvancedPage();
+		await page.selectOption("[name=crowdsec_cache_system]", "redis");
+		await wait(200);
+		await fillInput("crowdsec_redis_dsn", "redis://redis:6379"); // TODO test bad DSN format and test DSN down
+		await onAdminSaveSettings();
+
+		await expect(page).toHaveText(
+			"#wpbody-content > div.wrap > div.notice.notice-success",
+			"As the stream mode is enabled, the cache has just been warmed up, there is now 0 decision in cache."
+		);
+
+		await publicHomepageShouldBeAccessible();
+		await banOwnIpForSeconds(15 * 60);
+		await forceCronRun();
+		await publicHomepageShouldBeBanWall();
+		await removeAllDecisions();
+		await forceCronRun();
+		await publicHomepageShouldBeAccessible();
+	});
+});
+
+describe(`Use Memcached technology`, () => {
+	it('Should be able to use Memcached cache"', async () => {
+		notify("Use Memcached technology");
+
+		await goToAdmin();
+		await onAdminGoToAdvancedPage();
+		await page.selectOption("[name=crowdsec_cache_system]", "memcached");
+		await wait(200);
+		await fillInput(
+			"crowdsec_memcached_dsn",
+			"memcached://memcached:11211"
+		);
+
+		// TODO test bad DSN format and test DSN down
+
+		await onAdminSaveSettings();
+		await expect(page).toHaveText(
+			"#wpbody-content > div.wrap > div.notice.notice-success",
+			"As the stream mode is enabled, the cache has just been warmed up, there is now 0 decision in cache."
+		);
+
+		await publicHomepageShouldBeAccessible();
+		await banOwnIpForSeconds(15 * 60);
+		await forceCronRun();
+		await publicHomepageShouldBeBanWall();
+		await removeAllDecisions();
+		await forceCronRun();
+		await publicHomepageShouldBeAccessible();
+	});
 });
 
 /*
@@ -409,47 +536,15 @@ Try to access admin each 2 sec
 The third time admin should be back
 Re-enable "Public website only"
 
-# Manually clear the cache
-
-Set cache duration to 1min (clean + bad IP)
-Remove all decisions + Ban current IP during 15min
-The public page should be forbidden
-Remove all decisions
-The public page should still be forbidden
-Click the "Clear now" button
-The public page should be accessible
-
-# Refresh cache button
-
-(to write)
-
 # Stream mode: Resync decisions each
 
 Remove all decisions + Ban current IP during 15min
 Set stream mode with 15 seconds resync
 Refresh cache
+(to finish writing)
 
-(to finish, I'm gonna sleep)
+# Recheck clean IP (to write)
 
-# Loop avec Redis / Memcached (+ mauvais format DSN, DSN down)
-
-(to write)
-
-# Fallback
-
-(to write)
-
-
-# Recheck clean IP
-
-(to write)
-
-# Recheck Bad IP
-
-(to write)
-
-# Prune FS Cache
-
-(to write)
+# Recheck Bad IP (to write)
 
 */

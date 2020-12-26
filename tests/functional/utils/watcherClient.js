@@ -94,7 +94,7 @@ module.exports.addDecision = async (
 	const startLongIp = ip2long(startIp);
 	const endLongIp = ip2long(endIp);
 	const isRange = startLongIp !== endLongIp;
-	const scenario = `ban ${
+	const scenario = `add ${remediation} to ${
 		isRange ? `range ${startIp} to ${endIp}` : `ip ${startIp}`
     } for ${duration} for functional tests`;
     const scope = isRange ? "Range" : "Ip";
@@ -133,8 +133,13 @@ module.exports.addDecision = async (
             start_at: startAt.toISOString(),
             stop_at: stopAt.toISOString(),
         },
-    ];
-    const response = await httpClient.post("/v1/alerts", body);
+	];
+	try {
+		const response = await httpClient.post("/v1/alerts", body);
+	} catch (error) {
+		console.log(error.response);
+		throw new Error(error);
+	}
 }
 
 module.exports.deleteAllDecisions = async () => {
