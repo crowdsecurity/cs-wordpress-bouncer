@@ -90,17 +90,29 @@ if (is_admin()) {
     }
 
     // ACTIONS
-    add_action('admin_post_clear_cache', function () {
+    add_action('admin_post_crowdsec_clear_cache', function () {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_clear_cache')) {
+            die('This link expired.');
+        }
         clearBouncerCacheInAdminPage();
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
     });
-    add_action('admin_post_refresh_cache', function () {
+    add_action('admin_post_crowdsec_refresh_cache', function () {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_refresh_cache')) {
+            die('This link expired.');
+        }
         refreshBouncerCacheInAdminPage();
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
     });
-    add_action('admin_post_prune_cache', function () {
+    add_action('admin_post_crowdsec_prune_cache', function () {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_prune_cache')) {
+            die('This link expired.');
+        }
         pruneBouncerCacheInAdminPage();
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);

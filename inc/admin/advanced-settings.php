@@ -27,7 +27,7 @@ function adminAdvancedSettings()
     <p>With the stream mode, every decision is retrieved in an asynchronous way. 3 advantages: <br>&nbsp;1) Inivisible latency when loading pages<br>&nbsp;2) The IP verifications works even if your CrowdSec is not reachable.<br>&nbsp;3) The API can never be overloaded by the WordPress traffic</p>
     <p>Note: This method has one limit: all the decisions updates since the previous resync will not be taken in account until the next resync.</p>'.
         (get_option('crowdsec_stream_mode') ?
-            '<p><input id="crowdsec_refresh_cache" style="margin-right:10px" type="button" value="Refresh the cache now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_ation_refresh_cache\').submit();"></p>' :
+            '<p><input id="crowdsec_refresh_cache" style="margin-right:10px" type="button" value="Refresh the cache now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_refresh_cache\').submit();"></p>' :
             '<p><input id="crowdsec_refresh_cache" style="margin-right:10px" type="button" disabled="disabled" value="Refresh the cache now" class="button button-secondary button-small"></p>'));
 
     // Field "crowdsec_stream_mode_refresh_frequency"
@@ -61,7 +61,7 @@ function adminAdvancedSettings()
      ** Section "Cache" **
      ********************/
 
-    add_settings_section('crowdsec_admin_advanced_cache', 'Caching configuration <input id="crowdsec_clear_cache" style="margin-left: 7px;margin-top: -3px;" type="button" value="Clear now" class="button button-secondary button-small" onclick="if (confirm(\'Are you sure you want to completely clear the cache?\')) document.getElementById(\'crowdsec_ation_clear_cache\').submit();">', function () {
+    add_settings_section('crowdsec_admin_advanced_cache', 'Caching configuration <input id="crowdsec_clear_cache" style="margin-left: 7px;margin-top: -3px;" type="button" value="Clear now" class="button button-secondary button-small" onclick="if (confirm(\'Are you sure you want to completely clear the cache?\')) document.getElementById(\'crowdsec_action_clear_cache\').submit();">', function () {
         ?>
         <p>Polish the decisions cache settings by selecting the best technology or the cache durations best suited to your use.</p>
 <?php
@@ -141,7 +141,7 @@ function adminAdvancedSettings()
 
         return $input;
     }, ((CROWDSEC_CACHE_SYSTEM_PHPFS === get_option('crowdsec_cache_system')) ?
-        '<input style="margin-right:10px" type="button" id="crowdsec_prune_cache" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_ation_prune_cache\').submit();">' : '').
+        '<input style="margin-right:10px" type="button" id="crowdsec_prune_cache" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_action_prune_cache\').submit();">' : '').
         '<p>The File system cache is faster than calling LAPI. Redis or Memcached is faster than the File System cache.</p>', [
         CROWDSEC_CACHE_SYSTEM_PHPFS => 'File system',
         CROWDSEC_CACHE_SYSTEM_REDIS => 'Redis',

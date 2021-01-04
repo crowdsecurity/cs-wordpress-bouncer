@@ -42,14 +42,17 @@
 		</form>
 		
 		<br/>
-		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_ation_clear_cache">
-			<input type="hidden" name="action" value="clear_cache">
+		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_action_clear_cache">
+			<input type="hidden" name="action" value="crowdsec_clear_cache">
+			<input type="hidden" name="nonce" value="<?php echo wp_create_nonce('crowdsec_clear_cache'); ?>">
 		</form>
-		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_ation_refresh_cache">
-			<input type="hidden" name="action" value="refresh_cache">
+		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_action_refresh_cache">
+			<input type="hidden" name="action" value="crowdsec_refresh_cache">
+			<input type="hidden" name="nonce" value="<?php echo wp_create_nonce('crowdsec_refresh_cache'); ?>">
 		</form>
-		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_ation_prune_cache">
-			<input type="hidden" name="action" value="prune_cache">
+		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_action_prune_cache">
+			<input type="hidden" name="action" value="crowdsec_prune_cache">
+			<input type="hidden" name="nonce" value="<?php echo wp_create_nonce('crowdsec_prune_cache'); ?>">
 		</form>
 		</div>
 	</div>
