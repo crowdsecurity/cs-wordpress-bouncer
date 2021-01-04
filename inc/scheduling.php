@@ -34,7 +34,6 @@ function crowdSecRefreshBlocklist()
 
 // Create the hook that the schedule will call
 add_action(CROWDSEC_REFRESH_BLOCKLIST_CRON_HOOK, 'crowdSecRefreshBlocklist');
-//echo '<pre>'; print_r( _get_cron_array() ); echo '</pre>';die;
 
 function unscheduleBlocklistRefresh()
 {
