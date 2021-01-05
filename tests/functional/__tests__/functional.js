@@ -8,13 +8,13 @@ const WORDPRESS_VERSION = process.env.WORDPRESS_VERSION;
 const ADMIN_LOGIN = "admin";
 const ADMIN_PASSWORD = "my_very_very_secret_admin_password";
 const LAPI_URL = process.env.LAPI_URL_FROM_CONTAINERS;
-const NOTIFY = !!process.env.DEBUG;
+const DEBUG = !!process.env.DEBUG;
 const TIMEOUT = (!!process.env.DEBUG ? 5 * 60 : 8) * 1000;
 const OTHER_IP = "1.2.3.4";
 const adminUrl = `${BASE_URL}/wp-admin/`;
 
 const notify = (message) => {
-    if (NOTIFY) {
+    if (DEBUG) {
         notifier.notify({
             title: "CrowdSec automation",
             message: message,
@@ -33,10 +33,6 @@ const WP56 = WORDPRESS_VERSION === "";
 const WP55 = WORDPRESS_VERSION === "5.5";
 const WP54 = WORDPRESS_VERSION === "5.4";
 const WP53 = WORDPRESS_VERSION === "5.3";
-const WP52 = WORDPRESS_VERSION === "5.2";
-const WP51 = WORDPRESS_VERSION === "5.1";
-const WP50 = WORDPRESS_VERSION === "5.0";
-const WP49 = WORDPRESS_VERSION === "4.9";
 
 const waitForNavigation = page.waitForNavigation();
 
@@ -266,7 +262,7 @@ const remediationShouldUpdate = async (
 
     describe(`Setup WordPress ${WORDPRESS_VERSION} and CrowdSec plugin`, () => {
 
-    beforeEach(() => console.log(expect.getState().currentTestName));
+    beforeEach(() => (DEBUG ? console.log(expect.getState().currentTestName) : null))
 
     it('Should install wordpress"', async () => {
         notify(`Setup WordPress ${WORDPRESS_VERSION} and CrowdSec plugin`);
@@ -328,7 +324,7 @@ const remediationShouldUpdate = async (
 
 describe(`Run in Live mode`, () => {
 
-    beforeEach(() => console.log(expect.getState().currentTestName));
+    beforeEach(() => (DEBUG ? console.log(expect.getState().currentTestName) : null))
 
     it('Should reduce the cache durations"', async () => {
         notify("Run in Live mode");
@@ -493,7 +489,7 @@ describe(`Run in Live mode`, () => {
 
 describe(`Run in Stream mode`, () => {
 
-    beforeEach(() => console.log(expect.getState().currentTestName));
+    beforeEach(() => (DEBUG ? console.log(expect.getState().currentTestName) : null))
 
     it('Should enable the stream mode"', async () => {
         notify("Run in Stream mode");
@@ -534,7 +530,7 @@ describe(`Run in Stream mode`, () => {
 
 describe(`Use Redis technology`, () => {
 
-    beforeEach(() => console.log(expect.getState().currentTestName));
+    beforeEach(() => (DEBUG ? console.log(expect.getState().currentTestName) : null))
 
     it('Should be able to use Redis cache"', async () => {
         notify("Use Redis technology");
@@ -565,7 +561,7 @@ describe(`Use Redis technology`, () => {
 
 describe(`Use Memcached technology`, () => {
 
-    beforeEach(() => console.log(expect.getState().currentTestName));
+    beforeEach(() => (DEBUG ? console.log(expect.getState().currentTestName) : null))
 
     it('Should be able to use Memcached cache"', async () => {
         notify("Use Memcached technology");
