@@ -3,6 +3,7 @@
 use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\BouncerException;
 use CrowdSecBouncer\Constants;
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
@@ -25,15 +26,18 @@ function getCrowdSecLoggerInstance(): Logger
 
     // Log more data if WP_DEBUG=1
 
-    $loggerLevel = WP_DEBUG ? Logger::DEBUG : Logger::INFO;
     $logger = new Logger('wp_bouncer');
-    $fileHandler = new RotatingFileHandler(CROWDSEC_LOG_PATH, 0, $loggerLevel);
 
-    // Set custom readble logger for WP_DEBUG=1
-    if (WP_DEBUG) {
-        $fileHandler->setFormatter(new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, "[%datetime%] %message% %context%\n", 'H:i:s'));
-    }
+    $fileHandler = new RotatingFileHandler(CROWDSEC_LOG_PATH, 0, Logger::INFO);
+    $fileHandler->setFormatter(new LineFormatter("%datetime%|%level%|%context%\n"));
     $logger->pushHandler($fileHandler);
+
+    // Set custom readable logger for WP_DEBUG=1
+    if (WP_DEBUG) {
+        $debugFileHandler = new RotatingFileHandler(CROWDSEC_DEBUG_LOG_PATH, 0, Logger::DEBUG);
+        $debugFileHandler->setFormatter(new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, "[%datetime%] %message% %context%\n", 'H:i:s'));
+        $logger->pushHandler($debugFileHandler);
+    }
 
     return $logger;
 }

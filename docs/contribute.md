@@ -135,7 +135,7 @@ docker-compose run wordpress<X.X> bash
 ### Display the plugin logs
 
 ```bash
-tail -f logs/*
+tail -f logs/debug-*
 ```
 
 #### New feature workflow
