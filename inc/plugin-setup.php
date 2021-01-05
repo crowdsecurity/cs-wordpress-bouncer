@@ -31,6 +31,10 @@ function activate_crowdsec_plugin()
     update_option('crowdsec_hide_mentions', false);
     update_option('crowdsec_trust_ip_forward', '');
     update_option('crowdsec_trust_ip_forward_array', []);
+
+    if (!get_option('crowdsec_random_log_folder')) {
+        update_option('crowdsec_random_log_folder', bin2hex(random_bytes(64)));
+    }
 }
 
 /**
