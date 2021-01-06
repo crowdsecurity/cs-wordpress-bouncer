@@ -21,7 +21,7 @@ done
 
 # Run tests
 rm -rf ./tests/functional/screenshots
-cd logs && rm -R `ls -1 -d */` && cd -
+cd logs && rm -R `ls -1 -d */` ; cd -
 WORDPRESS_VERSION=$WORDPRESS_VERSION WATCHER_LOGIN=$WATCHER_LOGIN WATCHER_PASSWORD=$WATCHER_PASSWORD \
 LAPI_URL_FROM_CONTAINERS='http://crowdsec:8080' LAPI_URL_FROM_HOST='http://localhost:8080' \
 yarn --cwd ./tests/functional test \
