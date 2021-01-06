@@ -16,7 +16,17 @@ docker-compose up -d wordpress crowdsec mysql redis memcached
 
 Visit the wordpress instance here: http://localhost and install the wordpress instance.
 
-# Init deps for dev environment
+# Permissions fix for docker volumes when using a Linux host:
+
+To allow container to create directories, please fix the permissions to:
+
+```sh
+chmod 777 . logs
+```
+
+> Note: Do this only in local development context. We'll try to find a better solution.
+
+# Init `composer` dependencies
 
 ```bash
 docker-compose exec wordpress composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
@@ -109,6 +119,17 @@ CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2 docker-compose up -d --build --force-recrea
 In end 2020, [more than 90% of the wordpress websites](https://wordpress.org/about/stats/) was using WordPress versions:
 
 The plugin is tested under each of these versions: `5.6`, `5.5`, `5.4`, `5.3`, `5.2`, `5.1`, `5.0`, `4.9`.
+
+### Debug mode VS Production mode
+
+The debug mode throw verbose errors. The production hide every error to let users navigate in every edge cases.
+
+This plugin goes in debug mode when Wordpress debug mode is enabled.
+
+To try the production mode of this plugin, just disable the wordpress debug mode: in `docker-compose.yml`, comment the line:
+```yml
+    WORDPRESS_DEBUG: 1 # Comment this line the simulate the production mode
+```
 
 #### Add support for a new WordPress version
 
