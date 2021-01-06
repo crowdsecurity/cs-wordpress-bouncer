@@ -320,21 +320,30 @@ const remediationShouldUpdate = async (
         await fillInput("crowdsec_api_key", BOUNCER_KEY);
         await onAdminSaveSettings();
     });
-});
 
-describe(`Run in Live mode`, () => {
-
-    beforeEach(() => (DEBUG ? console.log(expect.getState().currentTestName) : null))
-
-    it('Should reduce the cache durations"', async () => {
-        notify("Run in Live mode");
+    it('Should reduce the live mode cache durations"', async () => {
         await onAdminGoToAdvancedPage();
         await onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo(1);
         await onAdminAdvancedSettingsPageSetBadIpCacheDurationTo(1);
         await onAdminSaveSettings();
     });
 
+    it('Should reduce stream mode refresh frequency"', async () => {
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
+        await onAdminSaveSettings();
+    });
+
+
+});
+
+describe(`Run in Live mode`, () => {
+
+    beforeEach(() => (DEBUG ? console.log(expect.getState().currentTestName) : null))
+
     it('Should display the homepage with no remediation"', async () => {
+        notify("Run in Live mode");
         await publicHomepageShouldBeAccessible();
     });
 
@@ -410,7 +419,7 @@ describe(`Run in Live mode`, () => {
         await publicHomepageShouldBeAccessible();
     });
 
-    it("Should fallback to the selected remedition for unknown remediation", async () => {
+    it("Should fallback to the selected remediation for unknown remediation", async () => {
         await removeAllDecisions();
         await addDecision(CLIENT_IP, "mfa", 15 * 60);
         await wait(1000);
@@ -493,13 +502,9 @@ describe(`Run in Stream mode`, () => {
 
     it('Should enable the stream mode"', async () => {
         notify("Run in Stream mode");
-
         await goToAdmin();
         await onAdminGoToAdvancedPage();
-
         await onAdvancedPageEnableStreamMode();
-
-        await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
         await onAdminSaveSettings();
     });
 
