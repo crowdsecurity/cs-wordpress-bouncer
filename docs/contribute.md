@@ -68,6 +68,8 @@ docker-compose logs crowdsec
 
 ## Run functionnal tests
 
+> Note: If you have some problems while running tests, `docker system prune --volumes` can help.
+
 Headless mode (speed up):
 
 ```bash
@@ -87,8 +89,6 @@ All the versions:
 ```bash
 ./tests-local-wpall.sh
 ```
-
-> Note: If you have some problems while running tests, `docker system prune --volumes` can help.
 
 # WP Scan pass
 
