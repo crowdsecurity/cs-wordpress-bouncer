@@ -93,7 +93,7 @@ All the versions:
 # WP Scan pass
 
 ```bash
-docker-compose run --rm wpscan --url http://wordpress/
+docker-compose run --rm wpscan --url http://wordpress5-6/
 ```
 
 ### Quick `docker-compose` cheet sheet

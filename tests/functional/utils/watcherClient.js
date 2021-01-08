@@ -88,7 +88,6 @@ module.exports.addDecision = async (
         [startIp, endIp] = cidrToRange(ipOrCidr);
     } else {
         startIp = endIp = ipOrCidr;
-        startIp = endIp = ipOrCidr;
     }
     const startLongIp = ip2long(startIp);
     const endLongIp = ip2long(endIp);

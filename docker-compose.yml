@@ -1,6 +1,6 @@
 version: "3"
 services:
-    wordpress:
+    wordpress5-6:
         build:
             context: .
             dockerfile: ./docker/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
@@ -20,7 +20,7 @@ services:
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
-    wordpress5.5:
+    wordpress5-5:
         build:
             context: .
             dockerfile: ./docker/wp5.5/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
@@ -40,7 +40,7 @@ services:
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
     
-    wordpress5.4:
+    wordpress5-4:
         build:
             context: .
             dockerfile: ./docker/wp5.4/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
@@ -60,7 +60,7 @@ services:
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
     
-    wordpress5.3:
+    wordpress5-3:
         build:
             context: .
             dockerfile: ./docker/wp5.3/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
@@ -80,7 +80,7 @@ services:
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
-    wordpress5.2:
+    wordpress5-2:
         build:
             context: .
             dockerfile: ./docker/wp5.2/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
@@ -100,7 +100,7 @@ services:
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
-    wordpress5.1:
+    wordpress5-1:
         build:
             context: .
             dockerfile: ./docker/wp5.1/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
@@ -120,7 +120,7 @@ services:
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
-    wordpress5.0:
+    wordpress5-0:
         build:
             context: .
             dockerfile: ./docker/wp5.0/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
@@ -140,7 +140,7 @@ services:
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
-    wordpress4.9:
+    wordpress4-9:
         build:
             context: .
             dockerfile: ./docker/wp4.9/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
@@ -179,3 +179,22 @@ services:
         image: memcached:1-alpine
     wpscan:
         image: wpscanteam/wpscan
+    e2e:
+        image: mcr.microsoft.com/playwright:focal
+        environment:
+            WORDPRESS_VERSION: ${WORDPRESS_VERSION}
+            WATCHER_LOGIN: ${WATCHER_LOGIN}
+            WATCHER_PASSWORD: ${WATCHER_PASSWORD}
+            BOUNCER_KEY: ${BOUNCER_KEY}
+            LAPI_URL_FROM_CONTAINERS: http://crowdsec:8080
+            LAPI_URL_FROM_HOST: http://crowdsec:8080
+            WORDPRESS_URL: ${WORDPRESS_URL}
+            NETWORK_IFACE: eth0
+        depends_on:
+            - crowdsec
+            - mysql
+            - redis
+            - memcached
+        volumes:
+            - ./tests/functional:/var/run/tests:rw
+        command: tail -F anything

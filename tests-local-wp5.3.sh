@@ -1,4 +1,4 @@
 #!/bin/bash
 
-WORDPRESS_VERSION=5.3 ./tests-local.sh
+WORDPRESS_VERSION=5.3 ./tests-local-common.sh
 
