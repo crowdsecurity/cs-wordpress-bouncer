@@ -16,7 +16,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "80:80"
+            - "8050:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -36,7 +36,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "80:80"
+            - "8050:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
     
@@ -56,7 +56,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "80:80"
+            - "8050:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
     
@@ -76,7 +76,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "80:80"
+            - "8050:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -96,7 +96,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "80:80"
+            - "8050:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -116,7 +116,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "80:80"
+            - "8050:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -136,7 +136,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "80:80"
+            - "8050:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -156,7 +156,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "80:80"
+            - "8050:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -165,7 +165,7 @@ services:
         environment:
             - DISABLE_AGENT=true
         ports:
-            - "8080:8080"
+            - "8051:8080"
     mysql:
         image: mysql:5.7
         environment:
@@ -186,8 +186,8 @@ services:
             WATCHER_LOGIN: ${WATCHER_LOGIN}
             WATCHER_PASSWORD: ${WATCHER_PASSWORD}
             BOUNCER_KEY: ${BOUNCER_KEY}
-            LAPI_URL_FROM_CONTAINERS: http://crowdsec:8080
-            LAPI_URL_FROM_HOST: http://crowdsec:8080
+            LAPI_URL_FROM_WP: http://crowdsec:8080
+            LAPI_URL_FROM_E2E: http://crowdsec:8080
             WORDPRESS_URL: ${WORDPRESS_URL}
             NETWORK_IFACE: eth0
         depends_on:

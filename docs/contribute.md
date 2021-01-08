@@ -14,7 +14,7 @@ Run containers:
 docker-compose up -d wordpress crowdsec mysql redis memcached
 ```
 
-Visit the wordpress instance here: http://localhost and install the wordpress instance.
+Visit the wordpress instance here: http://localhost:8050 and install the wordpress instance.
 
 # Permissions fix for docker volumes when using a Linux host:
 

@@ -20,7 +20,7 @@ if (process.env.BROWSER_IP) {
 const WORDPRESS_VERSION = process.env.WORDPRESS_VERSION;
 const ADMIN_LOGIN = "admin";
 const ADMIN_PASSWORD = "my_very_very_secret_admin_password";
-const LAPI_URL = process.env.LAPI_URL_FROM_CONTAINERS;
+const LAPI_URL_FROM_WP = process.env.LAPI_URL_FROM_WP;
 const DEBUG = !!process.env.DEBUG;
 const TIMEOUT = (!!process.env.DEBUG ? 5 * 60 : 8) * 1000;
 const OTHER_IP = "1.2.3.4";
@@ -37,7 +37,7 @@ module.exports = {
     CLIENT_IP_V6,
     ADMIN_LOGIN,
     ADMIN_PASSWORD,
-    LAPI_URL,
+    LAPI_URL_FROM_WP,
     OTHER_IP,
     WP56,
     WP55,

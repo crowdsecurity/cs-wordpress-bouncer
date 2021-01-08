@@ -1,11 +1,11 @@
 const axios = require("axios").default;
 
-const LAPI_URL = process.env.LAPI_URL_FROM_HOST;
+const LAPI_URL_FROM_E2E = process.env.LAPI_URL_FROM_E2E;
 const WATCHER_LOGIN = process.env.WATCHER_LOGIN;
 const WATCHER_PASSWORD = process.env.WATCHER_PASSWORD;
 
 const httpClient = axios.create({
-    baseURL: LAPI_URL,
+    baseURL: LAPI_URL_FROM_E2E,
     timeout: 1000,
 });
 

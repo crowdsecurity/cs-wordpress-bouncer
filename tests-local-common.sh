@@ -16,7 +16,7 @@ export BOUNCER_KEY=`docker-compose exec crowdsec cscli bouncers add functional-t
 export CS_WP_HOST=`docker-compose exec crowdsec /sbin/ip route|awk '/default/ { printf $3 }'`
 docker-compose exec crowdsec cscli machines add $WATCHER_LOGIN --password $WATCHER_PASSWORD
 echo "Waiting for WordPress container to initialize..."
-until $(curl --output /dev/null --silent --head --fail http://localhost); do
+until $(curl --output /dev/null --silent --head --fail http://localhost:8050); do
     printf '.'
     sleep 0.1
 done
@@ -42,13 +42,13 @@ else
 
     echo "DEBUG MODE ENABLED"
 
-    WORDPRESS_URL="http://localhost" \
+    WORDPRESS_URL="http://localhost:8050" \
     BROWSER_IP=$CS_WP_HOST \
     WORDPRESS_VERSION=$WORDPRESS_VERSION \
     WATCHER_LOGIN=$WATCHER_LOGIN \
     WATCHER_PASSWORD=$WATCHER_PASSWORD \
-    LAPI_URL_FROM_CONTAINERS='http://crowdsec:8080' \
-    LAPI_URL_FROM_HOST='http://localhost:8080' \
+    LAPI_URL_FROM_WP='http://crowdsec:8080' \
+    LAPI_URL_FROM_E2E='http://localhost:8051' \
     yarn \
     --cwd ./tests/functional \
     test \

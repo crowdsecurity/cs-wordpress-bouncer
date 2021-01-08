@@ -4,7 +4,7 @@ const {
     ADMIN_LOGIN,
     ADMIN_PASSWORD,
     ADMIN_URL,
-    LAPI_URL,
+    LAPI_URL_FROM_WP,
     OTHER_IP,
     WORDPRESS_VERSION,
     WP56,
@@ -84,7 +84,7 @@ describe(`Setup WordPress ${WORDPRESS_VERSION} and CrowdSec plugin`, () => {
 
     it('Should install CrowdSec plugin"', async () => {
         // "Plugins" page
-        await page.goto(`${ADMIN_URL}/plugins.php'`);
+        await page.goto(`${ADMIN_URL}/plugins.php`);
         if (WP55 || WP56) {
             await page.click("#activate-crowdsec");
         } else {
@@ -97,7 +97,7 @@ describe(`Setup WordPress ${WORDPRESS_VERSION} and CrowdSec plugin`, () => {
 
     it('Should configure the connection details"', async () => {
         await onAdminGoToSettingsPage();
-        await fillInput("crowdsec_api_url", LAPI_URL);
+        await fillInput("crowdsec_api_url", LAPI_URL_FROM_WP);
         await fillInput("crowdsec_api_key", BOUNCER_KEY);
         await onAdminSaveSettings();
     });
