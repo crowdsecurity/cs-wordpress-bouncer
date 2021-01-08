@@ -196,5 +196,5 @@ services:
             - redis
             - memcached
         volumes:
-            - ./tests/functional:/var/run/tests:rw
+            - ./tests/e2e:/var/run/tests:rw
         command: tail -F anything

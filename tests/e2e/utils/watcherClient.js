@@ -94,7 +94,7 @@ module.exports.addDecision = async (
     const isRange = startLongIp !== endLongIp;
     const scenario = `add ${remediation} to ${
         isRange ? `range ${startIp} to ${endIp}` : `ip ${startIp}`
-    } for ${durationInSeconds} seconds for functional tests`;
+    } for ${durationInSeconds} seconds for e2e tests`;
     const scope = isRange ? "Range" : "Ip";
     const value = ipOrCidr;
     const startAt = new Date();

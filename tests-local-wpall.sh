@@ -9,4 +9,4 @@
 ./tests-local-wp5.0.sh
 ./tests-local-wp4.9.sh
 
-cat tests/functional/.test-results-* | jq .success
+cat tests/e2e/.test-results-* | jq .success

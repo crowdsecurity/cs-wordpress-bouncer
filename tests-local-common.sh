@@ -12,7 +12,7 @@ docker-compose down --remove-orphans
 docker-compose up -d $CONTAINER_NAME crowdsec mysql redis memcached
 
 # Setup CrowdSec
-export BOUNCER_KEY=`docker-compose exec crowdsec cscli bouncers add functional-tests -o raw`
+export BOUNCER_KEY=`docker-compose exec crowdsec cscli bouncers add e2e-tests -o raw`
 export CS_WP_HOST=`docker-compose exec crowdsec /sbin/ip route|awk '/default/ { printf $3 }'`
 docker-compose exec crowdsec cscli machines add $WATCHER_LOGIN --password $WATCHER_PASSWORD
 echo "Waiting for WordPress container to initialize..."
@@ -23,7 +23,7 @@ done
 
 # Run tests
 
-rm -rf ./tests/functional/screenshots
+rm -rf ./tests/e2e/screenshots
 cd logs && rm -R `ls -1 -d */` ; cd -
 
 if [[ -z "${DEBUG}" ]]; then
@@ -50,7 +50,7 @@ else
     LAPI_URL_FROM_WP='http://crowdsec:8080' \
     LAPI_URL_FROM_E2E='http://localhost:8051' \
     yarn \
-    --cwd ./tests/functional \
+    --cwd ./tests/e2e \
     test \
     --detectOpenHandles \
     --runInBand \
