@@ -6,7 +6,7 @@ This scenario exposes you the main features this plugin is capable of.
 
 We will start using "live" mode. You'll understand what it is after try the stream mode.
 
-* Install the stack before using the [stack install guide](contribute.md).
+* Before all, be sure to [get the stack installed using the docker-compose guide](install-with-docker-compose.md).
 
 * open a terminal to display LAPI logs in realtime:
 

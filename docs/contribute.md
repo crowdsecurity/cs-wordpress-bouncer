@@ -1,51 +1,6 @@
 # Contribute to this plugin
 
-## Install the stack for development purpose
-
-Select the PHP version you want to use (7.2, 7.3, 7.4, 8.0) :
-
-```bash
-export CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2
-```
-
-Run containers:
-
-```bash
-docker-compose up -d wordpress crowdsec mysql redis memcached
-```
-
-Visit the wordpress instance here: http://localhost:8050 and install the wordpress instance.
-
-# Permissions fix for docker volumes when using a Linux host:
-
-To allow container to create directories, please fix the permissions to:
-
-```sh
-chmod 777 . logs
-```
-
-> Note: Do this only in local development context. We'll try to find a better solution.
-
-# Init `composer` dependencies
-
-```bash
-docker-compose exec wordpress composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
-```
-
-> In this dev environment, we use `--prefer-source` to be able to develop the bouncer library at the same time. Composer will may ask you for your own Github token to download sources instead of using dist packages.
-
-# Install plugin and configure it
-
-To get a bouncer key:
-
-```bash
-docker-compose exec crowdsec cscli bouncers add wordpress-bouncer
-```
-
-The LAPI URL is:
-
-http://crowdsec:8080
-
+* Before all, be sure to [get the stack installed using the docker-compose guide](install-with-docker-compose.md).
 # Play with crowdsec state
 
 ```bash
@@ -64,36 +19,6 @@ docker-compose exec crowdsec cscli decisions delete --all
 
 # View CrowdSec logs:
 docker-compose logs crowdsec
-```
-
-## Run e2e tests
-
-First, install required deps. In order to run the excellent [Playwright](https://playwright.dev/) tool, you need to have `node` and `yarn` installed.
-
-```bash
-cd tests/e2e && yarn && cd -
-```
-
-> Note: If you have some problems while running tests, `docker system prune --volumes` can help.
-
-Headless mode (faster way):
-
-```bash
-./tests-local.sh
-```
-
-Debug mode (display the browser window and slow down speed. To use when adding new tests):
-
-```bash
-DEBUG=1 ./tests-local.sh
-```
-
-> Note: you can add `await jestPlaywright.debug()` when you want to pause the process.
-
-All the versions:
-
-```bash
-./tests-local-wpall.sh
 ```
 
 # WP Scan pass
@@ -120,13 +45,13 @@ docker rmi 145c1ed0e4df
 CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2 docker-compose up -d --build --force-recreate
 ```
 
-### Use another Worpress version
+### Try the plugin with another WordPress version
 
 In end 2020, [more than 90% of the wordpress websites](https://wordpress.org/about/stats/) was using WordPress versions:
 
 The plugin is tested under each of these versions: `5.6`, `5.5`, `5.4`, `5.3`, `5.2`, `5.1`, `5.0`, `4.9`.
 
-### Debug mode VS Production mode
+### Plugin debug mode VS production mode
 
 The debug mode throw verbose errors. The production hide every error to let users navigate in every edge cases.
 

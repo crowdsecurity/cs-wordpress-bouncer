@@ -26,6 +26,15 @@ done
 rm -rf ./tests/e2e/screenshots
 cd logs && rm -R `ls -1 -d */` ; cd -
 
+# If "SETUP_ONLY" is passed, run only setup of Wordpress and the CrowdSec plugin
+if [[ -z "${SETUP_ONLY}" ]]; then
+    FILELIST=""
+    echo "RUN ALL STEPS"
+else
+    FILELIST="./__tests__/0-setup-wordpress.js ./__tests__/1-setup-plugin.js"
+    echo "RUN SETUP STEPS ONLY"
+fi
+
 if [[ -z "${DEBUG}" ]]; then
     
     echo "(debug mode disabled)"
@@ -36,7 +45,8 @@ if [[ -z "${DEBUG}" ]]; then
     --detectOpenHandles \
     --runInBand \
     --json \
-    --outputFile=/var/run/tests/.test-results-$WORDPRESS_VERSION.json
+    --outputFile=/var/run/tests/.test-results-$WORDPRESS_VERSION.json \
+    $FILELIST
     
 else
 
@@ -55,7 +65,7 @@ else
     --detectOpenHandles \
     --runInBand \
     --json \
-    --outputFile=.test-results-$WORDPRESS_VERSION.json
-    
+    --outputFile=.test-results-$WORDPRESS_VERSION.json \
+    $FILELIST
 fi
 
