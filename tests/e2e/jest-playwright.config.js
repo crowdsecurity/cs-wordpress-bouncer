@@ -2,7 +2,6 @@ const debug = process.env.DEBUG;
 module.exports = {
 	launchOptions: {
 		headless: !debug,
-		devtools: debug,
 	},
 	connectOptions: debug ? {slowMo: 150} : {slowMo: 50},
 	exitOnPageError: !debug,

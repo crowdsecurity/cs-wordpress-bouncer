@@ -1,5 +1,6 @@
-const notifier = require('node-notifier');
+const notifier = require("node-notifier");
 const path = require("path");
+const fs = require('fs');
 const { addDecision, deleteAllDecisions } = require("./watcherClient");
 const {
     ADMIN_URL,
@@ -10,6 +11,8 @@ const {
     DEBUG,
     TIMEOUT,
 } = require("./constants");
+
+const COOKIES_FILE_PATH = `${__dirname}/../.cookies.json`;
 
 const notify = (message) => {
     if (DEBUG) {
@@ -252,6 +255,18 @@ const remediationShouldUpdate = async (
         }, timeoutMs);
     });
 
+const storeCookies = async () => {
+    const cookies = await context.cookies();
+    const cookieJson = JSON.stringify(cookies);
+    fs.writeFileSync(COOKIES_FILE_PATH, cookieJson);
+};
+
+const loadCookies = async (context) => {
+    const cookies = fs.readFileSync(COOKIES_FILE_PATH, "utf8");
+    const deserializedCookies = JSON.parse(cookies);
+    await context.addCookies(deserializedCookies);
+};
+
 module.exports = {
     notify,
     addDecision,
@@ -280,4 +295,6 @@ module.exports = {
     forceCronRun,
     fillInput,
     remediationShouldUpdate,
+    storeCookies,
+    loadCookies
 };

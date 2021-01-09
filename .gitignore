@@ -8,6 +8,7 @@ vendor/
 node_modules/
 .test-results*
 tests/e2e/screenshots
+.cookies.json
 
 # App
 .bouncer-key
