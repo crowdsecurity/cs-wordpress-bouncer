@@ -1,5 +1,7 @@
 FROM wordpress:5.3-php7.2
 
+RUN usermod -u 1000 www-data
+
 RUN a2disconf remoteip && a2dismod remoteip && service apache2 restart
 
 RUN apt-get update && apt-get install -y git libmemcached-dev zlib1g-dev \
