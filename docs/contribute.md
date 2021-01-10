@@ -27,6 +27,15 @@ docker-compose logs crowdsec
 docker-compose run --rm wpscan --url http://wordpress5-6/
 ```
 
+## Reinstall `composer` dependencies
+
+```bash
+docker-compose exec wordpress5-6 composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
+```
+
+> In this dev environment, we use `--prefer-source` to be able to develop the bouncer library at the same time. Composer will may ask you for your own Github token to download sources instead of using dist packages.
+
+
 ### Quick `docker-compose` cheet sheet
 
 ```bash
@@ -60,6 +69,25 @@ This plugin goes in debug mode when Wordpress debug mode is enabled.
 To try the production mode of this plugin, just disable the wordpress debug mode: in `docker-compose.yml`, comment the line:
 ```yml
     WORDPRESS_DEBUG: 1 # Comment this line the simulate the production mode
+```
+
+#### Test linux behaviour from OSX or Windows
+
+You can test the Linux behaviour of this project using **Vagrant**.
+
+```bash
+vagrant up
+vagrant ssh
+cd /vagrant
+sudo su
+export CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2
+./tests-local.sh
+```
+
+To destroy the vagrant instance:
+
+```bash
+vagrant destroy
 ```
 
 #### Add support for a new WordPress version

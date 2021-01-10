@@ -14,3 +14,4 @@ tests/e2e/screenshots
 .bouncer-key
 .cache/
 *.log
+.vagrant

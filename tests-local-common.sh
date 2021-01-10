@@ -10,6 +10,7 @@ CONTAINER_NAME=`echo "wordpress$WORDPRESS_VERSION" | tr . -`
 export BOUNCER_KEY=0 # as each docker-compose execution require it
 docker-compose down --remove-orphans
 docker-compose up -d $CONTAINER_NAME crowdsec mysql redis memcached
+docker-compose exec $CONTAINER_NAME composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
 
 # Setup CrowdSec
 export BOUNCER_KEY=`docker-compose exec crowdsec cscli bouncers add e2e-tests -o raw`
@@ -38,6 +39,7 @@ fi
 if [[ -z "${DEBUG}" ]]; then
     
     echo "(debug mode disabled)"
+    docker-compose run e2e yarn --cwd ./var/run/tests
 
     WORDPRESS_URL="http://$CONTAINER_NAME" \
     NETWORK_IFACE=eth0 \
@@ -51,6 +53,7 @@ if [[ -z "${DEBUG}" ]]; then
 else
 
     echo "DEBUG MODE ENABLED"
+    cd tests/e2e && yarn && cd -
 
     WORDPRESS_URL="http://localhost:8050" \
     BROWSER_IP=$CS_WP_HOST \
@@ -68,4 +71,3 @@ else
     --outputFile=.test-results-$WORDPRESS_VERSION.json \
     $FILELIST
 fi
-
