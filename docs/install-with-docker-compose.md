@@ -2,16 +2,6 @@
 
 Follow this guide to get the development stack installed locally.
 
-## [Linux host only] Fix permissions for docker volumes when using a Linux host:
-
-To allow container to create directories, please fix the permissions to:
-
-```sh
-chmod 777 . logs
-```
-
-> Note: Do this only in local development context. We'll try to find a better solution.
-
 ## Install the stack for development purpose
 
 Select the PHP version you want to use (7.2, 7.3, 7.4, 8.0) :
