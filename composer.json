@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "crowdsec/bouncer": "^0.4.3"
+        "crowdsec/bouncer": "^0.8.6"
     },
     "require-dev": {
         "bramus/monolog-colored-line-formatter": "^3.0",

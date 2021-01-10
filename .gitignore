@@ -7,9 +7,11 @@ vendor/
 #Tools
 node_modules/
 .test-results*
-tests/functional/screenshots
+tests/e2e/screenshots
+.cookies.json
 
 # App
 .bouncer-key
 .cache/
 *.log
+.vagrant

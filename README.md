@@ -9,6 +9,9 @@
 - Now you can activate it and see a new menu named "CrowdSec"
 ```
 
+## Install WordPress and the CrowdSec plugin locally with docker-compose
+
+Look at the [Installation guide](docs/install-with-docker-compose.md).
 ## Demo guide
 
 Follow the [Demo Guide](docs/full-guide.md) to discover the main features this plugin is capable of.

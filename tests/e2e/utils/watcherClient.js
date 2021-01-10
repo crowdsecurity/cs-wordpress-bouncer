@@ -1,11 +1,11 @@
 const axios = require("axios").default;
 
-const LAPI_URL = process.env.LAPI_URL_FROM_HOST;
+const LAPI_URL_FROM_E2E = process.env.LAPI_URL_FROM_E2E;
 const WATCHER_LOGIN = process.env.WATCHER_LOGIN;
 const WATCHER_PASSWORD = process.env.WATCHER_PASSWORD;
 
 const httpClient = axios.create({
-    baseURL: LAPI_URL,
+    baseURL: LAPI_URL_FROM_E2E,
     timeout: 1000,
 });
 
@@ -88,14 +88,13 @@ module.exports.addDecision = async (
         [startIp, endIp] = cidrToRange(ipOrCidr);
     } else {
         startIp = endIp = ipOrCidr;
-        startIp = endIp = ipOrCidr;
     }
     const startLongIp = ip2long(startIp);
     const endLongIp = ip2long(endIp);
     const isRange = startLongIp !== endLongIp;
     const scenario = `add ${remediation} to ${
         isRange ? `range ${startIp} to ${endIp}` : `ip ${startIp}`
-    } for ${durationInSeconds} seconds for functional tests`;
+    } for ${durationInSeconds} seconds for e2e tests`;
     const scope = isRange ? "Range" : "Ip";
     const value = ipOrCidr;
     const startAt = new Date();

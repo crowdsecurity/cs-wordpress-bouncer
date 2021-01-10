@@ -1,41 +1,6 @@
 # Contribute to this plugin
 
-## Install the stack for development purpose
-
-Select the PHP version you want to use (7.2, 7.3, 7.4, 8.0) :
-
-```bash
-export CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2
-```
-
-Run containers:
-
-```bash
-docker-compose up -d wordpress crowdsec mysql redis memcached
-```
-
-Visit the wordpress instance here: http://localhost and install the wordpress instance.
-
-# Init deps for dev environment
-
-```bash
-docker-compose exec wordpress composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
-```
-
-> In this dev environment, we use `--prefer-source` to be able to develop the bouncer library at the same time. Composer will may ask you for your own Github token to download sources instead of using dist packages.
-
-# Install plugin and configure it
-
-To get a bouncer key:
-
-```bash
-docker-compose exec crowdsec cscli bouncers add wordpress-bouncer
-```
-
-The LAPI URL is:
-
-http://crowdsec:8080
-
+* Before all, be sure to [get the stack installed using the docker-compose guide](install-with-docker-compose.md).
 # Play with crowdsec state
 
 ```bash
@@ -56,35 +21,20 @@ docker-compose exec crowdsec cscli decisions delete --all
 docker-compose logs crowdsec
 ```
 
-## Run functionnal tests
-
-Headless mode (speed up):
-
-```bash
-./tests-local.sh
-```
-
-Debug mode (add tests):
-
-```bash
-DEBUG ./tests-local.sh
-```
-
-> Note: you can add `await jestPlaywright.debug()` at the moment you want to pause the process.
-
-All the versions:
-
-```bash
-./tests-local-wpall.sh
-```
-
-> Note: If you have some problems while running tests, `docker system prune --volumes` can help.
-
 # WP Scan pass
 
 ```bash
-docker-compose run --rm wpscan --url http://wordpress/
+docker-compose run --rm wpscan --url http://wordpress5-6/
 ```
+
+## Reinstall `composer` dependencies
+
+```bash
+docker-compose exec wordpress5-6 composer install --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
+```
+
+> In this dev environment, we use `--prefer-source` to be able to develop the bouncer library at the same time. Composer will may ask you for your own Github token to download sources instead of using dist packages.
+
 
 ### Quick `docker-compose` cheet sheet
 
@@ -104,11 +54,41 @@ docker rmi 145c1ed0e4df
 CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2 docker-compose up -d --build --force-recreate
 ```
 
-### Use another Worpress version
+### Try the plugin with another WordPress version
 
 In end 2020, [more than 90% of the wordpress websites](https://wordpress.org/about/stats/) was using WordPress versions:
 
 The plugin is tested under each of these versions: `5.6`, `5.5`, `5.4`, `5.3`, `5.2`, `5.1`, `5.0`, `4.9`.
+
+### Plugin debug mode VS production mode
+
+The debug mode throw verbose errors. The production hide every error to let users navigate in every edge cases.
+
+This plugin goes in debug mode when Wordpress debug mode is enabled.
+
+To try the production mode of this plugin, just disable the wordpress debug mode: in `docker-compose.yml`, comment the line:
+```yml
+    WORDPRESS_DEBUG: 1 # Comment this line the simulate the production mode
+```
+
+#### Test linux behaviour from OSX or Windows
+
+You can test the Linux behaviour of this project using **Vagrant**.
+
+```bash
+vagrant up
+vagrant ssh
+cd /vagrant
+sudo su
+export CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2
+./tests-local.sh
+```
+
+To destroy the vagrant instance:
+
+```bash
+vagrant destroy
+```
 
 #### Add support for a new WordPress version
 
