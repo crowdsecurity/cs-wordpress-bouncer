@@ -1,18 +1,15 @@
 # Contribute to this plugin
 
-* Before all, be sure to [get the stack installed using the docker-compose guide](install-with-docker-compose.md).
+> Before all, be sure to [get the stack installed using the docker-compose guide](install-with-docker-compose.md).
 # Play with crowdsec state
 
 ```bash
-# Get the Docker host IP from inside the crowdsec container
-export CS_WP_HOST=`docker-compose exec crowdsec /sbin/ip route|awk '/default/ { printf $3 }'`
 
 # Add captcha your own IP for 15m:
-docker-compose exec crowdsec cscli decisions add --ip ${CS_WP_HOST} --duration 15m --type captcha
+docker-compose exec crowdsec cscli decisions add --ip ${DOCKER_HOST_IP} --duration 15m --type captcha
 
 # Ban your own IP for 15 sec:
-docker-compose exec crowdsec cscli decisions add --ip ${CS_WP_HOST} --duration 15s --type ban
-
+docker-compose exec crowdsec cscli decisions add --ip ${DOCKER_HOST_IP} --duration 15s --type ban
 
 # Remove all decisions:
 docker-compose exec crowdsec cscli decisions delete --all
@@ -20,6 +17,8 @@ docker-compose exec crowdsec cscli decisions delete --all
 # View CrowdSec logs:
 docker-compose logs crowdsec
 ```
+
+> Note: The `DOCKER_HOST_IP` environnment variable is initialized via `source ./load-env-vars.sh`.
 
 # WP Scan pass
 
@@ -50,15 +49,28 @@ docker-compose rm # destroy
 ```bash
 docker-compose down
 docker images | grep wordpress-bouncer_wordpress # to get the container id
-docker rmi 145c1ed0e4df
-CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2 docker-compose up -d --build --force-recreate
+docker rmi <container-id>
 ```
+
+Then, in the `.env` file, replace:
+
+```bash
+CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2
+```
+
+with :
+
+```bash
+CS_WORDPRESS_BOUNCER_PHP_VERSION=<the-new-php-version>
+```
+
+Then re-run the stack.
 
 ### Try the plugin with another WordPress version
 
-In end 2020, [more than 90% of the wordpress websites](https://wordpress.org/about/stats/) was using WordPress versions:
+In start of 2021, [more than 90% of the wordpress websites](https://wordpress.org/about/stats/) was using WordPress versions:
 
-The plugin is tested under each of these versions: `5.6`, `5.5`, `5.4`, `5.3`, `5.2`, `5.1`, `5.0`, `4.9`.
+The plugin is tested under each of these WordPress versions: `5.6`, `5.5`, `5.4`, `5.3`, `5.2`, `5.1`, `5.0`, `4.9`.
 
 ### Plugin debug mode VS production mode
 
@@ -79,9 +91,10 @@ You can test the Linux behaviour of this project using **Vagrant**.
 vagrant up
 vagrant ssh
 cd /vagrant
-sudo su
-export CS_WORDPRESS_BOUNCER_PHP_VERSION=7.2
-./tests-local.sh
+sudo usermod -aG docker $USER
+sudo systemctl restart docker
+cp .env.example .env
+./run-tests.sh
 ```
 
 To destroy the vagrant instance:
@@ -101,7 +114,7 @@ docker-compose up -d wordpress<X.X> crowdsec mysql redis memcached && docker-com
 
 # To display the captcha wall
 
-export CS_WP_HOST=`docker-compose exec crowdsec /sbin/ip route|awk '/default/ { printf $3 }'` && docker-compose exec crowdsec cscli decisions add --ip ${CS_WP_HOST} --duration 15m --type captcha
+docker-compose exec crowdsec cscli decisions add --ip ${DOCKER_HOST_IP} --duration 15m --type captcha
 
 # To delete the image in order to rebuild it
 
@@ -112,13 +125,15 @@ docker-compose down && docker rmi wordpress-bouncer_wordpress<X.X>
 docker-compose run wordpress<X.X> bash
 ```
 
+> Note: The `DOCKER_HOST_IP` environnment variable is initialized via `source ./load-env-vars.sh`.
+
 ### Display the plugin logs
 
 ```bash
 tail -f logs/debug-*
 ```
 
-#### New feature workflow
+### New feature workflow
 
 ```bash
 git checkout -b <branch-name>
@@ -134,7 +149,7 @@ gh pr create --fill
 
 > Note: after the merge, don't forget to delete to branch.
 
-#### New release workflow
+### New release workflow
 
 ```bash
 git checkout main && git pull && git co -

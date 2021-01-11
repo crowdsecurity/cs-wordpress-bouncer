@@ -28,33 +28,42 @@ docker-compose logs -f crowdsec
 
 * As we don't want this delay, to take in account immediately the last unban, feel free to [clear the cache in the wp-admin](http://localhost:8050/wp-admin/admin.php?page=crowdsec_plugin).
 
+The `DOCKER_HOST_IP` environnment variable is initialized via a call to:
+
+```bash
+source ./load-env-vars.sh
+```
+
 * In a term, ban your own IP for 4 hours:
 
 ```bash
-# Get the Docker host IP from inside the crowdsec container
-export CS_WP_HOST=`docker-compose exec crowdsec /sbin/ip route|awk '/default/ { printf $3 }'`
 
 # Ban your own IP for 4 hours:
-docker-compose exec crowdsec cscli decisions add --ip ${CS_WP_HOST} --duration 4h --type ban
+docker-compose exec crowdsec cscli decisions add --ip ${DOCKER_HOST_IP} --duration 4h --type ban
 ```
 
 * Immediately, the [public home](http://localhost:8050/) is now locked with a short message to explain you that you were ban.
 
 ### Try "captcha" remediation
 
+
 * Now, request captcha for your own IP for 15m:
 
 ```bash
+
 # Clear all existing decisions
 docker-compose exec crowdsec cscli decisions delete --all
 
 # Add a captcha
-docker-compose exec crowdsec cscli decisions add --ip ${CS_WP_HOST} --duration 15m --type captcha
+docker-compose exec crowdsec cscli decisions add --ip ${DOCKER_HOST_IP} --duration 15m --type captcha
 ```
 
 * The [public home](http://localhost:8050/) now request you to fill a captcha.
 
 * While you fail resolving the captcha, you'll not be able to access the website.
+
+> Note: when you resolve the captcha in your browser, the associated PHP session is considered as sure.
+> If you remove the captcha decision with `cscli`, then you add a new captcha decision for your IP, you'll not be prompted no more for the current PHP session. To view the captcha page, You can force using a new PHP session opening the front page with incognito mode.
 
 ## Stream mode, for the high traffic websites
 
@@ -78,7 +87,7 @@ docker-compose exec crowdsec cscli decisions delete --all
 * Now, if you ban your IP for 4h:
 
 ```bash
-docker-compose exec crowdsec cscli decisions add --ip ${CS_WP_HOST} --duration 4h --type ban
+docker-compose exec crowdsec cscli decisions add --ip ${DOCKER_HOST_IP} --duration 4h --type ban
 ```
 
 * In less than 30 seconds your IP will be banned and the [public home](http://localhost:8050/) will be locked.

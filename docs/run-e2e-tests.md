@@ -2,38 +2,45 @@
 
 * Before all, be sure to [get the stack installed using the docker-compose guide](install-with-docker-compose.md).
 
-> Note: If you have some problems while running tests, `docker system prune --volumes` can help.
+> In order to run the excellent [Playwright](https://playwright.dev/) tool, you need to have `node` and `yarn` installed on your local host.
 
-> Note: When a test fail a screenshot is taken, find them in `./tests/e2e/screenshots`.
+## A) Headful mode
 
-Headless mode (faster way):
+The debug mode display the browser window and slow down test execution speed. Use this mode when you add new tests.
 
+Run:
 ```bash
-./tests-local.sh
+./run-tests.sh
 ```
 
-## Debug mode to view the browser in live
+> If you have some problems while running tests, `docker system prune --volumes` can help.
 
-Debug mode (display the browser window and slow down speed. To use when adding new tests).
+> When a test fail a screenshot is taken, find them in `./tests/e2e/screenshots`.
 
-### Install e2e tests dependencies to automatically configure Wordpress and the CrowdSec plugin
+> You can add `await jestPlaywright.debug()` when you want to pause the process.
 
-* In order to run the excellent [Playwright](https://playwright.dev/) tool, you need to have `node` and `yarn` installed on your local host.
+## B) Headless mode (faster way)
 
-You have also have to install the required dependencies to run e2e tests with:
+To run the e2e tests without debug mode (in a docker container) just replace in the `.env` file:
 
 ```bash
-cd tests/e2e && yarn && cd -
+DEBUG=1
 ```
 
+with :
+
 ```bash
-DEBUG=1 ./tests-local.sh
+DEBUG=0
 ```
 
-> Note: you can add `await jestPlaywright.debug()` when you want to pause the process.
-
-## Run all the versions:
+Then run:
 
 ```bash
-./tests-local-wpall.sh
+./run-tests.sh
+```
+
+## Run tests over each WordPress versions
+
+```bash
+./run-tests-with-all-wp-versions.sh
 ```
