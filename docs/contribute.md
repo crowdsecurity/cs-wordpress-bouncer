@@ -72,6 +72,30 @@ In start of 2021, [more than 90% of the wordpress websites](https://wordpress.or
 
 The plugin is tested under each of these WordPress versions: `5.6`, `5.5`, `5.4`, `5.3`, `5.2`, `5.1`, `5.0`, `4.9`.
 
+#### Add support for a new WordPress version
+
+This is a sheet cheet to help testing briefly the support:
+
+```bash
+
+# To install a specific version
+docker-compose up -d wordpress<X.X> crowdsec mysql redis memcached && docker-compose exec crowdsec cscli bouncers add wordpress-bouncer
+
+# To display the captcha wall
+
+docker-compose exec crowdsec cscli decisions add --ip ${DOCKER_HOST_IP} --duration 15m --type captcha
+
+# To delete the image in order to rebuild it
+
+docker-compose down && docker rmi wordpress-bouncer_wordpress<X.X>
+
+# To debug inside the container
+
+docker-compose run wordpress<X.X> bash
+```
+
+> Note: The `DOCKER_HOST_IP` environnment variable is initialized via `source ./load-env-vars.sh`.
+
 ### Plugin debug mode VS production mode
 
 The debug mode throw verbose errors. The production hide every error to let users navigate in every edge cases.
@@ -103,57 +127,8 @@ To destroy the vagrant instance:
 vagrant destroy
 ```
 
-#### Add support for a new WordPress version
-
-This is a sheet cheet to help testing briefly the support:
-
-```bash
-
-# To install a specific version
-docker-compose up -d wordpress<X.X> crowdsec mysql redis memcached && docker-compose exec crowdsec cscli bouncers add wordpress-bouncer
-
-# To display the captcha wall
-
-docker-compose exec crowdsec cscli decisions add --ip ${DOCKER_HOST_IP} --duration 15m --type captcha
-
-# To delete the image in order to rebuild it
-
-docker-compose down && docker rmi wordpress-bouncer_wordpress<X.X>
-
-# To debug inside the container
-
-docker-compose run wordpress<X.X> bash
-```
-
-> Note: The `DOCKER_HOST_IP` environnment variable is initialized via `source ./load-env-vars.sh`.
-
 ### Display the plugin logs
 
 ```bash
 tail -f logs/debug-*
-```
-
-### New feature workflow
-
-```bash
-git checkout -b <branch-name>
-git commit # as much as necessary.
-
-# Rename branch if necessary
-git branch -m <new-name>
-git push origin :<old-name> && git push -u origin <new-name>
-
-# Create PR
-gh pr create --fill
-```
-
-> Note: after the merge, don't forget to delete to branch.
-
-### New release workflow
-
-```bash
-git checkout main && git pull && git co -
-git describe --tags `git rev-list --tags --max-count=1` # to verify what is the current tag
-export NEW_GIT_VERSION_WITHOUT_V_PREFIX= #...X.X.X
-./scripts/publish-release.sh
 ```
