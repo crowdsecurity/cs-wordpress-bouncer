@@ -4,6 +4,8 @@ services:
         build:
             context: .
             dockerfile: ./docker/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        networks: 
+            - wordpress_bouncer_network
         depends_on:
             - crowdsec
             - mysql
@@ -24,6 +26,8 @@ services:
         build:
             context: .
             dockerfile: ./docker/wp5.5/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        networks: 
+            - wordpress_bouncer_network
         depends_on:
             - crowdsec
             - mysql
@@ -44,6 +48,8 @@ services:
         build:
             context: .
             dockerfile: ./docker/wp5.4/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        networks: 
+            - wordpress_bouncer_network
         depends_on:
             - crowdsec
             - mysql
@@ -64,6 +70,8 @@ services:
         build:
             context: .
             dockerfile: ./docker/wp5.3/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        networks: 
+            - wordpress_bouncer_network
         depends_on:
             - crowdsec
             - mysql
@@ -84,6 +92,8 @@ services:
         build:
             context: .
             dockerfile: ./docker/wp5.2/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        networks: 
+            - wordpress_bouncer_network
         depends_on:
             - crowdsec
             - mysql
@@ -104,6 +114,8 @@ services:
         build:
             context: .
             dockerfile: ./docker/wp5.1/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        networks: 
+            - wordpress_bouncer_network
         depends_on:
             - crowdsec
             - mysql
@@ -124,6 +136,8 @@ services:
         build:
             context: .
             dockerfile: ./docker/wp5.0/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        networks: 
+            - wordpress_bouncer_network
         depends_on:
             - crowdsec
             - mysql
@@ -144,6 +158,8 @@ services:
         build:
             context: .
             dockerfile: ./docker/wp4.9/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        networks: 
+            - wordpress_bouncer_network
         depends_on:
             - crowdsec
             - mysql
@@ -162,34 +178,44 @@ services:
 
     crowdsec:
         image: crowdsecurity/crowdsec:latest
+        networks: 
+            - wordpress_bouncer_network
         environment:
             - DISABLE_AGENT=true
         ports:
             - "8051:8080"
     mysql:
         image: mysql:5.7
+        networks: 
+            - wordpress_bouncer_network
         environment:
             - MYSQL_ROOT_PASSWORD=super_secret_password
             - MYSQL_DATABASE=wordpress
     redis:
         image: redis:6-alpine
-        ports:
-            - "6379:6379"
+        networks: 
+            - wordpress_bouncer_network
     memcached:
         image: memcached:1-alpine
+        networks: 
+            - wordpress_bouncer_network
     wpscan:
         image: wpscanteam/wpscan
+        networks: 
+            - wordpress_bouncer_network
     e2e:
         image: mcr.microsoft.com/playwright:focal
+        networks: 
+            - wordpress_bouncer_network
         environment:
+            LAPI_URL_FROM_WP: http://crowdsec:8080
+            LAPI_URL_FROM_E2E: http://crowdsec:8080
+            NETWORK_IFACE: eth0
             WORDPRESS_VERSION: ${WORDPRESS_VERSION}
             WATCHER_LOGIN: ${WATCHER_LOGIN}
             WATCHER_PASSWORD: ${WATCHER_PASSWORD}
             BOUNCER_KEY: ${BOUNCER_KEY}
-            LAPI_URL_FROM_WP: http://crowdsec:8080
-            LAPI_URL_FROM_E2E: http://crowdsec:8080
             WORDPRESS_URL: ${WORDPRESS_URL}
-            NETWORK_IFACE: eth0
         depends_on:
             - crowdsec
             - mysql
@@ -198,3 +224,11 @@ services:
         volumes:
             - ./tests/e2e:/var/run/tests:rw
         command: tail -F anything
+
+networks:
+  wordpress_bouncer_network:
+    name: wordpress_bouncer_network
+    enable_ipv6: false
+    ipam:
+      config:
+        - subnet: ${NETWORK_SUBNET}
