@@ -53,12 +53,24 @@ const onAdminGoToAdvancedPage = async () => {
     // CrowdSec Menu
     await page.hover("#toplevel_page_crowdsec_plugin");
     await page.click(
-        "#toplevel_page_crowdsec_plugin > ul > li:nth-child(3) > a"
+        "#toplevel_page_crowdsec_plugin > ul > li:nth-child(4) > a"
     );
     await waitForNavigation;
 
     const title = await page.title();
     await expect(title).toContain("Advanced");
+};
+
+const onAdminGoToThemePage = async () => {
+    // CrowdSec Menu
+    await page.hover("#toplevel_page_crowdsec_plugin");
+    await page.click(
+        "#toplevel_page_crowdsec_plugin > ul > li:nth-child(3) > a"
+    );
+    await waitForNavigation;
+
+    const title = await page.title();
+    await expect(title).toContain("Theme customization");
 };
 
 const onLoginPageLoginAsAdmin = async () => {
@@ -116,11 +128,11 @@ const computeCurrentPageRemediation = async (
     if (title.includes(accessibleTextInTitle)) {
         return "bypass";
     } else {
-        await expect(title).toContain("Oops..");
+        await expect(title).toContain("Oops");
         const description = await page.$eval(`.desc`, (el) => el.innerText);
         const banText =
-            "This page is protected against cyber attacks and your IP has been banned by our system.";
-        const captchaText = "Please complete the security check.";
+            "cyber";
+        const captchaText = "check";
         if (description.includes(banText)) {
             return "ban";
         } else if (description.includes(captchaText)) {
@@ -276,6 +288,7 @@ module.exports = {
     goToPublicPage,
     onAdminGoToSettingsPage,
     onAdminGoToAdvancedPage,
+    onAdminGoToThemePage,
     onAdminSaveSettings,
     setToggle,
     onLoginPageLoginAsAdmin,

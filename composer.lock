@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "60402bd9789c97f3026617b747a67a95",
+    "content-hash": "f92be89c63c6680fc410d5a359467c06",
     "packages": [
         {
             "name": "crowdsec/bouncer",
-            "version": "v0.8.6",
+            "version": "v0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "c0f8860e5bc3dafbe1cb15a55c799ae489902c9a"
+                "reference": "ec14b97eb22fc1538c2744a9ef1794b7fb977f78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/c0f8860e5bc3dafbe1cb15a55c799ae489902c9a",
-                "reference": "c0f8860e5bc3dafbe1cb15a55c799ae489902c9a",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/ec14b97eb22fc1538c2744a9ef1794b7fb977f78",
+                "reference": "ec14b97eb22fc1538c2744a9ef1794b7fb977f78",
                 "shasum": ""
             },
             "require": {
@@ -65,9 +65,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.8.6"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.9.0"
             },
-            "time": "2021-01-04T17:49:19+00:00"
+            "time": "2021-01-12T16:19:57+00:00"
         },
         {
             "name": "gregwar/captcha",

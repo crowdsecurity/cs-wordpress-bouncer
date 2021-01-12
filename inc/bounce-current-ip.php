@@ -37,14 +37,69 @@ function bounceCurrentIp()
     function displayCaptchaWall()
     {
         header('HTTP/1.0 401 Unauthorized');
-        echo Bouncer::getCaptchaHtmlTemplate($_SESSION['crowdsec_captcha_resolution_failed'], $_SESSION['crowdsec_captcha_inline_image'], '', !get_option('crowdsec_hide_mentions'));
+        $config = [
+            'hide_crowdsec_mentions' => (bool) get_option('crowdsec_hide_mentions'),
+            'color' => [
+              'text' => [
+                'primary' => wp_specialchars_decode(get_option('crowdsec_theme_color_text_primary'), \ENT_QUOTES),
+                'secondary' => wp_specialchars_decode(get_option('crowdsec_theme_color_text_secondary'), \ENT_QUOTES),
+                'button' => wp_specialchars_decode(get_option('crowdsec_theme_color_text_button'), \ENT_QUOTES),
+                'error_message' => wp_specialchars_decode(get_option('crowdsec_theme_color_text_error_message'), \ENT_QUOTES),
+              ],
+              'background' => [
+                'page' => wp_specialchars_decode(get_option('crowdsec_theme_color_background_page'), \ENT_QUOTES),
+                'container' => wp_specialchars_decode(get_option('crowdsec_theme_color_background_container'), \ENT_QUOTES),
+                'button' => wp_specialchars_decode(get_option('crowdsec_theme_color_background_button'), \ENT_QUOTES),
+                'button_hover' => wp_specialchars_decode(get_option('crowdsec_theme_color_background_button_hover'), \ENT_QUOTES),
+              ],
+            ],
+            'text' => [
+              'captcha_wall' => [
+                'tab_title' => wp_specialchars_decode(get_option('crowdsec_theme_text_captcha_wall_tab_title'), \ENT_QUOTES),
+                'title' => wp_specialchars_decode(get_option('crowdsec_theme_text_captcha_wall_title'), \ENT_QUOTES),
+                'subtitle' => wp_specialchars_decode(get_option('crowdsec_theme_text_captcha_wall_subtitle'), \ENT_QUOTES),
+                'refresh_image_link' => wp_specialchars_decode(get_option('crowdsec_theme_text_captcha_wall_refresh_image_link'), \ENT_QUOTES),
+                'captcha_placeholder' => wp_specialchars_decode(get_option('crowdsec_theme_text_captcha_wall_captcha_placeholder'), \ENT_QUOTES),
+                'send_button' => wp_specialchars_decode(get_option('crowdsec_theme_text_captcha_wall_send_button'), \ENT_QUOTES),
+                'error_message' => wp_specialchars_decode(get_option('crowdsec_theme_text_captcha_wall_error_message'), \ENT_QUOTES),
+                'footer' => wp_specialchars_decode(get_option('crowdsec_theme_text_captcha_wall_footer'), \ENT_QUOTES),
+              ],
+            ],
+            'custom_css' => get_option('crowdsec_theme_custom_css'),
+          ];
+        echo Bouncer::getCaptchaHtmlTemplate($_SESSION['crowdsec_captcha_resolution_failed'], $_SESSION['crowdsec_captcha_inline_image'], '', $config);
         die();
     }
 
     function handleBanRemediation()
     {
         header('HTTP/1.0 403 Forbidden');
-        echo Bouncer::getAccessForbiddenHtmlTemplate(!get_option('crowdsec_hide_mentions'));
+        $config = [
+            'hide_crowdsec_mentions' => (bool) get_option('crowdsec_hide_mentions'),
+            'color' => [
+              'text' => [
+                'primary' => wp_specialchars_decode(get_option('crowdsec_theme_color_text_primary', \ENT_QUOTES)),
+                'secondary' => wp_specialchars_decode(get_option('crowdsec_theme_color_text_secondary', \ENT_QUOTES)),
+                'error_message' => wp_specialchars_decode(get_option('crowdsec_theme_color_text_error_message', \ENT_QUOTES)),
+              ],
+              'background' => [
+                'page' => wp_specialchars_decode(get_option('crowdsec_theme_color_background_page', \ENT_QUOTES)),
+                'container' => wp_specialchars_decode(get_option('crowdsec_theme_color_background_container', \ENT_QUOTES)),
+                'button' => wp_specialchars_decode(get_option('crowdsec_theme_color_background_button', \ENT_QUOTES)),
+                'button_hover' => wp_specialchars_decode(get_option('crowdsec_theme_color_background_button_hover', \ENT_QUOTES)),
+              ],
+            ],
+            'text' => [
+              'ban_wall' => [
+                'tab_title' => wp_specialchars_decode(get_option('crowdsec_theme_text_ban_wall_tab_title', \ENT_QUOTES)),
+                'title' => wp_specialchars_decode(get_option('crowdsec_theme_text_ban_wall_title', \ENT_QUOTES)),
+                'subtitle' => wp_specialchars_decode(get_option('crowdsec_theme_text_ban_wall_subtitle', \ENT_QUOTES)),
+                'footer' => wp_specialchars_decode(get_option('crowdsec_theme_text_ban_wall_footer', \ENT_QUOTES)),
+              ],
+            ],
+            'custom_css' => wp_specialchars_decode(get_option('crowdsec_theme_custom_css', \ENT_QUOTES)),
+          ];
+        echo Bouncer::getAccessForbiddenHtmlTemplate($config);
         die();
     }
 
