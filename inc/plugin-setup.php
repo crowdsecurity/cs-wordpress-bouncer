@@ -32,6 +32,31 @@ function activate_crowdsec_plugin()
     update_option('crowdsec_trust_ip_forward', '');
     update_option('crowdsec_trust_ip_forward_array', []);
 
+    update_option('crowdsec_theme_color_text_primary', 'black');
+    update_option('crowdsec_theme_color_text_secondary', '#AAA');
+    update_option('crowdsec_theme_color_text_button', 'white');
+    update_option('crowdsec_theme_color_text_error_message', '#b90000');
+    update_option('crowdsec_theme_color_background_page', '#eee');
+    update_option('crowdsec_theme_color_background_container', 'white');
+    update_option('crowdsec_theme_color_background_button', '#626365');
+    update_option('crowdsec_theme_color_background_button_hover', '#333');
+
+    update_option('crowdsec_theme_text_captcha_wall_tab_title', 'Oops..');
+    update_option('crowdsec_theme_text_captcha_wall_title', 'Hmm, sorry but...');
+    update_option('crowdsec_theme_text_captcha_wall_subtitle', 'Please complete the security check.');
+    update_option('crowdsec_theme_text_captcha_wall_refresh_image_link', 'refresh image');
+    update_option('crowdsec_theme_text_captcha_wall_captcha_placeholder', 'Type here...');
+    update_option('crowdsec_theme_text_captcha_wall_send_button', 'CONTINUE');
+    update_option('crowdsec_theme_text_captcha_wall_error_message', 'Please try again.');
+    update_option('crowdsec_theme_text_captcha_wall_footer', '');
+
+    update_option('crowdsec_theme_text_ban_wall_tab_title', 'Oops..');
+    update_option('crowdsec_theme_text_ban_wall_title', '🤭 Oh!');
+    update_option('crowdsec_theme_text_ban_wall_subtitle', 'This page is protected against cyber attacks and your IP has been banned by our system.');
+    update_option('crowdsec_theme_text_ban_wall_footer', '');
+
+    update_option('crowdsec_theme_custom_css', '');
+
     if (!get_option('crowdsec_random_log_folder')) {
         update_option('crowdsec_random_log_folder', bin2hex(random_bytes(64)));
     }
@@ -76,4 +101,29 @@ function deactivate_crowdsec_plugin()
     delete_option('crowdsec_hide_mentions');
     delete_option('crowdsec_trust_ip_forward');
     delete_option('crowdsec_trust_ip_forward_array');
+
+    delete_option('crowdsec_theme_color_text_primary');
+    delete_option('crowdsec_theme_color_text_secondary');
+    delete_option('crowdsec_theme_color_text_button');
+    delete_option('crowdsec_theme_color_text_error_message');
+    delete_option('crowdsec_theme_color_background_page');
+    delete_option('crowdsec_theme_color_background_container');
+    delete_option('crowdsec_theme_color_background_button');
+    delete_option('crowdsec_theme_color_background_button_hover');
+
+    delete_option('crowdsec_theme_text_captcha_wall_tab_title');
+    delete_option('crowdsec_theme_text_captcha_wall_title');
+    delete_option('crowdsec_theme_text_captcha_wall_subtitle');
+    delete_option('crowdsec_theme_text_captcha_wall_refresh_image_link');
+    delete_option('crowdsec_theme_text_captcha_wall_captcha_placeholder');
+    delete_option('crowdsec_theme_text_captcha_wall_send_button');
+    delete_option('crowdsec_theme_text_captcha_wall_error_message');
+    delete_option('crowdsec_theme_text_captcha_wall_footer');
+
+    delete_option('crowdsec_theme_text_ban_wall_tab_title');
+    delete_option('crowdsec_theme_text_ban_wall_title');
+    delete_option('crowdsec_theme_text_ban_wall_subtitle');
+    delete_option('crowdsec_theme_text_ban_wall_footer');
+
+    delete_option('crowdsec_theme_custom_css');
 }

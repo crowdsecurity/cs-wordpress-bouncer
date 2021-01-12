@@ -4,6 +4,11 @@
 git checkout -b <branch-name>
 git commit # as much as necessary.
 
+# If the bouncer version has been bumped
+# Update <project>/composer.json with the last version then:
+export CONTAINER_NAME=`echo "wordpress$WORDPRESS_VERSION" | tr . -`
+docker-compose exec $CONTAINER_NAME composer update --working-dir /var/www/html/wp-content/plugins/cs-wordpress-bouncer --prefer-source
+
 # Rename branch if necessary
 git branch -m <new-name>
 git push origin :<old-name> && git push -u origin <new-name>

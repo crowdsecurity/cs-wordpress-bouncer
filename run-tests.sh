@@ -38,7 +38,9 @@ if [[ $DEBUG == "0" ]]; then
     echo "(debug mode disabled)"
     docker-compose run e2e yarn --cwd ./var/run/tests
 
-    WORDPRESS_URL="http://$CONTAINER_NAME" \
+    WORDPRESS_URL="http://$CONTAINER_NAME"
+
+    WORDPRESS_URL=${WORDPRESS_URL} \
     NETWORK_IFACE=eth0 \
     docker-compose run e2e yarn --cwd ./var/run/tests test \
     --detectOpenHandles \
@@ -52,7 +54,9 @@ else
     echo "DEBUG MODE ENABLED"
     cd tests/e2e && yarn && cd -
 
-    WORDPRESS_URL="http://localhost:8050" \
+    WORDPRESS_URL="http://localhost:8050"
+
+    WORDPRESS_URL=${WORDPRESS_URL} \
     BROWSER_IP=$DOCKER_HOST_IP \
     WORDPRESS_VERSION=$WORDPRESS_VERSION \
     WATCHER_LOGIN=$WATCHER_LOGIN \
@@ -67,4 +71,8 @@ else
     --json \
     --outputFile=.test-results-$WORDPRESS_VERSION.json \
     $FILELIST
+fi
+
+if [[ -n "${SETUP_ONLY}" ]]; then
+    printf "You can now visit the freshly installed WordPress website: $WORDPRESS_URL/wp-admin\nlogin: admin\npassword: my_very_very_secret_admin_password\n"
 fi
