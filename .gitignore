@@ -9,6 +9,7 @@ node_modules/
 .test-results*
 tests/e2e/screenshots
 .cookies.json
+crowdsec-wp*
 
 # App
 .bouncer-key
