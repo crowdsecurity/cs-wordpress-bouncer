@@ -1,7 +1,7 @@
 === CrowdSec ===
 Contributors: crowdsec
 Donate link: https://crowdsec.net/
-Tags: security, firewall, malware scanner, two factor authentication, captcha, waf, web app firewall, mfa, 2fa
+Tags: crowdsec-bouncer, wordpress, security, firewall, captcha, ip-scanner, ip-blocker, ip-blocking, ip-address, ip-database, ip-range-check, crowdsec, ban-hosts, ban-management, anti-hacking, hacker-protection, captcha-image, captcha-generator, captcha-generation, captcha-service
 Requires at least: 4.9
 Tested up to: 5.6
 Stable tag: 0.5.0
@@ -9,7 +9,7 @@ Requires PHP: 7.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
-CrowdSec is an open-source cyber security tool. This plugin blocks the detected attackers or display them a captcha to check their are not bots.
+CrowdSec is an open-source cyber security tool. This plugin blocks the detected attackers or display them a captcha to check they are not bots.
 
 == Description ==
 
