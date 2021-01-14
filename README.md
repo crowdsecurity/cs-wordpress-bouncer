@@ -1,12 +1,18 @@
-![CrowdSec WordPress Bouncer](assets/banner-1544x500.png "CrowdSec WordPress Bouncer")
+# CrowdSec WordPress Bouncer
+
+![CrowdSec WordPress Bouncer](.wordpress-org/banner-1544x500.png "CrowdSec WordPress Bouncer")
 
 # How to install this plugin in WordPress
 
 
 - Go to WordPress backend
 - Go to 'Plugins' -> 'Add New' And click on "Upload Plugin" (at the top of the page)
-- Choose your zipped plugins file and install it
+- Search "crowdsec"
 - Now you can activate it and see a new menu named "CrowdSec"
+
+# WordPress Marketplace
+
+You can find this plugin on the [WordPress Plugins Marketplace](https://wordpress.org/plugins/crowdsec/).
 
 # FAQ
 
