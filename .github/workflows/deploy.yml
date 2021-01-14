@@ -3,8 +3,6 @@ name: Deploy to WordPress.org
 on:
   release:
     types: [published]
-on:
-  push:
 
 jobs:
   tag:
