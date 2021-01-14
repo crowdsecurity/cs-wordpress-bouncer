@@ -9,23 +9,23 @@ Requires PHP: 7.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
-CrowdSec is an open-source cyber security tool. This plugin blocks the detected attackers or display them a captcha to check they are not bots.
+This plugin blocks detected attackers or displays them a captcha to check they are not bots.
 
 == Description ==
 
 CrowdSec is composed of a behavior detection engine, able to block classical attacks like credential bruteforce, port scans, web scans, etc.
 
-Based on attack blocked, and after curation of those signals to avoid false positives and poisoning, a global IP reputation DB is maintained and shared with all network members.
+Based on the type and number of blocked attacks, and after curation of those signals to avoid false positives and poisoning, a global IP reputation DB is maintained and shared with all network members.
 
-This wordpress plugin is a "bouncer", it blocks the detected attacks with two remediation systems: Ban or challenge detected attacker with a Captcha.
+This WordPress plugin is a "bouncer", which purpose is to block detected attacks with two remediation systems: ban or challenge detected attackers with a Captcha.
 
 
 == Frequently Asked Questions ==
 
-= What do I need to make CrowdSec works?  =
+= What do I need to make CrowdSec work? =
 
-- You have to get a CrowdSec instance available from this server.
-- On the server CrowdSec run, you have to generate a bouncer key.
+- You have to install a CrowdSec instance on this server.
+- You have to generate a bouncer key on the server on which CrowdSec is running.
 
 == Screenshots ==
 
@@ -43,25 +43,25 @@ This wordpress plugin is a "bouncer", it blocks the detected attacks with two re
 == Changelog ==
 
 = 0.5 =
-* The user can customize the ban wall and captcha wall.
+* Users can customize both ban and captcha walls
 
 = 0.4 =
-* User can set CDN IP ranges to trust.
+* Users can set CDN IP ranges to trust
 
 = 0.3 =
-* Add Redis and Memcached support for caching data.
+* Add Redis and Memcached support for caching data
 
 = 0.2 =
-* Make the public CrowdSec mentions hiddable.
+* Make public CrowdSec mentions hiddable
 
 = 0.1 =
-* Avoid useless bouncing cases.
-* Add advanced settings page.
+* Avoid useless bouncing cases
+* Add advanced settings page
 
 == Upgrade Notice ==
 
 = 0.5 =
-The user can customize the ban wall and captcha wall.
+The user can customize the ban wall and captcha wall
 
 == CrowdSec ==
 
