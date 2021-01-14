@@ -13,6 +13,8 @@ This plugin blocks detected attackers or displays them a captcha to check they a
 
 == Description ==
 
+Note: You must first have CrowdSec [installed on your server. The installation is very simple](https://doc.crowdsec.net/Crowdsec/v1/getting_started/installation/#installation).
+
 CrowdSec is composed of a behavior detection engine, able to block classical attacks like credential bruteforce, port scans, web scans, etc.
 
 Based on the type and number of blocked attacks, and after curation of those signals to avoid false positives and poisoning, a global IP reputation DB is maintained and shared with all network members.

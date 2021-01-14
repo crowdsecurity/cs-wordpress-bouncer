@@ -55,5 +55,8 @@
 			<input type="hidden" name="nonce" value="<?php echo wp_create_nonce('crowdsec_prune_cache'); ?>">
 		</form>
 		</div>
+		<p>
+			Feel free to ask any questions about this plugin, make your suggestions or raise issues on the <a href="https://wordpress.org/support/plugin/crowdsec/">plugin support page</a> or directly on <a href="https://github.com/crowdsecurity/cs-wordpress-bouncer/issues/new">Github</a>.
+		</p>
 	</div>
 </div>
