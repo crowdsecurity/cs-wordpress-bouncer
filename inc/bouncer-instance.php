@@ -35,8 +35,10 @@ function getCrowdSecLoggerInstance(): Logger
     // Set custom readable logger for WP_DEBUG=1
     if (WP_DEBUG) {
         $debugFileHandler = new RotatingFileHandler(CROWDSEC_DEBUG_LOG_PATH, 0, Logger::DEBUG);
-        $debugFileHandler->setFormatter(new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, "[%datetime%] %message% %context%\n", 'H:i:s'));
-        $logger->pushHandler($debugFileHandler);
+        if (class_exists('\Bramus\Monolog\Formatter\ColoredLineFormatter')) {
+            $debugFileHandler->setFormatter(new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, "[%datetime%] %message% %context%\n", 'H:i:s'));
+            $logger->pushHandler($debugFileHandler);
+        }
     }
 
     return $logger;
