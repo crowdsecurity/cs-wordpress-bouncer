@@ -1,25 +1,30 @@
-# CrowdSec WordPress Bouncer
+![CrowdSec WordPress Bouncer](assets/banner-772x250.png "CrowdSec WordPress Bouncer")
 
-## How to install this plugin in WordPress
+# How to install this plugin in WordPress
 
-```
-- Go to wordpress backend
+
+- Go to WordPress backend
 - Go to 'Plugins' -> 'Add New' And click on "Upload Plugin" (at the top of the page)
 - Choose your zipped plugins file and install it
 - Now you can activate it and see a new menu named "CrowdSec"
-```
 
-## Install WordPress and the CrowdSec plugin locally with docker-compose
+# FAQ
+
+Look at the [FAQ of this plugin](docs/faq.md).
+
+## Developer resources
+
+- Install WordPress and the CrowdSec plugin locally with docker-compose
 
 Look at the [Installation guide](docs/install-with-docker-compose.md).
-## Demo guide
+-  Demo guide
 
 Follow the [Demo Guide](docs/full-guide.md) to discover the main features this plugin is capable of.
 
-## How to contribute?
+-  How to contribute?
 
 Look at the [Contributor guide](docs/contribute.md).
 
-## FAQ
+# MIT Licence
 
-Look at the [FAQ of this plugin](docs/faq.md).
+[MIT License](https://github.com/crowdsecurity/php-cs-bouncer/blob/main/LICENSE)
