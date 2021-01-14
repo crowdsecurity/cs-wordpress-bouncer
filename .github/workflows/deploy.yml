@@ -1,0 +1,49 @@
+name: Deploy to WordPress.org
+
+on:
+  release:
+    types: [published]
+on:
+  push:
+
+jobs:
+  tag:
+    name: New release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    -   name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+            coverage: "none"
+            extensions: "json,memcached,redis,xsl,ldap,gd"
+            ini-values: "memory_limit=-1"
+            php-version: "7.2"
+            tools: pecl, composer
+    -   name: Display versions
+        run: |
+            php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . " " . phpversion($extension) . PHP_EOL;'
+            php -i    
+    -   name: Install PHP dependencies
+        run: composer install --no-dev --prefer-dist --optimize-autoloader
+
+    - name: WordPress Plugin Deploy
+      id: deploy
+      uses: 10up/action-wordpress-plugin-deploy@stable
+      with:
+        generate-zip: true
+      env:
+        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+        SLUG: crowdsec
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{github.workspace}}/${{ github.event.repository.name }}.zip
+        asset_name: ${{ github.event.repository.name }}.zip
+        asset_content_type: application/zip
