@@ -1,4 +1,4 @@
-![CrowdSec WordPress Bouncer](assets/banner-772x250.png "CrowdSec WordPress Bouncer")
+![CrowdSec WordPress Bouncer](assets/banner-1544x500.png "CrowdSec WordPress Bouncer")
 
 # How to install this plugin in WordPress
 
