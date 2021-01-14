@@ -15,7 +15,7 @@ Before all, create a `.env` file, using:
 cp .env.example .env
 ```
 
-> Note about PHP 8.0: WordPress official docker image [does not officially supports PHP 8.0](https://hub.docker.com/_/wordpress?tab=tags&page=1&ordering=last_updated) at this time. However, as the CrowdSec PHP Library does support PHP 8.0, there is a good chance that the pluggin will work fine with PHP 8.0, but we can not currently test it.
+> Note about PHP 8.0: WordPress official docker image [does not officially supports PHP 8.0](https://hub.docker.com/_/wordpress?tab=tags&page=1&ordering=last_updated) at this time. However, as the CrowdSec PHP Library does support PHP 8.0, there is a good chance that the plugin will work fine with PHP 8.0, but we can not currently test it.
 
 ## Configure WordPress and the CrowdSec Plugin
 
@@ -51,7 +51,7 @@ The LAPI URL is:
 
 http://crowdsec:8080
 
-## Try the plugin behaviour
+## Try the plugin behavior
 
 | Info            | Value                                |
 |-----------------|--------------------------------------|
