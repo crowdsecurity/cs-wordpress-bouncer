@@ -13,7 +13,7 @@
  * Requires PHP: 7.2
  * Requires at least: 4.9
  * Tested up to: 5.6
- * Stable tag: 0.5.2
+ * Stable tag: 0.5.3
  * Text Domain: crowdsec-wp
  * First release: 2021.
  */
