@@ -254,7 +254,7 @@ function adminAdvancedSettings()
         return $input;
     }, '<p>The <em><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For" '.
     'target="_blank">X-forwarded-For</a></em> HTTP Header will be trust only when the client IP is in this list.'.
-    '<br><strong>Comma (,)</strong> separated ips or ips ranges. Example: 1.2.3.4/24, 2.3.4.5, 3.4.5.6/27',
+    '<br><strong>Comma (,)</strong> separated ips or ips ranges. Example: 1.2.3.4/24, 2.3.4.5, 3.4.5.6/27.<br><br>Some common CDN IP list: <a href="https://www.cloudflare.com/fr-fr/ips/" target="_blank">Cloudflare</a>, <a href="https://api.fastly.com/public-ip-list" target="_blank">Fastly</a>',
     'fill the IPs or IPs ranges here...', '');
 
     // Field "crowdsec_hide_mentions"
