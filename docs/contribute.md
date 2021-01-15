@@ -107,26 +107,6 @@ To try the production mode of this plugin, just disable the wordpress debug mode
     WORDPRESS_DEBUG: 1 # Comment this line the simulate the production mode
 ```
 
-#### Test Linux behavior from OSX or Windows
-
-You can test the Linux behavior of this project using **Vagrant**.
-
-```bash
-vagrant up
-vagrant ssh
-cd /vagrant
-sudo usermod -aG docker $USER
-sudo systemctl restart docker
-cp .env.example .env
-./run-tests.sh
-```
-
-To destroy the vagrant instance:
-
-```bash
-vagrant destroy
-```
-
 ### Display the plugin logs
 
 ```bash
