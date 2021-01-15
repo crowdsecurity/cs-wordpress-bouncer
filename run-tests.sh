@@ -14,7 +14,7 @@ docker-compose exec $CONTAINER_NAME composer install --working-dir /var/www/html
 export BOUNCER_KEY=`docker-compose exec crowdsec cscli bouncers add e2e-tests -o raw`
 docker-compose exec crowdsec cscli machines add $WATCHER_LOGIN --password $WATCHER_PASSWORD
 echo "Waiting for WordPress container to initialize..."
-until $(curl --output /dev/null --silent --head --fail http://localhost:8050); do
+until $(curl --output /dev/null --silent --head --fail http://localhost); do
     printf '.'
     sleep 0.1
 done
@@ -54,7 +54,7 @@ else
     echo "DEBUG MODE ENABLED"
     cd tests/e2e && yarn && cd -
 
-    WORDPRESS_URL="http://localhost:8050"
+    WORDPRESS_URL="http://localhost"
 
     WORDPRESS_URL=${WORDPRESS_URL} \
     BROWSER_IP=$DOCKER_HOST_IP \

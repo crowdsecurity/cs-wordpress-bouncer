@@ -6,6 +6,8 @@ Follow this guide to get the development stack installed locally.
 > - you should have [`docker`](https://docs.docker.com/get-docker/) installed
 > - `docker` should be [`runnable without sudo`](https://docs.docker.com/engine/install/linux-postinstall/).
 > - [`docker-compose`](https://docs.docker.com/compose/install/) installed locally.
+> - IPv6 should be enable in your docker configuration. Enabled it following [this guide](https://docs.docker.com/config/daemon/ipv6/). (Note that you'll may have to create the file `/etc/docker/daemon.json`).
+> - If your develop environnment is MacOS, please refer to the [MacOS host installation guide](macos-host.md).
 
 ## Install the stack for development purpose
 
@@ -37,7 +39,7 @@ Alternatively, you can install wordpress and the plugin manually with:
 docker-compose up -d wordpress crowdsec mysql redis memcached
 ```
 
-Then visit the wordpress instance here: http://localhost:8050 and install the wordpress instance.
+Then visit the wordpress instance here: http://localhost and install the wordpress instance.
 
 Infos to setup the plugin:
 
@@ -55,7 +57,7 @@ http://crowdsec:8080
 
 | Info            | Value                                |
 |-----------------|--------------------------------------|
-| Public blog URL | http://localhost:8050                |
-| Blog admin URL  | http://localhost:8050/wp-admin       |
+| Public blog URL | http://localhost                     |
+| Blog admin URL  | http://localhost/wp-admin            |
 | Admin username  | `admin`                              |
 | Pasword         | `my_very_very_secret_admin_password` |
