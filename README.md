@@ -6,7 +6,7 @@
 
 
 - Go to WordPress backend
-- Go to 'Plugins' -> 'Add New' And click on "Upload Plugin" (at the top of the page)
+- Go to 'Plugins' -> 'Add New'
 - Search "crowdsec"
 - Now you can activate it and see a new menu named "CrowdSec"
 
