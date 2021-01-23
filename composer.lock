@@ -4,24 +4,25 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f92be89c63c6680fc410d5a359467c06",
+    "content-hash": "0d05b588e4b72f45b5ce28640591c5cc",
     "packages": [
         {
             "name": "crowdsec/bouncer",
-            "version": "v0.9.0",
+            "version": "v0.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "ec14b97eb22fc1538c2744a9ef1794b7fb977f78"
+                "reference": "7c7064217a59679bd937a5fde4c0e23b37e118de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/ec14b97eb22fc1538c2744a9ef1794b7fb977f78",
-                "reference": "ec14b97eb22fc1538c2744a9ef1794b7fb977f78",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/7c7064217a59679bd937a5fde4c0e23b37e118de",
+                "reference": "7c7064217a59679bd937a5fde4c0e23b37e118de",
                 "shasum": ""
             },
             "require": {
                 "gregwar/captcha": "^1.1",
+                "mlocati/ip-lib": "^1.14",
                 "monolog/monolog": "^2.1",
                 "php": "^7.2 || ^8.0",
                 "symfony/cache": "^5.2",
@@ -65,9 +66,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.9.0"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.10.0"
             },
-            "time": "2021-01-12T16:19:57+00:00"
+            "time": "2021-01-23T00:33:09+00:00"
         },
         {
             "name": "gregwar/captcha",
@@ -125,6 +126,78 @@
                 "source": "https://github.com/Gregwar/Captcha/tree/master"
             },
             "time": "2020-03-24T14:39:05+00:00"
+        },
+        {
+            "name": "mlocati/ip-lib",
+            "version": "1.14.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mlocati/ip-lib.git",
+                "reference": "882bc0e115970a536b13bcfa59f312783fce08c8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mlocati/ip-lib/zipball/882bc0e115970a536b13bcfa59f312783fce08c8",
+                "reference": "882bc0e115970a536b13bcfa59f312783fce08c8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "ext-pdo_sqlite": "*",
+                "phpunit/dbunit": "^1.4 || ^2 || ^3 || ^4",
+                "phpunit/phpunit": "^4.8 || ^5.7 || ^6.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "IPLib\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michele Locati",
+                    "email": "mlocati@gmail.com",
+                    "homepage": "https://github.com/mlocati",
+                    "role": "Author"
+                }
+            ],
+            "description": "Handle IPv4, IPv6 addresses and ranges",
+            "homepage": "https://github.com/mlocati/ip-lib",
+            "keywords": [
+                "IP",
+                "address",
+                "addresses",
+                "ipv4",
+                "ipv6",
+                "manage",
+                "managing",
+                "matching",
+                "network",
+                "networking",
+                "range",
+                "subnet"
+            ],
+            "support": {
+                "issues": "https://github.com/mlocati/ip-lib/issues",
+                "source": "https://github.com/mlocati/ip-lib/tree/1.14.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/mlocati",
+                    "type": "github"
+                },
+                {
+                    "url": "https://paypal.me/mlocati",
+                    "type": "other"
+                }
+            ],
+            "time": "2020-12-31T11:30:02+00:00"
         },
         {
             "name": "monolog/monolog",

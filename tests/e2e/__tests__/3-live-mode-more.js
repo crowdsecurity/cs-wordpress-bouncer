@@ -1,4 +1,4 @@
-const { CLIENT_IP, OTHER_IP } = require("../utils/constants");
+const { OTHER_IP } = require("../utils/constants");
 const {
     notify,
     addDecision,
@@ -16,10 +16,17 @@ const {
     loadCookies,
 } = require("../utils/helpers");
 
+let detectedBrowserIp;
+
 describe(`Run in Live mode`, () => {
     beforeEach(() => notify(expect.getState().currentTestName));
 
-    beforeAll(() => loadCookies(context));
+    beforeAll(async () => {
+        await loadCookies(context);
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        detectedBrowserIp = await page.$eval("#detected_ip_address", el => el.textContent);
+    });
 
     it('Should display a captcha wall instead of a ban wall in Flex mode"', async () => {
         // set Flex mode
@@ -68,7 +75,7 @@ describe(`Run in Live mode`, () => {
 
     it("Should fallback to the selected remediation for unknown remediation", async () => {
         await removeAllDecisions();
-        await addDecision(CLIENT_IP, "mfa", 15 * 60);
+        await addDecision(detectedBrowserIp, "mfa", 15 * 60);
         await wait(1000);
         await publicHomepageShouldBeCaptchaWall();
         await goToAdmin();
@@ -92,7 +99,7 @@ describe(`Run in Live mode`, () => {
         // Add the current IP to the CDN list (via a range)
         await goToAdmin();
         await onAdminGoToAdvancedPage();
-        await fillInput("crowdsec_trust_ip_forward_list", CLIENT_IP + "/30");
+        await fillInput("crowdsec_trust_ip_forward_list", detectedBrowserIp + "/30");
         await onAdminSaveSettings();
 
         // Should be banned

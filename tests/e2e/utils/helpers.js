@@ -5,7 +5,6 @@ const { addDecision, deleteAllDecisions } = require("./watcherClient");
 const {
     ADMIN_URL,
     BASE_URL,
-    CLIENT_IP,
     ADMIN_LOGIN,
     ADMIN_PASSWORD,
     DEBUG,
@@ -129,7 +128,7 @@ const computeCurrentPageRemediation = async (
         return "bypass";
     } else {
         await expect(title).toContain("Oops");
-        const description = await page.$eval(`.desc`, (el) => el.innerText);
+        const description = await page.$eval('.desc', (el) => el.innerText);
         const banText =
             "cyber";
         const captchaText = "check";
@@ -181,12 +180,12 @@ const banIpForSeconds = async (ip, seconds) => {
     await wait(1000);
 };
 
-const banOwnIpForSeconds = async (seconds) => {
-    await banIpForSeconds(CLIENT_IP, seconds);
+const banOwnIpForSeconds = async (seconds, ip) => {
+    await banIpForSeconds(ip, seconds);
 };
 
-const captchaOwnIpForSeconds = async (seconds) => {
-    await addDecision(CLIENT_IP, "captcha", seconds);
+const captchaOwnIpForSeconds = async (seconds, ip) => {
+    await addDecision(ip, "captcha", seconds);
     await wait(1000);
 };
 

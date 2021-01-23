@@ -13,10 +13,17 @@ const {
     loadCookies,
 } = require("../utils/helpers");
 
+let detectedBrowserIp;
+
 describe(`Run in Stream mode`, () => {
     beforeEach(() => notify(expect.getState().currentTestName));
 
-    beforeAll(() => loadCookies(context));
+    beforeAll(async () => {
+        await loadCookies(context);
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        detectedBrowserIp = await page.$eval("#detected_ip_address", el => el.textContent);
+    });
 
     it('Should enable the stream mode"', async () => {
         await goToAdmin();
@@ -26,7 +33,7 @@ describe(`Run in Stream mode`, () => {
     });
 
     it('Should display a ban wall via stream mode"', async () => {
-        await banOwnIpForSeconds(15 * 60);
+        await banOwnIpForSeconds(15 * 60, detectedBrowserIp);
         await forceCronRun();
         await publicHomepageShouldBeBanWall();
     });

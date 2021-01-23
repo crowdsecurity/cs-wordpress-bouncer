@@ -13,10 +13,17 @@ const {
     loadCookies,
 } = require("../utils/helpers");
 
+let detectedBrowserIp;
+
 describe(`Use Memcached technology`, () => {
     beforeEach(() => notify(expect.getState().currentTestName));
 
-    beforeAll(() => loadCookies(context));
+    beforeAll(async () => {
+        await loadCookies(context);
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        detectedBrowserIp = await page.$eval("#detected_ip_address", el => el.textContent);
+    });
 
     it('Should be able to use Memcached cache"', async () => {
         await goToAdmin();
@@ -37,7 +44,7 @@ describe(`Use Memcached technology`, () => {
         );
 
         await publicHomepageShouldBeAccessible();
-        await banOwnIpForSeconds(15 * 60);
+        await banOwnIpForSeconds(15 * 60, detectedBrowserIp);
         await forceCronRun();
         await publicHomepageShouldBeBanWall();
         await removeAllDecisions();

@@ -5,7 +5,8 @@ services:
             context: .
             dockerfile: ./docker/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         depends_on:
             - crowdsec
             - mysql
@@ -18,7 +19,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "8050:80"
+            - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -27,7 +28,8 @@ services:
             context: .
             dockerfile: ./docker/wp5.5/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         depends_on:
             - crowdsec
             - mysql
@@ -40,7 +42,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "8050:80"
+            - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
     
@@ -49,7 +51,8 @@ services:
             context: .
             dockerfile: ./docker/wp5.4/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         depends_on:
             - crowdsec
             - mysql
@@ -62,7 +65,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "8050:80"
+            - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
     
@@ -71,7 +74,8 @@ services:
             context: .
             dockerfile: ./docker/wp5.3/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         depends_on:
             - crowdsec
             - mysql
@@ -84,7 +88,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "8050:80"
+            - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -93,7 +97,8 @@ services:
             context: .
             dockerfile: ./docker/wp5.2/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         depends_on:
             - crowdsec
             - mysql
@@ -106,7 +111,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "8050:80"
+            - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -115,7 +120,8 @@ services:
             context: .
             dockerfile: ./docker/wp5.1/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         depends_on:
             - crowdsec
             - mysql
@@ -128,7 +134,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "8050:80"
+            - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -137,7 +143,8 @@ services:
             context: .
             dockerfile: ./docker/wp5.0/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         depends_on:
             - crowdsec
             - mysql
@@ -150,7 +157,7 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "8050:80"
+            - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
@@ -159,7 +166,8 @@ services:
             context: .
             dockerfile: ./docker/wp4.9/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         depends_on:
             - crowdsec
             - mysql
@@ -172,14 +180,15 @@ services:
                 define('WP_CRON_LOCK_TIMEOUT', 1);
         # more here https://hub.docker.com/_/wordpress
         ports:
-            - "8050:80"
+            - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
 
     crowdsec:
         image: crowdsecurity/crowdsec:latest
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         environment:
             - DISABLE_AGENT=true
         ports:
@@ -187,26 +196,31 @@ services:
     mysql:
         image: mysql:5.7
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         environment:
             - MYSQL_ROOT_PASSWORD=super_secret_password
             - MYSQL_DATABASE=wordpress
     redis:
         image: redis:6-alpine
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
     memcached:
         image: memcached:1-alpine
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
     wpscan:
         image: wpscanteam/wpscan
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
     e2e:
         image: mcr.microsoft.com/playwright:focal
         networks: 
-            - wordpress_bouncer_network
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
         environment:
             LAPI_URL_FROM_WP: http://crowdsec:8080
             LAPI_URL_FROM_E2E: http://crowdsec:8080
@@ -226,9 +240,16 @@ services:
         command: tail -F anything
 
 networks:
-  wordpress_bouncer_network:
-    name: wordpress_bouncer_network
-    enable_ipv6: false
-    ipam:
-      config:
-        - subnet: ${NETWORK_SUBNET}
+    wordpress_bouncer_network_ipv4:
+        name: wordpress_bouncer_network_ipv4
+        enable_ipv6: false
+        ipam:
+            config:
+                -   subnet: ${NETWORK_SUBNET}
+    wordpress_bouncer_network_ipv6:
+        name: wordpress_bouncer_network
+        enable_ipv6: true
+        ipam:
+            config:
+                -   subnet: 2001:3200:3200::/64
+                    gateway: 2001:3200:3200::1

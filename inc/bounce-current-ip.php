@@ -2,14 +2,15 @@
 
 use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\Constants;
+use IPLib\Factory;
 
 function bounceCurrentIp()
 {
     function shouldTrustXforwardedFor(string $ip): bool
     {
-        $longIp = ip2long($ip);
-        foreach (get_option('crowdsec_trust_ip_forward_array') as $longBounds) {
-            if ($longIp >= $longBounds[0] && $longIp <= $longBounds[1]) {
+        $comparableAddress = Factory::addressFromString($ip)->getComparableString();
+        foreach (get_option('crowdsec_trust_ip_forward_array') as $comparableIpBounds) {
+            if ($comparableAddress >= $comparableIpBounds[0] && $comparableAddress <= $comparableIpBounds[1]) {
                 return true;
             }
         }

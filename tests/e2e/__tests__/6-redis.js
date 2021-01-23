@@ -13,10 +13,17 @@ const {
     loadCookies,
 } = require("../utils/helpers");
 
+let detectedBrowserIp;
+
 describe(`Use Redis technology`, () => {
     beforeEach(() => notify(expect.getState().currentTestName));
 
-    beforeAll(() => loadCookies(context));
+    beforeAll(async () => {
+        await loadCookies(context);
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        detectedBrowserIp = await page.$eval("#detected_ip_address", el => el.textContent);
+    });
 
     it('Should be able to use Redis cache"', async () => {
         // TODO (+ bad DSN format, + DSN down)
@@ -34,7 +41,7 @@ describe(`Use Redis technology`, () => {
         );
 
         await publicHomepageShouldBeAccessible();
-        await banOwnIpForSeconds(15 * 60);
+        await banOwnIpForSeconds(15 * 60, detectedBrowserIp);
         await forceCronRun();
         await publicHomepageShouldBeBanWall();
         await removeAllDecisions();
