@@ -141,6 +141,11 @@ module.exports.addDecision = async (
 }
 
 module.exports.deleteAllDecisions = async () => {
-    await auth();
-    await httpClient.delete("/v1/decisions");
+    try {
+        await auth();
+        await httpClient.delete("/v1/decisions");
+    } catch (error) {
+        console.log(error.response);
+        throw new Error(error);
+    }
 }

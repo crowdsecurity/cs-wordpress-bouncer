@@ -29,7 +29,7 @@ if (is_admin()) {
 
             // In stream mode, immediatelly warm the cache up.
             if (get_option('crowdsec_stream_mode')) {
-                $result = $bouncer->warmBlocklistCacheUp();
+                $result = $bouncer->warmBlocklistCacheUp()['count'];
                 $message .= __(' As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
             }
 

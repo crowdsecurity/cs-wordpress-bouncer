@@ -14,10 +14,17 @@ const {
     loadCookies,
 } = require("../utils/helpers");
 
+let detectedBrowserIp;
+
 describe(`Run in Live mode`, () => {
     beforeEach(() => notify(expect.getState().currentTestName));
 
-    beforeAll(() => loadCookies(context));
+    beforeAll(async () => {
+        await loadCookies(context);
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        detectedBrowserIp = await page.$eval("#detected_ip_address", el => el.textContent);
+    });
 
     it("Should prune the File system cache", async () => {
         await goToAdmin();
@@ -36,7 +43,7 @@ describe(`Run in Live mode`, () => {
         await onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo(60);
         await onAdminAdvancedSettingsPageSetBadIpCacheDurationTo(60);
         await onAdminSaveSettings();
-        await banOwnIpForSeconds(15 * 60);
+        await banOwnIpForSeconds(15 * 60, detectedBrowserIp);
         await publicHomepageShouldBeBanWall();
         wait(2000);
         await publicHomepageShouldBeBanWall();

@@ -16,17 +16,24 @@ const {
     fillInput,
 } = require("../utils/helpers");
 
+let detectedBrowserIp;
+
 describe(`Run in Live mode`, () => {
     beforeEach(() => notify(expect.getState().currentTestName));
 
-    beforeAll(() => loadCookies(context));
+    beforeAll(async () => {
+        await loadCookies(context);
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        detectedBrowserIp = await page.$eval("#detected_ip_address", el => el.textContent);
+    });
 
     it('Should display the homepage with no remediation"', async () => {
         await publicHomepageShouldBeAccessible();
     });
 
     it('Should display a captcha wall"', async () => {
-        await captchaOwnIpForSeconds(15 * 60);
+        await captchaOwnIpForSeconds(15 * 60, detectedBrowserIp);
         await publicHomepageShouldBeCaptchaWallWithMentions();
 
         // Refresh the captcha 2 times
@@ -77,7 +84,7 @@ describe(`Run in Live mode`, () => {
     });
 
     it('Should display a ban wall"', async () => {
-        await banOwnIpForSeconds(15 * 60);
+        await banOwnIpForSeconds(15 * 60, detectedBrowserIp);
         await publicHomepageShouldBeBanWall();
     });
 });

@@ -2,6 +2,7 @@
 
 use CrowdSecBouncer\BouncerException;
 use CrowdSecBouncer\Constants;
+use IPLib\Factory;
 
 function adminAdvancedSettings()
 {
@@ -16,7 +17,7 @@ function adminAdvancedSettings()
     addFieldCheckbox('crowdsec_stream_mode', 'Enable the "Stream" mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', function () {
         // Stream mode just activated.
         $bouncer = getBouncerInstance();
-        $result = $bouncer->warmBlocklistCacheUp();
+        $result = $bouncer->warmBlocklistCacheUp()['count'];
         $message = __('As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
         AdminNotice::displaySuccess($message);
         scheduleBlocklistRefresh();
@@ -43,7 +44,7 @@ function adminAdvancedSettings()
         // Update wp-cron schedule.
         if ((bool) get_option('crowdsec_stream_mode')) {
             $bouncer = getBouncerInstance();
-            $result = $bouncer->warmBlocklistCacheUp();
+            $result = $bouncer->warmBlocklistCacheUp()['count'];
             $message = __('As the stream mode refresh duration changed, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
             AdminNotice::displaySuccess($message);
             scheduleBlocklistRefresh();
@@ -128,7 +129,8 @@ function adminAdvancedSettings()
                 if ((bool) get_option('crowdsec_stream_mode')) {
                     $bouncer = getBouncerInstance($input); // Reload bouncer instance with the new cache system
                     $result = $bouncer->warmBlocklistCacheUp();
-                    $message = __('As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+                    $count = $result['count'];
+                    $message = __('As the stream mode is enabled, the cache has just been warmed up, '.($count > 0 ? 'there are now '.$count.' decisions' : 'there is now '.$count.' decision').' in cache.');
                     AdminNotice::displaySuccess($message);
                     scheduleBlocklistRefresh();
                 }
@@ -193,43 +195,30 @@ function adminAdvancedSettings()
         return $input;
     }, '<p>Which remediation to apply when CrowdSec advises unhandled remediation.</p>', $choice);
 
-    function cidrToLongBounds(int $longIp, int $factor): array
+    function convertInlineIpRangesToComparableIpBounds(string $inlineIpRanges): array
     {
-        $range = [];
-        $range[0] = (($longIp) & ((-1 << (32 - $factor))));
-        $range[1] = ((($range[0])) + pow(2, (32 - $factor)) - 1);
-
-        return $range;
-    }
-
-    function convertInlineIpRangesToLongArray(string $inlineIpRanges): array
-    {
-        $longIpBoundsList = [];
+        $comparableIpBoundsList = [];
         $stringRangeArray = explode(',', $inlineIpRanges);
         foreach ($stringRangeArray as $stringRange) {
             $stringRange = trim($stringRange);
             if (false !== strpos($stringRange, '/')) {
-                $stringRange = explode('/', $stringRange);
-                $longIp = ip2long($stringRange[0]);
-                $factor = (int) $stringRange[1];
-                if (false === $longIp) {
+                $range = Factory::rangeFromString($stringRange);
+                if (null === $range) {
                     throw new WordpressCrowdSecBouncerException('Invalid IP List format.');
                 }
-                if (0 === (int) $factor) {
-                    throw new WordpressCrowdSecBouncerException('Invalid IP List format.');
-                }
-                $longBounds = cidrToLongBounds($longIp, $factor);
-                $longIpBoundsList = array_merge($longIpBoundsList, [$longBounds]);
+                $bounds = [$range->getComparableStartString(), $range->getComparableEndString()];
+                $comparableIpBoundsList = array_merge($comparableIpBoundsList, [$bounds]);
             } else {
-                $long = ip2long($stringRange);
-                if (false === $long) {
+                $address = Factory::addressFromString($stringRange);
+                if (null === $address) {
                     throw new WordpressCrowdSecBouncerException('Invalid IP List format.');
                 }
-                $longIpBoundsList = array_merge($longIpBoundsList, [[$long, $long]]);
+                $comparableString = $address->getComparableString();
+                $comparableIpBoundsList = array_merge($comparableIpBoundsList, [[$comparableString, $comparableString]]);
             }
         }
 
-        return $longIpBoundsList;
+        return $comparableIpBoundsList;
     }
 
     // Field "crowdsec_trust_ip_forward"
@@ -241,8 +230,8 @@ function adminAdvancedSettings()
 
                 return $input;
             }
-            $longList = convertInlineIpRangesToLongArray($input);
-            update_option('crowdsec_trust_ip_forward_array', $longList);
+            $comparableIpBoundsList = convertInlineIpRangesToComparableIpBounds($input);
+            update_option('crowdsec_trust_ip_forward_array', $comparableIpBoundsList);
             AdminNotice::displaySuccess('Ips with XFF to trust successfully saved.');
         } catch (WordpressCrowdSecBouncerException $e) {
             update_option('crowdsec_trust_ip_forward_array', []);
