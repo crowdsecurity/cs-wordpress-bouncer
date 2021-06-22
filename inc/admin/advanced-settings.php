@@ -80,8 +80,8 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_cache_system"
     addFieldSelect('crowdsec_cache_system', 'Technology', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        if (!in_array($input, [CROWDSEC_CACHE_SYSTEM_PHPFS, CROWDSEC_CACHE_SYSTEM_REDIS, CROWDSEC_CACHE_SYSTEM_MEMCACHED])) {
-            $input = CROWDSEC_CACHE_SYSTEM_PHPFS;
+        if (!in_array($input, [Constants::CACHE_SYSTEM_PHPFS, Constants::CACHE_SYSTEM_REDIS, Constants::CACHE_SYSTEM_MEMCACHED])) {
+            $input = Constants::CACHE_SYSTEM_PHPFS;
             add_settings_error('Technology', 'crowdsec_error', 'Technology: Incorrect cache technology selected.');
         }
 
@@ -92,12 +92,12 @@ function adminAdvancedSettings()
             } catch (BouncerException $e) {
                 $cacheSystem = esc_attr(get_option('crowdsec_cache_system'));
                 switch ($cacheSystem) {
-                    case CROWDSEC_CACHE_SYSTEM_MEMCACHED:
+                    case Constants::CACHE_SYSTEM_MEMCACHED:
                         throw new WordpressCrowdSecBouncerException('Unable to connect Memcached.'.
                             ' Please fix the Memcached DSN or select another cache technology.');
                         break;
 
-                    case CROWDSEC_CACHE_SYSTEM_REDIS:
+                    case Constants::CACHE_SYSTEM_REDIS:
                         throw new WordpressCrowdSecBouncerException('Unable to connect Redis.'.
                             ' Please fix the Redis DSN or select another cache technology.');
                     default:
@@ -142,12 +142,12 @@ function adminAdvancedSettings()
         }
 
         return $input;
-    }, ((CROWDSEC_CACHE_SYSTEM_PHPFS === get_option('crowdsec_cache_system')) ?
+    }, ((Constants::CACHE_SYSTEM_PHPFS === get_option('crowdsec_cache_system')) ?
         '<input style="margin-right:10px" type="button" id="crowdsec_prune_cache" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_action_prune_cache\').submit();">' : '').
         '<p>The File system cache is faster than calling LAPI. Redis or Memcached is faster than the File System cache.</p>', [
-        CROWDSEC_CACHE_SYSTEM_PHPFS => 'File system',
-        CROWDSEC_CACHE_SYSTEM_REDIS => 'Redis',
-        CROWDSEC_CACHE_SYSTEM_MEMCACHED => 'Memcached',
+        Constants::CACHE_SYSTEM_PHPFS => 'File system',
+        Constants::CACHE_SYSTEM_REDIS => 'Redis',
+        Constants::CACHE_SYSTEM_MEMCACHED => 'Memcached',
     ]);
 
     // Field "crowdsec_clean_ip_cache_duration"
@@ -188,7 +188,7 @@ function adminAdvancedSettings()
     addFieldSelect('crowdsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
     'crowdsec_admin_advanced_remediations', function ($input) {
         if (!in_array($input, Constants::ORDERED_REMEDIATIONS)) {
-            $input = CROWDSEC_BOUNCING_LEVEL_DISABLED;
+            $input = Constants::BOUNCING_LEVEL_DISABLED;
             add_settings_error('Fallback to', 'crowdsec_error', 'Fallback to: Incorrect Fallback selected.');
         }
 

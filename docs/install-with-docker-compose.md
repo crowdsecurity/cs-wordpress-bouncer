@@ -3,11 +3,12 @@
 Follow this guide to get the development stack installed locally.
 
 > Prerequises:
-> - you should have [`docker`](https://docs.docker.com/get-docker/) installed
-> - `docker` should be [`runnable without sudo`](https://docs.docker.com/engine/install/linux-postinstall/).
-> - [`docker-compose`](https://docs.docker.com/compose/install/) installed locally.
-> - IPv6 should be enable in your docker configuration. Enabled it following [this guide](https://docs.docker.com/config/daemon/ipv6/). (Note that you'll may have to create the file `/etc/docker/daemon.json`).
-> - If your develop environnment is MacOS, please refer to the [MacOS host installation guide](macos-host.md).
+>
+> -   you should have [`docker`](https://docs.docker.com/get-docker/) installed
+> -   `docker` should be [`runnable without sudo`](https://docs.docker.com/engine/install/linux-postinstall/).
+> -   [`docker-compose`](https://docs.docker.com/compose/install/) installed locally.
+> -   IPv6 should be enable in your docker configuration. Enabled it following [this guide](https://docs.docker.com/config/daemon/ipv6/). (Note that you'll may have to create the file `/etc/docker/daemon.json`).
+> -   If your develop environnment is MacOS, please refer to the [MacOS host installation guide](macos-host.md).
 
 ## Install the stack for development purpose
 
@@ -56,7 +57,7 @@ http://crowdsec:8080
 ## Try the plugin behavior
 
 | Info            | Value                                |
-|-----------------|--------------------------------------|
+| --------------- | ------------------------------------ |
 | Public blog URL | http://localhost                     |
 | Blog admin URL  | http://localhost/wp-admin            |
 | Admin username  | `admin`                              |

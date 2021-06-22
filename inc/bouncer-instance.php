@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__.'/constants.php';
+
 use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\BouncerException;
 use CrowdSecBouncer\Constants;
@@ -17,6 +19,11 @@ $crowdSecLogger = null;
 
 function getCrowdSecLoggerInstance(): Logger
 {
+    return getStandAloneCrowdSecLoggerInstance(CROWDSEC_LOG_PATH, (bool) WP_DEBUG, CROWDSEC_DEBUG_LOG_PATH);
+}
+
+function getStandAloneCrowdSecLoggerInstance(string $crowdsecLogPath, bool $debugMode, string $crowdsecDebugLogPath): Logger
+{
     // Singleton for this function
 
     global $crowdSecLogger;
@@ -24,17 +31,17 @@ function getCrowdSecLoggerInstance(): Logger
         return $crowdSecLogger;
     }
 
-    // Log more data if WP_DEBUG=1
+    // Log more data if debug mode is enabled
 
     $logger = new Logger('wp_bouncer');
 
-    $fileHandler = new RotatingFileHandler(CROWDSEC_LOG_PATH, 0, Logger::INFO);
+    $fileHandler = new RotatingFileHandler($crowdsecLogPath, 0, Logger::INFO);
     $fileHandler->setFormatter(new LineFormatter("%datetime%|%level%|%context%\n"));
     $logger->pushHandler($fileHandler);
 
     // Set custom readable logger for WP_DEBUG=1
-    if (WP_DEBUG) {
-        $debugFileHandler = new RotatingFileHandler(CROWDSEC_DEBUG_LOG_PATH, 0, Logger::DEBUG);
+    if ($debugMode) {
+        $debugFileHandler = new RotatingFileHandler($crowdsecDebugLogPath, 0, Logger::DEBUG);
         if (class_exists('\Bramus\Monolog\Formatter\ColoredLineFormatter')) {
             $debugFileHandler->setFormatter(new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, "[%datetime%] %message% %context%\n", 'H:i:s'));
             $logger->pushHandler($debugFileHandler);
@@ -47,7 +54,7 @@ function getCrowdSecLoggerInstance(): Logger
 /** @var AbstractAdapter|null */
 $crowdSecCacheAdapterInstance = null;
 
-function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdapter
+function getCacheAdapterInstanceStandAlone(string $cacheSystem, string $memcachedDsn, string $redisDsn, string $fsCachePath, string $forcedCacheSystem = null): AbstractAdapter
 {
     // Singleton for this function
 
@@ -56,14 +63,13 @@ function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdap
         return $crowdSecCacheAdapterInstance;
     }
 
-    $cacheSystem = $forcedCacheSystem ?: esc_attr(get_option('crowdsec_cache_system'));
+    $cacheSystem = $forcedCacheSystem ?: $cacheSystem;
     switch ($cacheSystem) {
-        case CROWDSEC_CACHE_SYSTEM_PHPFS:
-            $crowdSecCacheAdapterInstance = new PhpFilesAdapter('', 0, CROWDSEC_CACHE_PATH);
+        case Constants::CACHE_SYSTEM_PHPFS:
+            $crowdSecCacheAdapterInstance = new PhpFilesAdapter('', 0, $fsCachePath);
             break;
 
-        case CROWDSEC_CACHE_SYSTEM_MEMCACHED:
-            $memcachedDsn = esc_attr(get_option('crowdsec_memcached_dsn'));
+        case Constants::CACHE_SYSTEM_MEMCACHED:
             if (empty($memcachedDsn)) {
                 throw new WordpressCrowdSecBouncerException('The selected cache technology is Memcached.'.
                 ' Please set a Memcached DSN or select another cache technology.');
@@ -72,8 +78,7 @@ function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdap
             $crowdSecCacheAdapterInstance = new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn));
             break;
 
-        case CROWDSEC_CACHE_SYSTEM_REDIS:
-            $redisDsn = esc_attr(get_option('crowdsec_redis_dsn'));
+        case Constants::CACHE_SYSTEM_REDIS:
             if (empty($redisDsn)) {
                 throw new WordpressCrowdSecBouncerException('The selected cache technology is Redis.'.
                 ' Please set a Redis DSN or select another cache technology.');
@@ -94,9 +99,19 @@ function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdap
     return $crowdSecCacheAdapterInstance;
 }
 
+function getCacheAdapterInstance(string $forcedCacheSystem = null): AbstractAdapter
+{
+    $cacheSystem = esc_attr(get_option('crowdsec_cache_system'));
+    $memcachedDsn = esc_attr(get_option('crowdsec_memcached_dsn'));
+    $redisDsn = esc_attr(get_option('crowdsec_redis_dsn'));
+    $fsCachePath = CROWDSEC_CACHE_PATH;
+
+    return getCacheAdapterInstanceStandAlone($cacheSystem, $memcachedDsn, $redisDsn, $fsCachePath, $forcedCacheSystem);
+}
+
 $crowdSecBouncer = null;
 
-function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
+function getBouncerInstanceStandAlone(string $apiUrl, string $apiKey, bool $isStreamMode, int $cleanIpCacheDuration, int $badIpCacheDuration, string $fallbackRemediation, string $bouncingLevel, string $crowdSecBouncerUserAgent, Logger $logger, string $forcedCacheSystem = null): Bouncer
 {
     // Singleton for this function
 
@@ -106,41 +121,29 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
     }
 
     // Parse Wordpress Options.
-
-    $apiUrl = esc_attr(get_option('crowdsec_api_url'));
     if (empty($apiUrl)) {
         throw new WordpressCrowdSecBouncerException('Bouncer enabled but no API URL provided');
     }
-    $apiKey = esc_attr(get_option('crowdsec_api_key'));
+
     if (empty($apiKey)) {
         throw new WordpressCrowdSecBouncerException('Bouncer enabled but no API key provided');
     }
-    $isStreamMode = !empty(get_option('crowdsec_stream_mode'));
-    $cleanIpCacheDuration = (int) get_option('crowdsec_clean_ip_cache_duration');
-    $badIpCacheDuration = (int) get_option('crowdsec_bad_ip_cache_duration');
-    $fallbackRemediation = esc_attr(get_option('crowdsec_fallback_remediation'));
-    $bouncingLevel = esc_attr(get_option('crowdsec_bouncing_level'));
 
     // Init Bouncer instance
 
     switch ($bouncingLevel) {
-        case CROWDSEC_BOUNCING_LEVEL_DISABLED:
+        case Constants::BOUNCING_LEVEL_DISABLED:
             $maxRemediationLevel = Constants::REMEDIATION_BYPASS;
             break;
-        case CROWDSEC_BOUNCING_LEVEL_FLEX:
+        case Constants::BOUNCING_LEVEL_FLEX:
             $maxRemediationLevel = Constants::REMEDIATION_CAPTCHA;
             break;
-        case CROWDSEC_BOUNCING_LEVEL_NORMAL:
-            $maxRemediationLevel = Constants::REMEDIATION_BAN;
-            break;
-        case CROWDSEC_BOUNCING_LEVEL_PARANOID:
+        case Constants::BOUNCING_LEVEL_NORMAL:
             $maxRemediationLevel = Constants::REMEDIATION_BAN;
             break;
         default:
             throw new Exception("Unknown $bouncingLevel");
     }
-
-    $logger = getCrowdSecLoggerInstance();
 
     // Instanciate the bouncer
     try {
@@ -154,7 +157,7 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
         $bouncer->configure([
         'api_key' => $apiKey,
         'api_url' => $apiUrl,
-        'api_user_agent' => CROWDSEC_BOUNCER_USER_AGENT,
+        'api_user_agent' => $crowdSecBouncerUserAgent,
         'live_mode' => !$isStreamMode,
         'max_remediation_level' => $maxRemediationLevel,
         'fallback_remediation' => $fallbackRemediation,
@@ -166,4 +169,19 @@ function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
     }
 
     return $bouncer;
+}
+
+function getBouncerInstance(string $forcedCacheSystem = null): Bouncer
+{
+    $apiUrl = esc_attr(get_option('crowdsec_api_url'));
+    $apiKey = esc_attr(get_option('crowdsec_api_key'));
+    $isStreamMode = !empty(get_option('crowdsec_stream_mode'));
+    $cleanIpCacheDuration = (int) get_option('crowdsec_clean_ip_cache_duration');
+    $badIpCacheDuration = (int) get_option('crowdsec_bad_ip_cache_duration');
+    $fallbackRemediation = esc_attr(get_option('crowdsec_fallback_remediation'));
+    $bouncingLevel = esc_attr(get_option('crowdsec_bouncing_level'));
+    $crowdSecBouncerUserAgent = CROWDSEC_BOUNCER_USER_AGENT;
+    $logger = getCrowdSecLoggerInstance();
+
+    return getBouncerInstanceStandAlone($apiUrl, $apiKey, $isStreamMode, $cleanIpCacheDuration, $badIpCacheDuration, $fallbackRemediation, $bouncingLevel, $crowdSecBouncerUserAgent, $logger, $forcedCacheSystem);
 }
