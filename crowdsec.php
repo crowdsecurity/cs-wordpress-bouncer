@@ -17,7 +17,9 @@
  * Text Domain: crowdsec-wp
  * First release: 2021.
  */
-session_start();
+if (\PHP_SESSION_NONE === session_status()) {
+    session_start();
+}
 require_once __DIR__.'/vendor/autoload.php';
 
 define('CROWDSEC_PLUGIN_PATH', __DIR__);
