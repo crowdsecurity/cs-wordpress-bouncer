@@ -249,4 +249,16 @@ function adminAdvancedSettings()
     // Field "crowdsec_hide_mentions"
     addFieldCheckbox('crowdsec_hide_mentions', 'Hide CrowdSec mentions', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function () {}, function () {}, '
     <p>Enable if you want to hide CrowdSec mentions on the Ban and Captcha pages</p>');
+
+    /*******************************
+     ** Section "Standalone mode" **
+     ******************************/
+
+    add_settings_section('crowdsec_admin_advanced_standalone', 'Standalone mode', function () {
+        echo 'Configure some details about the standalone mode (using the PHP flag "auto_prepend_file")';
+    }, 'crowdsec_advanced_settings');
+
+    // Field "crowdsec_standalone_mode"
+    addFieldCheckbox('crowdsec_standalone_mode', 'Enable standalone mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_standalone', function () {}, function () {}, '
+    <p>This process allows the bouncer to bounce IPs before running any PHP script in the project. <a href="https://wordpress.org/support/topic/standalone-mode-how-it-works" target="_blank">Discover how to setup with this guide</a>.</p><p>Enable this option only if you set the "<em>auto_prepend_file</em>" PHP flag following the guide, else the bouncer will not bounce.</p>');
 }

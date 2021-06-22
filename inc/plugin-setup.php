@@ -59,6 +59,8 @@ function activate_crowdsec_plugin()
     if (!get_option('crowdsec_random_log_folder')) {
         update_option('crowdsec_random_log_folder', bin2hex(random_bytes(64)));
     }
+
+    update_option('crowdsec_standalone_mode', false);
 }
 
 /**
@@ -124,4 +126,5 @@ function deactivate_crowdsec_plugin()
     delete_option('crowdsec_theme_text_ban_wall_footer');
 
     delete_option('crowdsec_theme_custom_css');
+    delete_option('crowdsec_standalone_mode');
 }

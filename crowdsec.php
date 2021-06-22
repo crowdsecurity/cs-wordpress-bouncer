@@ -38,5 +38,7 @@ require_once __DIR__.'/inc/bouncer-instance.php';
 require_once __DIR__.'/inc/admin/init.php';
 require_once __DIR__.'/inc/bounce-current-ip.php';
 
-// Apply bouncing
-add_action('plugins_loaded', 'safelyBounceCurrentIp');
+// Apply bouncing via Wordpress instanciation, only if standalone mode is disabled.
+if ((bool) get_option('crowdsec_standalone_mode')) {
+    add_action('plugins_loaded', 'safelyBounceCurrentIp');
+}
