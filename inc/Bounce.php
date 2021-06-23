@@ -29,7 +29,12 @@ class Bounce extends AbstractBounce implements IBounce
         return true;
     }
 
-    protected function getSettings(string $name)
+    protected function getStringSettings(string $name): string
+    {
+        return $this->settings[$name];
+    }
+
+    protected function getArraySettings(string $name): array
     {
         return $this->settings[$name];
     }
@@ -49,22 +54,22 @@ class Bounce extends AbstractBounce implements IBounce
      */
     public function getBouncerInstance(): Bouncer
     {
-        $apiUrl = $this->escape($this->getSettings('crowdsec_api_url'));
-        $apiKey = $this->escape($this->getSettings('crowdsec_api_key'));
-        $isStreamMode = !empty($this->getSettings('crowdsec_stream_mode'));
-        $cleanIpCacheDuration = (int) $this->getSettings('crowdsec_clean_ip_cache_duration');
-        $badIpCacheDuration = (int) $this->getSettings('crowdsec_bad_ip_cache_duration');
-        $fallbackRemediation = $this->escape($this->getSettings('crowdsec_fallback_remediation'));
-        $bouncingLevel = $this->escape($this->getSettings('crowdsec_bouncing_level'));
+        $apiUrl = $this->escape($this->getStringSettings('crowdsec_api_url'));
+        $apiKey = $this->escape($this->getStringSettings('crowdsec_api_key'));
+        $isStreamMode = !empty($this->getStringSettings('crowdsec_stream_mode'));
+        $cleanIpCacheDuration = (int) $this->getStringSettings('crowdsec_clean_ip_cache_duration');
+        $badIpCacheDuration = (int) $this->getStringSettings('crowdsec_bad_ip_cache_duration');
+        $fallbackRemediation = $this->escape($this->getStringSettings('crowdsec_fallback_remediation'));
+        $bouncingLevel = $this->escape($this->getStringSettings('crowdsec_bouncing_level'));
         $crowdSecBouncerUserAgent = CROWDSEC_BOUNCER_USER_AGENT;
         $crowdSecLogPath = CROWDSEC_LOG_PATH;
         $crowdSecDebugLogPath = CROWDSEC_DEBUG_LOG_PATH;
 
         $this->logger = getStandAloneCrowdSecLoggerInstance($crowdSecLogPath, $this->debug, $crowdSecDebugLogPath);
 
-        $cacheSystem = $this->escape($this->getSettings('crowdsec_cache_system'));
-        $memcachedDsn = $this->escape($this->getSettings('crowdsec_memcached_dsn'));
-        $redisDsn = $this->escape($this->getSettings('crowdsec_redis_dsn'));
+        $cacheSystem = $this->escape($this->getStringSettings('crowdsec_cache_system'));
+        $memcachedDsn = $this->escape($this->getStringSettings('crowdsec_memcached_dsn'));
+        $redisDsn = $this->escape($this->getStringSettings('crowdsec_redis_dsn'));
         $fsCachePath = CROWDSEC_CACHE_PATH;
 
         $this->bouncer = getBouncerInstanceStandAlone($apiUrl, $apiKey, $isStreamMode, $cleanIpCacheDuration, $badIpCacheDuration, $fallbackRemediation, $bouncingLevel, $crowdSecBouncerUserAgent, $this->logger, $cacheSystem, $memcachedDsn, $redisDsn, $fsCachePath);
@@ -107,34 +112,34 @@ class Bounce extends AbstractBounce implements IBounce
     public function getCaptchaWallOptions(): array
     {
         return [
-            'hide_crowdsec_mentions' => (bool) $this->getSettings('crowdsec_hide_mentions'),
+            'hide_crowdsec_mentions' => (bool) $this->getStringSettings('crowdsec_hide_mentions'),
             'color' => [
               'text' => [
-                'primary' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_text_primary')),
-                'secondary' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_text_secondary')),
-                'button' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_text_button')),
-                'error_message' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_text_error_message')),
+                'primary' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_text_primary')),
+                'secondary' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_text_secondary')),
+                'button' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_text_button')),
+                'error_message' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_text_error_message')),
               ],
               'background' => [
-                'page' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_background_page')),
-                'container' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_background_container')),
-                'button' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_background_button')),
-                'button_hover' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_background_button_hover')),
+                'page' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_background_page')),
+                'container' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_background_container')),
+                'button' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_background_button')),
+                'button_hover' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_background_button_hover')),
               ],
             ],
             'text' => [
               'captcha_wall' => [
-                'tab_title' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_captcha_wall_tab_title')),
-                'title' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_captcha_wall_title')),
-                'subtitle' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_captcha_wall_subtitle')),
-                'refresh_image_link' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_captcha_wall_refresh_image_link')),
-                'captcha_placeholder' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_captcha_wall_captcha_placeholder')),
-                'send_button' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_captcha_wall_send_button')),
-                'error_message' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_captcha_wall_error_message')),
-                'footer' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_captcha_wall_footer')),
+                'tab_title' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_captcha_wall_tab_title')),
+                'title' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_captcha_wall_title')),
+                'subtitle' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_captcha_wall_subtitle')),
+                'refresh_image_link' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_captcha_wall_refresh_image_link')),
+                'captcha_placeholder' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_captcha_wall_captcha_placeholder')),
+                'send_button' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_captcha_wall_send_button')),
+                'error_message' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_captcha_wall_error_message')),
+                'footer' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_captcha_wall_footer')),
               ],
             ],
-            'custom_css' => $this->getSettings('crowdsec_theme_custom_css'),
+            'custom_css' => $this->getStringSettings('crowdsec_theme_custom_css'),
           ];
     }
 
@@ -144,29 +149,29 @@ class Bounce extends AbstractBounce implements IBounce
     public function getBanWallOptions(): array
     {
         return [
-            'hide_crowdsec_mentions' => (bool) $this->getSettings('crowdsec_hide_mentions'),
+            'hide_crowdsec_mentions' => (bool) $this->getStringSettings('crowdsec_hide_mentions'),
             'color' => [
               'text' => [
-                'primary' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_text_primary')),
-                'secondary' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_text_secondary')),
-                'error_message' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_text_error_message')),
+                'primary' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_text_primary')),
+                'secondary' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_text_secondary')),
+                'error_message' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_text_error_message')),
               ],
               'background' => [
-                'page' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_background_page')),
-                'container' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_background_container')),
-                'button' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_background_button')),
-                'button_hover' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_color_background_button_hover')),
+                'page' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_background_page')),
+                'container' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_background_container')),
+                'button' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_background_button')),
+                'button_hover' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_color_background_button_hover')),
               ],
             ],
             'text' => [
               'ban_wall' => [
-                'tab_title' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_ban_wall_tab_title')),
-                'title' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_ban_wall_title')),
-                'subtitle' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_ban_wall_subtitle')),
-                'footer' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_text_ban_wall_footer')),
+                'tab_title' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_ban_wall_tab_title')),
+                'title' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_ban_wall_title')),
+                'subtitle' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_ban_wall_subtitle')),
+                'footer' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_text_ban_wall_footer')),
               ],
             ],
-            'custom_css' => $this->specialcharsDecodeEntQuotes($this->getSettings('crowdsec_theme_custom_css')),
+            'custom_css' => $this->specialcharsDecodeEntQuotes($this->getStringSettings('crowdsec_theme_custom_css')),
           ];
     }
 
@@ -175,7 +180,7 @@ class Bounce extends AbstractBounce implements IBounce
      */
     public function getTrustForwardedIpBoundsList(): array
     {
-        return $this->getSettings('crowdsec_trust_ip_forward_array');
+        return $this->getArraySettings('crowdsec_trust_ip_forward_array');
     }
 
     /**
@@ -233,11 +238,11 @@ class Bounce extends AbstractBounce implements IBounce
         }
 
         // Don't bounce if standalone mode is enable and we are not in a auto_prepend_file context.
-        if ((bool) $this->getSettings('crowdsec_standalone_mode') && !defined('CROWDSEC_STANDALONE_RUNNING_CONTEXT')) {
+        if ((bool) $this->getStringSettings('crowdsec_standalone_mode') && !defined('CROWDSEC_STANDALONE_RUNNING_CONTEXT')) {
             return false;
         }
 
-        $shouldNotBounceWpAdmin = !empty($this->getSettings('crowdsec_public_website_only'));
+        $shouldNotBounceWpAdmin = !empty($this->getStringSettings('crowdsec_public_website_only'));
         // when the "crowdsec_public_website_only" is disabled...
         if ($shouldNotBounceWpAdmin) {
             // In standalone context, is_admin() does not work. So we check admin section with another method.
@@ -271,7 +276,7 @@ class Bounce extends AbstractBounce implements IBounce
             return false;
         }
 
-        $bouncingDisabled = (Constants::BOUNCING_LEVEL_DISABLED === $this->escape($this->getSettings('crowdsec_bouncing_level')));
+        $bouncingDisabled = (Constants::BOUNCING_LEVEL_DISABLED === $this->escape($this->getStringSettings('crowdsec_bouncing_level')));
         if ($bouncingDisabled) {
             return false;
         }
@@ -336,11 +341,11 @@ class Bounce extends AbstractBounce implements IBounce
     {
         $issues = ['errors' => [], 'warnings' => []];
 
-        $bouncingLevel = $this->escape($this->getSettings('crowdsec_bouncing_level'));
+        $bouncingLevel = $this->escape($this->getStringSettings('crowdsec_bouncing_level'));
         $shouldBounce = (Constants::BOUNCING_LEVEL_DISABLED !== $bouncingLevel);
 
         if ($shouldBounce) {
-            $apiUrl = $this->escape($this->getSettings('crowdsec_api_url'));
+            $apiUrl = $this->escape($this->getStringSettings('crowdsec_api_url'));
             if (empty($apiUrl)) {
                 $issues['errors'][] = [
                 'type' => 'INCORRECT_API_URL',
@@ -348,7 +353,7 @@ class Bounce extends AbstractBounce implements IBounce
             ];
             }
 
-            $apiKey = $this->escape($this->getSettings('crowdsec_api_key'));
+            $apiKey = $this->escape($this->getStringSettings('crowdsec_api_key'));
             if (empty($apiKey)) {
                 $issues['errors'][] = [
                 'type' => 'INCORRECT_API_KEY',
@@ -357,9 +362,9 @@ class Bounce extends AbstractBounce implements IBounce
             }
 
             try {
-                $cacheSystem = $this->escape($this->getSettings('crowdsec_cache_system'));
-                $memcachedDsn = $this->escape($this->getSettings('crowdsec_memcached_dsn'));
-                $redisDsn = $this->escape($this->getSettings('crowdsec_redis_dsn'));
+                $cacheSystem = $this->escape($this->getStringSettings('crowdsec_cache_system'));
+                $memcachedDsn = $this->escape($this->getStringSettings('crowdsec_memcached_dsn'));
+                $redisDsn = $this->escape($this->getStringSettings('crowdsec_redis_dsn'));
                 $fsCachePath = CROWDSEC_CACHE_PATH;
                 getCacheAdapterInstanceStandAlone($cacheSystem, $memcachedDsn, $redisDsn, $fsCachePath);
             } catch (WordpressCrowdSecBouncerException $e) {
