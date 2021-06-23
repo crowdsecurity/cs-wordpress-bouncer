@@ -1,5 +1,6 @@
 #!/bin/bash
 
+WORDPRESS_VERSION=5.7 ./run-tests.sh
 WORDPRESS_VERSION=5.6 ./run-tests.sh
 WORDPRESS_VERSION=5.5 ./run-tests.sh
 WORDPRESS_VERSION=5.4 ./run-tests.sh

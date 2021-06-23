@@ -1,5 +1,5 @@
 {
-  "license":"MIT",
+  "license": "MIT",
   "scripts": {
     "test": "jest"
   },
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "lodash": "^4.17.21",
     "node-notifier": "^9.0.0"
   }
 }

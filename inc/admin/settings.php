@@ -1,5 +1,7 @@
 <?php
 
+use CrowdSecBouncer\Constants;
+
 function adminSettings()
 {
     /**********************************
@@ -31,12 +33,11 @@ function adminSettings()
     // Field "crowdsec_bouncing_level"
     addFieldSelect('crowdsec_bouncing_level', 'Bouncing level', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_boucing', function ($input) {
         if (!in_array($input, [
-            CROWDSEC_BOUNCING_LEVEL_DISABLED,
-            CROWDSEC_BOUNCING_LEVEL_NORMAL,
-            CROWDSEC_BOUNCING_LEVEL_FLEX,
-            CROWDSEC_BOUNCING_LEVEL_PARANOID,
+            Constants::BOUNCING_LEVEL_DISABLED,
+            Constants::BOUNCING_LEVEL_NORMAL,
+            Constants::BOUNCING_LEVEL_FLEX,
         ])) {
-            $input = CROWDSEC_BOUNCING_LEVEL_DISABLED;
+            $input = Constants::BOUNCING_LEVEL_DISABLED;
             add_settings_error('Bouncing level', 'crowdsec_error', 'Bouncing level: Incorrect bouncing level selected.');
         }
 
@@ -50,10 +51,9 @@ function adminSettings()
         <!--<li><strong>Paranoid mode</strong>: Ban IPs when there are in the CrowdSec database, even if CrowdSec advises to display a Captcha.</li>-->
     </ul>
 </p>', [
-        CROWDSEC_BOUNCING_LEVEL_DISABLED => '🚫 Bouncing disabled',
-        CROWDSEC_BOUNCING_LEVEL_FLEX => '😎 Flex bouncing',
-        CROWDSEC_BOUNCING_LEVEL_NORMAL => '🛡️ Normal bouncing',
-        //CROWDSEC_BOUNCING_LEVEL_PARANOID => '🕵️ Paranoid mode',
+        Constants::BOUNCING_LEVEL_DISABLED => '🚫 Bouncing disabled',
+        Constants::BOUNCING_LEVEL_FLEX => '😎 Flex bouncing',
+        Constants::BOUNCING_LEVEL_NORMAL => '🛡️ Normal bouncing',
     ]);
 
     addFieldCheckbox('crowdsec_public_website_only', 'Public website only', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_boucing', function () {

@@ -1,10 +1,34 @@
 version: "3"
 services:
+    wordpress5-7:
+        build:
+            context: .
+            dockerfile: ./docker/wp5.7/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        networks:
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
+        depends_on:
+            - crowdsec
+            - mysql
+            - redis
+            - memcached
+        environment:
+            WORDPRESS_DB_USER: root
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1 # Comment this line the simulate the production mode
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
+        # more here https://hub.docker.com/_/wordpress
+        ports:
+            - "80:80"
+        volumes:
+            - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
+            - ./docker/tests.htaccess:/var/www/html/.htaccess:rw
     wordpress5-6:
         build:
             context: .
             dockerfile: ./docker/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         depends_on:
@@ -22,12 +46,13 @@ services:
             - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
+            - ./docker/tests.htaccess:/var/www/html/.htaccess:rw
 
     wordpress5-5:
         build:
             context: .
             dockerfile: ./docker/wp5.5/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         depends_on:
@@ -45,12 +70,13 @@ services:
             - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
-    
+            - ./docker/tests.htaccess:/var/www/html/.htaccess:rw
+
     wordpress5-4:
         build:
             context: .
             dockerfile: ./docker/wp5.4/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         depends_on:
@@ -68,12 +94,13 @@ services:
             - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
-    
+            - ./docker/tests.htaccess:/var/www/html/.htaccess:rw
+
     wordpress5-3:
         build:
             context: .
             dockerfile: ./docker/wp5.3/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         depends_on:
@@ -91,12 +118,13 @@ services:
             - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
+            - ./docker/tests.htaccess:/var/www/html/.htaccess:rw
 
     wordpress5-2:
         build:
             context: .
             dockerfile: ./docker/wp5.2/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         depends_on:
@@ -114,12 +142,13 @@ services:
             - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
+            - ./docker/tests.htaccess:/var/www/html/.htaccess:rw
 
     wordpress5-1:
         build:
             context: .
             dockerfile: ./docker/wp5.1/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         depends_on:
@@ -142,7 +171,7 @@ services:
         build:
             context: .
             dockerfile: ./docker/wp5.0/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         depends_on:
@@ -160,12 +189,13 @@ services:
             - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
+            - ./docker/tests.htaccess:/var/www/html/.htaccess:rw
 
     wordpress4-9:
         build:
             context: .
             dockerfile: ./docker/wp4.9/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         depends_on:
@@ -183,10 +213,11 @@ services:
             - "80:80"
         volumes:
             - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
+            - ./docker/tests.htaccess:/var/www/html/.htaccess:rw
 
     crowdsec:
         image: crowdsecurity/crowdsec:latest
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         environment:
@@ -195,7 +226,7 @@ services:
             - "8051:8080"
     mysql:
         image: mysql:5.7
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         environment:
@@ -203,22 +234,22 @@ services:
             - MYSQL_DATABASE=wordpress
     redis:
         image: redis:6-alpine
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
     memcached:
         image: memcached:1-alpine
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
     wpscan:
         image: wpscanteam/wpscan
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
     e2e:
         image: mcr.microsoft.com/playwright:focal
-        networks: 
+        networks:
             - wordpress_bouncer_network_ipv4
             - wordpress_bouncer_network_ipv6
         environment:
@@ -245,11 +276,11 @@ networks:
         enable_ipv6: false
         ipam:
             config:
-                -   subnet: ${NETWORK_SUBNET}
+                - subnet: ${NETWORK_SUBNET}
     wordpress_bouncer_network_ipv6:
         name: wordpress_bouncer_network
         enable_ipv6: true
         ipam:
             config:
-                -   subnet: 2001:3200:3200::/64
-                    gateway: 2001:3200:3200::1
+                - subnet: 2001:3200:3200::/64
+                  gateway: 2001:3200:3200::1

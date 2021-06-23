@@ -1,6 +1,6 @@
 const notifier = require("node-notifier");
 const path = require("path");
-const fs = require('fs');
+const fs = require("fs");
 const { addDecision, deleteAllDecisions } = require("./watcherClient");
 const {
     ADMIN_URL,
@@ -12,6 +12,7 @@ const {
 } = require("./constants");
 
 const COOKIES_FILE_PATH = `${__dirname}/../.cookies.json`;
+const HTACCESS_FILE_PATH = `${__dirname}/../../../docker/tests.htaccess`;
 
 const notify = (message) => {
     if (DEBUG) {
@@ -88,6 +89,7 @@ const onAdminSaveSettings = async () => {
         "#setting-error-settings_updated",
         "Settings saved."
     );
+    await wait(2000);
 };
 
 const setToggle = async (optionName, enable) => {
@@ -110,6 +112,22 @@ const onAdvancedPageEnableStreamMode = async () => {
     await setToggle("crowdsec_stream_mode", true);
 };
 
+const onAdvancedPageEnableStandAloneMode = async () => {
+    await setToggle("crowdsec_standalone_mode", true);
+};
+
+const onAdvancedPageDisableStandAloneMode = async () => {
+    await setToggle("crowdsec_standalone_mode", false);
+};
+
+const onAdvancedPageEnableDebugMode = async () => {
+    await setToggle("crowdsec_debug_mode", true);
+};
+
+const onAdvancedPageDisableDebugMode = async () => {
+    await setToggle("crowdsec_debug_mode", false);
+};
+
 const onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo = async (
     seconds
 ) => {
@@ -128,9 +146,8 @@ const computeCurrentPageRemediation = async (
         return "bypass";
     } else {
         await expect(title).toContain("Oops");
-        const description = await page.$eval('.desc', (el) => el.innerText);
-        const banText =
-            "cyber";
+        const description = await page.$eval(".desc", (el) => el.innerText);
+        const banText = "cyber";
         const captchaText = "check";
         if (description.includes(banText)) {
             return "ban";
@@ -278,6 +295,49 @@ const loadCookies = async (context) => {
     await context.addCookies(deserializedCookies);
 };
 
+const enableAutoPrependFileInHtaccess = async () => {
+    const htaccessContent = `
+php_value auto_prepend_file "/var/www/html/wp-content/plugins/cs-wordpress-bouncer/inc/standalone-bounce.php"
+# BEGIN WordPress
+# The directives (lines) between "BEGIN WordPress" and "END WordPress" are
+# dynamically generated, and should only be modified via WordPress filters.
+# Any changes to the directives between these markers will be overwritten.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+
+# END WordPress
+`;
+    fs.writeFileSync(HTACCESS_FILE_PATH, htaccessContent);
+};
+
+const disableAutoPrependFileInHtaccess = async () => {
+    const htaccessContent = `
+# BEGIN WordPress
+# The directives (lines) between "BEGIN WordPress" and "END WordPress" are
+# dynamically generated, and should only be modified via WordPress filters.
+# Any changes to the directives between these markers will be overwritten.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+
+# END WordPress
+`;
+    fs.writeFileSync(HTACCESS_FILE_PATH, htaccessContent);
+};
+
 module.exports = {
     notify,
     addDecision,
@@ -292,6 +352,8 @@ module.exports = {
     setToggle,
     onLoginPageLoginAsAdmin,
     onAdvancedPageEnableStreamMode,
+    onAdvancedPageEnableStandAloneMode,
+    onAdvancedPageDisableStandAloneMode,
     onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo,
     onAdminAdvancedSettingsPageSetBadIpCacheDurationTo,
     publicHomepageShouldBeBanWall,
@@ -308,5 +370,9 @@ module.exports = {
     fillInput,
     remediationShouldUpdate,
     storeCookies,
-    loadCookies
+    loadCookies,
+    enableAutoPrependFileInHtaccess,
+    disableAutoPrependFileInHtaccess,
+    onAdvancedPageEnableDebugMode,
+    onAdvancedPageDisableDebugMode
 };

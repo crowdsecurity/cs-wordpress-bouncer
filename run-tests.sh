@@ -21,6 +21,8 @@ done
 
 # Run tests
 
+sleep 2
+
 rm -rf ./tests/e2e/screenshots
 cd logs && rm -R `ls -1 -d */` ; cd -
 

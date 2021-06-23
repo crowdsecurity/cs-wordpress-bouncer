@@ -17,7 +17,9 @@
  * Text Domain: crowdsec-wp
  * First release: 2021.
  */
-session_start();
+if (\PHP_SESSION_NONE === session_status()) {
+    session_start();
+}
 require_once __DIR__.'/vendor/autoload.php';
 
 define('CROWDSEC_PLUGIN_PATH', __DIR__);
@@ -28,7 +30,8 @@ class WordpressCrowdSecBouncerException extends \RuntimeException
 }
 
 require_once __DIR__.'/inc/constants.php';
-require_once __DIR__.'/inc/check-config.php';
+$crowdsecRandomLogFolder = get_option('crowdsec_random_log_folder') ?: '';
+crowdsecDefineConstants($crowdsecRandomLogFolder);
 require_once __DIR__.'/inc/scheduling.php';
 require_once __DIR__.'/inc/plugin-setup.php';
 register_activation_hook(__FILE__, 'activate_crowdsec_plugin');
@@ -37,5 +40,4 @@ require_once __DIR__.'/inc/bouncer-instance.php';
 require_once __DIR__.'/inc/admin/init.php';
 require_once __DIR__.'/inc/bounce-current-ip.php';
 
-// Apply bouncing
 add_action('plugins_loaded', 'safelyBounceCurrentIp');
