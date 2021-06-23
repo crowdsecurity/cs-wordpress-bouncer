@@ -17,9 +17,12 @@ use CrowdSecBouncer\IBounce;
  */
 class Bounce extends AbstractBounce implements IBounce
 {
-    public function init(): void
+    public function init(array $crowdSecConfig): bool
     {
+        $this->settings = $crowdSecConfig;
         $this->initLogger();
+
+        return true;
     }
 
     protected function getSettings(string $name)

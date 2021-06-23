@@ -1,16 +1,18 @@
 <?php
 
-/*
-We MUST load the WP CORE because boucing require these function, constants or variables :
-- wp_specialchars_decode
-- get_option
-- esc_attr
-- is_admin
-- $GLOBALS['pagenow']
-- WP_DEBUG
-*/
-require __DIR__.'/../../../../wp-load.php';
+define('CROWDSEC_STANDALONE_RUNNING_CONTEXT', true);
 
-$bounce = new Bounce();
-$bounce->init();
-$bounce->safelyBounce();
+require_once __DIR__.'/../vendor/autoload.php';
+
+require_once __DIR__.'/Bounce.php';
+
+require_once __DIR__.'/standalone-settings.php';
+require_once __DIR__.'/bouncer-instance-standalone.php';
+
+$crowdSecConfig = json_decode($crowdSecJsonStandaloneConfig, true);
+
+$crowdSecBounce = new Bounce();
+$crowdSecBounce->setDebug((bool) $crowdSecConfig['crowdsec_debug_mode']);
+if ($crowdSecBounce->init($crowdSecConfig)) {
+    $crowdSecBounce->safelyBounce();
+}

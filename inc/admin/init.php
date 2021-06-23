@@ -8,7 +8,15 @@ require_once __DIR__.'/advanced-settings.php';
 
 add_action('admin_notices', [new AdminNotice(), 'displayAdminNotice']);
 
+function crowdsec_option_update_callback($name, $oldValue, $newValue)
+{
+    if (0 === strpos($name, 'crowdsec_')) {
+        writeStaticConfigFile($name, $newValue);
+    }
+}
+
 if (is_admin()) {
+    add_action('updated_option', 'crowdsec_option_update_callback', 10, 3);
     function wrapErrorMessage(string $errorMessage)
     {
         return "CrowdSec: $errorMessage";
