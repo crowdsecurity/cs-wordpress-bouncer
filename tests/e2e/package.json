@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "hosted-git-info": "^2.8.9",
     "lodash": "^4.17.21",
-    "node-notifier": "^9.0.0"
+    "node-notifier": "^9.0.0",
+    "ws": "^7.4.6"
   }
 }
