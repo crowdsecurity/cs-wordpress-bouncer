@@ -17,3 +17,4 @@ crowdsec-wp*
 *.log
 .vagrant
 .env
+inc/standalone-settings.php

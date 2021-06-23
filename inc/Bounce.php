@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__.'/constants.php';
+
 use CrowdSecBouncer\AbstractBounce;
 use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\Constants;
@@ -20,6 +22,8 @@ class Bounce extends AbstractBounce implements IBounce
     public function init(array $crowdSecConfig): bool
     {
         $this->settings = $crowdSecConfig;
+        $crowdsecRandomLogFolder = $this->settings['crowdsec_random_log_folder'];
+        crowdsecDefineConstants($crowdsecRandomLogFolder);
         $this->initLogger();
 
         return true;
@@ -27,21 +31,17 @@ class Bounce extends AbstractBounce implements IBounce
 
     protected function getSettings(string $name)
     {
-        if (!array_key_exists($name, $this->settings)) {
-            $this->settings[$name] = get_option($name);
-        }
-
         return $this->settings[$name];
     }
 
     protected function escape(string $value)
     {
-        return esc_attr($value);
+        return htmlspecialchars($value, \ENT_QUOTES, 'UTF-8');
     }
 
     protected function specialcharsDecodeEntQuotes(string $value)
     {
-        return wp_specialchars_decode($value, \ENT_QUOTES);
+        return htmlspecialchars_decode($value, \ENT_QUOTES);
     }
 
     /**
@@ -59,10 +59,15 @@ class Bounce extends AbstractBounce implements IBounce
         $crowdSecBouncerUserAgent = CROWDSEC_BOUNCER_USER_AGENT;
         $crowdSecLogPath = CROWDSEC_LOG_PATH;
         $crowdSecDebugLogPath = CROWDSEC_DEBUG_LOG_PATH;
-        $debugMode = (bool) WP_DEBUG;
 
-        $this->logger = getStandAloneCrowdSecLoggerInstance($crowdSecLogPath, $debugMode, $crowdSecDebugLogPath);
-        $this->bouncer = getBouncerInstanceStandAlone($apiUrl, $apiKey, $isStreamMode, $cleanIpCacheDuration, $badIpCacheDuration, $fallbackRemediation, $bouncingLevel, $crowdSecBouncerUserAgent, $this->logger);
+        $this->logger = getStandAloneCrowdSecLoggerInstance($crowdSecLogPath, $this->debug, $crowdSecDebugLogPath);
+
+        $cacheSystem = $this->escape($this->getSettings('crowdsec_cache_system'));
+        $memcachedDsn = $this->escape($this->getSettings('crowdsec_memcached_dsn'));
+        $redisDsn = $this->escape($this->getSettings('crowdsec_redis_dsn'));
+        $fsCachePath = CROWDSEC_CACHE_PATH;
+
+        $this->bouncer = getBouncerInstanceStandAlone($apiUrl, $apiKey, $isStreamMode, $cleanIpCacheDuration, $badIpCacheDuration, $fallbackRemediation, $bouncingLevel, $crowdSecBouncerUserAgent, $this->logger, $cacheSystem, $memcachedDsn, $redisDsn, $fsCachePath);
 
         return $this->bouncer;
     }
@@ -227,16 +232,37 @@ class Bounce extends AbstractBounce implements IBounce
             return false;
         }
 
+        // Don't bounce if standalone mode is enable and we are not in a auto_prepend_file context.
+        if ((bool) $this->getSettings('crowdsec_standalone_mode') && !defined('CROWDSEC_STANDALONE_RUNNING_CONTEXT')) {
+            return false;
+        }
+
         $shouldNotBounceWpAdmin = !empty($this->getSettings('crowdsec_public_website_only'));
         // when the "crowdsec_public_website_only" is disabled...
         if ($shouldNotBounceWpAdmin) {
-            // ...don't bounce back office pages
-            if (is_admin()) {
-                return false;
-            }
-            // ...don't bounce wp-login and wp-cron pages
-            if (in_array($GLOBALS['pagenow'], ['wp-login.php', 'wp-cron.php'])) {
-                return false;
+            // In standalone context, is_admin() does not work. So we check admin section with another method.
+            if (defined('CROWDSEC_STANDALONE_RUNNING_CONTEXT')) {
+                // TODO improve the way to detect these pages or add a warning near to the wp option "enable standalone mode"
+                // ...don't bounce back office pages
+                if (0 === strpos($_SERVER['PHP_SELF'], '/wp-admin')) {
+                    return false;
+                }
+                // ...don't bounce wp-login and wp-cron pages
+                if (0 === strpos($_SERVER['PHP_SELF'], '/wp-login.php')) {
+                    return false;
+                }
+                if (0 === strpos($_SERVER['PHP_SELF'], '/wp-cron.php')) {
+                    return false;
+                }
+            } else {
+                // ...don't bounce back office pages
+                if (is_admin()) {
+                    return false;
+                }
+                // ...don't bounce wp-login and wp-cron pages
+                if (in_array($GLOBALS['pagenow'], ['wp-login.php', 'wp-cron.php'])) {
+                    return false;
+                }
             }
         }
 
@@ -343,9 +369,8 @@ class Bounce extends AbstractBounce implements IBounce
 
     public function initLogger(): void
     {
-        $debugMode = (bool) WP_DEBUG;
         $crowdSecLogPath = CROWDSEC_LOG_PATH;
         $crowdSecDebugLogPath = CROWDSEC_DEBUG_LOG_PATH;
-        $this->logger = getStandAloneCrowdSecLoggerInstance($crowdSecLogPath, $debugMode, $crowdSecDebugLogPath);
+        $this->logger = getStandAloneCrowdSecLoggerInstance($crowdSecLogPath, $this->debug, $crowdSecDebugLogPath);
     }
 }

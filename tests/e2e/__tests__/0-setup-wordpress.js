@@ -12,12 +12,16 @@ const {
     notify,
     waitForNavigation,
     goToPublicPage,
+    disableAutoPrependFileInHtaccess,
 } = require("../utils/helpers");
 
 describe(`Setup WordPress ${WORDPRESS_VERSION}`, () => {
     beforeEach(() => notify(expect.getState().currentTestName));
 
     it('Should install wordpress"', async () => {
+        // Remove the htaccess directive if existing from a previous test run.
+        await disableAutoPrependFileInHtaccess();
+
         // Go to home
         await goToPublicPage();
 

@@ -1,8 +1,12 @@
 <?php
 
-$crowdsecRandomLogFolder = get_option('crowdsec_random_log_folder') ?: '';
-define('CROWDSEC_LOG_PATH', CROWDSEC_PLUGIN_PATH."/logs/$crowdsecRandomLogFolder/prod.log");
-define('CROWDSEC_DEBUG_LOG_PATH', CROWDSEC_PLUGIN_PATH."/logs/$crowdsecRandomLogFolder/debug.log");
-define('CROWDSEC_CACHE_PATH', CROWDSEC_PLUGIN_PATH.'/.cache');
-
-define('CROWDSEC_BOUNCER_USER_AGENT', 'WordPress CrowdSec Bouncer/v0.6.0');
+function crowdsecDefineConstants(string $crowdsecRandomLogFolder)
+{
+    if (!defined('CROWDSEC_LOG_PATH')) {
+        define('CROWDSEC_LOG_PATH', __DIR__."/../logs/$crowdsecRandomLogFolder/prod.log");
+        define('CROWDSEC_DEBUG_LOG_PATH', __DIR__."/../logs/$crowdsecRandomLogFolder/debug.log");
+        define('CROWDSEC_CACHE_PATH', __DIR__.'/../.cache');
+        define('CROWDSEC_CONFIG_PATH', __DIR__.'/standalone-settings.php');
+        define('CROWDSEC_BOUNCER_USER_AGENT', 'WordPress CrowdSec Bouncer/v0.6.0');
+    }
+}

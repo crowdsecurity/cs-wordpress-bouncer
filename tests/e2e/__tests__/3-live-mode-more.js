@@ -6,6 +6,8 @@ const {
     goToAdmin,
     onAdminGoToSettingsPage,
     onAdminGoToAdvancedPage,
+    onAdvancedPageEnableStandAloneMode,
+    onAdvancedPageDisableStandAloneMode,
     onAdminSaveSettings,
     publicHomepageShouldBeBanWall,
     publicHomepageShouldBeCaptchaWall,
@@ -14,6 +16,8 @@ const {
     removeAllDecisions,
     fillInput,
     loadCookies,
+    enableAutoPrependFileInHtaccess,
+    disableAutoPrependFileInHtaccess,
 } = require("../utils/helpers");
 
 let detectedBrowserIp;
@@ -25,7 +29,34 @@ describe(`Run in Live mode`, () => {
         await loadCookies(context);
         await goToAdmin();
         await onAdminGoToAdvancedPage();
-        detectedBrowserIp = await page.$eval("#detected_ip_address", el => el.textContent);
+        detectedBrowserIp = await page.$eval(
+            "#detected_ip_address",
+            (el) => el.textContent
+        );
+    });
+
+    it('Should use standalone mode"', async () => {
+        // Enable standalone mode (add a htaccess directive)
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await onAdvancedPageEnableStandAloneMode();
+        await onAdminSaveSettings();
+
+        // Should still be a ban wall (but now using standalone mode)
+        await enableAutoPrependFileInHtaccess();
+        await wait(2000);
+        await publicHomepageShouldBeBanWall();
+
+        // Remove the standalone mode
+        await disableAutoPrependFileInHtaccess();
+        await wait(2000);
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await onAdvancedPageDisableStandAloneMode();
+        await onAdminSaveSettings();
+
+        // Should be a captcha wall
+        await publicHomepageShouldBeBanWall();
     });
 
     it('Should display a captcha wall instead of a ban wall in Flex mode"', async () => {
@@ -99,7 +130,10 @@ describe(`Run in Live mode`, () => {
         // Add the current IP to the CDN list (via a range)
         await goToAdmin();
         await onAdminGoToAdvancedPage();
-        await fillInput("crowdsec_trust_ip_forward_list", detectedBrowserIp + "/30");
+        await fillInput(
+            "crowdsec_trust_ip_forward_list",
+            detectedBrowserIp + "/30"
+        );
         await onAdminSaveSettings();
 
         // Should be banned
