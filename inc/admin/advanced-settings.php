@@ -261,4 +261,16 @@ function adminAdvancedSettings()
     // Field "crowdsec_standalone_mode"
     addFieldCheckbox('crowdsec_standalone_mode', 'Enable standalone mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_standalone', function () {}, function () {}, '
     <p>This process allows the bouncer to bounce IPs before running any PHP script in the project. <a href="https://wordpress.org/support/topic/standalone-mode-how-it-works" target="_blank">Discover how to setup with this guide</a>.</p><p>Enable this option only if you set the "<em>auto_prepend_file</em>" PHP flag following the guide, else the bouncer will not bounce.</p>');
+
+    /*******************************
+     ** Section "Debug mode" **
+     ******************************/
+
+    add_settings_section('crowdsec_admin_advanced_debug', 'Debug mode', function () {
+        echo 'Configure the debug mode.';
+    }, 'crowdsec_advanced_settings');
+
+    // Field "crowdsec_debug_mode"
+    addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
+    <p>Do not use in production. When this mode is enabled, you will see every unexpected bouncing errors in the browser and debug log will be written.</p>');
 }

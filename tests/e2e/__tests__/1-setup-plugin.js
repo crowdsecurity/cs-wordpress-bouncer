@@ -14,6 +14,7 @@ const {
 	onAdminGoToAdvancedPage,
 	onAdminSaveSettings,
 	onLoginPageLoginAsAdmin,
+	onAdvancedPageEnableDebugMode,
 	onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo,
 	onAdminAdvancedSettingsPageSetBadIpCacheDurationTo,
 	fillInput,
@@ -49,6 +50,12 @@ describe(`Setup CrowdSec plugin`, () => {
 		await onAdminGoToSettingsPage();
 		await fillInput("crowdsec_api_url", LAPI_URL_FROM_WP);
 		await fillInput("crowdsec_api_key", BOUNCER_KEY);
+		await onAdminSaveSettings();
+	});
+
+	it('Should enable the debug mode"', async () => {
+		await onAdminGoToAdvancedPage();
+		await onAdvancedPageEnableDebugMode();
 		await onAdminSaveSettings();
 	});
 

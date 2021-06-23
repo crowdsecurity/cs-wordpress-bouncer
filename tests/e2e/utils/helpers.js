@@ -120,6 +120,14 @@ const onAdvancedPageDisableStandAloneMode = async () => {
     await setToggle("crowdsec_standalone_mode", false);
 };
 
+const onAdvancedPageEnableDebugMode = async () => {
+    await setToggle("crowdsec_debug_mode", true);
+};
+
+const onAdvancedPageDisableDebugMode = async () => {
+    await setToggle("crowdsec_debug_mode", false);
+};
+
 const onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo = async (
     seconds
 ) => {
@@ -365,4 +373,6 @@ module.exports = {
     loadCookies,
     enableAutoPrependFileInHtaccess,
     disableAutoPrependFileInHtaccess,
+    onAdvancedPageEnableDebugMode,
+    onAdvancedPageDisableDebugMode
 };

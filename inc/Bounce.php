@@ -326,7 +326,7 @@ class Bounce extends AbstractBounce implements IBounce
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            if (WP_DEBUG) {
+            if ($this->debug) {
                 throw $e;
             }
         }
