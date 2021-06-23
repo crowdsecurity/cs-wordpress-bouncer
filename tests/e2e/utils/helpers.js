@@ -88,6 +88,7 @@ const onAdminSaveSettings = async () => {
         "#setting-error-settings_updated",
         "Settings saved."
     );
+    await wait(2000);
 };
 
 const setToggle = async (optionName, enable) => {
