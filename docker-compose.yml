@@ -1,5 +1,29 @@
 version: "3"
 services:
+    wordpress5-7:
+        build:
+            context: .
+            dockerfile: ./docker/wp5.7/php-${CS_WORDPRESS_BOUNCER_PHP_VERSION}.Dockerfile
+        networks:
+            - wordpress_bouncer_network_ipv4
+            - wordpress_bouncer_network_ipv6
+        depends_on:
+            - crowdsec
+            - mysql
+            - redis
+            - memcached
+        environment:
+            WORDPRESS_DB_USER: root
+            WORDPRESS_DB_PASSWORD: super_secret_password
+            WORDPRESS_DEBUG: 1 # Comment this line the simulate the production mode
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_CRON_LOCK_TIMEOUT', 1);
+        # more here https://hub.docker.com/_/wordpress
+        ports:
+            - "80:80"
+        volumes:
+            - .:/var/www/html/wp-content/plugins/cs-wordpress-bouncer:rw
+            - ./docker/tests.htaccess:/var/www/html/.htaccess:rw
     wordpress5-6:
         build:
             context: .
