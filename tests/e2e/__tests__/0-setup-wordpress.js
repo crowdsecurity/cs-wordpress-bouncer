@@ -14,6 +14,7 @@ const {
     waitForNavigation,
     goToPublicPage,
     disableAutoPrependFileInHtaccess,
+    deleteExistingStandaloneSettings
 } = require("../utils/helpers");
 
 describe(`Setup WordPress ${WORDPRESS_VERSION}`, () => {
@@ -22,6 +23,7 @@ describe(`Setup WordPress ${WORDPRESS_VERSION}`, () => {
     it('Should install wordpress"', async () => {
         // Remove the htaccess directive if existing from a previous test run.
         await disableAutoPrependFileInHtaccess();
+        await deleteExistingStandaloneSettings();
 
         // Go to home
         await goToPublicPage();

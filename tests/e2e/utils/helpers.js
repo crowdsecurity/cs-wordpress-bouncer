@@ -13,6 +13,7 @@ const {
 
 const COOKIES_FILE_PATH = `${__dirname}/../.cookies.json`;
 const HTACCESS_FILE_PATH = `${__dirname}/../../../docker/tests.htaccess`;
+const STANDALONE_SETTINGS_FILE_PATH = `${__dirname}/../../../inc/standalone-settings.php`;
 
 const notify = (message) => {
     if (DEBUG) {
@@ -338,6 +339,12 @@ RewriteRule . /index.php [L]
     fs.writeFileSync(HTACCESS_FILE_PATH, htaccessContent);
 };
 
+const deleteExistingStandaloneSettings = async () => {
+    if (fs.existsSync(STANDALONE_SETTINGS_FILE_PATH)) {
+        fs.unlinkSync(STANDALONE_SETTINGS_FILE_PATH)
+    }
+}
+
 module.exports = {
     notify,
     addDecision,
@@ -374,5 +381,6 @@ module.exports = {
     enableAutoPrependFileInHtaccess,
     disableAutoPrependFileInHtaccess,
     onAdvancedPageEnableDebugMode,
-    onAdvancedPageDisableDebugMode
+    onAdvancedPageDisableDebugMode,
+    deleteExistingStandaloneSettings
 };
