@@ -2,11 +2,12 @@
 
 require_once __DIR__.'/Bounce.php';
 
-require_once __DIR__.'/standalone-settings.php';
-
 function safelyBounceCurrentIp()
 {
-    global $crowdSecJsonStandaloneConfig;
+    if (!file_exists(__DIR__.'/standalone-settings.php')) {
+        return;
+    }
+    require_once __DIR__.'/standalone-settings.php';
     $crowdSecConfig = json_decode($crowdSecJsonStandaloneConfig, true);
     if (!count($crowdSecConfig)) {
         return;

@@ -28,12 +28,11 @@ define('CROWDSEC_PLUGIN_URL', plugin_dir_url(__FILE__));
 class WordpressCrowdSecBouncerException extends \RuntimeException
 {
 }
-
+require_once __DIR__.'/inc/plugin-setup.php';
 require_once __DIR__.'/inc/constants.php';
 $crowdsecRandomLogFolder = get_option('crowdsec_random_log_folder') ?: '';
 crowdsecDefineConstants($crowdsecRandomLogFolder);
 require_once __DIR__.'/inc/scheduling.php';
-require_once __DIR__.'/inc/plugin-setup.php';
 register_activation_hook(__FILE__, 'activate_crowdsec_plugin');
 register_deactivation_hook(__FILE__, 'deactivate_crowdsec_plugin');
 require_once __DIR__.'/inc/bouncer-instance.php';

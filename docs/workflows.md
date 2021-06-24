@@ -13,6 +13,8 @@ docker-compose exec $CONTAINER_NAME composer update --working-dir /var/www/html/
 git branch -m <new-name>
 git push origin :<old-name> && git push -u origin <new-name>
 
+> Important: don't forget to change manually the stable tag in readme.txt before merging
+
 # Create PR
 gh pr create --fill
 ```
@@ -20,6 +22,8 @@ gh pr create --fill
 > Note: after the merge, don't forget to delete to branch.
 
 ### New release
+
+> Important: don't forget to change manually the stable tag in readme.txt before merging
 
 ```bash
 git checkout main && git pull
