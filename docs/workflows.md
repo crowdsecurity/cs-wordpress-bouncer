@@ -22,7 +22,7 @@ gh pr create --fill
 ### New release
 
 ```bash
-git checkout main && git pull && git co -
+git checkout main && git pull
 git describe --tags `git rev-list --tags --max-count=1` # to verify what is the current tag
 export NEW_GIT_VERSION_WITHOUT_V_PREFIX= #...X.X.X
 ./scripts/publish-release.sh
