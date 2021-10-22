@@ -13,7 +13,7 @@ This plugin blocks detected attackers or displays them a captcha to check they a
 
 == Description ==
 
-Note: You must first have CrowdSec [installed on your server. The installation is very simple](https://doc.crowdsec.net/Crowdsec/v1/getting_started/installation/#installation).
+Note: You must first have CrowdSec [installed on your server. The installation is very simple](https://docs.crowdsec.net/docs/next/bouncers/wordpress/).
 
 CrowdSec is composed of a behavior detection engine, able to block classical attacks like credential bruteforce, port scans, web scans, etc.
 
