@@ -11,6 +11,7 @@ const LAPI_URL_FROM_WP = process.env.LAPI_URL_FROM_WP;
 const DEBUG = !!process.env.DEBUG;
 const TIMEOUT = (!!process.env.DEBUG ? 5 * 60 : 15) * 1000;
 const OTHER_IP = "1.2.3.4";
+const WP58 = WORDPRESS_VERSION === "5.8";
 const WP57 = WORDPRESS_VERSION === "5.7";
 const WP56 = WORDPRESS_VERSION === "5.6";
 const WP55 = WORDPRESS_VERSION === "5.5";
@@ -25,6 +26,7 @@ module.exports = {
     ADMIN_PASSWORD,
     LAPI_URL_FROM_WP,
     OTHER_IP,
+	WP58,
     WP57,
     WP56,
     WP55,

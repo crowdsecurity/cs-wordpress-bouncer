@@ -2,6 +2,7 @@ const {
 	BOUNCER_KEY,
 	ADMIN_URL,
 	LAPI_URL_FROM_WP,
+	WP58,
 	WP57,
 	WP56,
 	WP55,
@@ -37,7 +38,7 @@ describe(`Setup CrowdSec plugin`, () => {
 		// "Plugins" page
 		await wait(2000);
 		await page.goto(`${ADMIN_URL}/plugins.php`);
-		if (WP55 || WP56|| WP57) {
+		if (WP55 || WP56|| WP57 || WP58) {
 			await page.click("#activate-crowdsec");
 		} else {
 			await page.click('[aria-label="Activate CrowdSec"]');

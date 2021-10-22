@@ -48,7 +48,7 @@ docker-compose rm # destroy
 
 ```bash
 docker-compose down
-docker images | grep wordpress-bouncer_wordpress # to get the container id
+docker images | grep crowdsec-bouncer_wordpress # to get the container id
 docker rmi <container-id>
 ```
 
@@ -69,7 +69,8 @@ Then re-run the stack.
 ### Try the plugin with another WordPress version
 
 
-The plugin is tested under each of these WordPress versions: `5.6`, `5.5`, `5.4`, `5.3`, `5.2`, `5.1`, `5.0`, `4.9`.
+The plugin is tested under each of these WordPress versions: `5.8`,`5.7`,`5.6`, `5.5`, `5.4`, `5.3`, `5.2`, `5.1`,
+`5.0`, `4.9`.
 (Representing [more than 90% of the wordpress websites](https://wordpress.org/about/stats/))
 
 #### Add support for a new WordPress version

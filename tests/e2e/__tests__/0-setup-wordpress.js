@@ -2,6 +2,7 @@ const {
     ADMIN_LOGIN,
     ADMIN_PASSWORD,
     WORDPRESS_VERSION,
+	WP58,
     WP57,
     WP56,
     WP55,
@@ -28,7 +29,7 @@ describe(`Setup WordPress ${WORDPRESS_VERSION}`, () => {
         // Go to home
         await goToPublicPage();
 
-        if (WP54 || WP55 || WP56 || WP57) {
+        if (WP54 || WP55 || WP56 || WP57 || WP58) {
             // "Language selection" page
             await page.click('option[lang="en"]');
             await page.click("#language-continue");
@@ -38,7 +39,7 @@ describe(`Setup WordPress ${WORDPRESS_VERSION}`, () => {
         // "Account creation" page
         await page.fill("#weblog_title", "My website");
         await page.fill("#user_login", ADMIN_LOGIN);
-        if (WP53 || WP54 || WP55 || WP56 || WP57) {
+        if (WP53 || WP54 || WP55 || WP56 || WP57 || WP58) {
             await page.fill("#pass1", ADMIN_PASSWORD);
         } else {
             await page.fill("#pass1-text", ADMIN_PASSWORD);
