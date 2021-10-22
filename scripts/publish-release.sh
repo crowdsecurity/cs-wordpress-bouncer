@@ -32,7 +32,7 @@ fi
 git add $git_base_dir/inc/constants.php
 git add $git_base_dir/crowdsec.php
 
-git commit -m "bump version to v$NEW_GIT_VERSION_WITHOUT_V_PREFIX"
+git commit -m "ci(*): bump version to v$NEW_GIT_VERSION_WITHOUT_V_PREFIX"
 git tag v$NEW_GIT_VERSION_WITHOUT_V_PREFIX
 git push
 git push origin v$NEW_GIT_VERSION_WITHOUT_V_PREFIX
