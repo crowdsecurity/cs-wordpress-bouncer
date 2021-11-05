@@ -43,7 +43,7 @@ function adminSettings()
 
         return $input;
     }, '<p>
-    Select one of the four bouncing modes:<br>
+    Select one of the three bouncing modes:<br>
     <ul>
         <li><strong>Bouncing disabled</strong>: No ban or Captcha display to users. The road is free, even for attackers.</li>
         <li><strong>Flex bouncing</strong>: Display Captcha only, even if CrowdSec advises to ban the IP.</li>

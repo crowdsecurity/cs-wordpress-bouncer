@@ -65,7 +65,7 @@ describe(`Run in Live mode`, () => {
         await onAdminGoToSettingsPage();
         await page.selectOption(
             "[name=crowdsec_bouncing_level]",
-            "flex_boucing"
+            "flex_bouncing"
         );
         await onAdminSaveSettings();
 
@@ -91,7 +91,7 @@ describe(`Run in Live mode`, () => {
         await onAdminGoToSettingsPage();
         await page.selectOption(
             "[name=crowdsec_bouncing_level]",
-            "normal_boucing"
+            "normal_bouncing"
         );
         await onAdminSaveSettings();
 
