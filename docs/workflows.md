@@ -19,11 +19,8 @@ git push origin :<old-name> && git push -u origin <new-name>
 gh pr create --fill --web
 ```
 
-> Note: after the merge, don't forget to delete to branch.
 
 ### New release
-
-> Important: don't forget to change manually the stable tag in readme.txt before merging
 
 ```bash
 git checkout main && git pull
