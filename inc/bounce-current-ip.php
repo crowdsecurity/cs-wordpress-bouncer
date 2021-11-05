@@ -25,6 +25,8 @@ function safelyBounceCurrentIp()
 	}
 
     $crowdSecBounce = new Bounce();
+	$crowdSecBounce->setDebug($crowdSecConfig['crowdsec_debug_mode']??false);
+	$crowdSecBounce->setDisplayErrors($crowdSecConfig['crowdsec_display_errors'] ?? false);
     if ($crowdSecBounce->init($crowdSecConfig)) {
         $crowdSecBounce->safelyBounce();
     }

@@ -18,7 +18,8 @@ if($crowdSecConfig['crowdsec_bouncing_level'] === 'normal_boucing'){
 }
 
 $crowdSecBounce = new Bounce();
-$crowdSecBounce->setDebug((bool) $crowdSecConfig['crowdsec_debug_mode']);
+$crowdSecBounce->setDebug($crowdSecConfig['crowdsec_debug_mode']??false);
+$crowdSecBounce->setDisplayErrors($crowdSecConfig['crowdsec_display_errors'] ?? false);
 if ($crowdSecBounce->init($crowdSecConfig)) {
     $crowdSecBounce->safelyBounce();
 }
