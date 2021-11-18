@@ -65,7 +65,7 @@ case $TYPE in
 
   "docker")
     DEBUG_STRING=""
-    YARN_PATH="./var/www/html/my-own-modules/crowdsec-bouncer/Test/EndToEnd"
+    YARN_PATH="./var/www/html/my-own-modules/crowdsec-bouncer/tests/e2e-ddev"
     COMMAND="ddev exec -s playwright yarn --cwd ${YARN_PATH} cross-env"
     LAPI_URL_FROM_PLAYWRIGHT=http://crowdsec:8080
     CURRENT_IP=$(ddev find-ip playwright)
@@ -76,7 +76,7 @@ case $TYPE in
 
   "ci")
     DEBUG_STRING="DEBUG=pw:api"
-    YARN_PATH="./var/www/html/my-own-modules/crowdsec-bouncer/Test/EndToEnd"
+    YARN_PATH="./var/www/html/my-own-modules/crowdsec-bouncer/tests/e2e-ddev"
     COMMAND="ddev exec -s playwright xvfb-run --auto-servernum -- yarn --cwd ${YARN_PATH} cross-env"
     LAPI_URL_FROM_PLAYWRIGHT=http://crowdsec:8080
     CURRENT_IP=$(ddev find-ip playwright)
@@ -98,6 +98,7 @@ esac
 
 $COMMAND \
 WORDPRESS_URL=$WORDPRESS_URL \
+WORDPRESS_VERSION=$WORDPRESS_VERSION \
 $DEBUG_STRING \
 BOUNCER_KEY=$BOUNCER_KEY \
 PROXY_IP=$PROXY_IP  \

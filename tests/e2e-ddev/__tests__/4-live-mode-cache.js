@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 const {
-	notify,
 	wait,
 	waitForNavigation,
 	goToAdmin,
@@ -12,7 +11,6 @@ const {
 	publicHomepageShouldBeAccessible,
 	banOwnIpForSeconds,
 	removeAllDecisions,
-	loadCookies,
 	onLoginPageLoginAsAdmin,
 	setDefaultConfig,
 } = require("../utils/helpers");

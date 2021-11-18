@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 const {
-	notify,
 	goToAdmin,
 	onAdminGoToAdvancedPage,
 	onAdminGoToThemePage,
@@ -14,7 +13,6 @@ const {
 	banOwnIpForSeconds,
 	captchaOwnIpForSeconds,
 	onCaptchaPageRefreshCaptchaImage,
-	loadCookies,
 	fillInput,
 	setDefaultConfig,
 	removeAllDecisions,

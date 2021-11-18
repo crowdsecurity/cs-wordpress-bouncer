@@ -91,6 +91,8 @@ ddev exec wp core install --url='https://wp565.ddev.site' --title='WordPress' --
 ```
 cd wp-sources/my-own-module/crowdsec-bouncer/tests/e2e-ddev/__scripts__
 ```
+Ensure that `run-tests.sh` and `test-init.sh` files are executable. Run `chmod +x run-tests.sh test-init.sh` if not.
+
 
 Before testing with the `docker` or `ci` parameter, you have to install all the required dependencies
 in the playwright container with this command :
@@ -106,7 +108,7 @@ yarn global add cross-env
 
 Finally, you can test by running:
 
-`./run-test.sh [context] [files]` where `[context]` can be `ci`, `docker` or `host` and files is the list of file to
+`./run-tests.sh [context] [files]` where `[context]` can be `ci`, `docker` or `host` and files is the list of file to
 test (all files if empty);
 
 For example:

@@ -1,14 +1,10 @@
 /* eslint-disable no-undef */
-const { OTHER_IP } = require("../utils/constants");
 const {
-	notify,
 	addDecision,
 	wait,
 	goToAdmin,
 	onAdminGoToSettingsPage,
 	onAdminGoToAdvancedPage,
-	onAdvancedPageEnableStandAloneMode,
-	onAdvancedPageDisableStandAloneMode,
 	onAdminSaveSettings,
 	publicHomepageShouldBeBanWall,
 	publicHomepageShouldBeCaptchaWall,
@@ -16,9 +12,6 @@ const {
 	banIpForSeconds,
 	removeAllDecisions,
 	fillInput,
-	loadCookies,
-	enableAutoPrependFileInHtaccess,
-	disableAutoPrependFileInHtaccess,
 	onLoginPageLoginAsAdmin,
 	setDefaultConfig,
 	banOwnIpForSeconds,
@@ -33,30 +26,6 @@ describe(`Run in Live mode`, () => {
 		await onLoginPageLoginAsAdmin();
 		await setDefaultConfig();
 	});
-
-	// it('Should use standalone mode"', async () => {
-	// 	// Enable standalone mode (add a htaccess directive)
-	// 	await goToAdmin();
-	// 	await onAdminGoToAdvancedPage();
-	// 	await onAdvancedPageEnableStandAloneMode();
-	// 	await onAdminSaveSettings();
-
-	// 	// Should still be a ban wall (but now using standalone mode)
-	// 	await enableAutoPrependFileInHtaccess();
-	// 	await wait(2000);
-	// 	await publicHomepageShouldBeBanWall();
-
-	// 	// Remove the standalone mode
-	// 	await disableAutoPrependFileInHtaccess();
-	// 	await wait(2000);
-	// 	await goToAdmin();
-	// 	await onAdminGoToAdvancedPage();
-	// 	await onAdvancedPageDisableStandAloneMode();
-	// 	await onAdminSaveSettings();
-
-	// 	// Should be a captcha wall
-	// 	await publicHomepageShouldBeBanWall();
-	// });
 
 	it('Should display a captcha wall instead of a ban wall in Flex mode"', async () => {
 		// set Flex mode
@@ -131,7 +100,6 @@ describe(`Run in Live mode`, () => {
 		await onAdminSaveSettings();
 
 		// Should be accessible as PROXY IP is not trust by CDN
-		// page.setExtraHTTPHeaders({ "X-Forwarded-For": OTHER_IP });
 		await publicHomepageShouldBeAccessible();
 
 		// Add the current IP to the CDN list (via a range)
@@ -142,8 +110,5 @@ describe(`Run in Live mode`, () => {
 
 		// Should be banned
 		await publicHomepageShouldBeBanWall();
-
-		// Remove the XFF header for next requests
-		// page.setExtraHTTPHeaders({});
 	});
 });
