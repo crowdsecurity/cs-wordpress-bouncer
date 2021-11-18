@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 const {
-	notify,
 	waitForNavigation,
 	goToAdmin,
 	onAdminGoToAdvancedPage,
@@ -11,10 +10,8 @@ const {
 	banOwnIpForSeconds,
 	removeAllDecisions,
 	forceCronRun,
-	loadCookies,
 	onLoginPageLoginAsAdmin,
 	setDefaultConfig,
-	wait,
 } = require("../utils/helpers");
 
 const { CURRENT_IP } = require("../utils/constants");

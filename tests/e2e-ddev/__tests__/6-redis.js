@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 const {
-	notify,
 	wait,
 	goToAdmin,
 	onAdminGoToAdvancedPage,
@@ -11,7 +10,6 @@ const {
 	removeAllDecisions,
 	forceCronRun,
 	fillInput,
-	loadCookies,
 	onLoginPageLoginAsAdmin,
 	setDefaultConfig,
 	onAdvancedPageEnableStreamMode,

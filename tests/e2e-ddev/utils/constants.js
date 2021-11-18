@@ -15,7 +15,7 @@ const { CURRENT_IP } = process.env;
 const { PROXY_IP } = process.env;
 const OTHER_IP = "1.2.3.4";
 const WP58 = WORDPRESS_VERSION === "5.8";
-const WP57 = WORDPRESS_VERSION === "5.7";
+const WP57 = ["5.7", "574"].includes(WORDPRESS_VERSION);
 const WP56 = ["5.6", "565"].includes(WORDPRESS_VERSION);
 const WP55 = WORDPRESS_VERSION === "5.5";
 const WP54 = WORDPRESS_VERSION === "5.4";

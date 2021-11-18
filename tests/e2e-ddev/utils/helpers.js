@@ -1,6 +1,4 @@
 /* eslint-disable no-undef */
-const notifier = require("node-notifier");
-const path = require("path");
 const fs = require("fs");
 const { addDecision, deleteAllDecisions } = require("./watcherClient");
 const {
@@ -8,25 +6,14 @@ const {
 	BASE_URL,
 	ADMIN_LOGIN,
 	ADMIN_PASSWORD,
-	DEBUG,
+	BOUNCER_KEY,
+	LAPI_URL_FROM_WP,
 	TIMEOUT,
 	PROXY_IP,
 } = require("./constants");
 
 const COOKIES_FILE_PATH = `${__dirname}/../.cookies.json`;
-const HTACCESS_FILE_PATH = `${__dirname}/../../../docker/tests.htaccess`;
 const STANDALONE_SETTINGS_FILE_PATH = `${__dirname}/../../../inc/standalone-settings.php`;
-
-const notify = (message) => {
-	if (DEBUG) {
-		console.log(message);
-		notifier.notify({
-			title: "CrowdSec automation",
-			message,
-			icon: path.join(__dirname, "./icon.png"),
-		});
-	}
-};
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -59,9 +46,8 @@ const onAdminGoToAdvancedPage = async () => {
 		"#toplevel_page_crowdsec_plugin > ul > li:nth-child(4) > a",
 	);
 	await waitForNavigation;
-
-	const title = await page.title();
-	await expect(title).toContain("Advanced");
+	await wait(1000);
+	await expect(page).toMatchTitle(/Advanced/);
 };
 
 const onAdminGoToThemePage = async () => {
@@ -71,9 +57,9 @@ const onAdminGoToThemePage = async () => {
 		"#toplevel_page_crowdsec_plugin > ul > li:nth-child(3) > a",
 	);
 	await waitForNavigation;
+	await wait(1000);
 
-	const title = await page.title();
-	await expect(title).toContain("Theme customization");
+	await expect(page).toMatchTitle(/Theme customization/);
 };
 
 const onLoginPageLoginAsAdmin = async () => {
@@ -150,7 +136,7 @@ const computeCurrentPageRemediation = async (
 	if (title.includes(accessibleTextInTitle)) {
 		return "bypass";
 	}
-	await expect(title).toContain("Oops");
+	await expect(page).toMatchTitle(/Oops/);
 	const description = await page.$eval(".desc", (el) => el.innerText);
 	const banText = "cyber";
 	const captchaText = "check";
@@ -227,6 +213,7 @@ const forceCronRun = async () => {
 	// This could be fixed by running homemade call to cache update
 	// if it's the time to update cache
 	await page.goto(`${BASE_URL}/wp-cron.php`);
+	await wait(1000);
 };
 
 const fillInput = async (optionName, value) => {
@@ -297,73 +284,35 @@ const loadCookies = async (context) => {
 	await context.addCookies(deserializedCookies);
 };
 
-const enableAutoPrependFileInHtaccess = async () => {
-	const htaccessContent = `
-php_value auto_prepend_file "/var/www/html/wp-content/plugins/cs-wordpress-bouncer/inc/standalone-bounce.php"
-# BEGIN WordPress
-# The directives (lines) between "BEGIN WordPress" and "END WordPress" are
-# dynamically generated, and should only be modified via WordPress filters.
-# Any changes to the directives between these markers will be overwritten.
-<IfModule mod_rewrite.c>
-RewriteEngine On
-RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-RewriteBase /
-RewriteRule ^index\\.php$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.php [L]
-</IfModule>
-
-# END WordPress
-`;
-	fs.writeFileSync(HTACCESS_FILE_PATH, htaccessContent);
-};
-
-const disableAutoPrependFileInHtaccess = async () => {
-	const htaccessContent = `
-# BEGIN WordPress
-# The directives (lines) between "BEGIN WordPress" and "END WordPress" are
-# dynamically generated, and should only be modified via WordPress filters.
-# Any changes to the directives between these markers will be overwritten.
-<IfModule mod_rewrite.c>
-RewriteEngine On
-RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-RewriteBase /
-RewriteRule ^index\\.php$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.php [L]
-</IfModule>
-
-# END WordPress
-`;
-	fs.writeFileSync(HTACCESS_FILE_PATH, htaccessContent);
-};
-
 const deleteExistingStandaloneSettings = async () => {
 	if (fs.existsSync(STANDALONE_SETTINGS_FILE_PATH)) {
 		fs.unlinkSync(STANDALONE_SETTINGS_FILE_PATH);
 	}
 };
 
-const setDefaultConfig = async (save = true) => {
-	await onAdminGoToAdvancedPage();
-	await setToggle("crowdsec_stream_mode", false);
+const setDefaultConfig = async () => {
+	await onAdminGoToSettingsPage();
+	await fillInput("crowdsec_api_url", LAPI_URL_FROM_WP);
+	await fillInput("crowdsec_api_key", BOUNCER_KEY);
 	await onAdminSaveSettings(false);
 
-	await fillInput("crowdsec_trust_ip_forward_list", PROXY_IP);
+	await onAdminGoToAdvancedPage();
+	await onAdvancedPageEnableDebugMode();
+	await page.selectOption("[name=crowdsec_cache_system]", "phpfs");
+	await setToggle("crowdsec_stream_mode", false);
+	// We have to save in order that cache duration fields to be visible (not disabled)
+	await onAdminSaveSettings(false);
+	await onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo(1);
+	await onAdminAdvancedSettingsPageSetBadIpCacheDurationTo(1);
+	await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
 
-	await fillInput("crowdsec_clean_ip_cache_duration", 1);
-	await fillInput("crowdsec_bad_ip_cache_duration", 1);
+	await fillInput("crowdsec_trust_ip_forward_list", PROXY_IP);
 	await page.selectOption("[name=crowdsec_fallback_remediation]", "captcha");
 
-	if (save) {
-		await onAdminSaveSettings();
-	}
+	await onAdminSaveSettings();
 };
 
 module.exports = {
-	notify,
 	addDecision,
 	wait,
 	waitForNavigation,
@@ -395,8 +344,6 @@ module.exports = {
 	remediationShouldUpdate,
 	storeCookies,
 	loadCookies,
-	enableAutoPrependFileInHtaccess,
-	disableAutoPrependFileInHtaccess,
 	onAdvancedPageEnableDebugMode,
 	onAdvancedPageDisableDebugMode,
 	deleteExistingStandaloneSettings,
