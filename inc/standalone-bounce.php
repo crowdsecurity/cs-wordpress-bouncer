@@ -10,7 +10,7 @@ require_once __DIR__.'/standalone-settings.php';
 require_once __DIR__.'/bouncer-instance-standalone.php';
 
 $crowdSecConfig = json_decode($crowdSecJsonStandaloneConfig, true);
-// Retro compatibility with crowdsec php lib 0.13.3
+// Retro compatibility with crowdsec php lib < 0.14.0
 if($crowdSecConfig['crowdsec_bouncing_level'] === 'normal_boucing'){
 	$crowdSecConfig['crowdsec_bouncing_level'] = Constants::BOUNCING_LEVEL_NORMAL;
 }elseif($crowdSecConfig['crowdsec_bouncing_level'] === 'flex_boucing'){

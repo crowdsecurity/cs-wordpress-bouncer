@@ -211,7 +211,7 @@ if (is_admin()) {
         function addFieldSelect(string $optionName, string $label, string $optionGroup, string $pageName, string $sectionName, callable $onChange, string $descriptionHtml, array $choices)
         {
             $previousState = esc_attr(get_option($optionName));
-            // Retro compatibility with crowdsec php lib 0.13.3
+            // Retro compatibility with crowdsec php lib < 0.14.0
             if($optionName === 'crowdsec_bouncing_level'){
             	if($previousState === 'normal_boucing'){
 					$previousState = Constants::BOUNCING_LEVEL_NORMAL;
