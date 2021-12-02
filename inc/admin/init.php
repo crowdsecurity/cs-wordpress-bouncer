@@ -1,6 +1,8 @@
 <?php
 
-require_once __DIR__.'/notice.php';
+use CrowdSecBouncer\Constants;
+
+require_once __DIR__ . '/notice.php';
 
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/theme.php';
@@ -209,6 +211,14 @@ if (is_admin()) {
         function addFieldSelect(string $optionName, string $label, string $optionGroup, string $pageName, string $sectionName, callable $onChange, string $descriptionHtml, array $choices)
         {
             $previousState = esc_attr(get_option($optionName));
+            // Retro compatibility with crowdsec php lib < 0.14.0
+            if($optionName === 'crowdsec_bouncing_level'){
+            	if($previousState === 'normal_boucing'){
+					$previousState = Constants::BOUNCING_LEVEL_NORMAL;
+				}elseif($previousState === 'flex_boucing'){
+					$previousState = Constants::BOUNCING_LEVEL_FLEX;
+				}
+			}
             register_setting($optionGroup, $optionName, function ($input) use ($onChange, $optionName, $previousState) {
                 $currentState = esc_attr($input);
 

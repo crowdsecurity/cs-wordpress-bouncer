@@ -272,5 +272,17 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_debug_mode"
     addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>Do not use in production. When this mode is enabled, you will see every unexpected bouncing errors in the browser and debug log will be written.</p>');
+    <p>Should not be used in production. When this mode is enabled, debug log will be written.</p>');
+
+	/*******************************
+	 ** Section "Display errors" **
+	 ******************************/
+
+	add_settings_section('crowdsec_admin_advanced_debug', 'Display errors', function () {
+		echo 'Configure the error display.';
+	}, 'crowdsec_advanced_settings');
+
+	// Field "crowdsec_display_errors"
+	addFieldCheckbox('crowdsec_display_errors', 'Enable errors display', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
+    <p>Do not use in production. When this mode is enabled, you will see every unexpected bouncing errors in the browser.</p>');
 }

@@ -32,18 +32,18 @@ function adminSettings()
 
     // Field "crowdsec_bouncing_level"
     addFieldSelect('crowdsec_bouncing_level', 'Bouncing level', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_boucing', function ($input) {
-        if (!in_array($input, [
+    	if (!in_array($input, [
             Constants::BOUNCING_LEVEL_DISABLED,
             Constants::BOUNCING_LEVEL_NORMAL,
             Constants::BOUNCING_LEVEL_FLEX,
         ])) {
-            $input = Constants::BOUNCING_LEVEL_DISABLED;
-            add_settings_error('Bouncing level', 'crowdsec_error', 'Bouncing level: Incorrect bouncing level selected.');
+			$input = Constants::BOUNCING_LEVEL_DISABLED;
+			add_settings_error('Bouncing level', 'crowdsec_error', 'Bouncing level: Incorrect bouncing level selected.');
         }
 
         return $input;
     }, '<p>
-    Select one of the four bouncing modes:<br>
+    Select one of the three bouncing modes:<br>
     <ul>
         <li><strong>Bouncing disabled</strong>: No ban or Captcha display to users. The road is free, even for attackers.</li>
         <li><strong>Flex bouncing</strong>: Display Captcha only, even if CrowdSec advises to ban the IP.</li>
