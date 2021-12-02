@@ -331,7 +331,7 @@ class Bounce extends AbstractBounce implements IBounce
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            if ($this->debug) {
+            if ($this->displayErrors) {
                 throw $e;
             }
         }
