@@ -33,6 +33,7 @@ else
 fi
 git add $git_base_dir/inc/constants.php
 git add $git_base_dir/crowdsec.php
+git add $git_base_dir/readme.txt
 
 git commit -m "chore(*): bump version to v$NEW_GIT_VERSION_WITHOUT_V_PREFIX"
 git tag v$NEW_GIT_VERSION_WITHOUT_V_PREFIX
