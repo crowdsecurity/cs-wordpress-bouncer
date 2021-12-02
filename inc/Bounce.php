@@ -237,17 +237,12 @@ class Bounce extends AbstractBounce implements IBounce
             return false;
         }
 
-        // Don't bounce if standalone mode is enable and we are not in a auto_prepend_file context.
-        if ((bool) $this->getStringSettings('crowdsec_standalone_mode') && !defined('CROWDSEC_STANDALONE_RUNNING_CONTEXT')) {
-            return false;
-        }
-
         $shouldNotBounceWpAdmin = !empty($this->getStringSettings('crowdsec_public_website_only'));
         // when the "crowdsec_public_website_only" is disabled...
         if ($shouldNotBounceWpAdmin) {
             // In standalone context, is_admin() does not work. So we check admin section with another method.
             if (defined('CROWDSEC_STANDALONE_RUNNING_CONTEXT')) {
-                // TODO improve the way to detect these pages or add a warning near to the wp option "enable standalone mode"
+                // TODO improve the way to detect these pages
                 // ...don't bounce back office pages
                 if (0 === strpos($_SERVER['PHP_SELF'], '/wp-admin')) {
                     return false;
@@ -326,7 +321,7 @@ class Bounce extends AbstractBounce implements IBounce
         } catch (\Exception $e) {
             $this->logger->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_BOUNCING',
-                'messsage' => $e->getMessage(),
+                'message' => $e->getMessage(),
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),

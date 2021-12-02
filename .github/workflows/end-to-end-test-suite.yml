@@ -4,15 +4,17 @@ on:
     pull_request:
         branches:
             - main
-            - feature/ddev-e2e
+            - feature/standalone-fix-and-update
     workflow_dispatch:
 
 jobs:
     end-to-end-test-suite:
         strategy:
             matrix:
-                wp-version: [ 5.7.4 ]
-                php-version: [ 7.2 ]
+                wp-version: [ 4.9, 5.7 ]
+                php-version: [ 7.2, 7.4 ]
+                exclude:
+                    - { php-version: 7.4, wp-version: 4.9 }
 
         name: End-to-end test suite
         runs-on: ubuntu-latest

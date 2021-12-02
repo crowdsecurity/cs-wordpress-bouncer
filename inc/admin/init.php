@@ -47,7 +47,7 @@ if (is_admin()) {
         } catch (WordpressCrowdSecBouncerException $e) {
             getCrowdSecLoggerInstance()->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_CLEARING_CACHE',
-                'messsage' => $e->getMessage(),
+                'message' => $e->getMessage(),
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -72,7 +72,7 @@ if (is_admin()) {
         } catch (WordpressCrowdSecBouncerException $e) {
             getCrowdSecLoggerInstance()->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
-                'messsage' => $e->getMessage(),
+                'message' => $e->getMessage(),
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -91,7 +91,7 @@ if (is_admin()) {
         } catch (WordpressCrowdSecBouncerException $e) {
             getCrowdSecLoggerInstance()->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_PRUNING',
-                'messsage' => $e->getMessage(),
+                'message' => $e->getMessage(),
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),

@@ -103,14 +103,6 @@ const onAdvancedPageEnableStreamMode = async () => {
 	await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
 };
 
-const onAdvancedPageEnableStandAloneMode = async () => {
-	await setToggle("crowdsec_standalone_mode", true);
-};
-
-const onAdvancedPageDisableStandAloneMode = async () => {
-	await setToggle("crowdsec_standalone_mode", false);
-};
-
 const onAdvancedPageEnableDebugMode = async () => {
 	await setToggle("crowdsec_debug_mode", true);
 };
@@ -186,7 +178,7 @@ const publicHomepageShouldBeAccessible = async () => {
 
 const banIpForSeconds = async (ip, seconds) => {
 	await addDecision(ip, "ban", seconds);
-	await wait(1000);
+	await wait(2000);
 };
 
 const banOwnIpForSeconds = async (seconds, ip) => {
@@ -213,7 +205,7 @@ const forceCronRun = async () => {
 	// This could be fixed by running homemade call to cache update
 	// if it's the time to update cache
 	await page.goto(`${BASE_URL}/wp-cron.php`);
-	await wait(1000);
+	await wait(2000);
 };
 
 const fillInput = async (optionName, value) => {
@@ -325,8 +317,6 @@ module.exports = {
 	setToggle,
 	onLoginPageLoginAsAdmin,
 	onAdvancedPageEnableStreamMode,
-	onAdvancedPageEnableStandAloneMode,
-	onAdvancedPageDisableStandAloneMode,
 	onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo,
 	onAdminAdvancedSettingsPageSetBadIpCacheDurationTo,
 	publicHomepageShouldBeBanWall,

@@ -251,18 +251,6 @@ function adminAdvancedSettings()
     <p>Enable if you want to hide CrowdSec mentions on the Ban and Captcha pages</p>');
 
     /*******************************
-     ** Section "Standalone mode" **
-     ******************************/
-
-    add_settings_section('crowdsec_admin_advanced_standalone', 'Standalone mode', function () {
-        echo 'Configure some details about the standalone mode (using the PHP flag "auto_prepend_file")';
-    }, 'crowdsec_advanced_settings');
-
-    // Field "crowdsec_standalone_mode"
-    addFieldCheckbox('crowdsec_standalone_mode', 'Enable standalone mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_standalone', function () {}, function () {}, '
-    <p>This process allows the bouncer to bounce IPs before running any PHP script in the project. <a href="https://wordpress.org/support/topic/standalone-mode-how-it-works" target="_blank">Discover how to setup with this guide</a>.</p><p>Enable this option only if you set the "<em>auto_prepend_file</em>" PHP flag following the guide, else the bouncer will not bounce.</p>');
-
-    /*******************************
      ** Section "Debug mode" **
      ******************************/
 
@@ -278,11 +266,11 @@ function adminAdvancedSettings()
 	 ** Section "Display errors" **
 	 ******************************/
 
-	add_settings_section('crowdsec_admin_advanced_debug', 'Display errors', function () {
-		echo 'Configure the error display.';
+	add_settings_section('crowdsec_admin_advanced_display_errors', 'Display errors', function () {
+		echo 'Configure the errors display.';
 	}, 'crowdsec_advanced_settings');
 
 	// Field "crowdsec_display_errors"
-	addFieldCheckbox('crowdsec_display_errors', 'Enable errors display', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
+	addFieldCheckbox('crowdsec_display_errors', 'Enable errors display', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_display_errors', function () {}, function () {}, '
     <p>Do not use in production. When this mode is enabled, you will see every unexpected bouncing errors in the browser.</p>');
 }
