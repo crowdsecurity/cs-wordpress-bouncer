@@ -10,6 +10,7 @@ on:
 jobs:
     end-to-end-test-suite:
         strategy:
+            fail-fast: false
             matrix:
                 wp-version: [ 4.9, 5.7 ]
                 php-version: [ 7.2, 7.4 ]
