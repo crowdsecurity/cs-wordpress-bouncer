@@ -68,7 +68,6 @@ jobs:
 
             -   name: Setup WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
                 run: |
-                    ddev start
                     ddev exec wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'
 
 
