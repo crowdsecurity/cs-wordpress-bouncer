@@ -1,23 +1,25 @@
 {
-    "name": "crowdsec/wordpress-bouncer",
-    "description": "Wordpress plugin to reject IP detected as malicious by CrowdSec",
-    "type": "project",
-    "authors": [
-        {
-            "name": "CrowdSec",
-            "email": "info@crowdsec.net"
-        }
-    ],
-    "require": {
-        "crowdsec/bouncer": "0.14.0"
-    },
-    "require-dev": {
-        "bramus/monolog-colored-line-formatter": "^3.0",
-        "symfony/var-dumper": "^5.2"
-    },
-    "autoload": {
-        "psr-4": {
-            "\\": "./"
-        }
-    }
+	"name": "crowdsec/wordpress-bouncer",
+	"description": "Wordpress plugin to reject IP detected as malicious by CrowdSec",
+	"type": "project",
+	"authors": [
+		{
+			"name": "CrowdSec",
+			"email": "info@crowdsec.net"
+		}
+	],
+	"require": {
+		"php": "^7.2",
+		"crowdsec/bouncer": "0.14.0",
+		"symfony/polyfill-mbstring": "1.20.0"
+	},
+	"require-dev": {
+		"bramus/monolog-colored-line-formatter": "^3.0",
+		"symfony/var-dumper": "^5.2"
+	},
+	"autoload": {
+		"psr-4": {
+			"\\": "./"
+		}
+	}
 }

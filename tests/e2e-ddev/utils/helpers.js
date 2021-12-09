@@ -183,6 +183,7 @@ const banIpForSeconds = async (ip, seconds) => {
 
 const banOwnIpForSeconds = async (seconds, ip) => {
 	await banIpForSeconds(ip, seconds);
+	await wait(1000);
 };
 
 const captchaOwnIpForSeconds = async (seconds, ip) => {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e780b2f6ec3fc202b9d34e503fdff43f",
+    "content-hash": "fcfd3fb76b2c7560f8046899d0153a1d",
     "packages": [
         {
             "name": "crowdsec/bouncer",
@@ -974,16 +974,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.23.1",
+            "version": "v1.20.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "9174a3d80210dca8daa7f31fec659150bbeabfc6"
+                "reference": "39d483bdf39be819deabf04ec872eb0b2410b531"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/9174a3d80210dca8daa7f31fec659150bbeabfc6",
-                "reference": "9174a3d80210dca8daa7f31fec659150bbeabfc6",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/39d483bdf39be819deabf04ec872eb0b2410b531",
+                "reference": "39d483bdf39be819deabf04ec872eb0b2410b531",
                 "shasum": ""
             },
             "require": {
@@ -995,7 +995,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.23-dev"
+                    "dev-main": "1.20-dev"
                 },
                 "thanks": {
                     "name": "symfony/polyfill",
@@ -1034,7 +1034,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.23.1"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.20.0"
             },
             "funding": [
                 {
@@ -1050,7 +1050,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-05-27T12:26:48+00:00"
+            "time": "2020-10-23T14:02:19+00:00"
         },
         {
             "name": "symfony/polyfill-php73",
@@ -1497,21 +1497,21 @@
         },
         {
             "name": "bramus/monolog-colored-line-formatter",
-            "version": "3.0.5",
+            "version": "3.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bramus/monolog-colored-line-formatter.git",
-                "reference": "0b0df515b770056ff7ca4ab789587197113d3a5c"
+                "reference": "708891d34cb431d9ed56da91a53ecc2d8afdc24e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bramus/monolog-colored-line-formatter/zipball/0b0df515b770056ff7ca4ab789587197113d3a5c",
-                "reference": "0b0df515b770056ff7ca4ab789587197113d3a5c",
+                "url": "https://api.github.com/repos/bramus/monolog-colored-line-formatter/zipball/708891d34cb431d9ed56da91a53ecc2d8afdc24e",
+                "reference": "708891d34cb431d9ed56da91a53ecc2d8afdc24e",
                 "shasum": ""
             },
             "require": {
                 "bramus/ansi-php": "^3.0.3",
-                "php": "^7.2|~8.0.0"
+                "php": "^7.2|^8.0"
             },
             "require-dev": {
                 "monolog/monolog": "~2.0",
@@ -1537,9 +1537,9 @@
             "description": "Colored Line Formatter for Monolog",
             "support": {
                 "issues": "https://github.com/bramus/monolog-colored-line-formatter/issues",
-                "source": "https://github.com/bramus/monolog-colored-line-formatter/tree/3.0.5"
+                "source": "https://github.com/bramus/monolog-colored-line-formatter/tree/3.0.6"
             },
-            "time": "2020-11-28T23:44:05+00:00"
+            "time": "2021-12-05T09:10:49+00:00"
         },
         {
             "name": "symfony/var-dumper",
@@ -1636,7 +1636,9 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "php": "^7.2"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.1.0"
 }
