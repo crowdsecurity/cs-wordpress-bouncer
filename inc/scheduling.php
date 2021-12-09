@@ -24,7 +24,7 @@ function crowdSecRefreshBlocklist()
     } catch (WordpressCrowdSecBouncerException $e) {
         getCrowdSecLoggerInstance()->error('', [
             'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
-            'messsage' => $e->getMessage(),
+            'message' => $e->getMessage(),
             'code' => $e->getCode(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),

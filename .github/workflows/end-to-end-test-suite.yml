@@ -1,0 +1,131 @@
+name: End-to-end test suite
+on:
+    push:
+    pull_request:
+        branches:
+            - main
+            - feature/standalone-fix-and-update
+    workflow_dispatch:
+
+jobs:
+    end-to-end-test-suite:
+        strategy:
+            fail-fast: false
+            matrix:
+                wp-version: [ 4.9, 5.7 ]
+                php-version: [ 7.2, 7.4 ]
+                exclude:
+                    - { php-version: 7.4, wp-version: 4.9 }
+
+        name: End-to-end test suite
+        runs-on: ubuntu-latest
+
+        env:
+            EXTENSION_NAME: "CrowdSec_Bouncer"
+            EXTENSION_PATH: "crowdsec-bouncer"
+
+        steps:
+
+            -   name: Clone DDEV files
+                uses: actions/checkout@v2
+                with:
+                    path: .ddev
+                    repository: julienloizelet/ddev-wp
+
+            -   name: Install DDEV
+                run: |
+                    # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
+                    sudo apt-get -qq update
+                    sudo apt-get -qq -y install libnss3-tools
+                    curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
+                    bash install_ddev.sh
+                    ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+                    rm install_ddev.sh
+
+            -   name: Set WP_VERSION_CODE env
+                # used in some directory path and conventional file naming
+                # Example : 5.6.5 => wp565
+                run: |
+                    echo "WP_VERSION_CODE=$(echo wp${{ matrix.wp-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
+
+
+            -   name: Start DDEV for ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
+                run: |
+                    cp .ddev/config_overrides/config.${{ env.WP_VERSION_CODE }}.yaml .ddev/config.${{ env.WP_VERSION_CODE }}.yaml
+                    cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
+                    cp .ddev/additional_docker_compose/docker-compose.playwright.yaml .ddev/docker-compose.playwright.yaml
+                    sed -i -e 's/^php_version:.*/php_version: ${{ matrix.php-version }}/g' .ddev/config.${{ env.WP_VERSION_CODE }}.yaml
+                    ddev start
+                    sudo chmod -R 777 ${{ github.workspace }}/wp-content
+                    sudo chmod -R 777 ${{ github.workspace }}/my-own-modules
+
+            -   name: Install WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
+                run: |
+                    wget https://wordpress.org/wordpress-${{ matrix.wp-version }}.tar.gz
+                    tar -xf wordpress-${{ matrix.wp-version }}.tar.gz wordpress
+                    cp -r wordpress/. ${{ github.workspace }}
+                    rm -rf wordpress
+                    rm wordpress-${{ matrix.wp-version }}.tar.gz
+
+            -   name: Setup WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
+                run: |
+                    ddev start
+                    ddev exec wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'
+
+
+            -   name: Clone ${{ env.EXTENSION_NAME }} files
+                uses: actions/checkout@v2
+                with:
+                    path: my-own-modules/${{ env.EXTENSION_PATH }}
+
+            -   name: Install ${{ env.EXTENSION_NAME }} with composer dependencies
+                run: |
+                    ddev composer install --working-dir ./my-own-modules/${{ env.EXTENSION_PATH }}
+
+            -   name: Prepare for playwright test
+                run: |
+                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+                    chmod +x test-init.sh
+                    ./test-init.sh
+                    chmod +x run-tests.sh
+
+            -   name: Run Plugin activation tests
+                run: |
+                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+                    ./run-tests.sh ci "./__tests__/1-activate-plugin.js"
+
+            -   name: Configure CrowdSec and Wordpress bouncer plugin
+                run: |
+                    ddev crowdsec-config
+
+            -   name: Run Live mode remediation tests
+                run: |
+                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+                    ./run-tests.sh ci "./__tests__/2-live-mode-remediations.js ./__tests__/3-live-mode-more.js"
+
+            -   name: Run Live mode cache tests
+                run: |
+                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+                    ./run-tests.sh ci "./__tests__/4-live-mode-cache.js"
+
+            -   name: Run Stream mode tests
+                run: |
+                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+                    ./run-tests.sh ci "./__tests__/5-stream-mode.js"
+
+            -   name: Run Redis tests
+                run: |
+                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+                    ./run-tests.sh ci "./__tests__/6-redis.js"
+
+            -   name: Run Memcached tests
+                run: |
+                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+                    ./run-tests.sh ci "./__tests__/7-memcached.js"
+
+            -   name: Run auto prepend mode test suite
+                run: |
+                    cd ${{ github.workspace }}/.ddev
+                    ddev crowdsec-prepend-nginx
+                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+                    ./run-tests.sh ci "./__tests__/2-live-mode-remediations.js ./__tests__/3-live-mode-more.js ./__tests__/4-live-mode-cache.js ./__tests__/5-stream-mode.js ./__tests__/6-redis.js ./__tests__/7-memcached.js"

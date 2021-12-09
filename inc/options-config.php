@@ -42,7 +42,6 @@ function getCrowdSecOptionsConfig()
         ['name' => 'crowdsec_theme_text_ban_wall_footer', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_theme_custom_css', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_random_log_folder', 'default' => bin2hex(random_bytes(64)), 'autoInit' => false],
-        ['name' => 'crowdsec_standalone_mode', 'default' => false, 'autoInit' => true],
         ['name' => 'crowdsec_debug_mode', 'default' => false, 'autoInit' => true],
 		['name' => 'crowdsec_display_errors', 'default' => false, 'autoInit' => true],
     ];

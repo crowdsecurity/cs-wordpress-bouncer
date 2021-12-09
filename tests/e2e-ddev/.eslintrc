@@ -1,0 +1,20 @@
+{
+    "parserOptions": {
+        // Required for certain syntax usages
+        "ecmaVersion": 2018
+    },
+    "extends": [
+        "eslint:recommended",
+        "airbnb-base",
+        "plugin:prettier/recommended"
+    ],
+    "rules": {
+        "no-unused-vars": 1,
+        "no-underscore-dangle": 0,
+        "import/no-dynamic-require": 0,
+        "no-console": [1, { "allow": ["warn", "error", "debug"] }]
+    },
+    "env": {
+        "jest": true
+    }
+}
