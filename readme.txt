@@ -67,7 +67,7 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 - Add PHP 8.0 support
 
 
-[Read the full Changelog](https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/README.md)
+[Read the full Changelog](https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/CHANGELOG.md)
 
 == Upgrade Notice ==
 
