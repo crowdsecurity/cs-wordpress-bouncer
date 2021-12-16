@@ -2,6 +2,7 @@
 /.git
 /.github
 /.vagrant
+/.vscode
 /docker
 /docs
 /node_modules
@@ -33,6 +34,7 @@ docker-compose.yml
 *.sh
 *.log
 README.md
+CHANGELOG.md
 .DS_Store
 composer.json
 composer.lock
@@ -41,3 +43,4 @@ composer.lock
 Vagrantfile
 .distignore
 .gitignore
+prettier.config.js

@@ -44,26 +44,39 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 
 == Changelog ==
 
-= 0.5 =
-* Users can customize both ban and captcha walls
+= 1.2 (2021-12-09) =
 
-= 0.4 =
-* Users can set CDN IP ranges to trust
+- Fix issue that cause warning message error on front in standalone mode
+- Fix behavior : bounce should not be done twice in standalone mode
+- Remove useless configuration to enable standalone mode
 
-= 0.3 =
-* Add Redis and Memcached support for caching data
+= 1.1 (2021-12-02) =
 
-= 0.2 =
-* Make public CrowdSec mentions hiddable
+- Use `0.14.0` version of crowdsec php lib
+- Handle typo fixing for retro compatibility (`flex_boucing`=>`flex_bouncing` and `normal_boucing`=>`normal_bouncing`)
+- Split of debug in 2 configurations : debug and display_errors
 
-= 0.1 =
-* Avoid useless bouncing cases
-* Add advanced settings page
+= 1.0 (2021-06-24) =
+
+- Add Standalone mode: an option allowing the PHP engine to no longer have to load the WordPress core during the
+  bouncing stage. To be able to apply this mode, the webmaster has to set the auto_prepend_file PHP flag to the
+  script we provide.
+- Add debug mode: user can enable the debug mode directly from the CrowdSec advanced settings panel. A more verbose log
+  will be written when this flag is enabled.
+- Add WordPress 5.7 support
+- Add PHP 8.0 support
+
+
+[Read the full Changelog](https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/README.md)
 
 == Upgrade Notice ==
 
-= 0.5 =
-The user can customize the ban wall and captcha wall
+= 1.2 =
+If you are using the standalone mode, you should upgrade as this release fixes some issues.
+
+= 1.1 =
+With this release, you can enable debug log without throwing error on browser as there are now two separate configurations.
+
 
 == CrowdSec ==
 
