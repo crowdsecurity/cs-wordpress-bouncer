@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [1.2.5] - 2022-01-27
+
+### Added
+- Add test for WordPress 5.9
+
 ## [1.2.4] - 2021-12-16
 
 ### Fixed
@@ -30,7 +35,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [1.2.0] - 2021-12-09
 
 ### Added
-- Add end to end github actions test
+- Add end to end GitHub actions test
 
 ### Removed
 - Remove useless configuration to enable standalone mode. This mode should be entirely determined by the presence of

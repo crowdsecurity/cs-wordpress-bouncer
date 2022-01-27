@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-const { ADMIN_URL, WP58, WP57, WP56, WP55 } = require("../utils/constants");
+const { ADMIN_URL, WP59, WP58, WP57, WP56, WP55 } = require("../utils/constants");
 
 const {
 	waitForNavigation,
@@ -19,7 +19,7 @@ describe(`Setup CrowdSec plugin`, () => {
 		// "Plugins" page
 		await wait(2000);
 		await page.goto(`${ADMIN_URL}/plugins.php`);
-		if (WP55 || WP56 || WP57 || WP58) {
+		if (WP55 || WP56 || WP57 || WP58 || WP59) {
 			await page.click("#activate-crowdsec");
 		} else {
 			await page.click('[aria-label="Activate CrowdSec"]');

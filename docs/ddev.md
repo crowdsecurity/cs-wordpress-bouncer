@@ -86,6 +86,23 @@ ddev exec wp core install --url='https://wp565.ddev.site' --title='WordPress' --
 
 ### Test the module
 
+#### Install the module
+
+```
+cd wp-sources
+mkdir my-own-modules &&  mkdir my-own-modules/crowdsec-bouncer && cd my-own-modules/crowdsec-bouncer
+git clone git@github.com:crowdsecurity/cs-wordpress-bouncer.git ./
+ddev composer install --working-dir ./my-own-modules/crowdsec-bouncer
+cd wp-sources
+cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
+cp .ddev/additional_docker_compose/docker-compose.playwright.yaml .ddev/docker-compose.playwright.yaml
+ddev start
+```
+
+Login to the admin by browsing the url `https://wp565.ddev.site/admin` (username: `admin` and password: `admin123`)
+
+Activate the CrowdSec plugin
+
 #### End-to-end tests
 
 ```
