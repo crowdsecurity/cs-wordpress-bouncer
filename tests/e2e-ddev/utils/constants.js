@@ -14,12 +14,18 @@ const { TIMEOUT } = process.env;
 const { CURRENT_IP } = process.env;
 const { PROXY_IP } = process.env;
 const OTHER_IP = "1.2.3.4";
+const WP59 = WORDPRESS_VERSION.startsWith("59");
 const WP58 = WORDPRESS_VERSION.startsWith("58");
 const WP57 = WORDPRESS_VERSION.startsWith("57");
 const WP56 = WORDPRESS_VERSION.startsWith("56");
 const WP55 = WORDPRESS_VERSION.startsWith("55");
 const WP54 = WORDPRESS_VERSION.startsWith("54");
 const WP53 = WORDPRESS_VERSION.startsWith("53");
+const WP52 = WORDPRESS_VERSION.startsWith("52");
+const WP51 = WORDPRESS_VERSION.startsWith("51");
+const WP50 = WORDPRESS_VERSION.startsWith("50");
+const WP49 = WORDPRESS_VERSION.startsWith("49");
+
 
 module.exports = {
 	ADMIN_URL,
@@ -32,12 +38,17 @@ module.exports = {
 	LAPI_URL_FROM_WP,
 	LAPI_URL_FROM_PLAYWRIGHT,
 	OTHER_IP,
+	WP59,
 	WP58,
 	WP57,
 	WP56,
 	WP55,
 	WP54,
 	WP53,
+	WP52,
+	WP51,
+	WP50,
+	WP49,
 	DEBUG,
 	TIMEOUT,
 	WATCHER_LOGIN,
