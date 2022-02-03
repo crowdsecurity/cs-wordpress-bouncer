@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.0] - 2022-02-03
+
+### Changed
+- Use static settings only in standalone mode
+
 ## [1.2.5] - 2022-01-27
 
 ### Added

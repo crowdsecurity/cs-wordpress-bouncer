@@ -44,6 +44,10 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 
 == Changelog ==
 
+= 1.3 (2022-02-03) =
+
+- Use static settings only in standalone mode
+
 = 1.2 (2021-12-09) =
 
 - Fix issue that cause warning message error on front in standalone mode
@@ -70,6 +74,9 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 [Read the full Changelog](https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/CHANGELOG.md)
 
 == Upgrade Notice ==
+
+= 1.3 =
+With this release, the `standalone-settings.php` file is used only in "standalone" mode. In the standard mode, configurations will be retrieved directly from database.
 
 = 1.2 =
 If you are using the standalone mode, you should upgrade as this release fixes some issues.
