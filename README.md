@@ -1,6 +1,6 @@
 # CrowdSec WordPress Bouncer
 
-![CrowdSec WordPress Bouncer](.wordpress-org/banner-1544x500.png "CrowdSec WordPress Bouncer")
+![CrowdSec WordPress Bouncer](https://github.com/crowdsecurity/cs-wordpress-bouncer/raw/main/.wordpress-org/banner-1544x500.png "CrowdSec WordPress Bouncer")
 
 # Installation
 
