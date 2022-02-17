@@ -98,18 +98,16 @@ const setToggle = async (optionName, enable) => {
 	}
 };
 
+const fillInput = async (optionName, value) => {
+	await page.fill(`[name=${optionName}]`, `${value}`);
+};
+
 const onAdvancedPageEnableStreamMode = async () => {
 	await setToggle("crowdsec_stream_mode", true);
 	await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
 };
 
-const onAdvancedPageEnableDebugMode = async () => {
-	await setToggle("crowdsec_debug_mode", true);
-};
 
-const onAdvancedPageDisableDebugMode = async () => {
-	await setToggle("crowdsec_debug_mode", false);
-};
 
 const onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo = async (
 	seconds,
@@ -209,62 +207,6 @@ const forceCronRun = async () => {
 	await wait(2000);
 };
 
-const fillInput = async (optionName, value) => {
-	await page.fill(`[name=${optionName}]`, `${value}`);
-};
-
-const remediationShouldUpdate = async (
-	accessibleTextInTitle,
-	initialRemediation,
-	newRemediation,
-	timeoutMs,
-	intervalMs = 1000,
-) =>
-	new Promise((resolve, reject) => {
-		let checkRemediationTimeout;
-		let checkRemediationInterval;
-		let initialPassed = false;
-		const stopTimers = () => {
-			if (checkRemediationInterval) {
-				clearInterval(checkRemediationInterval);
-			}
-			if (checkRemediationTimeout) {
-				clearTimeout(checkRemediationTimeout);
-			}
-		};
-
-		checkRemediationInterval = setInterval(async () => {
-			await page.reload();
-			await waitForNavigation;
-			const remediation = await computeCurrentPageRemediation(
-				accessibleTextInTitle,
-			);
-			if (remediation === newRemediation) {
-				stopTimers();
-				if (initialPassed) {
-					resolve();
-				} else {
-					reject({
-						errorType: "INITIAL_REMEDIATION_NEVER_HAPPENED",
-						type: remediation,
-					});
-				}
-			} else if (remediation === initialRemediation) {
-				initialPassed = true;
-			} else {
-				stopTimers();
-				reject({
-					errorType: "WRONG_REMEDIATION_HAPPENED",
-					type: remediation,
-				});
-			}
-		}, intervalMs);
-		checkRemediationTimeout = setTimeout(() => {
-			stopTimers();
-			reject({ errorType: "NEW_REMEDIATION_NEVER_HAPPENED" });
-		}, timeoutMs);
-	});
-
 const storeCookies = async () => {
 	const cookies = await context.cookies();
 	const cookieJson = JSON.stringify(cookies);
@@ -290,7 +232,8 @@ const setDefaultConfig = async () => {
 	await onAdminSaveSettings(false);
 
 	await onAdminGoToAdvancedPage();
-	await onAdvancedPageEnableDebugMode();
+	await setToggle("crowdsec_debug_mode", true);
+	await setToggle("crowdsec_display_errors", true);
 	await page.selectOption("[name=crowdsec_cache_system]", "phpfs");
 	await setToggle("crowdsec_stream_mode", false);
 	// We have to save in order that cache duration fields to be visible (not disabled)
@@ -332,11 +275,8 @@ module.exports = {
 	onCaptchaPageRefreshCaptchaImage,
 	forceCronRun,
 	fillInput,
-	remediationShouldUpdate,
 	storeCookies,
 	loadCookies,
-	onAdvancedPageEnableDebugMode,
-	onAdvancedPageDisableDebugMode,
 	deleteExistingStandaloneSettings,
 	setDefaultConfig,
 };
