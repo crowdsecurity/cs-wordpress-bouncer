@@ -129,8 +129,9 @@ Finally, you can test by running:
 test (all files if empty);
 
 For example:
-
-`./run-tests.sh host "./2-live-mode-remediations.js"`
+```
+./run-tests.sh host "./2-live-mode-remediations.js"
+```
 
 ## License
 
