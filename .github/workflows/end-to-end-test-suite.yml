@@ -1,9 +1,13 @@
 name: End-to-end test suite
 on:
     push:
+        paths-ignore:
+            - '**.md'
     pull_request:
         branches:
             - main
+        paths-ignore:
+            - '**.md'
     workflow_dispatch:
 
 jobs:
@@ -11,13 +15,20 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                wp-version: [ 4.9, 5.0.1, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9 ]
-                php-version: [ 7.2, 7.4 ]
+                wp-version: [ "4.9", "5.0", "5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9" ]
+                php-version: [ "7.2", "7.4", "8.0" ]
                 exclude:
-                    - { php-version: 7.4, wp-version: 4.9 }
-                    - { php-version: 7.4, wp-version: 5.0.1 }
-                    - { php-version: 7.4, wp-version: 5.1 }
-                    - { php-version: 7.4, wp-version: 5.2 }
+                    - { php-version: "7.4", wp-version: "4.9" }
+                    - { php-version: "7.4", wp-version: "5.0" }
+                    - { php-version: "7.4", wp-version: "5.1" }
+                    - { php-version: "7.4", wp-version: "5.2" }
+                    - { php-version: "8.0", wp-version: "4.9" }
+                    - { php-version: "8.0", wp-version: "5.0" }
+                    - { php-version: "8.0", wp-version: "5.1" }
+                    - { php-version: "8.0", wp-version: "5.2" }
+                    - { php-version: "8.0", wp-version: "5.3" }
+                    - { php-version: "8.0", wp-version: "5.4" }
+                    - { php-version: "8.0", wp-version: "5.5" }
 
         name: End-to-end test suite
         runs-on: ubuntu-latest
@@ -81,7 +92,7 @@ jobs:
 
             -   name: Install ${{ env.EXTENSION_NAME }} with composer dependencies
                 run: |
-                    ddev composer install --working-dir ./my-own-modules/${{ env.EXTENSION_PATH }}
+                    ddev composer install --no-dev --prefer-dist --optimize-autoloader --working-dir ./my-own-modules/${{ env.EXTENSION_PATH }}
 
             -   name: Prepare for playwright test
                 run: |
