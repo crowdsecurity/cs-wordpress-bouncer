@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "10736874442585869dc84d29614c86db",
+    "content-hash": "4ce21ff52d6618e69f221cb63b8403eb",
     "packages": [
         {
             "name": "crowdsec/bouncer",
@@ -1641,7 +1641,7 @@
     "platform": [],
     "platform-dev": [],
     "platform-overrides": {
-        "php": "7.2.34"
+        "php": "7.2.5"
     },
     "plugin-api-version": "2.1.0"
 }
