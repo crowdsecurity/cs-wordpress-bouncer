@@ -1,12 +1,15 @@
 name: Deploy and Create Release
-# example: gh workflow run release.yml -f tag_name=v1.1.4
+# example: gh workflow run release.yml -f tag_name=v1.1.4 -f deploy_to_wordpress=true
 on:
     workflow_dispatch:
-        inputs:
-            tag_name:
-                default: ""
-            deploy_to_wordpress:
-                default: true
+        tag_name:
+            type: string
+            required: true
+        deploy_to_wordpress:
+            type: boolean
+            description: Deploy to WordPress
+            default: true
+            required: true
 
 jobs:
     deploy-create-release:
@@ -99,7 +102,7 @@ jobs:
                         })
 
             -   name: WordPress Plugin Deploy
-                if: github.event.inputs.deploy_to_wordpress
+                if: github.event.inputs.deploy_to_wordpress == 'true'
                 id: deploy
                 uses: 10up/action-wordpress-plugin-deploy@2.0.0
                 with:
@@ -118,7 +121,7 @@ jobs:
 
 
             -   name: Create release ${{ env.VERSION_NUMBER }} with Wordpress zip
-                if: github.event.inputs.deploy_to_wordpress
+                if: github.event.inputs.deploy_to_wordpress == 'true'
                 uses: softprops/action-gh-release@v1
                 with:
                     files: crowdsec.zip
@@ -129,7 +132,7 @@ jobs:
                     prerelease: false
 
             -   name: Create release ${{ env.VERSION_NUMBER }} without Wordpress zip
-                if: !github.event.inputs.deploy_to_wordpress
+                if: github.event.inputs.deploy_to_wordpress != 'true'
                 uses: softprops/action-gh-release@v1
                 with:
                     body_path: CHANGELOG.txt
