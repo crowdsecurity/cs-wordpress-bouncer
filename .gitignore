@@ -1,5 +1,7 @@
 # Composer
-vendor/
+vendor/crowdsec/bouncer/*
+!vendor/crowdsec/bouncer/src
+
 
 # Systems
 .DS_Store

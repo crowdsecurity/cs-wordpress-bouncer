@@ -90,10 +90,6 @@ jobs:
                 with:
                     path: my-own-modules/${{ env.EXTENSION_PATH }}
 
-            -   name: Install ${{ env.EXTENSION_NAME }} with composer dependencies
-                run: |
-                    ddev composer install --no-dev --prefer-dist --optimize-autoloader --working-dir ./my-own-modules/${{ env.EXTENSION_PATH }}
-
             -   name: Prepare for playwright test
                 run: |
                     cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
