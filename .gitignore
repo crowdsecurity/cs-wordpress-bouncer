@@ -1,6 +1,7 @@
 # Composer
 vendor/crowdsec/bouncer/*
 !vendor/crowdsec/bouncer/src
+!vendor/crowdsec/bouncer/LICENSE
 
 
 # Systems
