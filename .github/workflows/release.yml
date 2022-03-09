@@ -1,0 +1,139 @@
+name: Deploy and Create Release
+# example: gh workflow run release.yml -f tag_name=v1.1.4
+on:
+    workflow_dispatch:
+        inputs:
+            tag_name:
+                default: ""
+            deploy_to_wordpress:
+                default: true
+
+jobs:
+    deploy-create-release:
+        name: Deploy and create release
+        runs-on: ubuntu-latest
+
+        steps:
+            -   name: Check naming convention
+                run: |
+                    VERIF=$(echo ${{ github.event.inputs.tag_name }} | grep -E "^v([0-9]{1,}\.)([0-9]{1,}\.)([0-9]{1,})(-(alpha|beta)\.[0-9]{1,})?$")
+                    if [ ! ${VERIF} ]
+                    then
+                      echo "Tag name '${{ github.event.inputs.tag_name }}' does not comply with naming convention vX.Y.Z"
+                      exit 1
+                    fi
+
+            -   name: Set version number without v
+                run: |
+                    echo "VERSION_NUMBER=$(echo ${{ github.event.inputs.tag_name }} | sed 's/v//g' )" >> $GITHUB_ENV
+
+            -   name: Clone sources
+                uses: actions/checkout@v2
+
+            -   name: Check version ${{ env.VERSION_NUMBER }} consistency in files
+                # Check crowdsec.php, readme.txt, inc/constants.php and CHANGELOG.md
+                run: |
+                    CURRENT_DATE=$(date +'%Y-%m-%d')
+                    CHANGELOG_VERSION=$(grep -o -E "## \[(.*)\] - $CURRENT_DATE"  CHANGELOG.md | head -1 | sed 's/ //g')
+                    echo $CURRENT_DATE
+                    echo $CHANGELOG_VERSION
+                    echo "##[${{ env.VERSION_NUMBER }}]-$CURRENT_DATE"
+                    if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}]-$CURRENT_DATE" ]]
+                    then
+                       echo "Version in CHANGELOG.md: OK"
+                    else
+                       echo "Version in CHANGELOG.md: KO"
+                       exit 1
+                    fi
+                    CROWDSEC_VERSION=$(grep -E "Version: (.*)"  crowdsec.php | sed 's/ //g')
+                    echo $CROWDSEC_VERSION
+                    echo "*Version:${{ env.VERSION_NUMBER }}"
+                    if [[ $CROWDSEC_VERSION == "*Version:${{ env.VERSION_NUMBER }}" ]]
+                    then
+                       echo "Version in crowdsec.php: OK"
+                    else
+                       echo "Version in crowdsec.php: KO"
+                       exit 1
+                    fi
+                    CROWDSEC_STABLE=$(grep -E "Stable tag: (.*)"  crowdsec.php | sed 's/ //g')
+                    echo $CROWDSEC_STABLE
+                    echo "*Stabletag:${{ env.VERSION_NUMBER }}"
+                    if [[ $CROWDSEC_STABLE == "*Stabletag:${{ env.VERSION_NUMBER }}" ]]
+                    then
+                        echo "Stable tag in crowdsec.php: OK"
+                    else
+                        echo "Stable tag in crowdsec.php: KO"
+                        exit 1
+                    fi
+                    README_STABLE=$(grep -E "Stable tag: (.*)"  readme.txt | sed 's/ //g')
+                    echo $README_STABLE
+                    echo "Stabletag:${{ env.VERSION_NUMBER }}"
+                    if [[ $README_STABLE == "Stabletag:${{ env.VERSION_NUMBER }}" ]]
+                    then
+                        echo "Stable tag in readme.txt: OK"
+                    else
+                        echo "Stable tag in readme.txt: KO"
+                        exit 1
+                    fi
+                    CONSTANT_VERSION=$(grep -E "WordPress CrowdSec Bouncer/v(.*)"  inc/constants.php | sed 's/[\x27(),/ ]//g')
+                    echo $CONSTANT_VERSION
+                    echo "defineCROWDSEC_BOUNCER_USER_AGENTWordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }}"
+                    if [[ $CONSTANT_VERSION == "defineCROWDSEC_BOUNCER_USER_AGENTWordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }};" ]]
+                    then
+                        echo "Version in inc/constants.php: OK"
+                    else
+                        echo "Version in inc/constants.php: KO"
+                        exit 1
+                    fi
+
+            -   name: Create Tag ${{ github.event.inputs.tag_name }}
+                uses: actions/github-script@v3
+                with:
+                    github-token: ${{ github.token }}
+                    script: |
+                        github.git.createRef({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          ref: "refs/tags/${{ github.event.inputs.tag_name }}",
+                          sha: context.sha
+                        })
+
+            -   name: WordPress Plugin Deploy
+                if: github.event.inputs.deploy_to_wordpress
+                id: deploy
+                uses: 10up/action-wordpress-plugin-deploy@2.0.0
+                with:
+                    generate-zip: true
+                env:
+                    SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+                    SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+                    SLUG: crowdsec
+                    VERSION: ${{ env.VERSION_NUMBER }}
+
+            -   name: Prepare release notes
+                run: |
+                    VERSION_RELEASE_NOTES=$(awk -v ver="[${{ env.VERSION_NUMBER }}]" '/^## / { if (p) { exit }; if ($2 == ver) { p=1; next} } p && NF' CHANGELOG.md)
+                    echo "$VERSION_RELEASE_NOTES" >> CHANGELOG.txt
+                    cat CHANGELOG.txt
+
+
+            -   name: Create release ${{ env.VERSION_NUMBER }} with Wordpress zip
+                if: github.event.inputs.deploy_to_wordpress
+                uses: softprops/action-gh-release@v1
+                with:
+                    files: crowdsec.zip
+                    body_path: CHANGELOG.txt
+                    name: ${{ env.VERSION_NUMBER }}
+                    tag_name: ${{ github.event.inputs.tag_name }}
+                    draft: false
+                    prerelease: false
+
+            -   name: Create release ${{ env.VERSION_NUMBER }} without Wordpress zip
+                if: !github.event.inputs.deploy_to_wordpress
+                uses: softprops/action-gh-release@v1
+                with:
+                    body_path: CHANGELOG.txt
+                    name: ${{ env.VERSION_NUMBER }}
+                    tag_name: ${{ github.event.inputs.tag_name }}
+                    draft: false
+                    prerelease: false

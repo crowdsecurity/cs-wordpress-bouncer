@@ -46,12 +46,14 @@ jobs:
                     repository: julienloizelet/ddev-wp
 
             -   name: Install DDEV
+                env:
+                    DDEV_VERSION: v1.18.2
                 run: |
                     # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
                     sudo apt-get -qq update
                     sudo apt-get -qq -y install libnss3-tools
                     curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
-                    bash install_ddev.sh
+                    bash install_ddev.sh ${{ env.DDEV_VERSION }}
                     ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
                     rm install_ddev.sh
 
