@@ -8,9 +8,13 @@
 			"email": "info@crowdsec.net"
 		}
 	],
+	"config" : {
+		"platform": {
+			"php": "7.2.5"
+		}
+	},
 	"require": {
-		"php": "^7.2",
-		"crowdsec/bouncer": "0.14.0",
+		"crowdsec/bouncer": "0.15.0",
 		"symfony/polyfill-mbstring": "1.20.0",
 		"symfony/service-contracts": "2.4.1"
 	},
