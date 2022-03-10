@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2022-03-10
+
+### Fixed
+- Fix debug log for marketplace deployed version
+
+
 ## [1.3.1] - 2022-03-10
 
 ### Fixed
