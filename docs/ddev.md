@@ -92,7 +92,6 @@ ddev exec wp core install --url='https://wp565.ddev.site' --title='WordPress' --
 cd wp-sources
 mkdir my-own-modules &&  mkdir my-own-modules/crowdsec-bouncer && cd my-own-modules/crowdsec-bouncer
 git clone git@github.com:crowdsecurity/cs-wordpress-bouncer.git ./
-ddev composer update --working-dir ./my-own-modules/crowdsec-bouncer
 cd wp-sources
 cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
 cp .ddev/additional_docker_compose/docker-compose.playwright.yaml .ddev/docker-compose.playwright.yaml
@@ -132,6 +131,32 @@ For example:
 ```
 ./run-tests.sh host "./2-live-mode-remediations.js"
 ```
+
+### Update composer dependencies
+
+As WordPress plugins does not support `composer` installation, we have to add the vendor folder to sources. By doing
+that, we have to use only production ready dependencies and avoid `require-dev` parts. We have also set a config
+platform version of PHP in the `composer.json` that will force composer to install packages on this specific version.
+We are not setting the `"optimize-autoloader": true` in the `composer.json` because it implies a lot of issues during
+development phase.
+
+#### Development phase
+
+In development phase, you could run the following command:
+
+```
+ddev composer update --working-dir ./my-own-modules/crowdsec-bouncer
+```
+
+#### Production release
+
+To release a new version of the plugin on the WordPress marketplace, you must run:
+
+```
+ddev composer update --no-dev --prefer-dist --optimize-autoloader --working-dir ./my-own-modules/crowdsec-bouncer
+```
+
+
 
 ## License
 
