@@ -7,22 +7,22 @@ This WordPress plugin allows you to apply decisions from CrowdSec directly withi
 
 ## Usage
 
-See [User Guide](./docs/USER_GUIDE.md)
+See [User Guide](https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md)
 
 ## Installation
 
-See [Installation Guide](./docs/INSTALLATION_GUIDE.md)
+See [Installation Guide](https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/INSTALLATION_GUIDE.md)
 
 
 ## Technical notes
 
-See [Technical notes](./docs/TECHNICAL_NOTES.md)
+See [Technical notes](https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/TECHNICAL_NOTES.md)
 
 ## Developer guide
 
-See [Developer guide](./docs/DEVELOPER.md)
+See [Developer guide](https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/DEVELOPER.md)
 
 
 ## License
 
-[MIT](https://github.com/crowdsecurity/php-cs-bouncer/blob/main/LICENSE)
+[MIT](https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/LICENSE)

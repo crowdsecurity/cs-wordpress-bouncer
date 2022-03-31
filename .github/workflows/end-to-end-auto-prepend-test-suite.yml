@@ -68,6 +68,7 @@ jobs:
                     cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
                     cp .ddev/additional_docker_compose/docker-compose.playwright.yaml .ddev/docker-compose.playwright.yaml
                     sed -i -e 's/^php_version:.*/php_version: ${{ matrix.php-version }}/g' .ddev/config.${{ env.WP_VERSION_CODE }}.yaml
+                    mkdir wp-content
                     ddev start
                     sudo chmod -R 777 ${{ github.workspace }}/wp-content
                     sudo chmod -R 777 ${{ github.workspace }}/my-own-modules
