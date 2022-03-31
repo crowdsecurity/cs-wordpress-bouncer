@@ -1,4 +1,4 @@
-name: End-to-end test suite
+name: End-to-end auto-prepend-file mode test suite
 on:
     push:
         branches:
@@ -8,7 +8,7 @@ on:
     workflow_dispatch:
 
 jobs:
-    end-to-end-test-suite:
+    end-to-end-auto-prepend-file-mode-test-suite:
         strategy:
             fail-fast: false
             matrix:
@@ -27,7 +27,7 @@ jobs:
                     - { php-version: "8.0", wp-version: "5.4" }
                     - { php-version: "8.0", wp-version: "5.5" }
 
-        name: End-to-end test suite
+        name: End-to-end auto-prepend-file mode test suite
         runs-on: ubuntu-latest
         if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
 
@@ -68,7 +68,6 @@ jobs:
                     cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
                     cp .ddev/additional_docker_compose/docker-compose.playwright.yaml .ddev/docker-compose.playwright.yaml
                     sed -i -e 's/^php_version:.*/php_version: ${{ matrix.php-version }}/g' .ddev/config.${{ env.WP_VERSION_CODE }}.yaml
-                    mkdir wp-content
                     ddev start
                     sudo chmod -R 777 ${{ github.workspace }}/wp-content
                     sudo chmod -R 777 ${{ github.workspace }}/my-own-modules
@@ -103,31 +102,27 @@ jobs:
                     cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
                     ./run-tests.sh ci "./__tests__/1-activate-plugin.js"
 
-            -   name: Configure CrowdSec and Wordpress bouncer plugin
+            -   name: Prepare auto-prepend-file mode test suite
                 run: |
-                    ddev crowdsec-config
+                    cd ${{ github.workspace }}/.ddev
+                    ddev nginx-config custom_files/crowdsec-prepend-nginx-site.conf
+                    ddev exec -s crowdsec cscli decisions delete --all
 
-            -   name: Run Live mode remediation tests
+            -   name: Verify auto_prepend_file directive
+                run: |
+                    cd ${{ github.workspace }}
+                    cp .ddev/custom_files/phpinfo.php phpinfo.php
+                    PREPENDVERIF=$(curl https://${{ env.WP_VERSION_CODE }}.ddev.site/phpinfo.php | grep -o -E "auto_prepend_file=(.*)php(.*)" | sed 's/<\/tr>//g; s/<\/td>//g;' | tr '\n' '#')
+                    if [[ $PREPENDVERIF == "auto_prepend_file=/var/www/html/wp-content/plugins/cs-wordpress-bouncer/inc/standalone-bounce.php#auto_prepend_file=/var/www/html/wp-content/plugins/cs-wordpress-bouncer/inc/standalone-bounce.php#" ]]
+                    then
+                        echo "AUTO PREPEND FILE OK"
+                    else
+                        echo "AUTO PREPEND FILE KO"
+                        echo $PREPENDVERIF
+                        exit 1
+                    fi        
+
+            -   name: Run auto prepend mode test suite
                 run: |
                     cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/2-live-mode-remediations.js ./__tests__/3-live-mode-more.js"
-
-            -   name: Run Live mode cache tests
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/4-live-mode-cache.js"
-
-            -   name: Run Stream mode tests
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/5-stream-mode.js"
-
-            -   name: Run Redis tests
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/6-redis.js"
-
-            -   name: Run Memcached tests
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/7-memcached.js"
+                    ./run-tests.sh ci "./__tests__/2-live-mode-remediations.js ./__tests__/3-live-mode-more.js ./__tests__/4-live-mode-cache.js ./__tests__/5-stream-mode.js ./__tests__/6-redis.js ./__tests__/7-memcached.js"

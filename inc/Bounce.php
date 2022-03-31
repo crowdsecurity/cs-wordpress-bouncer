@@ -236,6 +236,10 @@ class Bounce extends AbstractBounce implements IBounce
         if ('/favicon.ico' === $_SERVER['REQUEST_URI']) {
             return false;
         }
+		// Don't bounce cli
+		if (PHP_SAPI === 'cli') {
+			return false;
+		}
 
         $shouldNotBounceWpAdmin = !empty($this->getStringSettings('crowdsec_public_website_only'));
         // when the "crowdsec_public_website_only" is disabled...

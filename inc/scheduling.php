@@ -3,7 +3,7 @@
 define('CROWDSEC_REFRESH_BLOCKLIST_CRON_HOOK', 'crowdsec_refresh_blocklist_cron_hook');
 define('CROWDSEC_REFRESH_BLOCKLIST_CRON_INTERVAL', 'crowdsec_refresh_blocklist_cron_interval');
 
-// Create a WP custom cron interval (ovewrite previous if any).
+// Create a WP custom cron interval (overwrite previous if any).
 add_filter('cron_schedules', function ($schedules) {
     $refreshFrequency = (int) get_option('crowdsec_stream_mode_refresh_frequency');
     if ($refreshFrequency > 0) {
