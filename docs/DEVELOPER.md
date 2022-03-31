@@ -6,6 +6,32 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Local development](#local-development)
+  - [DDEV-Local setup](#ddev-local-setup)
+    - [DDEV installation](#ddev-installation)
+  - [Prepare DDEV WordPress environment](#prepare-ddev-wordpress-environment)
+  - [WordPress installation](#wordpress-installation)
+  - [DDEV Usage](#ddev-usage)
+    - [Test the module](#test-the-module)
+      - [Install the module](#install-the-module)
+      - [End-to-end tests](#end-to-end-tests)
+    - [Update composer dependencies](#update-composer-dependencies)
+      - [Development phase](#development-phase)
+      - [Production release](#production-release)
+- [Quick start guide](#quick-start-guide)
+  - [Live mode](#live-mode)
+    - [Discover the cache system](#discover-the-cache-system)
+    - [Try "ban" remediation](#try-ban-remediation)
+    - [Try "captcha" remediation](#try-captcha-remediation)
+  - [Stream mode, for the high traffic websites](#stream-mode-for-the-high-traffic-websites)
+  - [Try Redis or Memcached](#try-redis-or-memcached)
+    - [Redis](#redis)
+    - [Memcached](#memcached)
+- [Commit message](#commit-message)
+  - [Allowed message `type` values](#allowed-message-type-values)
+- [Release process](#release-process)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
