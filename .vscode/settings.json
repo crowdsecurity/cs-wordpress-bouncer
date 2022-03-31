@@ -1,8 +1,0 @@
-{
-    "css.validate": false,
-    "less.validate": false,
-    "scss.validate": false,
-    "[javascript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-    }
-}

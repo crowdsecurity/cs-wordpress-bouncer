@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+if [ -z "$1" ]; then
+	echo "Missing argument (commit message). Did you try to run this manually?"
+	exit 1
+fi
+
+commitTitle="$(cat $1 | head -n1)"
+
+# ignore merge
+if echo "$commitTitle" | grep -qE "^Merge"; then
+	echo "Commit hook: ignoring merge"
+	exit 0
+fi
+
+# check commit message
+REGEX='^(feat|fix|docs|style|refactor|ci|test|chore|comment)\(.*\)\:.*'
+if ! echo "$commitTitle" | grep -qE ${REGEX}; then
+	echo "Your commit title '$commitTitle' did not follow conventional commit message rules:"
+	echo "Please comply with the regex ${REGEX}"
+	exit 1
+fi
