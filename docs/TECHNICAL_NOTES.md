@@ -6,7 +6,9 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
 
+- [How to use system CRON instead of wp-cron?](#how-to-use-system-cron-instead-of-wp-cron)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

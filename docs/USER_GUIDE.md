@@ -5,6 +5,21 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Description](#description)
+- [Prerequisites](#prerequisites)
+- [Usage](#usage)
+  - [Features](#features)
+  - [Configurations](#configurations)
+    - [General settings](#general-settings)
+    - [Theme customization](#theme-customization)
+    - [Advanced settings](#advanced-settings)
+  - [Auto Prepend File mode](#auto-prepend-file-mode)
+    - [PHP](#php)
+    - [Nginx](#nginx)
+    - [Apache](#apache)
+- [Resources](#resources)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
