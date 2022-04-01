@@ -22,9 +22,7 @@ require_once __DIR__.'/vendor/autoload.php';
 define('CROWDSEC_PLUGIN_PATH', __DIR__);
 define('CROWDSEC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-class WordpressCrowdSecBouncerException extends \RuntimeException
-{
-}
+
 require_once __DIR__.'/inc/plugin-setup.php';
 require_once __DIR__.'/inc/constants.php';
 $crowdsecRandomLogFolder = get_option('crowdsec_random_log_folder') ?: '';

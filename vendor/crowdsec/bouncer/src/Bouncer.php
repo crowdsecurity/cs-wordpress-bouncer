@@ -8,8 +8,10 @@ require_once __DIR__.'/templates/access-forbidden.php';
 use CrowdSecBouncer\Fixes\Gregwar\Captcha\CaptchaBuilder;
 use Gregwar\Captcha\PhraseBuilder;
 use IPLib\Factory;
+use IPLib\ParseStringFlag;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
+use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Config\Definition\Processor;
@@ -27,13 +29,10 @@ use Symfony\Component\Config\Definition\Processor;
 class Bouncer
 {
     /** @var LoggerInterface */
-    private $logger = null;
-
-    /** @var array */
-    private $config = [];
+    private $logger;
 
     /** @var ApiCache */
-    private $apiCache = null;
+    private $apiCache;
 
     /** @var int */
     private $maxRemediationLevelIndex = null;
@@ -52,31 +51,33 @@ class Bouncer
      * Configure this instance.
      *
      * @param array $config An array with all configuration parameters
+     *
+     * @throws InvalidArgumentException
      */
     public function configure(array $config): void
     {
         // Process input configuration.
         $configuration = new Configuration();
         $processor = new Processor();
-        $this->config = $processor->processConfiguration($configuration, [$config]);
-
+        $finalConfig = $processor->processConfiguration($configuration, [$config]);
         /** @var int */
         $index = array_search(
-            $this->config['max_remediation_level'],
+            $finalConfig['max_remediation_level'],
             Constants::ORDERED_REMEDIATIONS
         );
         $this->maxRemediationLevelIndex = $index;
 
         // Configure Api Cache.
         $this->apiCache->configure(
-            $this->config['live_mode'],
-            $this->config['api_url'],
-            $this->config['api_timeout'],
-            $this->config['api_user_agent'],
-            $this->config['api_key'],
-            $this->config['cache_expiration_for_clean_ip'],
-            $this->config['cache_expiration_for_bad_ip'],
-            $this->config['fallback_remediation']
+            $finalConfig['stream_mode'],
+            $finalConfig['api_url'],
+            $finalConfig['api_timeout'],
+            $finalConfig['api_user_agent'],
+            $finalConfig['api_key'],
+            $finalConfig['clean_ip_cache_duration'],
+            $finalConfig['bad_ip_cache_duration'],
+            $finalConfig['fallback_remediation'],
+            $finalConfig['geolocation']
         );
     }
 
@@ -105,10 +106,12 @@ class Bouncer
      * @param string $ip The IP to check
      *
      * @return string the remediation to apply (ex: 'ban', 'captcha', 'bypass')
+     *
+     * @throws InvalidArgumentException
      */
     public function getRemediationForIp(string $ip): string
     {
-        $address = Factory::addressFromString($ip, false);
+        $address = Factory::parseAddressString($ip, ParseStringFlag::MAY_INCLUDE_ZONEID);
         if (null === $address) {
             throw new BouncerException("IP $ip format is invalid.");
         }
@@ -164,6 +167,8 @@ class Bouncer
      * This method should be called only to force a cache warm up.
      *
      * @return array "count": number of decisions added, "errors": decisions not added
+     *
+     * @throws InvalidArgumentException
      */
     public function warmBlocklistCacheUp(): array
     {
@@ -172,9 +177,11 @@ class Bouncer
 
     /**
      * Used in stream mode only.
-     * This method should be called periodically (ex: crontab) in a asynchronous way to update the bouncer cache.
+     * This method should be called periodically (ex: crontab) in an asynchronous way to update the bouncer cache.
      *
      * @return array Number of deleted and new decisions, and errors when processing decisions
+     *
+     * @throws InvalidArgumentException
      */
     public function refreshBlocklistCache(): array
     {
@@ -185,6 +192,8 @@ class Bouncer
      * This method clear the full data in cache.
      *
      * @return bool If the cache has been successfully cleared or not
+     *
+     * @throws InvalidArgumentException
      */
     public function clearCache(): bool
     {
@@ -216,7 +225,7 @@ class Bouncer
      *
      * @return array an array composed of two items, a "phrase" string representing the phrase and a "inlineImage" representing the image data
      */
-    public static function buildCaptchaCouple()
+    public static function buildCaptchaCouple(): array
     {
         $captchaBuilder = new CaptchaBuilder();
 
@@ -228,15 +237,15 @@ class Bouncer
 
     /**
      * Check if the captcha filled by the user is correct or not.
-     * We are premissive with the user (0 is interpreted as "o" and 1 in interpretted as "l").
+     * We are permissive with the user (0 is interpreted as "o" and 1 in interpreted as "l").
      *
      * @param string $expected The expected phrase
-     * @param string $expected The phrase to check (the user input)
-     * @param string $ip       Th IP of the use (for logging purpose)
+     * @param string $try      The phrase to check (the user input)
+     * @param string $ip       The IP of the use (for logging purpose)
      *
      * @return bool If the captcha input was correct or not
      */
-    public function checkCaptcha(string $expected, string $try, string $ip)
+    public function checkCaptcha(string $expected, string $try, string $ip): bool
     {
         $solved = PhraseBuilder::comparePhrases($expected, $try);
         $this->logger->warning('', [
@@ -251,12 +260,12 @@ class Bouncer
     /**
      * Test the connection to the cache system (Redis or Memcached).
      *
-     * @return bool If the connection was successful or not
+     * @return void If the connection was successful or not
      *
-     * @throws BouncerException if the connection was not successful
+     * @throws BouncerException|InvalidArgumentException if the connection was not successful
      * */
     public function testConnection()
     {
-        return $this->apiCache->testConnection();
+        $this->apiCache->testConnection();
     }
 }

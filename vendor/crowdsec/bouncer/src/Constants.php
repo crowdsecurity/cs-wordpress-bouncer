@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CrowdSecBouncer;
 
 /**
- * Every constants of the library are set here.
+ * Every constant of the library are set here.
  *
  * @author    CrowdSec team
  *
@@ -16,16 +16,16 @@ namespace CrowdSecBouncer;
  */
 class Constants
 {
-    /** @var string The URL of the CrowdSec Central API */
-    public const CAPI_URL = 'https://api.crowdsec.net/v2/';
+    /** @var string The Default URL of the CrowdSec LAPI */
+    public const DEFAULT_LAPI_URL = 'http://localhost:8080';
 
     /** @var string The last version of this library */
-    public const VERSION = 'v0.15.0';
+    public const VERSION = 'v0.20.0';
 
-    /** @var string The user agent used to send request to LAPI or CAPI */
+    /** @var string The user agent used to send request to LAPI */
     public const BASE_USER_AGENT = 'PHP CrowdSec Bouncer/'.self::VERSION;
 
-    /** @var int The timeout when calling LAPI or CAPI */
+    /** @var int The timeout when calling LAPI */
     public const API_TIMEOUT = 1;
 
     /** @var int The duration we keep a clean IP in cache 5s */
@@ -63,4 +63,22 @@ class Constants
 
     /** @var string The "MEMCACHED" cache system */
     public const CACHE_SYSTEM_MEMCACHED = 'memcached';
+
+    /** @var string The "MaxMind" geolocation type */
+    public const GEOLOCATION_TYPE_MAXMIND = 'maxmind';
+
+    /** @var string The CrowdSec country scope for decisions */
+    public const SCOPE_COUNTRY = 'Country';
+
+    /** @var string The CrowdSec Ip scope for decisions */
+    public const SCOPE_IP = 'Ip';
+
+    /** @var string The CrowdSec Range scope for decisions */
+    public const SCOPE_RANGE = 'Range';
+
+    /** @var string The Maxmind "Country" database type */
+    public const MAXMIND_COUNTRY = 'country';
+
+    /** @var string The Maxmind "City" database type */
+    public const MAXMIND_CITY = 'city';
 }

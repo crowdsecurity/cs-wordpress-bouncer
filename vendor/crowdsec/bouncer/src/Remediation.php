@@ -35,7 +35,7 @@ class Remediation
     {
         $prio = array_search($remediation[0], Constants::ORDERED_REMEDIATIONS);
 
-        // Considere every unknown type as a top priority
+        // Consider every unknown type as a top priority
         $remediation[3] = false !== $prio ? $prio : 0;
 
         return $remediation;

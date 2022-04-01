@@ -2,8 +2,6 @@
 
 namespace CrowdSecBouncer;
 
-use Monolog\Logger;
-
 /**
  * The interface to implement when bouncing.
  *
@@ -17,14 +15,24 @@ use Monolog\Logger;
 interface IBounce
 {
     /**
+     * Init the bouncer.
+     */
+    public function init(array $configs, array $forcedConfigs = []): Bouncer;
+
+    /**
      * Init the logger.
      */
     public function initLogger(): void;
 
     /**
-     * @return Bouncer get the bouncer instance
+     * Get the bouncer instance.
      */
-    public function getBouncerInstance(): Bouncer;
+    public function getBouncerInstance(array $settings, bool $forceReload = false): Bouncer;
+
+    /**
+     * If there is any technical problem while bouncing, don't block the user. Bypass bouncing and log the error.
+     */
+    public function safelyBounce(array $configs): bool;
 
     /**
      * @return string Ex: "X-Forwarded-For"
@@ -52,7 +60,7 @@ interface IBounce
     public function getBanWallOptions(): array;
 
     /**
-     * @return [[string, string], ...] Returns IP ranges to trust as proxies as an array of comparables ip bounds
+     * @return array [[string, string], ...] Returns IP ranges to trust as proxies as an array of comparables ip bounds
      */
     public function getTrustForwardedIpBoundsList(): array;
 
@@ -67,7 +75,7 @@ interface IBounce
     public function setSessionVariable(string $name, $value): void;
 
     /**
-     * Unset a session variable, throw an error if this does not exists.
+     * Unset a session variable, throw an error if this does not exist.
      *
      * @return void;
      */
@@ -87,9 +95,4 @@ interface IBounce
      * Send HTTP response.
      */
     public function sendResponse(?string $body, int $statusCode = 200): void;
-
-    /**
-     * Check if the bouncer configuration is correct or not.
-     */
-    public function isConfigValid(): bool;
 }

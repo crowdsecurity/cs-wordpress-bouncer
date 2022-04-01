@@ -1,8 +1,6 @@
 name: End-to-end auto-prepend-file mode test suite
 on:
   push:
-    branches:
-      - main
     paths-ignore:
       - '**.md'
   workflow_dispatch:
@@ -136,6 +134,10 @@ jobs:
         run: |
           cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
           ./run-tests.sh ci "./__tests__/4-live-mode-cache.js"
+
+      - name: Prepare cron usage
+        run: |
+          sed -i  's/fastcgi_finish_request/\/\/fastcgi_finish_request/g' wp-cron.php
 
       - name: Run Stream mode tests
         run: |
