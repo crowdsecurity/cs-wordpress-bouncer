@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2022-04-07
+
+### Changed
+- Do not bounce PHP CLI
+
 ## [1.3.2] - 2022-03-10
 
 ### Fixed

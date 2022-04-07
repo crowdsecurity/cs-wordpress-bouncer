@@ -6,6 +6,8 @@ use CrowdSecBouncer\AbstractBounce;
 use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\Constants;
 use CrowdSecBouncer\IBounce;
+use CrowdSecBouncer\BouncerException;
+use CrowdSecBouncer\Session;
 
 /**
  * The class that apply a bounce.
@@ -19,24 +21,16 @@ use CrowdSecBouncer\IBounce;
  */
 class Bounce extends AbstractBounce implements IBounce
 {
-    public function init(array $crowdSecConfig): bool
+    public function init(array $crowdSecConfig, array $forcedConfigs = []): Bouncer
     {
         $this->settings = $crowdSecConfig;
         $crowdsecRandomLogFolder = $this->settings['crowdsec_random_log_folder'];
         crowdsecDefineConstants($crowdsecRandomLogFolder);
+        $this->setDebug($crowdSecConfig['crowdsec_debug_mode']??false);
+        $this->setDisplayErrors($crowdSecConfig['crowdsec_display_errors'] ?? false);
         $this->initLogger();
 
-        return true;
-    }
-
-    protected function getStringSettings(string $name): string
-    {
-        return $this->settings[$name];
-    }
-
-    protected function getArraySettings(string $name): array
-    {
-        return $this->settings[$name];
+        return $this->getBouncerInstance($this->settings);
     }
 
     protected function escape(string $value)
@@ -52,27 +46,42 @@ class Bounce extends AbstractBounce implements IBounce
     /**
      * @return Bouncer get the bouncer instance
      */
-    public function getBouncerInstance(): Bouncer
+    public function getBouncerInstance(array $settings, bool $forceReload = false): Bouncer
     {
-        $apiUrl = $this->escape($this->getStringSettings('crowdsec_api_url'));
-        $apiKey = $this->escape($this->getStringSettings('crowdsec_api_key'));
-        $isStreamMode = !empty($this->getStringSettings('crowdsec_stream_mode'));
-        $cleanIpCacheDuration = (int) $this->getStringSettings('crowdsec_clean_ip_cache_duration');
-        $badIpCacheDuration = (int) $this->getStringSettings('crowdsec_bad_ip_cache_duration');
-        $fallbackRemediation = $this->escape($this->getStringSettings('crowdsec_fallback_remediation'));
-        $bouncingLevel = $this->escape($this->getStringSettings('crowdsec_bouncing_level'));
-        $crowdSecBouncerUserAgent = CROWDSEC_BOUNCER_USER_AGENT;
         $crowdSecLogPath = CROWDSEC_LOG_PATH;
         $crowdSecDebugLogPath = CROWDSEC_DEBUG_LOG_PATH;
 
-        $this->logger = getStandAloneCrowdSecLoggerInstance($crowdSecLogPath, $this->debug, $crowdSecDebugLogPath);
+        $this->logger = getStandaloneCrowdSecLoggerInstance($crowdSecLogPath, $this->debug, $crowdSecDebugLogPath);
 
-        $cacheSystem = $this->escape($this->getStringSettings('crowdsec_cache_system'));
-        $memcachedDsn = $this->escape($this->getStringSettings('crowdsec_memcached_dsn'));
-        $redisDsn = $this->escape($this->getStringSettings('crowdsec_redis_dsn'));
-        $fsCachePath = CROWDSEC_CACHE_PATH;
+        $configs = [
+            // LAPI connection
+            'api_key' => $this->escape($this->getStringSettings('crowdsec_api_key')),
+            'api_url' => $this->escape($this->getStringSettings('crowdsec_api_url')),
+            'api_user_agent' => CROWDSEC_BOUNCER_USER_AGENT,
+            'api_timeout' => CrowdSecBouncer\Constants::API_TIMEOUT,
+            // Debug
+            'debug_mode' => $this->getBoolSettings('crowdsec_debug_mode'),
+            'log_directory_path' => CROWDSEC_LOG_BASE_PATH,
+            'forced_test_ip' => $this->getStringSettings('crowdsec_forced_test_ip'),
+            'display_errors' => $this->getBoolSettings('crowdsec_display_errors'),
+            // Bouncer
+            'bouncing_level' => $this->getStringSettings('crowdsec_bouncing_level'),
+            'trust_ip_forward_array' => $this->getArraySettings('crowdsec_trust_ip_forward_array'),
+            'fallback_remediation' => $this->getStringSettings('crowdsec_fallback_remediation'),
+            // Cache settings
+            'stream_mode' => $this->getBoolSettings('crowdsec_stream_mode'),
+            'cache_system' => $this->escape($this->getStringSettings('crowdsec_cache_system')),
+            'fs_cache_path' => CROWDSEC_CACHE_PATH,
+            'redis_dsn' => $this->escape($this->getStringSettings('crowdsec_redis_dsn')),
+            'memcached_dsn' => $this->escape($this->getStringSettings('crowdsec_memcached_dsn')),
+            'clean_ip_cache_duration' => $this->getIntegerSettings('crowdsec_clean_ip_cache_duration')?:Constants::CACHE_EXPIRATION_FOR_CLEAN_IP,
+            'bad_ip_cache_duration' => $this->getIntegerSettings('crowdsec_bad_ip_cache_duration')?:Constants::CACHE_EXPIRATION_FOR_BAD_IP,
+            // Geolocation
+            'geolocation' => []
+        ];
 
-        $this->bouncer = getBouncerInstanceStandAlone($apiUrl, $apiKey, $isStreamMode, $cleanIpCacheDuration, $badIpCacheDuration, $fallbackRemediation, $bouncingLevel, $crowdSecBouncerUserAgent, $this->logger, $cacheSystem, $memcachedDsn, $redisDsn, $fsCachePath);
+
+        $this->bouncer = getBouncerInstanceStandalone($configs, $forceReload);
 
         return $this->bouncer;
     }
@@ -186,13 +195,9 @@ class Bounce extends AbstractBounce implements IBounce
     /**
      * Return a session variable, null if not set.
      */
-    public function getSessionVariable(string $name): ?string
+    public function getSessionVariable(string $name)
     {
-        if (!isset($_SESSION[$name])) {
-            return null;
-        }
-
-        return $_SESSION[$name];
+        return Session::getSessionVariable($name);
     }
 
     /**
@@ -200,21 +205,18 @@ class Bounce extends AbstractBounce implements IBounce
      */
     public function setSessionVariable(string $name, $value): void
     {
-        $_SESSION[$name] = $value;
+        Session::setSessionVariable($name, $value);
     }
 
     /**
-     * Unset a session variable, throw an error if this does not exists.
+     * Unset a session variable, throw an error if this does not exist.
      *
      * @return void;
      */
-    public function unsetSessionVariable(string $name): void /* throw */
+    public function unsetSessionVariable(string $name): void
     {
-        if (isset($_SESSION[$name])) {
-            unset($_SESSION[$name]);
-        }
+        Session::unsetSessionVariable($name);
     }
-
     /**
      * Get the value of a posted field.
      */
@@ -313,15 +315,26 @@ class Bounce extends AbstractBounce implements IBounce
         die();
     }
 
-    public function safelyBounce(): void
+    public function safelyBounce(array $configs): bool
     {
         // If there is any technical problem while bouncing, don't block the user. Bypass boucing and log the error.
+        set_error_handler(function ($errno, $errstr) {
+            throw new BouncerException("$errstr (Error level: $errno)");
+        });
+        $result = false;
         try {
-            set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-                throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
-            });
+            if (\PHP_SESSION_NONE === session_status()) {
+                session_start();
+            }
+            // Retro compatibility with crowdsec php lib < 0.14.0
+            if($configs['crowdsec_bouncing_level'] === 'normal_boucing'){
+                $configs['crowdsec_bouncing_level'] = Constants::BOUNCING_LEVEL_NORMAL;
+            }elseif($configs['crowdsec_bouncing_level'] === 'flex_boucing'){
+                $configs['crowdsec_bouncing_level'] = Constants::BOUNCING_LEVEL_FLEX;
+            }
+            $this->init($configs);
             $this->run();
-            restore_error_handler();
+            $result = true;
         } catch (\Exception $e) {
             $this->logger->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_BOUNCING',
@@ -334,6 +347,9 @@ class Bounce extends AbstractBounce implements IBounce
                 throw $e;
             }
         }
+        restore_error_handler();
+
+        return $result;
     }
 
     public function isConfigValid(): bool
@@ -365,8 +381,8 @@ class Bounce extends AbstractBounce implements IBounce
                 $memcachedDsn = $this->escape($this->getStringSettings('crowdsec_memcached_dsn'));
                 $redisDsn = $this->escape($this->getStringSettings('crowdsec_redis_dsn'));
                 $fsCachePath = CROWDSEC_CACHE_PATH;
-                getCacheAdapterInstanceStandAlone($cacheSystem, $memcachedDsn, $redisDsn, $fsCachePath);
-            } catch (WordpressCrowdSecBouncerException $e) {
+                getCacheAdapterInstanceStandalone($cacheSystem, $memcachedDsn, $redisDsn, $fsCachePath);
+            } catch (BouncerException $e) {
                 $issues['errors'][] = [
                 'type' => 'CACHE_CONFIG_ERROR',
                 'message' => $e->getMessage(),
@@ -381,6 +397,6 @@ class Bounce extends AbstractBounce implements IBounce
     {
         $crowdSecLogPath = CROWDSEC_LOG_PATH;
         $crowdSecDebugLogPath = CROWDSEC_DEBUG_LOG_PATH;
-        $this->logger = getStandAloneCrowdSecLoggerInstance($crowdSecLogPath, $this->debug, $crowdSecDebugLogPath);
+        $this->logger = getStandaloneCrowdSecLoggerInstance($crowdSecLogPath, $this->debug, $crowdSecDebugLogPath);
     }
 }

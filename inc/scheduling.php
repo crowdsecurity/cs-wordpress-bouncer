@@ -1,5 +1,5 @@
 <?php
-
+use CrowdSecBouncer\BouncerException;
 define('CROWDSEC_REFRESH_BLOCKLIST_CRON_HOOK', 'crowdsec_refresh_blocklist_cron_hook');
 define('CROWDSEC_REFRESH_BLOCKLIST_CRON_INTERVAL', 'crowdsec_refresh_blocklist_cron_interval');
 
@@ -19,9 +19,10 @@ add_filter('cron_schedules', function ($schedules) {
 function crowdSecRefreshBlocklist()
 {
     try {
-        $bouncer = getBouncerInstance();
+        $settings = getDatabaseSettings();
+        $bouncer = getBouncerInstance($settings);
         $bouncer->refreshBlocklistCache();
-    } catch (WordpressCrowdSecBouncerException $e) {
+    } catch (BouncerException $e) {
         getCrowdSecLoggerInstance()->error('', [
             'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
             'message' => $e->getMessage(),

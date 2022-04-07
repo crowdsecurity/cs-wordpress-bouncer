@@ -18,7 +18,6 @@ function getCrowdSecOptionsConfig()
         ['name' => 'crowdsec_bad_ip_cache_duration', 'default' => Constants::CACHE_EXPIRATION_FOR_BAD_IP, 'autoInit' => true],
         ['name' => 'crowdsec_fallback_remediation', 'default' => Constants::REMEDIATION_CAPTCHA, 'autoInit' => true],
         ['name' => 'crowdsec_hide_mentions', 'default' => false, 'autoInit' => true],
-        ['name' => 'crowdsec_trust_ip_forward', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_trust_ip_forward_array', 'default' => [], 'autoInit' => true],
         ['name' => 'crowdsec_theme_color_text_primary', 'default' => 'black', 'autoInit' => true],
         ['name' => 'crowdsec_theme_color_text_secondary', 'default' => '#AAA', 'autoInit' => true],
@@ -44,5 +43,6 @@ function getCrowdSecOptionsConfig()
         ['name' => 'crowdsec_random_log_folder', 'default' => bin2hex(random_bytes(64)), 'autoInit' => false],
         ['name' => 'crowdsec_debug_mode', 'default' => false, 'autoInit' => true],
 		['name' => 'crowdsec_display_errors', 'default' => false, 'autoInit' => true],
+        ['name' => 'crowdsec_forced_test_ip', 'default' => "", 'autoInit' => true],
     ];
 }

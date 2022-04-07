@@ -1,6 +1,7 @@
 <?php
 
 use CrowdSecBouncer\Constants;
+use CrowdSecBouncer\BouncerException;
 
 require_once __DIR__ . '/notice.php';
 
@@ -33,7 +34,8 @@ if (is_admin()) {
     function clearBouncerCacheInAdminPage()
     {
         try {
-            $bouncer = getBouncerInstance();
+            $settings = getDatabaseSettings();
+            $bouncer = getBouncerInstance($settings);
             $bouncer->clearCache();
             $message = __('CrowdSec cache has just been cleared.');
 
@@ -44,7 +46,7 @@ if (is_admin()) {
             }
 
             AdminNotice::displaySuccess($message);
-        } catch (WordpressCrowdSecBouncerException $e) {
+        } catch (BouncerException $e) {
             getCrowdSecLoggerInstance()->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_CLEARING_CACHE',
                 'message' => $e->getMessage(),
@@ -65,11 +67,12 @@ if (is_admin()) {
 
             // In stream mode, immediatelly warm the cache up.
             if (get_option('crowdsec_stream_mode')) {
-                $bouncer = getBouncerInstance();
+                $settings = getDatabaseSettings();
+                $bouncer = getBouncerInstance($settings);
                 $result = $bouncer->refreshBlocklistCache();
                 AdminNotice::displaySuccess(__(' The cache has just been refreshed ('.($result['new'] > 0 ? $result['new'].' new decisions' : $result['new'].' new decision').', '.$result['deleted'].' deleted).'));
             }
-        } catch (WordpressCrowdSecBouncerException $e) {
+        } catch (BouncerException $e) {
             getCrowdSecLoggerInstance()->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
                 'message' => $e->getMessage(),
@@ -84,11 +87,12 @@ if (is_admin()) {
     function pruneBouncerCacheInAdminPage()
     {
         try {
-            $bouncer = getBouncerInstance();
+            $settings = getDatabaseSettings();
+            $bouncer = getBouncerInstance($settings);
             $bouncer->pruneCache();
 
             AdminNotice::displaySuccess(__('CrowdSec cache has just been pruned.'));
-        } catch (WordpressCrowdSecBouncerException $e) {
+        } catch (BouncerException $e) {
             getCrowdSecLoggerInstance()->error('', [
                 'type' => 'WP_EXCEPTION_WHILE_PRUNING',
                 'message' => $e->getMessage(),

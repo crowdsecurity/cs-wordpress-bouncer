@@ -16,7 +16,8 @@ function adminAdvancedSettings()
     // Field "crowdsec_stream_mode"
     addFieldCheckbox('crowdsec_stream_mode', 'Enable the "Stream" mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', function () {
         // Stream mode just activated.
-        $bouncer = getBouncerInstance();
+        $settings = getDatabaseSettings();
+        $bouncer = getBouncerInstance($settings);
         $result = $bouncer->warmBlocklistCacheUp()['count'];
         $message = __('As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
         AdminNotice::displaySuccess($message);
@@ -43,7 +44,8 @@ function adminAdvancedSettings()
 
         // Update wp-cron schedule.
         if ((bool) get_option('crowdsec_stream_mode')) {
-            $bouncer = getBouncerInstance();
+            $settings = getDatabaseSettings();
+            $bouncer = getBouncerInstance($settings);
             $result = $bouncer->warmBlocklistCacheUp()['count'];
             $message = __('As the stream mode refresh duration changed, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
             AdminNotice::displaySuccess($message);
@@ -86,40 +88,48 @@ function adminAdvancedSettings()
         }
 
         try {
-            $bouncer = getBouncerInstance();
+            $settings = getDatabaseSettings();
+            $bouncer = getBouncerInstance($settings);
             try {
                 $bouncer->clearCache();
             } catch (BouncerException $e) {
                 $cacheSystem = esc_attr(get_option('crowdsec_cache_system'));
                 switch ($cacheSystem) {
                     case Constants::CACHE_SYSTEM_MEMCACHED:
-                        throw new WordpressCrowdSecBouncerException('Unable to connect Memcached.'.
+                        throw new BouncerException('Unable to connect Memcached.'.
                             ' Please fix the Memcached DSN or select another cache technology.');
-                        break;
 
                     case Constants::CACHE_SYSTEM_REDIS:
-                        throw new WordpressCrowdSecBouncerException('Unable to connect Redis.'.
+                        throw new BouncerException('Unable to connect Redis.'.
                             ' Please fix the Redis DSN or select another cache technology.');
                     default:
-                    throw new WordpressCrowdSecBouncerException('Unable to connect the cache system: '.$e->getMessage());
+                    throw new BouncerException('Unable to connect the cache system: '.$e->getMessage());
                 }
             }
 
             $message = __('Cache system changed. Previous cache data has been cleared.');
-        } catch (WordpressCrowdSecBouncerException $e) {
+            AdminNotice::displaySuccess($message);
+
+        } catch (BouncerException $e) {
+            AdminNotice::displayError($e->getMessage());
         }
 
         try {
             // Reload bouncer instance with the new cache system and so test if dsn is correct.
-            getCacheAdapterInstance($input);
+            $settings = getDatabaseCacheSettings();
+            $settings['cache_system'] = $input;
+            getCacheAdapterInstance($settings, true);
             try {
                 // Try the adapter connection (Redis or Memcached will crash if the connection is incorrect)
-                $bouncer = getBouncerInstance($input);
+                $settings = getDatabaseSettings();
+                $settings['cache_system'] = $input;
+                $bouncer = getBouncerInstance($settings);
                 $bouncer->testConnection();
             } catch (BouncerException $e) {
-                throw new WordpressCrowdSecBouncerException($e->getMessage());
+                AdminNotice::displayError($e->getMessage());
+                throw new BouncerException($e->getMessage());
             }
-        } catch (WordpressCrowdSecBouncerException $e) {
+        } catch (BouncerException $e) {
             AdminNotice::displayError($e->getMessage());
         }
 
@@ -127,14 +137,17 @@ function adminAdvancedSettings()
             try {
                 //Update wp-cron schedule if stream mode is enabled
                 if ((bool) get_option('crowdsec_stream_mode')) {
-                    $bouncer = getBouncerInstance($input); // Reload bouncer instance with the new cache system
+                    $settings = getDatabaseSettings();
+                    $settings['cache_system'] = $input;
+                    $bouncer = getBouncerInstance($settings,true); // Reload bouncer instance with the new cache
+                    // system
                     $result = $bouncer->warmBlocklistCacheUp();
                     $count = $result['count'];
                     $message = __('As the stream mode is enabled, the cache has just been warmed up, '.($count > 0 ? 'there are now '.$count.' decisions' : 'there is now '.$count.' decision').' in cache.');
                     AdminNotice::displaySuccess($message);
                     scheduleBlocklistRefresh();
                 }
-            } catch (WordpressCrowdSecBouncerException $e) {
+            } catch (BouncerException $e) {
                 AdminNotice::displayError($e->getMessage());
             }
         } catch (BouncerException $e) {
@@ -158,7 +171,7 @@ function adminAdvancedSettings()
             return '1';
         }
 
-        return $input;
+        return (int) $input > 0 ? (int) $input : 1 ;
     }, ' seconds. <p>The duration between re-asking LAPI about an already checked clean IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
     // Field "crowdsec_bad_ip_cache_duration"
@@ -169,7 +182,7 @@ function adminAdvancedSettings()
             return '1';
         }
 
-        return $input;
+        return (int) $input > 0 ? (int) $input : 1 ;
     }, ' seconds. <p>The duration between re-asking LAPI about an already checked bad IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
     /***************************
@@ -204,14 +217,14 @@ function adminAdvancedSettings()
             if (false !== strpos($stringRange, '/')) {
                 $range = Factory::rangeFromString($stringRange);
                 if (null === $range) {
-                    throw new WordpressCrowdSecBouncerException('Invalid IP List format.');
+                    throw new BouncerException('Invalid IP List format.');
                 }
                 $bounds = [$range->getComparableStartString(), $range->getComparableEndString()];
                 $comparableIpBoundsList = array_merge($comparableIpBoundsList, [$bounds]);
             } else {
                 $address = Factory::addressFromString($stringRange);
                 if (null === $address) {
-                    throw new WordpressCrowdSecBouncerException('Invalid IP List format.');
+                    throw new BouncerException('Invalid IP List format.');
                 }
                 $comparableString = $address->getComparableString();
                 $comparableIpBoundsList = array_merge($comparableIpBoundsList, [[$comparableString, $comparableString]]);
@@ -233,7 +246,7 @@ function adminAdvancedSettings()
             $comparableIpBoundsList = convertInlineIpRangesToComparableIpBounds($input);
             update_option('crowdsec_trust_ip_forward_array', $comparableIpBoundsList);
             AdminNotice::displaySuccess('Ips with XFF to trust successfully saved.');
-        } catch (WordpressCrowdSecBouncerException $e) {
+        } catch (BouncerException $e) {
             update_option('crowdsec_trust_ip_forward_array', []);
             add_settings_error('Trust these CDN IPs', 'crowdsec_error', 'Trust these CDN IPs: Invalid IP List format.');
 

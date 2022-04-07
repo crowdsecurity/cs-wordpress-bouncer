@@ -234,6 +234,7 @@ const setDefaultConfig = async () => {
 	await onAdminGoToAdvancedPage();
 	await setToggle("crowdsec_debug_mode", true);
 	await setToggle("crowdsec_display_errors", true);
+	await setToggle("crowdsec_hide_mentions", false);
 	await page.selectOption("[name=crowdsec_cache_system]", "phpfs");
 	await setToggle("crowdsec_stream_mode", false);
 	// We have to save in order that cache duration fields to be visible (not disabled)

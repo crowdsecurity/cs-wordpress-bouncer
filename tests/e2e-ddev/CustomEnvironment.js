@@ -12,7 +12,7 @@ class CustomEnvironment extends PlaywrightEnvironment {
 				const buffer = await this.global.page.screenshot({
 					path: "screenshot.jpg",
 					type: "jpeg",
-					quality: 20,
+					quality: 10,
 				});
 				console.debug("Screenshot:", buffer.toString("base64"));
 			} else if (this.failedTest && event.name === "test_start") {

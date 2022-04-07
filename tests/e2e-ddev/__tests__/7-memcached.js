@@ -42,7 +42,7 @@ describe(`Use Memcached technology`, () => {
 			"#wpbody-content > div.wrap > div.notice.notice-success",
 			"As the stream mode is enabled, the cache has just been warmed up, there is now 0 decision in cache.",
 		);
-
+		await wait(2000);
 		await publicHomepageShouldBeAccessible();
 		await banOwnIpForSeconds(15 * 60, CURRENT_IP);
 		await forceCronRun();
