@@ -346,6 +346,10 @@ class Bounce extends AbstractBounce implements IBounce
             if ($this->displayErrors) {
                 throw $e;
             }
+        } finally {
+            if (\PHP_SESSION_NONE !== session_status()) {
+                session_write_close();
+            }
         }
         restore_error_handler();
 
