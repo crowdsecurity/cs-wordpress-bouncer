@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2022-04-10
+
+### Fixed
+- Close the session after bounce process
+
+
 ## [1.4.0] - 2022-04-07
 
 ### Changed
