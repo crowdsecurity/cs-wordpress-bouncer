@@ -14,7 +14,7 @@
 		}
 	},
 	"require": {
-		"crowdsec/bouncer": "0.20.0",
+		"crowdsec/bouncer": "0.21.0",
 		"symfony/polyfill-mbstring": "1.20.0",
 		"symfony/service-contracts": "2.4.1"
 	},
