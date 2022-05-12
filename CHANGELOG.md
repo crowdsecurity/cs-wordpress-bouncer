@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2022-05-13
+
+### Added
+- Add WordPress debug log if bouncer logger is not ready
+
 ## [1.4.1] - 2022-04-10
 
 ### Fixed
