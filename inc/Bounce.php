@@ -336,13 +336,21 @@ class Bounce extends AbstractBounce implements IBounce
             $this->run();
             $result = true;
         } catch (\Exception $e) {
-            $this->logger->error('', [
-                'type' => 'WP_EXCEPTION_WHILE_BOUNCING',
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
+            if(!$this->logger){
+                // Try to log in the debug.log file of WordPress if bouncer logger is not ready
+                error_log(print_r('safelyBounce error:' . $e->getMessage() .
+                                  ' in file:' . $e->getFile() .
+                                  '(line ' . $e->getLine() . ')', true
+                ));
+            } else {
+                $this->logger->error('', [
+                    'type' => 'WP_EXCEPTION_WHILE_BOUNCING',
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            }
             if ($this->displayErrors) {
                 throw $e;
             }
