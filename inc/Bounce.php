@@ -317,6 +317,10 @@ class Bounce extends AbstractBounce implements IBounce
 
     public function safelyBounce(array $configs): bool
     {
+        if (headers_sent()) {
+            // We cannot start session when headers already sent
+            return false;
+        }
         // If there is any technical problem while bouncing, don't block the user. Bypass boucing and log the error.
         set_error_handler(function ($errno, $errstr) {
             throw new BouncerException("$errstr (Error level: $errno)");
