@@ -1,6 +1,10 @@
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 name: Markdown files test and update
 jobs:
   markdown-test-and-update:
