@@ -7,7 +7,6 @@ use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\Constants;
 use CrowdSecBouncer\IBounce;
 use CrowdSecBouncer\BouncerException;
-use CrowdSecBouncer\Session;
 
 /**
  * The class that apply a bounce.
@@ -76,6 +75,10 @@ class Bounce extends AbstractBounce implements IBounce
             'memcached_dsn' => $this->escape($this->getStringSettings('crowdsec_memcached_dsn')),
             'clean_ip_cache_duration' => $this->getIntegerSettings('crowdsec_clean_ip_cache_duration')?:Constants::CACHE_EXPIRATION_FOR_CLEAN_IP,
             'bad_ip_cache_duration' => $this->getIntegerSettings('crowdsec_bad_ip_cache_duration')?:Constants::CACHE_EXPIRATION_FOR_BAD_IP,
+            'captcha_cache_duration' => $this->getIntegerSettings('crowdsec_captcha_cache_duration')
+                ?:Constants::CACHE_EXPIRATION_FOR_CAPTCHA,
+            'geolocation_cache_duration' => $this->getIntegerSettings('crowdsec_geolocation_cache_duration')
+                ?:Constants::CACHE_EXPIRATION_FOR_GEO,
             // Geolocation
             'geolocation' => []
         ];
@@ -193,31 +196,6 @@ class Bounce extends AbstractBounce implements IBounce
     }
 
     /**
-     * Return a session variable, null if not set.
-     */
-    public function getSessionVariable(string $name)
-    {
-        return Session::getSessionVariable($name);
-    }
-
-    /**
-     * Set a session variable.
-     */
-    public function setSessionVariable(string $name, $value): void
-    {
-        Session::setSessionVariable($name, $value);
-    }
-
-    /**
-     * Unset a session variable, throw an error if this does not exist.
-     *
-     * @return void;
-     */
-    public function unsetSessionVariable(string $name): void
-    {
-        Session::unsetSessionVariable($name);
-    }
-    /**
      * Get the value of a posted field.
      */
     public function getPostedVariable(string $name): ?string
@@ -318,7 +296,7 @@ class Bounce extends AbstractBounce implements IBounce
     public function safelyBounce(array $configs): bool
     {
         if (headers_sent()) {
-            // We cannot start session when headers already sent
+            // We should not bounce when headers already sent
             return false;
         }
         // If there is any technical problem while bouncing, don't block the user. Bypass boucing and log the error.
@@ -327,9 +305,6 @@ class Bounce extends AbstractBounce implements IBounce
         });
         $result = false;
         try {
-            if (\PHP_SESSION_NONE === session_status()) {
-                session_start();
-            }
             // Retro compatibility with crowdsec php lib < 0.14.0
             if($configs['crowdsec_bouncing_level'] === 'normal_boucing'){
                 $configs['crowdsec_bouncing_level'] = Constants::BOUNCING_LEVEL_NORMAL;
@@ -357,10 +332,6 @@ class Bounce extends AbstractBounce implements IBounce
             }
             if ($this->displayErrors) {
                 throw $e;
-            }
-        } finally {
-            if (\PHP_SESSION_NONE !== session_status()) {
-                session_write_close();
             }
         }
         restore_error_handler();

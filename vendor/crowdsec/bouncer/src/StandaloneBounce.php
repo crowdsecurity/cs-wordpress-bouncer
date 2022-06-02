@@ -9,6 +9,9 @@ use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
 use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Symfony\Component\Cache\Adapter\RedisTagAwareAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
 use Symfony\Component\Cache\Exception\CacheException;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
 
@@ -26,11 +29,6 @@ class StandaloneBounce extends AbstractBounce implements IBounce
 {
     /** @var AbstractAdapter */
     protected $cacheAdapter;
-
-    /**
-     * @var string
-     */
-    public const SESSION_NAME = 'crowdsec';
 
     /**
      * Initialize the bouncer.
@@ -74,7 +72,7 @@ class StandaloneBounce extends AbstractBounce implements IBounce
      * @throws CacheException
      * @throws ErrorException
      */
-    private function getCacheAdapterInstance(bool $forceReload = false): AbstractAdapter
+    private function getCacheAdapterInstance(bool $forceReload = false): TagAwareAdapterInterface
     {
         // Singleton for this function
         if ($this->cacheAdapter && !$forceReload) {
@@ -84,7 +82,8 @@ class StandaloneBounce extends AbstractBounce implements IBounce
         $cacheSystem = $this->getStringSettings('cache_system');
         switch ($cacheSystem) {
             case Constants::CACHE_SYSTEM_PHPFS:
-                $this->cacheAdapter = new PhpFilesAdapter('', 0, $this->getStringSettings('fs_cache_path'));
+                $this->cacheAdapter = new TagAwareAdapter(
+                    new PhpFilesAdapter('', 0, $this->getStringSettings('fs_cache_path')));
                 break;
 
             case Constants::CACHE_SYSTEM_MEMCACHED:
@@ -93,7 +92,8 @@ class StandaloneBounce extends AbstractBounce implements IBounce
                     throw new BouncerException('The selected cache technology is Memcached.'.' Please set a Memcached DSN or select another cache technology.');
                 }
 
-                $this->cacheAdapter = new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn));
+                $this->cacheAdapter = new TagAwareAdapter(
+                    new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn)));
                 break;
 
             case Constants::CACHE_SYSTEM_REDIS:
@@ -103,7 +103,7 @@ class StandaloneBounce extends AbstractBounce implements IBounce
                 }
 
                 try {
-                    $this->cacheAdapter = new RedisAdapter(RedisAdapter::createConnection($redisDsn));
+                    $this->cacheAdapter = new RedisTagAwareAdapter((RedisAdapter::createConnection($redisDsn)));
                 } catch (InvalidArgumentException $e) {
                     throw new BouncerException('Error when connecting to Redis.'.' Please fix the Redis DSN or select another cache technology.');
                 }
@@ -180,6 +180,8 @@ class StandaloneBounce extends AbstractBounce implements IBounce
             'memcached_dsn' => $this->getStringSettings('memcached_dsn'),
             'clean_ip_cache_duration' => $this->getIntegerSettings('clean_ip_cache_duration'),
             'bad_ip_cache_duration' => $this->getIntegerSettings('bad_ip_cache_duration'),
+            'captcha_cache_duration' => $this->getIntegerSettings('captcha_cache_duration'),
+            'geolocation_cache_duration' => $this->getIntegerSettings('geolocation_cache_duration'),
             // Geolocation
             'geolocation' => $this->getArraySettings('geolocation'),
         ]);
@@ -299,32 +301,6 @@ class StandaloneBounce extends AbstractBounce implements IBounce
     }
 
     /**
-     * Return a session variable, null if not set.
-     */
-    public function getSessionVariable(string $name)
-    {
-        return Session::getSessionVariable($name);
-    }
-
-    /**
-     * Set a session variable.
-     */
-    public function setSessionVariable(string $name, $value): void
-    {
-        Session::setSessionVariable($name, $value);
-    }
-
-    /**
-     * Unset a session variable, throw an error if this does not exist.
-     *
-     * @return void;
-     */
-    public function unsetSessionVariable(string $name): void
-    {
-        Session::unsetSessionVariable($name);
-    }
-
-    /**
      * Get the value of a posted field.
      */
     public function getPostedVariable(string $name): ?string
@@ -407,10 +383,6 @@ class StandaloneBounce extends AbstractBounce implements IBounce
             throw new BouncerException("$errstr (Error level: $errno)");
         });
         try {
-            if (\PHP_SESSION_NONE === session_status()) {
-                session_name(self::SESSION_NAME);
-                session_start();
-            }
             $this->init($configs);
             $this->run();
             $result = true;

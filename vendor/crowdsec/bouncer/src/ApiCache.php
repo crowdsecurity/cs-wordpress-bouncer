@@ -13,8 +13,10 @@ use IPLib\Range\Subnet;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
+use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
 use Symfony\Component\Cache\PruneableInterface;
 
 /**
@@ -39,7 +41,7 @@ class ApiCache
      */
     private $apiClient;
 
-    /** @var AbstractAdapter */
+    /** @var TagAwareAdapterInterface */
     private $adapter;
 
     /**
@@ -59,6 +61,16 @@ class ApiCache
      * @var int
      */
     private $cacheExpirationForBadIp = 0;
+
+    /**
+     * @var int
+     */
+    private $cacheExpirationForCaptcha = 0;
+
+    /**
+     * @var int
+     */
+    private $cacheExpirationForGeo = 0;
 
     /** @var bool */
     private $warmedUp = false;
@@ -83,19 +95,21 @@ class ApiCache
      */
     private $scopes;
 
+    public const CACHE_SEP = '_';
+
     /**
      * @param LoggerInterface      $logger      The logger to use
      * @param ApiClient|null       $apiClient   The APIClient instance to use
      * @param AbstractAdapter|null $adapter     The AbstractAdapter adapter to use
      * @param Geolocation|null     $geolocation The Geolocation helper to use
      */
-    public function __construct(LoggerInterface $logger, ApiClient $apiClient = null, AbstractAdapter $adapter =
+    public function __construct(LoggerInterface $logger, ApiClient $apiClient = null, TagAwareAdapterInterface $adapter =
     null, Geolocation $geolocation = null)
     {
         $this->logger = $logger;
         $this->apiClient = $apiClient ?: new ApiClient($logger);
-        $this->adapter = $adapter ?: new FilesystemAdapter();
         $this->geolocation = $geolocation ?: new Geolocation();
+        $this->adapter = $adapter ?: new TagAwareAdapter(new PhpFilesAdapter());
     }
 
     /**
@@ -119,14 +133,19 @@ class ApiCache
         int $timeout,
         string $userAgent,
         string $apiKey,
-        int $cacheExpirationForCleanIp,
-        int $cacheExpirationForBadIp,
+        array $cacheDurations,
         string $fallbackRemediation,
         array $geolocConfig = []
     ): void {
         $this->streamMode = $streamMode;
-        $this->cacheExpirationForCleanIp = $cacheExpirationForCleanIp;
-        $this->cacheExpirationForBadIp = $cacheExpirationForBadIp;
+        $this->cacheExpirationForCleanIp =
+            $cacheDurations['clean_ip_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_CLEAN_IP;
+        $this->cacheExpirationForBadIp =
+            $cacheDurations['bad_ip_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_BAD_IP;
+        $this->cacheExpirationForCaptcha =
+            $cacheDurations['captcha_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_CAPTCHA;
+        $this->cacheExpirationForGeo =
+            $cacheDurations['geolocation_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_GEO;
         $this->fallbackRemediation = $fallbackRemediation;
         $this->geolocConfig = $geolocConfig;
         $cacheConfigItem = $this->adapter->getItem('cacheConfig');
@@ -137,8 +156,10 @@ class ApiCache
             'type' => 'API_CACHE_INIT',
             'adapter' => \get_class($this->adapter),
             'mode' => ($streamMode ? 'stream' : 'live'),
-            'exp_clean_ips' => $cacheExpirationForCleanIp,
-            'exp_bad_ips' => $cacheExpirationForBadIp,
+            'exp_clean_ips' => $this->cacheExpirationForCleanIp,
+            'exp_bad_ips' => $this->cacheExpirationForBadIp,
+            'exp_captcha_flow' => $this->cacheExpirationForCaptcha,
+            'exp_geolocation_result' => $this->cacheExpirationForGeo,
             'warmed_up' => ($this->warmedUp ? 'true' : 'false'),
             'geolocation' => $this->geolocConfig,
         ]);
@@ -166,6 +187,7 @@ class ApiCache
      *
      * @throws InvalidArgumentException
      * @throws Exception
+     * @throws \Psr\Cache\CacheException
      */
     private function addRemediationToCacheItem(string $cacheKey, string $type, int $expiration, int $decisionId): string
     {
@@ -196,6 +218,7 @@ class ApiCache
 
         $item->set($prioritizedRemediations);
         $item->expiresAt(new DateTime('@'.$maxLifetime));
+        $item->tag(Constants::CACHE_TAG_REM);
 
         // Save the cache without committing it to the cache system.
         // Useful to improve performance when updating the cache.
@@ -211,6 +234,7 @@ class ApiCache
      *
      * @throws InvalidArgumentException
      * @throws Exception
+     * @throws \Psr\Cache\CacheException
      */
     private function removeDecisionFromRemediationItem(string $cacheKey, int $decisionId): bool
     {
@@ -242,6 +266,7 @@ class ApiCache
         $cacheContent = Remediation::sortRemediationByPriority($remediations);
         $item->expiresAt(new DateTime('@'.$maxLifetime));
         $item->set($cacheContent);
+        $item->tag(Constants::CACHE_TAG_REM);
 
         // Save the cache without committing it to the cache system.
         // Useful to improve performance when updating the cache.
@@ -371,11 +396,13 @@ class ApiCache
         if (!isset($this->cacheKeys[$scope][$value])) {
             switch ($scope) {
                 case Constants::SCOPE_RANGE:
-                case Constants::SCOPE_IP:
-                    $this->cacheKeys[$scope][$value] = Constants::SCOPE_IP.':'.$value;
+                    $this->cacheKeys[$scope][$value] = Constants::SCOPE_IP.self::CACHE_SEP.$value;
                     break;
+                case Constants::SCOPE_IP:
+                case Constants::CACHE_TAG_GEO.self::CACHE_SEP.Constants::SCOPE_IP:
+                case Constants::CACHE_TAG_CAPTCHA.self::CACHE_SEP.Constants::SCOPE_IP:
                 case Constants::SCOPE_COUNTRY:
-                    $this->cacheKeys[$scope][$value] = Constants::SCOPE_COUNTRY.':'.$value;
+                    $this->cacheKeys[$scope][$value] = $scope.self::CACHE_SEP.$value;
                     break;
                 default:
                     throw new BouncerException('Unknown scope:'.$scope);
@@ -476,6 +503,7 @@ class ApiCache
                     'decision' => $decision['id'],
                     'value' => $decision['value'],
                     ]);
+                    ++$count;
                 }
             } elseif (Constants::SCOPE_RANGE === $decision['scope']) {
                 $range = Subnet::parseString($decision['value']);
@@ -532,6 +560,7 @@ class ApiCache
                         'decision' => $decision['id'],
                         'value' => $decision['value'],
                     ]);
+                    ++$count;
                 }
             }
         }
@@ -747,7 +776,7 @@ class ApiCache
 
         // Handle Geolocation remediation
         if (!empty($this->geolocConfig['enabled'])) {
-            $countryResult = $this->geolocation->getCountryResult($this->geolocConfig, $ip);
+            $countryResult = $this->geolocation->getCountryResult($this->geolocConfig, $ip, $this);
             $countryToQuery = null;
             if (!empty($countryResult['country'])) {
                 $countryToQuery = $countryResult['country'];
@@ -844,5 +873,96 @@ class ApiCache
         } finally {
             $this->unsetCustomErrorHandler();
         }
+    }
+
+    /**
+     * Retrieve raw cache item for some IP and cache tag.
+     *
+     * @return array|mixed
+     *
+     * @throws InvalidArgumentException
+     */
+    private function getIpCachedVariables(string $cacheTag, string $ip)
+    {
+        $cacheKey = $this->getCacheKey($cacheTag.self::CACHE_SEP.Constants::SCOPE_IP, $ip);
+        $cachedVariables = [];
+        if ($this->adapter->hasItem(base64_encode($cacheKey))) {
+            $cachedVariables = $this->adapter->getItem(base64_encode($cacheKey))->get();
+        }
+
+        return $cachedVariables;
+    }
+
+    /**
+     * Retrieved prepared cached variables associated to an Ip
+     * Set null if not already in cache.
+     *
+     * @param $cacheTag
+     * @param $names
+     * @param $ip
+     *
+     * @return array
+     */
+    public function getIpVariables($cacheTag, $names, $ip)
+    {
+        $cachedVariables = $this->getIpCachedVariables($cacheTag, $ip);
+        $variables = [];
+        foreach ($names as $name) {
+            $variables[$name] = null;
+            if (isset($cachedVariables[$name])) {
+                $variables[$name] = $cachedVariables[$name];
+            }
+        }
+
+        return $variables;
+    }
+
+    /**
+     * Store variables in cache for some IP and cache tag.
+     *
+     * @return void
+     *
+     * @throws InvalidArgumentException
+     * @throws \Psr\Cache\CacheException
+     * @throws Exception
+     */
+    public function setIpVariables(string $cacheTag, array $pairs, string $ip)
+    {
+        $cacheKey = $this->getCacheKey($cacheTag.self::CACHE_SEP.Constants::SCOPE_IP, $ip);
+        $cachedVariables = $this->getIpCachedVariables($cacheTag, $ip);
+        foreach ($pairs as $name => $value) {
+            $cachedVariables[$name] = $value;
+        }
+        $duration = (Constants::CACHE_TAG_CAPTCHA === $cacheTag)
+            ? $this->cacheExpirationForCaptcha : $this->cacheExpirationForGeo;
+        $item = $this->adapter->getItem(base64_encode($cacheKey));
+        $item->set($cachedVariables);
+        $item->expiresAt(new DateTime("+$duration seconds"));
+        $item->tag($cacheTag);
+        $this->adapter->save($item);
+    }
+
+    /**
+     * Unset cached variables for some IP and cache tag.
+     *
+     * @return void
+     *
+     * @throws InvalidArgumentException
+     * @throws \Psr\Cache\CacheException
+     */
+    public function unsetIpVariables(string $cacheTag, array $pairs, string $ip)
+    {
+        $cacheKey = $this->getCacheKey($cacheTag.self::CACHE_SEP.Constants::SCOPE_IP, $ip);
+        $cachedVariables = $this->getIpCachedVariables($cacheTag, $ip);
+        foreach ($pairs as $name => $value) {
+            unset($cachedVariables[$name]);
+        }
+        $duration = (Constants::CACHE_TAG_CAPTCHA === $cacheTag)
+            ? $this->cacheExpirationForCaptcha : $this->cacheExpirationForGeo;
+        $item = $this->adapter->getItem(base64_encode($cacheKey));
+        $item->set($cachedVariables);
+        $item->expiresAt(new DateTime("+$duration seconds"));
+        $item->tag($cacheTag);
+        $this->adapter->save($item);
     }
 }

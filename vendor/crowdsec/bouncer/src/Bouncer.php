@@ -13,7 +13,7 @@ use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Cache\Adapter\AbstractAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
 use Symfony\Component\Config\Definition\Processor;
 
 /**
@@ -37,7 +37,7 @@ class Bouncer
     /** @var int */
     private $maxRemediationLevelIndex = null;
 
-    public function __construct(AbstractAdapter $cacheAdapter = null, LoggerInterface $logger = null, ApiCache $apiCache = null)
+    public function __construct(TagAwareAdapterInterface $cacheAdapter = null, LoggerInterface $logger = null, ApiCache $apiCache = null)
     {
         if (!$logger) {
             $logger = new Logger('null');
@@ -66,6 +66,12 @@ class Bouncer
             Constants::ORDERED_REMEDIATIONS
         );
         $this->maxRemediationLevelIndex = $index;
+        $cacheDurations = [
+            'clean_ip_cache_duration' => $finalConfig['clean_ip_cache_duration'],
+            'bad_ip_cache_duration' => $finalConfig['bad_ip_cache_duration'],
+            'captcha_cache_duration' => $finalConfig['captcha_cache_duration'],
+            'geolocation_cache_duration' => $finalConfig['geolocation_cache_duration'],
+        ];
 
         // Configure Api Cache.
         $this->apiCache->configure(
@@ -74,8 +80,7 @@ class Bouncer
             $finalConfig['api_timeout'],
             $finalConfig['api_user_agent'],
             $finalConfig['api_key'],
-            $finalConfig['clean_ip_cache_duration'],
-            $finalConfig['bad_ip_cache_duration'],
+            $cacheDurations,
             $finalConfig['fallback_remediation'],
             $finalConfig['geolocation']
         );
@@ -144,10 +149,6 @@ class Bouncer
     /**
      * Returns a default "CrowdSec Captcha" HTML template to display to a web browser using a captchable IP.
      * The input $config should match the TemplateConfiguration input format.
-     *
-     * @param array $config An array of template configuration parameters
-     *
-     * @return string The HTML compiled template
      */
     public static function getCaptchaHtmlTemplate(bool $error, string $captchaImageSrc, string $captchaResolutionFormUrl, array $config): string
     {
@@ -267,5 +268,10 @@ class Bouncer
     public function testConnection()
     {
         $this->apiCache->testConnection();
+    }
+
+    public function getApiCache()
+    {
+        return $this->apiCache;
     }
 }

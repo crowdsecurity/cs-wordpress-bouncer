@@ -6,7 +6,7 @@ require_once __DIR__.'/bouncer-instance-standalone.php';
 use CrowdSecBouncer\Bouncer;
 use CrowdSecBouncer\Constants;
 use Monolog\Logger;
-use Symfony\Component\Cache\Adapter\AbstractAdapter;
+use \Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
 
 $crowdsecRandomLogFolder = get_option('crowdsec_random_log_folder') ?: '';
 crowdsecDefineConstants($crowdsecRandomLogFolder);
@@ -27,7 +27,7 @@ function getDatabaseCacheSettings(): array
     ];
 }
 
-function getCacheAdapterInstance(array $settings, bool $forcedReload = false): AbstractAdapter
+function getCacheAdapterInstance(array $settings, bool $forcedReload = false): TagAwareAdapterInterface
 {
     $cacheSystem = $settings['cache_system'];
     $memcachedDsn = $settings['memcached_dsn'];
