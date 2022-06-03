@@ -179,6 +179,7 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
         'CrowdSecBouncer\\Configuration' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Configuration.php',
         'CrowdSecBouncer\\Constants' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Constants.php',
         'CrowdSecBouncer\\Fixes\\Gregwar\\Captcha\\CaptchaBuilder' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Fixes/Gregwar/Captcha/CaptchaBuilder.php',
+        'CrowdSecBouncer\\Fixes\\Memcached\\TagAwareAdapter' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Fixes/Memcached/TagAwareAdapter.php',
         'CrowdSecBouncer\\Geolocation' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Geolocation.php',
         'CrowdSecBouncer\\IBounce' => __DIR__ . '/..' . '/crowdsec/bouncer/src/IBounce.php',
         'CrowdSecBouncer\\Remediation' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Remediation.php',

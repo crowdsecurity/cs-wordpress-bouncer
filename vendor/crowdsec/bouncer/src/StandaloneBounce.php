@@ -2,6 +2,7 @@
 
 namespace CrowdSecBouncer;
 
+use CrowdSecBouncer\Fixes\Memcached\TagAwareAdapter as MemcachedTagAwareAdapter;
 use ErrorException;
 use Exception;
 use IPLib\Factory;
@@ -92,7 +93,7 @@ class StandaloneBounce extends AbstractBounce implements IBounce
                     throw new BouncerException('The selected cache technology is Memcached.'.' Please set a Memcached DSN or select another cache technology.');
                 }
 
-                $this->cacheAdapter = new TagAwareAdapter(
+                $this->cacheAdapter = new MemcachedTagAwareAdapter(
                     new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn)));
                 break;
 

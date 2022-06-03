@@ -1,6 +1,7 @@
 <?php
 
 use CrowdSecBouncer\Bouncer;
+use CrowdSecBouncer\Fixes\Memcached\TagAwareAdapter as MemcachedTagAwareAdapter;
 use CrowdSecBouncer\BouncerException;
 use CrowdSecBouncer\Constants;
 use Monolog\Formatter\LineFormatter;
@@ -69,7 +70,7 @@ $fsCachePath, bool $forcedReload = false): TagAwareAdapterInterface
                 ' Please set a Memcached DSN or select another cache technology.');
             }
 
-            $crowdSecCacheAdapterInstance = new TagAwareAdapter(
+            $crowdSecCacheAdapterInstance = new MemcachedTagAwareAdapter(
                 new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn))
             );
             break;

@@ -17,6 +17,7 @@ return array(
     'CrowdSecBouncer\\Configuration' => $vendorDir . '/crowdsec/bouncer/src/Configuration.php',
     'CrowdSecBouncer\\Constants' => $vendorDir . '/crowdsec/bouncer/src/Constants.php',
     'CrowdSecBouncer\\Fixes\\Gregwar\\Captcha\\CaptchaBuilder' => $vendorDir . '/crowdsec/bouncer/src/Fixes/Gregwar/Captcha/CaptchaBuilder.php',
+    'CrowdSecBouncer\\Fixes\\Memcached\\TagAwareAdapter' => $vendorDir . '/crowdsec/bouncer/src/Fixes/Memcached/TagAwareAdapter.php',
     'CrowdSecBouncer\\Geolocation' => $vendorDir . '/crowdsec/bouncer/src/Geolocation.php',
     'CrowdSecBouncer\\IBounce' => $vendorDir . '/crowdsec/bouncer/src/IBounce.php',
     'CrowdSecBouncer\\Remediation' => $vendorDir . '/crowdsec/bouncer/src/Remediation.php',

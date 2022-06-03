@@ -6,6 +6,11 @@
 		{
 			"name": "CrowdSec",
 			"email": "info@crowdsec.net"
+		},
+		{
+			"name": "Julien Loizelet",
+			"homepage": "https://github.com/julienloizelet/",
+			"role": "Developer"
 		}
 	],
 	"config" : {
@@ -14,7 +19,7 @@
 		}
 	},
 	"require": {
-		"crowdsec/bouncer": "0.22.0",
+		"crowdsec/bouncer": "0.22.1",
 		"symfony/polyfill-mbstring": "1.20.0",
 		"symfony/service-contracts": "2.4.1"
 	},
