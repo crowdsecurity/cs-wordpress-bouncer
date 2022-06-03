@@ -16,6 +16,8 @@ function getCrowdSecOptionsConfig()
         ['name' => 'crowdsec_memcached_dsn', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_clean_ip_cache_duration', 'default' => Constants::CACHE_EXPIRATION_FOR_CLEAN_IP, 'autoInit' => true],
         ['name' => 'crowdsec_bad_ip_cache_duration', 'default' => Constants::CACHE_EXPIRATION_FOR_BAD_IP, 'autoInit' => true],
+        ['name' => 'crowdsec_captcha_cache_duration', 'default' => Constants::CACHE_EXPIRATION_FOR_CAPTCHA,
+            'autoInit' => true],
         ['name' => 'crowdsec_fallback_remediation', 'default' => Constants::REMEDIATION_CAPTCHA, 'autoInit' => true],
         ['name' => 'crowdsec_hide_mentions', 'default' => false, 'autoInit' => true],
         ['name' => 'crowdsec_trust_ip_forward_array', 'default' => [], 'autoInit' => true],

@@ -64,6 +64,8 @@ function getDatabaseSettings(): array
             Constants::CACHE_EXPIRATION_FOR_CLEAN_IP,
         'bad_ip_cache_duration' => (int)get_option('crowdsec_bad_ip_cache_duration') ?:
             Constants::CACHE_EXPIRATION_FOR_BAD_IP,
+        'captcha_cache_duration' => (int)get_option('crowdsec_captcha_cache_duration') ?:
+            Constants::CACHE_EXPIRATION_FOR_CAPTCHA,
         // Geolocation
         'geolocation' => []
     ];
