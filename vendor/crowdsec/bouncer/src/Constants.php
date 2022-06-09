@@ -20,7 +20,7 @@ class Constants
     public const DEFAULT_LAPI_URL = 'http://localhost:8080';
 
     /** @var string The last version of this library */
-    public const VERSION = 'v0.20.0';
+    public const VERSION = 'v0.22.1';
 
     /** @var string The user agent used to send request to LAPI */
     public const BASE_USER_AGENT = 'PHP CrowdSec Bouncer/'.self::VERSION;
@@ -28,11 +28,17 @@ class Constants
     /** @var int The timeout when calling LAPI */
     public const API_TIMEOUT = 1;
 
-    /** @var int The duration we keep a clean IP in cache 5s */
+    /** @var int The duration we keep a clean IP in cache */
     public const CACHE_EXPIRATION_FOR_CLEAN_IP = 5;
 
-    /** @var int The duration we keep a bad IP in cache 20s */
+    /** @var int The duration we keep a bad IP in cache */
     public const CACHE_EXPIRATION_FOR_BAD_IP = 20;
+
+    /** @var int The duration we keep a captcha flow in cache */
+    public const CACHE_EXPIRATION_FOR_CAPTCHA = 86400;
+
+    /** @var int The duration we keep a geolocation result in cache */
+    public const CACHE_EXPIRATION_FOR_GEO = 86400;
 
     /** @var string The ban remediation */
     public const REMEDIATION_BAN = 'ban';
@@ -63,6 +69,15 @@ class Constants
 
     /** @var string The "MEMCACHED" cache system */
     public const CACHE_SYSTEM_MEMCACHED = 'memcached';
+
+    /** @var string Cache tag for remediation */
+    public const CACHE_TAG_REM = 'remediation';
+
+    /** @var string Cache tag for captcha flow */
+    public const CACHE_TAG_CAPTCHA = 'captcha';
+
+    /** @var string Cache tag for geolocation */
+    public const CACHE_TAG_GEO = 'geolocation';
 
     /** @var string The "MaxMind" geolocation type */
     public const GEOLOCATION_TYPE_MAXMIND = 'maxmind';

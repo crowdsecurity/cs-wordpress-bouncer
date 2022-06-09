@@ -65,23 +65,6 @@ interface IBounce
     public function getTrustForwardedIpBoundsList(): array;
 
     /**
-     * Return a session variable, null if not set.
-     */
-    public function getSessionVariable(string $name);
-
-    /**
-     * Set a session variable.
-     */
-    public function setSessionVariable(string $name, $value): void;
-
-    /**
-     * Unset a session variable, throw an error if this does not exist.
-     *
-     * @return void;
-     */
-    public function unsetSessionVariable(string $name): void;
-
-    /**
      * Get the value of a posted field.
      */
     public function getPostedVariable(string $name): ?string;

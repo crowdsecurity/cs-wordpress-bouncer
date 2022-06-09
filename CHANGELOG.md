@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [1.5.0] - 2022-06-09
+
+### Added
+- Add configuration to set captcha flow cache lifetime
+### Changed
+- Use cache instead of session to store some captcha flow values
+### Fixed
+- Fix wrong deleted decisions count during cache refresh
+
 ## [1.4.3] - 2022-05-13
 
 ### Fixed

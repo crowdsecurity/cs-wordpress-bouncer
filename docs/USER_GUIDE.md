@@ -172,6 +172,18 @@ Minimum 1 second.  Note that this setting can not be apply in stream mode.
 
 ***
 
+`Caching configuration → Captcha flow cache lifetime`
+
+The lifetime of cached captcha flow for some IP.
+
+If a user has to interact with a captcha wall,
+we store in cache some values in order to know if he has to resolve or not the captcha again.
+
+Minimum 1 second. Default: 86400 seconds.
+
+
+***
+
 
 ![Remediations](images/screenshots/config-remediations.jpg)
 

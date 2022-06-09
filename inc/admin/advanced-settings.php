@@ -185,6 +185,18 @@ function adminAdvancedSettings()
         return (int) $input > 0 ? (int) $input : 1 ;
     }, ' seconds. <p>The duration between re-asking LAPI about an already checked bad IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
+    // Field "crowdsec_captcha_cache_duration"
+    addFieldString('crowdsec_captcha_cache_duration', 'Captcha flow cache lifetime', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        if ( (int) $input <= 0) {
+            add_settings_error('Captcha cache duration', 'crowdsec_error', 'Captcha cache duration: Minimum is 1 second.');
+
+            return Constants::CACHE_EXPIRATION_FOR_CAPTCHA;
+        }
+
+        return (int) $input > 0 ? (int) $input : Constants::CACHE_EXPIRATION_FOR_CAPTCHA ;
+    }, ' seconds. <p>The lifetime of cached captcha flow for some IP. <br>If a user has to interact with a captcha wall, we store in cache some values in order to know if he has to resolve or not the captcha again.<br>Minimum 1 second. Default: '.Constants::CACHE_EXPIRATION_FOR_CAPTCHA.'.', Constants::CACHE_EXPIRATION_FOR_CAPTCHA, 'width: 115px;', 'number');
+
+
     /***************************
      ** Section "Remediation" **
      **************************/
