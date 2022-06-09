@@ -21,7 +21,7 @@
 	"require": {
 		"crowdsec/bouncer": "0.22.1",
 		"symfony/polyfill-mbstring": "1.20.0",
-		"symfony/service-contracts": "2.4.1"
+		"symfony/service-contracts": "2.5.1"
 	},
 	"autoload": {
 		"psr-4": {
