@@ -212,6 +212,10 @@ Enable if you want to hide CrowdSec mentions on the Ban and Captcha walls.
 
 Enable if you want to see some debug information in a specific log file.
 
+When this mode is enabled, a `debug.log` file will be written in a `wp-content/plugins/cs-wordpress-bouncer/logs` 
+sub folder.
+Note that by default, there is always a `prod.log` file in the same folder.
+
 ***
 
 `Display errors → Enable errors display`
@@ -222,10 +226,10 @@ Should be disabled in production.
 
 ### Auto Prepend File mode
 
-By default, this extension will bounce every web requests: e.g requests called from webroot `index.php`.
-This implies that if another php public script is called (`cron.php` if accessible for example, or any of your
-custom public php script) bouncing will not be effective.
-To ensure that any php script will be bounced if called from a browser, you should try the `auto prepend file` mode.
+By default, this extension will bounce every web requests that pass through the classical process of WordPress core loading.
+This implies that if another php public script is called (any of your custom public php script for example)
+or if you are using some plugin that bypass the WordPress core load process
+(as the [WP Super Cache plugin](https://wordpress.org/plugins/wp-super-cache/) in Simple mode for example), bouncing will not be effective.
 
 In this mode, every browser access to a php script will be bounced.
 
