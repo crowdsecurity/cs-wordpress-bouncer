@@ -27,7 +27,7 @@
 ## Description
 
 The `CrowdSec Bouncer` plugin for WordPress has been designed to protect WordPress websites from all kinds of 
-attacks by using [CrowdSec](https://crowdsec.net/) technology.
+attacks by using [CrowdSec](https://www.crowdsec.net/) technology.
 
 ## Prerequisites
 
@@ -275,4 +275,4 @@ If you are using Apache, you should add this line to your `.htaccess` file:
 
 ## Resources
 
-Feel free to look at the [associated article](https://crowdsec.net/wordpress-bouncer/) for more configuration options and tweaks.
+Feel free to look at the [associated article](https://www.crowdsec.net/wordpress-bouncer/) for more configuration options and tweaks.
