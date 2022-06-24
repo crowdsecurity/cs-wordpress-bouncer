@@ -5,7 +5,7 @@
 This WordPress plugin allows you to apply decisions from CrowdSec directly within the WordPress application.
 
 ![Version](https://img.shields.io/github/v/release/crowdsecurity/cs-wordpress-bouncer?include_prereleases)
-[![End to end](https://github.com/crowdsecurity/cs-wordpress-bouncer/actions/workflows/end-to-end-test-suite.yml/badge.svg)](https://github.com/crowdsecurity/cs-wordpress-bouncer/actions/workflows/end-to-end-test-suite.yml.yml)
+[![End to end](https://github.com/crowdsecurity/cs-wordpress-bouncer/actions/workflows/end-to-end-test-suite.yml/badge.svg)](https://github.com/crowdsecurity/cs-wordpress-bouncer/actions/workflows/end-to-end-test-suite.yml)
 ![Licence](https://img.shields.io/github/license/crowdsecurity/cs-wordpress-bouncer)
 
 
