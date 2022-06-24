@@ -54,14 +54,14 @@ __We will suppose here that you want to install WordPress 5.9. Please change "5.
 
 #### DDEV installation
 
-This project is fully compatible with DDEV 1.19.1, and it is recommended to use this specific version.
+This project is fully compatible with DDEV 1.19.3, and it is recommended to use this specific version.
 For the DDEV installation, please follow the [official instructions](https://ddev.readthedocs.io/en/stable/#installation).
 On a Linux distribution, you can run:
 ```
 sudo apt-get -qq update
 sudo apt-get -qq -y install libnss3-tools
 curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
-bash install_ddev.sh v1.19.1
+bash install_ddev.sh v1.19.3
 rm install_ddev.sh
 ```
 
@@ -70,18 +70,18 @@ rm install_ddev.sh
 The final structure of the project will look like below.
 
 ```
-wp-sources
+wp-sources (choose the name you want for this folder)
 │
 │ (WordPress sources)
 │
-└───.ddev
+└───.ddev (do not change this folder name)
 │   │
 │   │ (Cloned sources of a specific WordPress ddev repo)
 │
-└───my-own-modules
+└───my-own-modules (do not change this folder name)
     │
     │
-    └───crowdsec-bouncer
+    └───crowdsec-bouncer (do not change this folder name)
        │
        │ (Sources of a this module)
 
