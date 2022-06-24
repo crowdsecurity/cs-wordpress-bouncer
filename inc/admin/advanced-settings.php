@@ -285,7 +285,7 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_debug_mode"
     addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>Should not be used in production. When this mode is enabled, debug log will be written.</p>');
+    <p>Should not be used in production.<br>When this mode is enabled, a debug.log file will be written in the <i>wp-content/plugins/cs-wordpress-bouncer/logs</i> folder.<br> Note that by default, there is always a prod.log file in the same folder.</p>');
 
 	/*******************************
 	 ** Section "Display errors" **
