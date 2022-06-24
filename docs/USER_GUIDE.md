@@ -231,6 +231,8 @@ This implies that if another php public script is called (any of your custom pub
 or if you are using some plugin that bypass the WordPress core load process
 (as the [WP Super Cache plugin](https://wordpress.org/plugins/wp-super-cache/) in Simple mode for example), bouncing will not be effective.
 
+To ensure that any php script will be bounced if called from a browser, you should try the `auto prepend file` mode.
+
 In this mode, every browser access to a php script will be bounced.
 
 To enable the `auto prepend file` mode, you have to configure your server by adding an `auto_prepend_file` directive 
