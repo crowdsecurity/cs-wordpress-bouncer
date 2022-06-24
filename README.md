@@ -1,6 +1,6 @@
 # CrowdSec WordPress Bouncer
 
-![CrowdSec WordPress Bouncer](https://github.com/crowdsecurity/cs-wordpress-bouncer/raw/main/.wordpress-org/banner-1544x500.png "CrowdSec WordPress Bouncer")
+![CrowdSec WordPress Bouncer](https://raw.githubusercontent.com/crowdsecurity/cs-wordpress-bouncer/main/.wordpress-org/banner-1544x500.png "CrowdSec WordPress Bouncer")
 
 This WordPress plugin allows you to apply decisions from CrowdSec directly within the WordPress application.
 
