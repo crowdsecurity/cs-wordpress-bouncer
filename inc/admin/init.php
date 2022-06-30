@@ -104,6 +104,27 @@ if (is_admin()) {
         }
     }
 
+    function testBouncerConnexionInAdminPage($ip)
+    {
+        try {
+            $settings = getDatabaseSettings();
+            $bouncer = getBouncerInstance($settings);
+            $remediation = $bouncer->getRemediationForIp($ip);
+            $message = __("Bouncing has been successfully tested for IP: $ip. Result is: $remediation.");
+
+            AdminNotice::displaySuccess($message);
+        } catch (BouncerException $e) {
+            getCrowdSecLoggerInstance()->error('', [
+                'type' => 'WP_EXCEPTION_WHILE_TESTING_CONNECTION',
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            AdminNotice::displayError('Technical error while testing bouncer connection: '.$e->getMessage());
+        }
+    }
+
     // ACTIONS
     add_action('admin_post_crowdsec_clear_cache', function () {
         if (
@@ -129,6 +150,16 @@ if (is_admin()) {
             die('This link expired.');
         }
         pruneBouncerCacheInAdminPage();
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
+    add_action('admin_post_crowdsec_test_connection', function () {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_test_connection')) {
+            die('This link expired.');
+        }
+        $ip = isset($_POST['crowdsec_test_connection_ip']) ? $_POST['crowdsec_test_connection_ip'] : $_SERVER['REMOTE_ADDR'];
+        testBouncerConnexionInAdminPage($ip);
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
     });

@@ -98,6 +98,17 @@ If enabled, the admin is not bounced.
 
 ***
 
+`Test your settings`
+
+Click the "Test bouncing" button and the configured bouncer will try to get the remediation (bypass, captcha or ban) 
+for 
+the IP entered in the text field. By default, tested IP is the current detected remote IP.
+
+This test allows you to know if your connection, bouncing and cache settings are correct.
+
+
+***
+
 
 #### Theme customization
 
