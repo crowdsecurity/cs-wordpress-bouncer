@@ -89,7 +89,7 @@ class Bounce extends AbstractBounce
                 'save_result' => $this->getBoolSettings('crowdsec_geolocation_save_result'),
                 'maxmind' => [
                     'database_type' => $this->getStringSettings('crowdsec_geolocation_maxmind_database_type')?:Constants::MAXMIND_COUNTRY,
-                    'database_path' => CROWDSEC_BOUNCER_GEOLOCATION_DIR. '/'.ltrim((string) esc_attr(get_option('crowdsec_geolocation_maxmind_database_path')), '/'),
+                    'database_path' => CROWDSEC_BOUNCER_GEOLOCATION_DIR. '/'.ltrim($this->getStringSettings('crowdsec_geolocation_maxmind_database_path'), '/'),
                 ]
             ]
         ];
