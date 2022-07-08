@@ -6,7 +6,6 @@ use CrowdSecBouncer\Fixes\Memcached\TagAwareAdapter as MemcachedTagAwareAdapter;
 use ErrorException;
 use Exception;
 use IPLib\Factory;
-use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
 use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
@@ -26,9 +25,9 @@ use Symfony\Component\Cache\Exception\InvalidArgumentException;
  * @copyright Copyright (c) 2021+ CrowdSec
  * @license   MIT License
  */
-class StandaloneBounce extends AbstractBounce implements IBounce
+class StandaloneBounce extends AbstractBounce
 {
-    /** @var AbstractAdapter */
+    /** @var TagAwareAdapterInterface|null */
     protected $cacheAdapter;
 
     /**
@@ -59,9 +58,7 @@ class StandaloneBounce extends AbstractBounce implements IBounce
         }
         $this->settings = $configs;
 
-        if (\is_array($forcedConfigs)) {
-            $this->settings = array_merge($this->settings, $forcedConfigs);
-        }
+        $this->settings = array_merge($this->settings, $forcedConfigs);
         $this->setDebug($this->getBoolSettings('debug_mode'));
         $this->setDisplayErrors($this->getBoolSettings('display_errors'));
         $this->initLogger();
@@ -84,29 +81,34 @@ class StandaloneBounce extends AbstractBounce implements IBounce
         switch ($cacheSystem) {
             case Constants::CACHE_SYSTEM_PHPFS:
                 $this->cacheAdapter = new TagAwareAdapter(
-                    new PhpFilesAdapter('', 0, $this->getStringSettings('fs_cache_path')));
+                    new PhpFilesAdapter('', 0, $this->getStringSettings('fs_cache_path'))
+                );
                 break;
 
             case Constants::CACHE_SYSTEM_MEMCACHED:
                 $memcachedDsn = $this->getStringSettings('memcached_dsn');
                 if (empty($memcachedDsn)) {
-                    throw new BouncerException('The selected cache technology is Memcached.'.' Please set a Memcached DSN or select another cache technology.');
+                    throw new BouncerException('The selected cache technology is Memcached.' .
+                                               ' Please set a Memcached DSN or select another cache technology.');
                 }
 
                 $this->cacheAdapter = new MemcachedTagAwareAdapter(
-                    new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn)));
+                    new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn))
+                );
                 break;
 
             case Constants::CACHE_SYSTEM_REDIS:
                 $redisDsn = $this->getStringSettings('redis_dsn');
                 if (empty($redisDsn)) {
-                    throw new BouncerException('The selected cache technology is Redis.'.' Please set a Redis DSN or select another cache technology.');
+                    throw new BouncerException('The selected cache technology is Redis.' .
+                                               ' Please set a Redis DSN or select another cache technology.');
                 }
 
                 try {
                     $this->cacheAdapter = new RedisTagAwareAdapter((RedisAdapter::createConnection($redisDsn)));
                 } catch (InvalidArgumentException $e) {
-                    throw new BouncerException('Error when connecting to Redis.'.' Please fix the Redis DSN or select another cache technology.');
+                    throw new BouncerException('Error when connecting to Redis.' .
+                                               ' Please fix the Redis DSN or select another cache technology.');
                 }
                 break;
 
@@ -130,8 +132,9 @@ class StandaloneBounce extends AbstractBounce implements IBounce
         if ($this->bouncer && !$forceReload) {
             return $this->bouncer;
         }
+        $this->settings = array_merge($this->settings, $settings);
         $bouncingLevel = $this->getStringSettings('bouncing_level');
-        $apiUserAgent = 'Standalone CrowdSec PHP Bouncer/'.Constants::VERSION;
+        $apiUserAgent = 'Standalone CrowdSec PHP Bouncer/' . Constants::VERSION;
         $apiTimeout = $this->getIntegerSettings('api_timeout');
 
         // Init Bouncer instance
@@ -167,6 +170,7 @@ class StandaloneBounce extends AbstractBounce implements IBounce
             'debug_mode' => $this->getBoolSettings('debug_mode'),
             'log_directory_path' => $this->getStringSettings('log_directory_path'),
             'forced_test_ip' => $this->getStringSettings('forced_test_ip'),
+            'forced_test_forwarded_ip' => $this->getStringSettings('forced_test_forwarded_ip'),
             'display_errors' => $this->getBoolSettings('display_errors'),
             // Bouncer
             'bouncing_level' => $bouncingLevel,
@@ -200,7 +204,7 @@ class StandaloneBounce extends AbstractBounce implements IBounce
      */
     public function getHttpRequestHeader(string $name): ?string
     {
-        $headerName = 'HTTP_'.str_replace('-', '_', strtoupper($name));
+        $headerName = 'HTTP_' . str_replace('-', '_', strtoupper($name));
         if (!\array_key_exists($headerName, $_SERVER)) {
             return null;
         }
@@ -225,72 +229,156 @@ class StandaloneBounce extends AbstractBounce implements IBounce
     }
 
     /**
-     * @return array ['hide_crowdsec_mentions': bool, color:[text:['primary' : string, 'secondary' : string, 'button' : string, 'error_message : string' ...]]] (returns an array of option required to build the captcha wall template)
+     * @return array ['hide_crowdsec_mentions': bool, color:[text:['primary' : string, 'secondary' : string, 'button' :
+     *     string, 'error_message : string' ...]]] (returns an array of option required to build the captcha wall
+     *     template)
      */
     public function getCaptchaWallOptions(): array
     {
         return [
             'hide_crowdsec_mentions' => $this->getBoolSettings('hide_mentions'),
             'color' => [
-              'text' => [
-                'primary' => htmlspecialchars_decode($this->getStringSettings('theme_color_text_primary'), \ENT_QUOTES),
-                'secondary' => htmlspecialchars_decode($this->getStringSettings('theme_color_text_secondary'), \ENT_QUOTES),
-                'button' => htmlspecialchars_decode($this->getStringSettings('theme_color_text_button'), \ENT_QUOTES),
-                'error_message' => htmlspecialchars_decode($this->getStringSettings('theme_color_text_error_message'), \ENT_QUOTES),
-              ],
-              'background' => [
-                'page' => htmlspecialchars_decode($this->getStringSettings('theme_color_background_page'), \ENT_QUOTES),
-                'container' => htmlspecialchars_decode($this->getStringSettings('theme_color_background_container'), \ENT_QUOTES),
-                'button' => htmlspecialchars_decode($this->getStringSettings('theme_color_background_button'), \ENT_QUOTES),
-                'button_hover' => htmlspecialchars_decode($this->getStringSettings('theme_color_background_button_hover'), \ENT_QUOTES),
-              ],
+                'text' => [
+                    'primary' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_text_primary'),
+                        \ENT_QUOTES
+                    ),
+                    'secondary' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_text_secondary'),
+                        \ENT_QUOTES
+                    ),
+                    'button' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_text_button'),
+                        \ENT_QUOTES
+                    ),
+                    'error_message' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_text_error_message'),
+                        \ENT_QUOTES
+                    ),
+                ],
+                'background' => [
+                    'page' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_background_page'),
+                        \ENT_QUOTES
+                    ),
+                    'container' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_background_container'),
+                        \ENT_QUOTES
+                    ),
+                    'button' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_background_button'),
+                        \ENT_QUOTES
+                    ),
+                    'button_hover' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_background_button_hover'),
+                        \ENT_QUOTES
+                    ),
+                ],
             ],
             'text' => [
-              'captcha_wall' => [
-                'tab_title' => htmlspecialchars_decode($this->getStringSettings('theme_text_captcha_wall_tab_title'), \ENT_QUOTES),
-                'title' => htmlspecialchars_decode($this->getStringSettings('theme_text_captcha_wall_title'), \ENT_QUOTES),
-                'subtitle' => htmlspecialchars_decode($this->getStringSettings('theme_text_captcha_wall_subtitle'), \ENT_QUOTES),
-                'refresh_image_link' => htmlspecialchars_decode($this->getStringSettings('theme_text_captcha_wall_refresh_image_link'), \ENT_QUOTES),
-                'captcha_placeholder' => htmlspecialchars_decode($this->getStringSettings('theme_text_captcha_wall_captcha_placeholder'), \ENT_QUOTES),
-                'send_button' => htmlspecialchars_decode($this->getStringSettings('theme_text_captcha_wall_send_button'), \ENT_QUOTES),
-                'error_message' => htmlspecialchars_decode($this->getStringSettings('theme_text_captcha_wall_error_message'), \ENT_QUOTES),
-                'footer' => htmlspecialchars_decode($this->getStringSettings('theme_text_captcha_wall_footer'), \ENT_QUOTES),
-              ],
+                'captcha_wall' => [
+                    'tab_title' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_captcha_wall_tab_title'),
+                        \ENT_QUOTES
+                    ),
+                    'title' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_captcha_wall_title'),
+                        \ENT_QUOTES
+                    ),
+                    'subtitle' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_captcha_wall_subtitle'),
+                        \ENT_QUOTES
+                    ),
+                    'refresh_image_link' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_captcha_wall_refresh_image_link'),
+                        \ENT_QUOTES
+                    ),
+                    'captcha_placeholder' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_captcha_wall_captcha_placeholder'),
+                        \ENT_QUOTES
+                    ),
+                    'send_button' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_captcha_wall_send_button'),
+                        \ENT_QUOTES
+                    ),
+                    'error_message' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_captcha_wall_error_message'),
+                        \ENT_QUOTES
+                    ),
+                    'footer' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_captcha_wall_footer'),
+                        \ENT_QUOTES
+                    ),
+                ],
             ],
             'custom_css' => $this->getStringSettings('theme_custom_css'),
-          ];
+        ];
     }
 
     /**
-     * @return array ['hide_crowdsec_mentions': bool, color:[text:['primary' : string, 'secondary' : string, 'error_message : string' ...]]] (returns an array of option required to build the ban wall template)
+     * @return array ['hide_crowdsec_mentions': bool, color:[text:['primary' : string, 'secondary' : string,
+     *     'error_message : string' ...]]] (returns an array of option required to build the ban wall template)
      */
     public function getBanWallOptions(): array
     {
         return [
             'hide_crowdsec_mentions' => $this->getBoolSettings('hide_mentions'),
             'color' => [
-              'text' => [
-                'primary' => htmlspecialchars_decode($this->getStringSettings('theme_color_text_primary'), \ENT_QUOTES),
-                'secondary' => htmlspecialchars_decode($this->getStringSettings('theme_color_text_secondary'), \ENT_QUOTES),
-                'error_message' => htmlspecialchars_decode($this->getStringSettings('theme_color_text_error_message'), \ENT_QUOTES),
-              ],
-              'background' => [
-                'page' => htmlspecialchars_decode($this->getStringSettings('theme_color_background_page'), \ENT_QUOTES),
-                'container' => htmlspecialchars_decode($this->getStringSettings('theme_color_background_container'), \ENT_QUOTES),
-                'button' => htmlspecialchars_decode($this->getStringSettings('theme_color_background_button'), \ENT_QUOTES),
-                'button_hover' => htmlspecialchars_decode($this->getStringSettings('theme_color_background_button_hover'), \ENT_QUOTES),
-              ],
+                'text' => [
+                    'primary' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_text_primary'),
+                        \ENT_QUOTES
+                    ),
+                    'secondary' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_text_secondary'),
+                        \ENT_QUOTES
+                    ),
+                    'error_message' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_text_error_message'),
+                        \ENT_QUOTES
+                    ),
+                ],
+                'background' => [
+                    'page' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_background_page'),
+                        \ENT_QUOTES
+                    ),
+                    'container' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_background_container'),
+                        \ENT_QUOTES
+                    ),
+                    'button' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_background_button'),
+                        \ENT_QUOTES
+                    ),
+                    'button_hover' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_color_background_button_hover'),
+                        \ENT_QUOTES
+                    ),
+                ],
             ],
             'text' => [
-              'ban_wall' => [
-                'tab_title' => htmlspecialchars_decode($this->getStringSettings('theme_text_ban_wall_tab_title'), \ENT_QUOTES),
-                'title' => htmlspecialchars_decode($this->getStringSettings('theme_text_ban_wall_title'), \ENT_QUOTES),
-                'subtitle' => htmlspecialchars_decode($this->getStringSettings('theme_text_ban_wall_subtitle'), \ENT_QUOTES),
-                'footer' => htmlspecialchars_decode($this->getStringSettings('theme_text_ban_wall_footer'), \ENT_QUOTES),
-              ],
+                'ban_wall' => [
+                    'tab_title' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_ban_wall_tab_title'),
+                        \ENT_QUOTES
+                    ),
+                    'title' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_ban_wall_title'),
+                        \ENT_QUOTES
+                    ),
+                    'subtitle' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_ban_wall_subtitle'),
+                        \ENT_QUOTES
+                    ),
+                    'footer' => htmlspecialchars_decode(
+                        $this->getStringSettings('theme_text_ban_wall_footer'),
+                        \ENT_QUOTES
+                    ),
+                ],
             ],
             'custom_css' => htmlspecialchars_decode($this->getStringSettings('theme_custom_css'), \ENT_QUOTES),
-          ];
+        ];
     }
 
     /**
@@ -322,7 +410,7 @@ class StandaloneBounce extends AbstractBounce implements IBounce
         if (\in_array($_SERVER['REQUEST_URI'], $excludedURIs)) {
             $this->logger->debug('', [
                 'type' => 'SHOULD_NOT_BOUNCE',
-                'message' => 'This URI is excluded from bouncing: '.$_SERVER['REQUEST_URI'],
+                'message' => 'This URI is excluded from bouncing: ' . $_SERVER['REQUEST_URI'],
             ]);
 
             return false;

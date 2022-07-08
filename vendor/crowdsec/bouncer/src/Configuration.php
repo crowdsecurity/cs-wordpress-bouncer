@@ -24,7 +24,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('config');
-        /** @var $rootNode ArrayNodeDefinition */
+        /** @var ArrayNodeDefinition $rootNode */
         $rootNode = $treeBuilder->getRootNode();
         $rootNode
             ->children()
@@ -35,12 +35,19 @@ class Configuration implements ConfigurationInterface
                 ->integerNode('api_timeout')->min(Constants::API_TIMEOUT)->defaultValue(Constants::API_TIMEOUT)->end()
                 // Debug
                 ->scalarNode('forced_test_ip')->defaultValue('')->end()
+                ->scalarNode('forced_test_forwarded_ip')->defaultValue('')->end()
                 ->booleanNode('debug_mode')->defaultValue(false)->end()
                 ->scalarNode('log_directory_path')->end()
                 ->booleanNode('display_errors')->defaultValue(false)->end()
                 // Bouncer
                 ->enumNode('bouncing_level')
-                    ->values([Constants::BOUNCING_LEVEL_DISABLED, Constants::BOUNCING_LEVEL_NORMAL, Constants::BOUNCING_LEVEL_FLEX])
+                    ->values(
+                        [
+                            Constants::BOUNCING_LEVEL_DISABLED,
+                            Constants::BOUNCING_LEVEL_NORMAL,
+                            Constants::BOUNCING_LEVEL_FLEX
+                        ]
+                    )
                     ->defaultValue(Constants::BOUNCING_LEVEL_NORMAL)
                 ->end()
                 ->enumNode('max_remediation_level')
@@ -62,7 +69,13 @@ class Configuration implements ConfigurationInterface
                 // Cache
                 ->booleanNode('stream_mode')->defaultValue(false)->end()
                 ->enumNode('cache_system')
-                    ->values([Constants::CACHE_SYSTEM_PHPFS, Constants::CACHE_SYSTEM_REDIS, Constants::CACHE_SYSTEM_MEMCACHED])
+                    ->values(
+                        [
+                            Constants::CACHE_SYSTEM_PHPFS,
+                            Constants::CACHE_SYSTEM_REDIS,
+                            Constants::CACHE_SYSTEM_MEMCACHED
+                        ]
+                    )
                     ->defaultValue(Constants::CACHE_SYSTEM_PHPFS)
                 ->end()
                 ->scalarNode('fs_cache_path')->end()

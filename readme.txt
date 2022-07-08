@@ -44,6 +44,10 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 
 == Changelog ==
 
+= 1.6 (2022-06-30) =
+
+- Add "Test bouncing" action in settings view
+
 = 1.5 (2022-06-09) =
 
 - Use cache instead of session to store some values

@@ -18,6 +18,8 @@ function getCrowdSecOptionsConfig()
         ['name' => 'crowdsec_bad_ip_cache_duration', 'default' => Constants::CACHE_EXPIRATION_FOR_BAD_IP, 'autoInit' => true],
         ['name' => 'crowdsec_captcha_cache_duration', 'default' => Constants::CACHE_EXPIRATION_FOR_CAPTCHA,
             'autoInit' => true],
+        ['name' => 'crowdsec_geolocation_cache_duration', 'default' => Constants::CACHE_EXPIRATION_FOR_GEO,
+            'autoInit' => true],
         ['name' => 'crowdsec_fallback_remediation', 'default' => Constants::REMEDIATION_CAPTCHA, 'autoInit' => true],
         ['name' => 'crowdsec_hide_mentions', 'default' => false, 'autoInit' => true],
         ['name' => 'crowdsec_trust_ip_forward_array', 'default' => [], 'autoInit' => true],
@@ -46,5 +48,11 @@ function getCrowdSecOptionsConfig()
         ['name' => 'crowdsec_debug_mode', 'default' => false, 'autoInit' => true],
 		['name' => 'crowdsec_display_errors', 'default' => false, 'autoInit' => true],
         ['name' => 'crowdsec_forced_test_ip', 'default' => "", 'autoInit' => true],
+        ['name' => 'crowdsec_forced_test_forwarded_ip', 'default' => "", 'autoInit' => true],
+        ['name' => 'crowdsec_geolocation_enabled', 'default' => false, 'autoInit' => true],
+        ['name' => 'crowdsec_geolocation_save_result', 'default' => false, 'autoInit' => true],
+        ['name' => 'crowdsec_geolocation_type', 'default' => Constants::GEOLOCATION_TYPE_MAXMIND, 'autoInit' => true],
+        ['name' => 'crowdsec_geolocation_maxmind_database_type', 'default' => Constants::MAXMIND_COUNTRY, 'autoInit' => true],
+        ['name' => 'crowdsec_geolocation_maxmind_database_path', 'default' => '', 'autoInit' => true],
     ];
 }

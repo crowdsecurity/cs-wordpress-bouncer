@@ -1,6 +1,5 @@
 <?php
 
-
 namespace CrowdSecBouncer\Fixes\Gregwar\Captcha;
 
 use Gregwar\Captcha\CaptchaBuilder as GregwarCaptchaBuilder;
@@ -11,9 +10,8 @@ use Gregwar\Captcha\CaptchaBuilder as GregwarCaptchaBuilder;
  * @see https://github.com/Gregwar/Captcha/pull/101/files
  *
  */
-class CaptchaBuilder extends GregwarCaptchaBuilder {
-
-
+class CaptchaBuilder extends GregwarCaptchaBuilder
+{
     /**
      * Writes the phrase on the image
      */
@@ -40,7 +38,7 @@ class CaptchaBuilder extends GregwarCaptchaBuilder {
         $col = \imagecolorallocate($image, $textColor[0], $textColor[1], $textColor[2]);
 
         // Write the letters one by one, with random angle
-        for ($i=0; $i<$length; $i++) {
+        for ($i = 0; $i < $length; $i++) {
             $symbol = mb_substr($phrase, $i, 1);
             $box = \imagettfbbox($size, 0, $font, $symbol);
             $w = $box[2] - $box[0];
@@ -74,5 +72,4 @@ class CaptchaBuilder extends GregwarCaptchaBuilder {
 
         return $value;
     }
-
 }

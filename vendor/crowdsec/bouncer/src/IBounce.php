@@ -50,17 +50,17 @@ interface IBounce
     public function getHttpMethod(): string;
 
     /**
-     * @return array ['hide_crowdsec_mentions': bool, color:[text:['primary' : string, 'secondary' : string, 'button' : string, 'error_message : string' ...]]] (returns an array of option required to build the captcha wall template)
+     * @return array array of option required to build the captcha wall template
      */
     public function getCaptchaWallOptions(): array;
 
     /**
-     * @return array ['hide_crowdsec_mentions': bool, color:[text:['primary' : string, 'secondary' : string, 'error_message : string' ...]]] (returns an array of option required to build the ban wall template)
+     * @return array array of option required to build the ban wall template
      */
     public function getBanWallOptions(): array;
 
     /**
-     * @return array [[string, string], ...] Returns IP ranges to trust as proxies as an array of comparables ip bounds
+     * @return array [[string, string], ...] Returns IP ranges to trust as proxies as an array of comparable ip bounds
      */
     public function getTrustForwardedIpBoundsList(): array;
 

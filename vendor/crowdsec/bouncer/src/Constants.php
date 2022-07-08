@@ -20,10 +20,10 @@ class Constants
     public const DEFAULT_LAPI_URL = 'http://localhost:8080';
 
     /** @var string The last version of this library */
-    public const VERSION = 'v0.22.1';
+    public const VERSION = 'v0.24.0';
 
     /** @var string The user agent used to send request to LAPI */
-    public const BASE_USER_AGENT = 'PHP CrowdSec Bouncer/'.self::VERSION;
+    public const BASE_USER_AGENT = 'PHP CrowdSec Bouncer/' . self::VERSION;
 
     /** @var int The timeout when calling LAPI */
     public const API_TIMEOUT = 1;
@@ -96,4 +96,7 @@ class Constants
 
     /** @var string The Maxmind "City" database type */
     public const MAXMIND_CITY = 'city';
+
+    /** @var string The "disabled" x-forwarded-for setting */
+    public const X_FORWARDED_DISABLED = 'no_forward';
 }
