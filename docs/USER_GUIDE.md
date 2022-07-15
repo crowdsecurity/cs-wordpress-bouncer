@@ -65,7 +65,8 @@ These configurations are divided in three main parts : `CrowdSec`, `Theme custom
 
 #### General settings
 
-In the `CrowdSec` part, you will set your connection details and refine bouncing according to your needs.
+In the `CrowdSec` part, you will set your connection details and refine bouncing according to your needs. You will 
+also be able to test your settings.
 
 ![Connection details](images/screenshots/config-connection.jpg)
 
@@ -98,7 +99,9 @@ If enabled, the admin is not bounced.
 
 ***
 
-`Test your settings`
+![Setting tests](images/screenshots/config-test-your-settings.jpg)
+
+`Test your settings → Test bouncing`
 
 Click the "Test bouncing" button and the configured bouncer will try to get the remediation (bypass, captcha or ban) 
 for 
@@ -108,6 +111,13 @@ This test allows you to know if your connection, bouncing and cache settings are
 
 
 ***
+
+`Test your settings → Test geolocation`
+
+Click the "Test geolocation" button to try getting country for the IP entered in the text field.
+
+This test allows you to know if your geolocation settings are correct.
+
 
 
 #### Theme customization
@@ -124,7 +134,7 @@ In the `Theme customization` part, you can modify texts and colors of ban and ca
 #### Advanced settings
 
 In the `Advanced` part, you can enable/disable the stream mode, choose your cache system for your CrowdSec
-LAPI, handle your remediation policy and adjust some debug and log parameters.
+LAPI, handle your remediation policy, manage geolocation feature, adjust some debug parameters and testing parameters. 
 
 ![Communication mode](images/screenshots/config-communication-mode.jpg)
 
@@ -192,6 +202,14 @@ we store in cache some values in order to know if he has to resolve or not the c
 
 Minimum 1 second. Default: 86400 seconds.
 
+***
+
+`Caching configuration → Geolocation cache lifetime`
+
+The lifetime of cached country geolocation result for some IP.
+
+Minimum 1 second. Default: 86400 seconds.
+
 
 ***
 
@@ -215,6 +233,50 @@ If you use a CDN, a reverse proxy or a load balancer, it is possible to indicate
 
 Enable if you want to hide CrowdSec mentions on the Ban and Captcha walls.
 
+
+***
+
+![Geolocation](images/screenshots/config-geolocation.jpg)
+
+***
+
+`Geolocation → Enable geolocation feature`
+
+Enable if you want to use also CrowdSec country scoped decisions.
+If enabled, bounced IP will be geolocalized and the final remediation will take into account any country related decision.
+
+***
+
+`Geolocation → Geolocation type`
+
+
+For now, only `Maxmind database` type is allowed
+
+***
+
+`Geolocation → MaxMind database type`
+
+Choose between `Country` and `City`.
+
+
+***
+
+`Geolocation → Path to the MaxMind database`
+
+Relative path from `wp-content/plugins/cs-wordpress-bouncer/geolocation` folder.
+
+***
+
+`Geolocation → Save geolocalized country in cache`
+
+Enabling this will avoid multiple call to the geolocation system (e.g. MaxMind database)
+If enabled, the geolocalized country associated to the IP will be saved in cache.
+See the `Geolocation cache lifetime` setting above to set the lifetime of this result.
+
+***
+
+
+
 ![Debug](images/screenshots/config-debug.jpg)
 
 ***
@@ -233,6 +295,27 @@ Note that by default, there is always a `prod.log` file in the same folder.
 
 When this mode is enabled, you will see every unexpected bouncing errors in the browser.
 Should be disabled in production.
+
+
+***
+
+![Test](images/screenshots/config-test.jpg)
+
+***
+
+
+`Test settings → Forced test IP`
+
+This Ip will be used instead of the current detected browser IP.
+**Must be empty in production.**
+
+***
+
+`Test settings → Forced test X-Forwarded-For IP`
+
+This Ip will be used instead of the current X-Forwarded-For Ip if any.
+**Must be empty in production.**
+
 
 
 ### Auto Prepend File mode

@@ -128,6 +128,9 @@ if (is_admin()) {
     function testGeolocationInAdminPage($ip)
     {
         try {
+            if (!get_option('crowdsec_geolocation_maxmind_database_path')) {
+                throw new BouncerException("Maxmind database path can not be empty");
+            }
             $settings = getDatabaseSettings();
             $bouncer = getBouncerInstance($settings);
             $geolocationConfig =  $settings['geolocation'];

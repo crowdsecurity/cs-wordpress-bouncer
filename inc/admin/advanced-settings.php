@@ -197,7 +197,8 @@ function adminAdvancedSettings()
     }, ' seconds. <p>The lifetime of cached captcha flow for some IP. <br>If a user has to interact with a captcha wall, we store in cache some values in order to know if he has to resolve or not the captcha again.<br>Minimum 1 second. Default: '.Constants::CACHE_EXPIRATION_FOR_CAPTCHA.'.', Constants::CACHE_EXPIRATION_FOR_CAPTCHA, 'width: 115px;', 'number');
 
     // Field "crowdsec_geolocation_cache_duration"
-    addFieldString('crowdsec_geolocation_cache_duration', 'Geolocation cache duration', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+    addFieldString('crowdsec_geolocation_cache_duration', 'Geolocation cache lifetime', 'crowdsec_plugin_advanced_settings',
+        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         if ( (int) $input <= 0) {
             add_settings_error('Geolocation cache duration', 'crowdsec_error', 'Geolocation cache duration: Minimum is 1 second.');
 
@@ -205,7 +206,8 @@ function adminAdvancedSettings()
         }
 
         return (int) $input > 0 ? (int) $input : Constants::CACHE_EXPIRATION_FOR_CAPTCHA ;
-    }, ' seconds. <p>The lifetime of cached country geolocation result for some IP.<br>Minimum 1 second. Default: '.Constants::CACHE_EXPIRATION_FOR_GEO.'.', Constants::CACHE_EXPIRATION_FOR_GEO, 'width: 115px;', 'number');
+    }, ' seconds. <p>The lifetime of cached country geolocation result for some IP.<br>Minimum 1 second. Default: '
+       .Constants::CACHE_EXPIRATION_FOR_GEO.'.<br>See the <i>Geolocation</i> settings below to enable geolocalized country result save.', Constants::CACHE_EXPIRATION_FOR_GEO, 'width: 115px;', 'number');
 
 
     /***************************
@@ -327,7 +329,7 @@ function adminAdvancedSettings()
 
     addFieldCheckbox('crowdsec_geolocation_save_result', 'Save geolocalized country in cache', 'crowdsec_plugin_advanced_settings',
         'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function () {}, function () {}, '
-    <p>Enabling this will avoid multiple call to the geolocation system (e.g. MaxMind database)</p> If enabled, the geolocalized country associated to the IP will be saved in cache.<br>See the <i>Geolocation cache duration</i> setting above to set the lifetime of this result.');
+    <p>Enabling this will avoid multiple call to the geolocation system (e.g. MaxMind database)</p> If enabled, the geolocalized country associated to the IP will be saved in cache.<br>See the <i>Geolocation cache lifetime</i> setting above to set the lifetime of this result.');
 
 
     /*******************************
@@ -368,7 +370,7 @@ function adminAdvancedSettings()
     }, '<p>This Ip will be used instead of the current detected browser IP: '.$_SERVER['REMOTE_ADDR'].'.<br><strong>Must be empty in production.</strong></p>',
     '1.2.3.4', '');
 
-    addFieldString('crowdsec_forced_test_forwarded_ip', 'Forced test X-Forwrded-For IP', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_test', function ($input) {
+    addFieldString('crowdsec_forced_test_forwarded_ip', 'Forced test X-Forwarded-For IP', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_test', function ($input) {
         return $input;
     }, '<p>This Ip will be used instead of the current X-Forwarded-For Ip if any.<br><strong>Must be empty in production.</strong></p>',
         '1.2.3.4', '');
