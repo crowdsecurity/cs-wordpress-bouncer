@@ -282,7 +282,9 @@ function adminAdvancedSettings()
     '<br><strong>Comma (,)</strong> separated ips or ips ranges. Example: 1.2.3.4/24, 2.3.4.5, 3.4.5.6/27.<br><br>Some common CDN IP list: <a href="https://www.cloudflare.com/fr-fr/ips/" target="_blank">Cloudflare</a>, <a href="https://api.fastly.com/public-ip-list" target="_blank">Fastly</a>',
     'fill the IPs or IPs ranges here...', '');
 
-
+    // Field "crowdsec_hide_mentions"
+    addFieldCheckbox('crowdsec_hide_mentions', 'Hide CrowdSec mentions', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function () {}, function () {}, '
+    <p>Enable if you want to hide CrowdSec mentions on the Ban and Captcha pages</p>');
 
     /***************************
      ** Section "Geolocation" **

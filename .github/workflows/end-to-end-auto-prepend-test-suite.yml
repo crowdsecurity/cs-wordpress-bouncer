@@ -96,6 +96,15 @@ jobs:
 
       - name: Prepare for playwright test
         run: |
+          cd ${{ github.workspace }}
+          ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
+          ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
+          sha256sum -c GeoLite2-Country.tar.gz.sha256.txt
+          sha256sum -c GeoLite2-City.tar.gz.sha256.txt
+          tar -xf GeoLite2-Country.tar.gz
+          tar -xf GeoLite2-City.tar.gz
+          rm GeoLite2-Country.tar.gz GeoLite2-Country.tar.gz.sha256.txt GeoLite2-City.tar.gz GeoLite2-City.tar.gz.sha256.txt
           cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
           chmod +x test-init.sh
           ./test-init.sh
@@ -158,3 +167,8 @@ jobs:
         run: |
           cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
           ./run-tests.sh ci "./__tests__/7-memcached.js"
+
+      - name: Run Geolocation tests
+        run: |
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+          ./run-tests.sh ci "./__tests__/8-geolocation.js"
