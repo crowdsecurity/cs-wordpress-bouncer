@@ -105,16 +105,6 @@ function getBouncerInstanceStandalone(array $configs, bool $forceReload = false)
     if (!$forceReload && $crowdSecBouncer) {
         return $crowdSecBouncer;
     }
-    $apiUrl = $configs['api_url'];
-    // Parse WordPress Options.
-    if (empty($apiUrl)) {
-        throw new BouncerException('Bouncer enabled but no API URL provided');
-    }
-
-    $apiKey = $configs['api_key'];
-    if (empty($apiKey)) {
-        throw new BouncerException('Bouncer enabled but no API key provided');
-    }
 
     // Init Bouncer instance
     $bouncingLevel = $configs['bouncing_level'];
