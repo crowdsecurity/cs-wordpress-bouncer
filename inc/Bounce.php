@@ -231,7 +231,7 @@ class Bounce extends AbstractBounce
 			return false;
 		}
 
-        $shouldNotBounceWpAdmin = !empty($this->getStringSettings('crowdsec_public_website_only'));
+        $shouldNotBounceWpAdmin = $this->getBoolSettings('crowdsec_public_website_only');
         // when the "crowdsec_public_website_only" is disabled...
         if ($shouldNotBounceWpAdmin) {
             // In standalone context, is_admin() does not work. So we check admin section with another method.
