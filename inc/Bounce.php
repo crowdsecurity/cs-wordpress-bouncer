@@ -262,6 +262,10 @@ class Bounce extends AbstractBounce
 
         if (!$this->isConfigValid()) {
             // We bounce only if plugin config is valid
+            $this->logger->warning('', [
+                'type' => 'WP_BAD_CONFIG',
+                'message' => 'Will not bounce as config is not valid',
+            ]);
             return false;
         }
 

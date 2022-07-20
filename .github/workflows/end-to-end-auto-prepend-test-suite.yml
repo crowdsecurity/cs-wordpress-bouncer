@@ -130,7 +130,7 @@ jobs:
           cp .ddev/custom_files/phpinfo.php phpinfo.php
           curl -v https://${{ env.WP_VERSION_CODE }}.ddev.site/phpinfo.php
           PREPENDVERIF=$(curl https://${{ env.WP_VERSION_CODE }}.ddev.site/phpinfo.php | grep -o -E "auto_prepend_file=(.*)php(.*)" | sed 's/<\/tr>//g; s/<\/td>//g;' | tr '\n' '#')
-          if [[ $PREPENDVERIF == "auto_prepend_file=/var/www/html/wp-content/plugins/cs-wordpress-bouncer/inc/standalone-bounce.php#auto_prepend_file=/var/www/html/wp-content/plugins/cs-wordpress-bouncer/inc/standalone-bounce.php#" ]]
+          if [[ $PREPENDVERIF == "auto_prepend_file=/var/www/html/wp-content/plugins/crowdsec/inc/standalone-bounce.php#auto_prepend_file=/var/www/html/wp-content/plugins/crowdsec/inc/standalone-bounce.php#" ]]
           then
               echo "AUTO PREPEND FILE OK"
           else

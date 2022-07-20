@@ -263,7 +263,7 @@ Choose between `Country` and `City`.
 
 `Geolocation → Path to the MaxMind database`
 
-Relative path from `wp-content/plugins/cs-wordpress-bouncer/geolocation` folder.
+Relative path from `wp-content/plugins/crowdsec/geolocation` folder.
 
 ***
 
@@ -285,7 +285,7 @@ See the `Geolocation cache lifetime` setting above to set the lifetime of this r
 
 Enable if you want to see some debug information in a specific log file.
 
-When this mode is enabled, a `debug.log` file will be written in a `wp-content/plugins/cs-wordpress-bouncer/logs` 
+When this mode is enabled, a `debug.log` file will be written in a `wp-content/plugins/crowdsec/logs` 
 sub folder.
 Note that by default, there is always a `prod.log` file in the same folder.
 
@@ -343,7 +343,7 @@ Adding an `auto_prepend_file` directive can be done in different ways:
 
 You should add this line to a `.ini` file :
 
-    auto_prepend_file = /wordpress-root-directory/wp-content/plugins/cs-wordpress-bouncer/inc/standalone-bounce.php
+    auto_prepend_file = /wordpress-root-directory/wp-content/plugins/crowdsec/inc/standalone-bounce.php
 
 
 #### Nginx
@@ -357,7 +357,7 @@ location ~ \.php$ {
     ...
     ...
     ...
-    fastcgi_param PHP_VALUE "/wordpress-root-directory/wp-content/plugins/cs-wordpress-bouncer/inc/standalone-bounce.php";
+    fastcgi_param PHP_VALUE "/wordpress-root-directory/wp-content/plugins/crowdsec/inc/standalone-bounce.php";
 }
 ```
 
@@ -365,7 +365,7 @@ location ~ \.php$ {
 
 If you are using Apache, you should add this line to your `.htaccess` file:
 
-    php_value auto_prepend_file "/wordpress-root-directory/wp-content/plugins/cs-wordpress-bouncer/inc/standalone-bounce.php"
+    php_value auto_prepend_file "/wordpress-root-directory/wp-content/plugins/crowdsec/inc/standalone-bounce.php"
 
 
 

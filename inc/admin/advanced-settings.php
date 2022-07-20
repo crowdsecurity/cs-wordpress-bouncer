@@ -325,7 +325,7 @@ function adminAdvancedSettings()
 
     addFieldString('crowdsec_geolocation_maxmind_database_path', 'Path to the MaxMind database', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function ($input) {
         return $input;
-    }, '<p>Relative path from <i>wp-content/plugins/cs-wordpress-bouncer/geolocation</i> folder</p>', 'GeoLite2-Country.mmdb', '');
+    }, '<p>Relative path from <i>wp-content/plugins/crowdsec/geolocation</i> folder</p>', 'GeoLite2-Country.mmdb', '');
 
     addFieldCheckbox('crowdsec_geolocation_save_result', 'Save geolocalized country in cache', 'crowdsec_plugin_advanced_settings',
         'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function () {}, function () {}, '
@@ -342,7 +342,7 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_debug_mode"
     addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>Should not be used in production.<br>When this mode is enabled, a debug.log file will be written in the <i>wp-content/plugins/cs-wordpress-bouncer/logs</i> folder.<br> Note that by default, there is always a prod.log file in the same folder.</p>');
+    <p>Should not be used in production.<br>When this mode is enabled, a debug.log file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.<br> Note that by default, there is always a prod.log file in the same folder.</p>');
 
 	/*******************************
 	 ** Section "Display errors" **
