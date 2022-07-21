@@ -18,13 +18,13 @@ use Psr\Log\LoggerInterface;
  */
 class RestClient
 {
-    /** @var string */
+    /** @var string|null */
     private $headerString = null;
 
-    /** @var int */
+    /** @var int|null */
     private $timeout = null;
 
-    /** @var string */
+    /** @var string|null */
     private $baseUri = null;
 
     /** @var LoggerInterface */
@@ -77,8 +77,11 @@ class RestClient
         array $headers = null,
         int $timeout = null
     ): ?array {
+        if (!$this->baseUri) {
+            throw new BouncerException('Base URI is required.');
+        }
         if ($queryParams) {
-            $endpoint .= '?'.http_build_query($queryParams);
+            $endpoint .= '?' . http_build_query($queryParams);
         }
         $header = $headers ? $this->convertHeadersToString($headers) : $this->headerString;
         $config = [
@@ -97,12 +100,12 @@ class RestClient
         $this->logger->debug('', [
             'type' => 'HTTP CALL',
             'method' => $method,
-            'uri' => $this->baseUri.$endpoint,
-            'content' => 'POST' === $method ? $config['http']['content'] : null,
+            'uri' => $this->baseUri . $endpoint,
+            'content' => 'POST' === $method ? $config['http']['content'] ?? null : null,
             // 'header' => $header, # Do not display header to avoid logging sensible data
         ]);
 
-        $response = file_get_contents($this->baseUri.$endpoint, false, $context);
+        $response = file_get_contents($this->baseUri . $endpoint, false, $context);
         if (false === $response) {
             throw new BouncerException('Unexpected HTTP call failure.');
         }
@@ -113,7 +116,8 @@ class RestClient
         }
 
         if ($status < 200 || $status >= 300) {
-            throw new BouncerException("unexpected response status from $this->baseUri$endpoint: $status\n".$response);
+            $message = "Unexpected response status from $this->baseUri$endpoint: $status\n" . $response;
+            throw new BouncerException($message);
         }
 
         return json_decode($response, true);

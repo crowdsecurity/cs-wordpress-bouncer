@@ -125,6 +125,45 @@ if (is_admin()) {
         }
     }
 
+    function testGeolocationInAdminPage($ip)
+    {
+        try {
+            if (!get_option('crowdsec_geolocation_maxmind_database_path')) {
+                throw new BouncerException("Maxmind database path can not be empty");
+            }
+            $settings = getDatabaseSettings();
+            $bouncer = getBouncerInstance($settings);
+            $geolocationConfig =  $settings['geolocation'];
+            $apiCache = $bouncer->getApiCache();
+            $geolocation = new CrowdSecBouncer\Geolocation();
+            $countryResult = $geolocation->getCountryResult($geolocationConfig, $ip, $apiCache);
+            if (!empty($countryResult['country'])) {
+                $countryMessage = $countryResult['country'];
+            } elseif (!empty($countryResult['not_found'])) {
+                $countryMessage = $countryResult['not_found'];
+            } elseif (!empty($countryResult['error'])) {
+                $countryMessage = $countryResult['error'];
+            }
+            else{
+                $countryMessage = __('Something went wrong.');
+            }
+
+
+            $message = __("Geolocation has been tested for IP: $ip. <br>Result is: $countryMessage");
+
+            AdminNotice::displaySuccess($message);
+        } catch (BouncerException $e) {
+            getCrowdSecLoggerInstance()->error('', [
+                'type' => 'WP_EXCEPTION_WHILE_TESTING_GEOLOCATION',
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            AdminNotice::displayError('Technical error while testing geolocation: '.$e->getMessage());
+        }
+    }
+
     // ACTIONS
     add_action('admin_post_crowdsec_clear_cache', function () {
         if (
@@ -160,6 +199,17 @@ if (is_admin()) {
         }
         $ip = isset($_POST['crowdsec_test_connection_ip']) ? $_POST['crowdsec_test_connection_ip'] : $_SERVER['REMOTE_ADDR'];
         testBouncerConnexionInAdminPage($ip);
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
+
+    add_action('admin_post_crowdsec_test_geolocation', function () {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_test_geolocation')) {
+            die('This link expired.');
+        }
+        $ip = isset($_POST['crowdsec_test_geolocation_ip']) ? $_POST['crowdsec_test_geolocation_ip'] : $_SERVER['REMOTE_ADDR'];
+        testGeolocationInAdminPage($ip);
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
     });

@@ -2,14 +2,14 @@
 const fs = require("fs");
 const { addDecision, deleteAllDecisions } = require("./watcherClient");
 const {
-	ADMIN_URL,
-	BASE_URL,
-	ADMIN_LOGIN,
-	ADMIN_PASSWORD,
-	BOUNCER_KEY,
-	LAPI_URL_FROM_WP,
-	TIMEOUT,
-	PROXY_IP,
+    ADMIN_URL,
+    BASE_URL,
+    ADMIN_LOGIN,
+    ADMIN_PASSWORD,
+    BOUNCER_KEY,
+    LAPI_URL_FROM_WP,
+    TIMEOUT,
+    PROXY_IP,
 } = require("./constants");
 
 const COOKIES_FILE_PATH = `${__dirname}/../.cookies.json`;
@@ -22,262 +22,277 @@ jest.setTimeout(TIMEOUT);
 const waitForNavigation = page.waitForNavigation();
 
 const goToAdmin = async () => {
-	await page.goto(ADMIN_URL);
-	await waitForNavigation;
+    await page.goto(ADMIN_URL);
+    await waitForNavigation;
 };
 
 const goToPublicPage = async () => {
-	await page.goto(`${BASE_URL}`);
-	await waitForNavigation;
+    await page.goto(`${BASE_URL}`);
+    await waitForNavigation;
 };
 
 const onAdminGoToSettingsPage = async () => {
-	// CrowdSec Menu
-	await page.click(
-		"#adminmenuwrap > #adminmenu > #toplevel_page_crowdsec_plugin > .wp-has-submenu > .wp-menu-name",
-	);
-	await waitForNavigation;
+    // CrowdSec Menu
+    await page.click(
+        "#adminmenuwrap > #adminmenu > #toplevel_page_crowdsec_plugin > .wp-has-submenu > .wp-menu-name",
+    );
+    await waitForNavigation;
 };
 
 const onAdminGoToAdvancedPage = async () => {
-	// CrowdSec Menu
-	await page.hover("#toplevel_page_crowdsec_plugin");
-	await page.click(
-		"#toplevel_page_crowdsec_plugin > ul > li:nth-child(4) > a",
-	);
-	await waitForNavigation;
-	await wait(1000);
-	await expect(page).toMatchTitle(/Advanced/);
+    // CrowdSec Menu
+    await page.hover("#toplevel_page_crowdsec_plugin");
+    await page.click(
+        "#toplevel_page_crowdsec_plugin > ul > li:nth-child(4) > a",
+    );
+    await waitForNavigation;
+    await wait(1000);
+    await expect(page).toMatchTitle(/Advanced/);
 };
 
 const onAdminGoToThemePage = async () => {
-	// CrowdSec Menu
-	await page.hover("#toplevel_page_crowdsec_plugin");
-	await page.click(
-		"#toplevel_page_crowdsec_plugin > ul > li:nth-child(3) > a",
-	);
-	await waitForNavigation;
-	await wait(1000);
+    // CrowdSec Menu
+    await page.hover("#toplevel_page_crowdsec_plugin");
+    await page.click(
+        "#toplevel_page_crowdsec_plugin > ul > li:nth-child(3) > a",
+    );
+    await waitForNavigation;
+    await wait(1000);
 
-	await expect(page).toMatchTitle(/Theme customization/);
+    await expect(page).toMatchTitle(/Theme customization/);
 };
 
 const onLoginPageLoginAsAdmin = async () => {
-	await page.fill("#user_login", ADMIN_LOGIN);
-	await page.fill("#user_pass", ADMIN_PASSWORD);
-	await page.waitForSelector("#wp-submit");
-	await page.click("#wp-submit");
-	await waitForNavigation;
+    await page.fill("#user_login", ADMIN_LOGIN);
+    await page.fill("#user_pass", ADMIN_PASSWORD);
+    await page.waitForSelector("#wp-submit");
+    await page.click("#wp-submit");
+    await waitForNavigation;
 };
 
 const onAdminSaveSettings = async (check = true) => {
-	await page.click("[type=submit]");
-	await waitForNavigation;
+    await page.click("[type=submit]");
+    await waitForNavigation;
 
-	if (check) {
-		await expect(page).toHaveText(
-			"#setting-error-settings_updated",
-			"Settings saved.",
-		);
-	}
+    if (check) {
+        await expect(page).toHaveText(
+            "#setting-error-settings_updated",
+            "Settings saved.",
+        );
+    }
 
-	await wait(2000);
+    await wait(2000);
+};
+
+const selectElement = async (selectId, valueToSelect) => {
+    await page.selectOption(`[id=${selectId}]`, `${valueToSelect}`);
+};
+
+const selectByName = async (selectName, valueToSelect) => {
+    await page.selectOption(`[name=${selectName}]`, `${valueToSelect}`);
 };
 
 const setToggle = async (optionName, enable) => {
-	const isEnabled = await page.$eval(
-		`[name=${optionName}]`,
-		(el) => el.checked,
-	);
-	if (enable) {
-		if (!isEnabled) {
-			await page.click(`[for=${optionName}]`);
-		}
-	} else if (isEnabled) {
-		await page.click(`[for=${optionName}]`);
-	}
+    const isEnabled = await page.$eval(
+        `[name=${optionName}]`,
+        (el) => el.checked,
+    );
+    if (enable) {
+        if (!isEnabled) {
+            await page.click(`[for=${optionName}]`);
+        }
+    } else if (isEnabled) {
+        await page.click(`[for=${optionName}]`);
+    }
 };
 
 const fillInput = async (optionName, value) => {
-	await page.fill(`[name=${optionName}]`, `${value}`);
+    await page.fill(`[name=${optionName}]`, `${value}`);
 };
 
 const onAdvancedPageEnableStreamMode = async () => {
-	await setToggle("crowdsec_stream_mode", true);
-	await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
+    await setToggle("crowdsec_stream_mode", true);
+    await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
 };
 
-
-
 const onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo = async (
-	seconds,
+    seconds,
 ) => {
-	await fillInput("crowdsec_clean_ip_cache_duration", seconds);
+    await fillInput("crowdsec_clean_ip_cache_duration", seconds);
 };
 
 const onAdminAdvancedSettingsPageSetBadIpCacheDurationTo = async (seconds) => {
-	await fillInput("crowdsec_bad_ip_cache_duration", seconds);
+    await fillInput("crowdsec_bad_ip_cache_duration", seconds);
 };
 
 const computeCurrentPageRemediation = async (
-	accessibleTextInTitle = "Just another WordPress site",
+    accessibleTextInTitle = "Just another WordPress site",
 ) => {
-	const title = await page.title();
-	if (title.includes(accessibleTextInTitle)) {
-		return "bypass";
-	}
-	await expect(page).toMatchTitle(/Oops/);
-	const description = await page.$eval(".desc", (el) => el.innerText);
-	const banText = "cyber";
-	const captchaText = "check";
-	if (description.includes(banText)) {
-		return "ban";
-	}
-	if (description.includes(captchaText)) {
-		return "captcha";
-	}
+    const title = await page.title();
+    if (title.includes(accessibleTextInTitle)) {
+        return "bypass";
+    }
+    await expect(page).toMatchTitle(/Oops/);
+    const description = await page.$eval(".desc", (el) => el.innerText);
+    const banText = "cyber";
+    const captchaText = "check";
+    if (description.includes(banText)) {
+        return "ban";
+    }
+    if (description.includes(captchaText)) {
+        return "captcha";
+    }
 
-	throw Error("Current remediation can not be computed");
+    throw Error("Current remediation can not be computed");
 };
 
 const publicHomepageShouldBeBanWall = async () => {
-	await goToPublicPage();
-	const remediation = await computeCurrentPageRemediation();
-	await expect(remediation).toBe("ban");
+    await goToPublicPage();
+    const remediation = await computeCurrentPageRemediation();
+    await expect(remediation).toBe("ban");
 };
 
 const publicHomepageShouldBeCaptchaWall = async () => {
-	await goToPublicPage();
-	const remediation = await computeCurrentPageRemediation();
-	await expect(remediation).toBe("captcha");
+    await goToPublicPage();
+    const remediation = await computeCurrentPageRemediation();
+    await expect(remediation).toBe("captcha");
 };
 
 const publicHomepageShouldBeCaptchaWallWithoutMentions = async () => {
-	await publicHomepageShouldBeCaptchaWall();
-	await expect(page).not.toHaveText(
-		".main",
-		"This security check has been powered by",
-	);
+    await publicHomepageShouldBeCaptchaWall();
+    await expect(page).not.toHaveText(
+        ".main",
+        "This security check has been powered by",
+    );
 };
 
 const publicHomepageShouldBeCaptchaWallWithMentions = async () => {
-	await publicHomepageShouldBeCaptchaWall();
-	await expect(page).toHaveText(
-		".main",
-		"This security check has been powered by",
-	);
+    await publicHomepageShouldBeCaptchaWall();
+    await expect(page).toHaveText(
+        ".main",
+        "This security check has been powered by",
+    );
 };
 
 const publicHomepageShouldBeAccessible = async () => {
-	await goToPublicPage();
-	const remediation = await computeCurrentPageRemediation();
-	await expect(remediation).toBe("bypass");
+    await goToPublicPage();
+    const remediation = await computeCurrentPageRemediation();
+    await expect(remediation).toBe("bypass");
 };
 
 const banIpForSeconds = async (ip, seconds) => {
-	await addDecision(ip, "ban", seconds);
-	await wait(2000);
+    await addDecision(ip, "ban", seconds);
+    await wait(2000);
 };
 
 const banOwnIpForSeconds = async (seconds, ip) => {
-	await banIpForSeconds(ip, seconds);
-	await wait(1000);
+    await banIpForSeconds(ip, seconds);
+    await wait(1000);
 };
 
 const captchaOwnIpForSeconds = async (seconds, ip) => {
-	await addDecision(ip, "captcha", seconds);
-	await wait(1000);
+    await addDecision(ip, "captcha", seconds);
+    await wait(1000);
 };
 
 const removeAllDecisions = async () => {
-	await deleteAllDecisions();
-	await wait(1000);
+    await deleteAllDecisions();
+    await wait(1000);
 };
 
 const onCaptchaPageRefreshCaptchaImage = async () => {
-	await page.click("#refresh_link");
-	await waitForNavigation;
+    await page.click("#refresh_link");
+    await waitForNavigation;
 };
 
 const forceCronRun = async () => {
-	// force WP Cron to run cache update as bouncing is done before cache updating
-	// This could be fixed by running homemade call to cache update
-	// if it's the time to update cache
-	await page.goto(`${BASE_URL}/wp-cron.php`);
-	await wait(2000);
+    // force WP Cron to run cache update as bouncing is done before cache updating
+    // This could be fixed by running homemade call to cache update
+    // if it's the time to update cache
+    await page.goto(`${BASE_URL}/wp-cron.php`);
+    await wait(2000);
 };
 
 const storeCookies = async () => {
-	const cookies = await context.cookies();
-	const cookieJson = JSON.stringify(cookies);
-	fs.writeFileSync(COOKIES_FILE_PATH, cookieJson);
+    const cookies = await context.cookies();
+    const cookieJson = JSON.stringify(cookies);
+    fs.writeFileSync(COOKIES_FILE_PATH, cookieJson);
 };
 
 const loadCookies = async (context) => {
-	const cookies = fs.readFileSync(COOKIES_FILE_PATH, "utf8");
-	const deserializedCookies = JSON.parse(cookies);
-	await context.addCookies(deserializedCookies);
+    const cookies = fs.readFileSync(COOKIES_FILE_PATH, "utf8");
+    const deserializedCookies = JSON.parse(cookies);
+    await context.addCookies(deserializedCookies);
 };
 
 const deleteExistingStandaloneSettings = async () => {
-	if (fs.existsSync(STANDALONE_SETTINGS_FILE_PATH)) {
-		fs.unlinkSync(STANDALONE_SETTINGS_FILE_PATH);
-	}
+    if (fs.existsSync(STANDALONE_SETTINGS_FILE_PATH)) {
+        fs.unlinkSync(STANDALONE_SETTINGS_FILE_PATH);
+    }
 };
 
 const setDefaultConfig = async () => {
-	await onAdminGoToSettingsPage();
-	await fillInput("crowdsec_api_url", LAPI_URL_FROM_WP);
-	await fillInput("crowdsec_api_key", BOUNCER_KEY);
-	await onAdminSaveSettings(false);
+    await onAdminGoToSettingsPage();
+    await fillInput("crowdsec_api_url", LAPI_URL_FROM_WP);
+    await fillInput("crowdsec_api_key", BOUNCER_KEY);
+    await onAdminSaveSettings(false);
 
-	await onAdminGoToAdvancedPage();
-	await setToggle("crowdsec_debug_mode", true);
-	await setToggle("crowdsec_display_errors", true);
-	await setToggle("crowdsec_hide_mentions", false);
-	await page.selectOption("[name=crowdsec_cache_system]", "phpfs");
-	await setToggle("crowdsec_stream_mode", false);
-	// We have to save in order that cache duration fields to be visible (not disabled)
-	await onAdminSaveSettings(false);
-	await onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo(1);
-	await onAdminAdvancedSettingsPageSetBadIpCacheDurationTo(1);
-	await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
+    await onAdminGoToAdvancedPage();
+    await setToggle("crowdsec_debug_mode", true);
+    await setToggle("crowdsec_display_errors", true);
+    await setToggle("crowdsec_hide_mentions", false);
+    await page.selectOption("[name=crowdsec_cache_system]", "phpfs");
+    await setToggle("crowdsec_stream_mode", false);
+    // We have to save in order that cache duration fields to be visible (not disabled)
+    await onAdminSaveSettings(false);
+    await onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo(1);
+    await onAdminAdvancedSettingsPageSetBadIpCacheDurationTo(1);
+    await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
 
-	await fillInput("crowdsec_trust_ip_forward_list", PROXY_IP);
-	await page.selectOption("[name=crowdsec_fallback_remediation]", "captcha");
+    await fillInput("crowdsec_trust_ip_forward_list", PROXY_IP);
+    await page.selectOption("[name=crowdsec_fallback_remediation]", "captcha");
 
-	await onAdminSaveSettings();
+    // Geolocation
+    await setToggle("crowdsec_geolocation_enabled", false);
+
+    // Tests
+    await fillInput("crowdsec_forced_test_ip", "");
+    await fillInput("crowdsec_forced_test_forwarded_ip", "");
+
+    await onAdminSaveSettings();
 };
 
 module.exports = {
-	addDecision,
-	wait,
-	waitForNavigation,
-	goToAdmin,
-	goToPublicPage,
-	onAdminGoToSettingsPage,
-	onAdminGoToAdvancedPage,
-	onAdminGoToThemePage,
-	onAdminSaveSettings,
-	setToggle,
-	onLoginPageLoginAsAdmin,
-	onAdvancedPageEnableStreamMode,
-	onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo,
-	onAdminAdvancedSettingsPageSetBadIpCacheDurationTo,
-	publicHomepageShouldBeBanWall,
-	publicHomepageShouldBeCaptchaWall,
-	publicHomepageShouldBeCaptchaWallWithoutMentions,
-	publicHomepageShouldBeCaptchaWallWithMentions,
-	publicHomepageShouldBeAccessible,
-	banIpForSeconds,
-	banOwnIpForSeconds,
-	captchaOwnIpForSeconds,
-	removeAllDecisions,
-	onCaptchaPageRefreshCaptchaImage,
-	forceCronRun,
-	fillInput,
-	storeCookies,
-	loadCookies,
-	deleteExistingStandaloneSettings,
-	setDefaultConfig,
+    addDecision,
+    wait,
+    waitForNavigation,
+    goToAdmin,
+    goToPublicPage,
+    onAdminGoToSettingsPage,
+    onAdminGoToAdvancedPage,
+    onAdminGoToThemePage,
+    onAdminSaveSettings,
+    setToggle,
+    onLoginPageLoginAsAdmin,
+    onAdvancedPageEnableStreamMode,
+    onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo,
+    onAdminAdvancedSettingsPageSetBadIpCacheDurationTo,
+    publicHomepageShouldBeBanWall,
+    publicHomepageShouldBeCaptchaWall,
+    publicHomepageShouldBeCaptchaWallWithoutMentions,
+    publicHomepageShouldBeCaptchaWallWithMentions,
+    publicHomepageShouldBeAccessible,
+    banIpForSeconds,
+    banOwnIpForSeconds,
+    captchaOwnIpForSeconds,
+    removeAllDecisions,
+    onCaptchaPageRefreshCaptchaImage,
+    forceCronRun,
+    fillInput,
+    storeCookies,
+    loadCookies,
+    deleteExistingStandaloneSettings,
+    setDefaultConfig,
+    selectElement,
+    selectByName,
 };

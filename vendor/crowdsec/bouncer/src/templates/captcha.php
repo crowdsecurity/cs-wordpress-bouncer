@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__.'/_base.php';
+require_once __DIR__ . '/_base.php';
 function displayCaptchaTemplate(bool $error, string $captchaImageSrc, string $captchaResolutionFormUrl, array $config): void
 {
     crowdSecBaseTemplatePart1($config, $config['text']['captcha_wall']['tab_title']); ?><style>
@@ -51,9 +51,11 @@ function displayCaptchaTemplate(bool $error, string $captchaImageSrc, string $ca
         <input type="text" name="phrase" placeholder="<?php echo htmlentities($config['text']['captcha_wall']['captcha_placeholder'], \ENT_QUOTES); ?>" autofocus autocomplete="off" />
         <input type="hidden" name="crowdsec_captcha" value="1">
         <input type="hidden" name="refresh" value="0" id="refresh">
-        <?php if ($error) { ?><p class="error"><?php echo htmlentities($config['text']['captcha_wall']['error_message'], \ENT_QUOTES); ?></p><?php } ?>
+        <?php if ($error) {
+            ?><p class="error"><?php echo htmlentities($config['text']['captcha_wall']['error_message'], \ENT_QUOTES); ?></p><?php
+        } ?>
 
         <button type="submit" /><?php echo htmlentities($config['text']['captcha_wall']['send_button'], \ENT_QUOTES); ?></button>
     </form>
-<?php crowdSecBaseTemplatePart3($config, $config['text']['captcha_wall']['footer']);
+    <?php crowdSecBaseTemplatePart3($config, $config['text']['captcha_wall']['footer']);
 } ?>

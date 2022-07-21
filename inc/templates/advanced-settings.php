@@ -40,8 +40,6 @@
                     submit_button();
                 ?>
 		</form>
-		<p style="font-style:italic">For information, the current browser IP detected by PHP is: <span id="detected_ip_address" style="user-select: all;"><?php echo $_SERVER['REMOTE_ADDR']; ?></span></p>
-		<br/>
 		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_action_clear_cache">
 			<input type="hidden" name="action" value="crowdsec_clear_cache">
 			<input type="hidden" name="nonce" value="<?php echo wp_create_nonce('crowdsec_clear_cache'); ?>">

@@ -4,7 +4,7 @@ Donate link: https://crowdsec.net/
 Tags: crowdsec-bouncer, wordpress, security, firewall, captcha, ip-scanner, ip-blocker, ip-blocking, ip-address, ip-database, ip-range-check, crowdsec, ban-hosts, ban-management, anti-hacking, hacker-protection, captcha-image, captcha-generator, captcha-generation, captcha-service
 Requires at least: 4.9
 Tested up to: 6.0
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 Requires PHP: 7.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
@@ -43,6 +43,14 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 10. A Ban wall page customization (text and colors)
 
 == Changelog ==
+
+= 1.7 (2022-07-20) =
+
+- Add geolocation feature
+
+= 1.6 (2022-06-30) =
+
+- Add "Test bouncing" action in settings view
 
 = 1.5 (2022-06-09) =
 

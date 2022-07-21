@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2022-07-21
+
+### Added
+- Add geolocation feature
+
+### Changed
+- Do not throw exception if empty api url as it is the default after a fresh install and activation
+- Changed default value for some boolean value as WordPress config are always string
 
 ## [1.6.0] - 2022-06-30
 

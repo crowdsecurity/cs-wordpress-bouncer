@@ -18,18 +18,20 @@ use CrowdSecBouncer\BouncerException;
  * @copyright Copyright (c) 2020+ CrowdSec
  * @license   MIT License
  */
-class Bounce extends AbstractBounce implements IBounce
+class Bounce extends AbstractBounce
 {
     public function init(array $crowdSecConfig, array $forcedConfigs = []): Bouncer
     {
-        $this->settings = $crowdSecConfig;
-        $crowdsecRandomLogFolder = $this->settings['crowdsec_random_log_folder'];
+        $finalConfigs = array_merge($crowdSecConfig, $forcedConfigs);
+        $crowdsecRandomLogFolder = $finalConfigs['crowdsec_random_log_folder'];
         crowdsecDefineConstants($crowdsecRandomLogFolder);
-        $this->setDebug($crowdSecConfig['crowdsec_debug_mode']??false);
-        $this->setDisplayErrors($crowdSecConfig['crowdsec_display_errors'] ?? false);
+        $this->setDebug($finalConfigs['crowdsec_debug_mode']??false);
+        $this->setDisplayErrors($finalConfigs['crowdsec_display_errors'] ?? false);
         $this->initLogger();
 
-        return $this->getBouncerInstance($this->settings);
+
+
+        return $this->getBouncerInstance($finalConfigs);
     }
 
     protected function escape(string $value)
@@ -49,8 +51,8 @@ class Bounce extends AbstractBounce implements IBounce
     {
         $crowdSecLogPath = CROWDSEC_LOG_PATH;
         $crowdSecDebugLogPath = CROWDSEC_DEBUG_LOG_PATH;
-
         $this->logger = getStandaloneCrowdSecLoggerInstance($crowdSecLogPath, $this->debug, $crowdSecDebugLogPath);
+        $this->settings = $settings;
 
         $configs = [
             // LAPI connection
@@ -62,6 +64,7 @@ class Bounce extends AbstractBounce implements IBounce
             'debug_mode' => $this->getBoolSettings('crowdsec_debug_mode'),
             'log_directory_path' => CROWDSEC_LOG_BASE_PATH,
             'forced_test_ip' => $this->getStringSettings('crowdsec_forced_test_ip'),
+            'forced_test_forwarded_ip' => $this->getStringSettings('crowdsec_forced_test_forwarded_ip'),
             'display_errors' => $this->getBoolSettings('crowdsec_display_errors'),
             // Bouncer
             'bouncing_level' => $this->getStringSettings('crowdsec_bouncing_level'),
@@ -80,9 +83,16 @@ class Bounce extends AbstractBounce implements IBounce
             'geolocation_cache_duration' => $this->getIntegerSettings('crowdsec_geolocation_cache_duration')
                 ?:Constants::CACHE_EXPIRATION_FOR_GEO,
             // Geolocation
-            'geolocation' => []
+            'geolocation' => [
+                'enabled' => $this->getBoolSettings('crowdsec_geolocation_enabled'),
+                'type' => $this->getStringSettings('crowdsec_geolocation_type')?:Constants::GEOLOCATION_TYPE_MAXMIND,
+                'save_result' => $this->getBoolSettings('crowdsec_geolocation_save_result'),
+                'maxmind' => [
+                    'database_type' => $this->getStringSettings('crowdsec_geolocation_maxmind_database_type')?:Constants::MAXMIND_COUNTRY,
+                    'database_path' => CROWDSEC_BOUNCER_GEOLOCATION_DIR. '/'.ltrim($this->getStringSettings('crowdsec_geolocation_maxmind_database_path'), '/'),
+                ]
+            ]
         ];
-
 
         $this->bouncer = getBouncerInstanceStandalone($configs, $forceReload);
 
@@ -221,7 +231,7 @@ class Bounce extends AbstractBounce implements IBounce
 			return false;
 		}
 
-        $shouldNotBounceWpAdmin = !empty($this->getStringSettings('crowdsec_public_website_only'));
+        $shouldNotBounceWpAdmin = $this->getBoolSettings('crowdsec_public_website_only');
         // when the "crowdsec_public_website_only" is disabled...
         if ($shouldNotBounceWpAdmin) {
             // In standalone context, is_admin() does not work. So we check admin section with another method.
@@ -252,6 +262,10 @@ class Bounce extends AbstractBounce implements IBounce
 
         if (!$this->isConfigValid()) {
             // We bounce only if plugin config is valid
+            $this->logger->warning('', [
+                'type' => 'WP_BAD_CONFIG',
+                'message' => 'Will not bounce as config is not valid',
+            ]);
             return false;
         }
 

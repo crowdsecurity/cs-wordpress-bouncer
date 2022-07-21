@@ -1,140 +1,154 @@
 name: End-to-end test suite
 on:
-    push:
-        branches:
-            - main
-        paths-ignore:
-            - '**.md'
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
 
 permissions:
-    contents: read
+  contents: read
 
 jobs:
-    end-to-end-test-suite:
-        strategy:
-            fail-fast: false
-            matrix:
-                wp-version: [ "4.9", "5.0", "5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "6.0" ]
-                php-version: [ "7.2", "7.4", "8.0" ]
-                exclude:
-                    - { php-version: "7.4", wp-version: "4.9" }
-                    - { php-version: "7.4", wp-version: "5.0" }
-                    - { php-version: "7.4", wp-version: "5.1" }
-                    - { php-version: "7.4", wp-version: "5.2" }
-                    - { php-version: "8.0", wp-version: "4.9" }
-                    - { php-version: "8.0", wp-version: "5.0" }
-                    - { php-version: "8.0", wp-version: "5.1" }
-                    - { php-version: "8.0", wp-version: "5.2" }
-                    - { php-version: "8.0", wp-version: "5.3" }
-                    - { php-version: "8.0", wp-version: "5.4" }
-                    - { php-version: "8.0", wp-version: "5.5" }
+  end-to-end-test-suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        wp-version: [ "4.9", "5.0", "5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "6.0" ]
+        php-version: [ "7.2", "7.4", "8.0" ]
+        exclude:
+          - { php-version: "7.4", wp-version: "4.9" }
+          - { php-version: "7.4", wp-version: "5.0" }
+          - { php-version: "7.4", wp-version: "5.1" }
+          - { php-version: "7.4", wp-version: "5.2" }
+          - { php-version: "8.0", wp-version: "4.9" }
+          - { php-version: "8.0", wp-version: "5.0" }
+          - { php-version: "8.0", wp-version: "5.1" }
+          - { php-version: "8.0", wp-version: "5.2" }
+          - { php-version: "8.0", wp-version: "5.3" }
+          - { php-version: "8.0", wp-version: "5.4" }
+          - { php-version: "8.0", wp-version: "5.5" }
 
-        name: End-to-end test suite
-        runs-on: ubuntu-latest
-        if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
+    name: End-to-end test suite
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
 
+    env:
+      EXTENSION_NAME: "CrowdSec_Bouncer"
+      EXTENSION_PATH: "crowdsec-bouncer"
+
+    steps:
+
+      - name: Clone DDEV files
+        uses: actions/checkout@v2
+        with:
+          path: .ddev
+          repository: julienloizelet/ddev-wp
+
+      - name: Install DDEV
         env:
-            EXTENSION_NAME: "CrowdSec_Bouncer"
-            EXTENSION_PATH: "crowdsec-bouncer"
+          DDEV_VERSION: v1.19.3
+        run: |
+          # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
+          sudo apt-get -qq update
+          sudo apt-get -qq -y install libnss3-tools
+          curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
+          bash install_ddev.sh ${{ env.DDEV_VERSION }}
+          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+          rm install_ddev.sh
 
-        steps:
-
-            -   name: Clone DDEV files
-                uses: actions/checkout@v2
-                with:
-                    path: .ddev
-                    repository: julienloizelet/ddev-wp
-
-            -   name: Install DDEV
-                env:
-                    DDEV_VERSION: v1.19.3
-                run: |
-                    # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
-                    sudo apt-get -qq update
-                    sudo apt-get -qq -y install libnss3-tools
-                    curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
-                    bash install_ddev.sh ${{ env.DDEV_VERSION }}
-                    ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
-                    rm install_ddev.sh
-
-            -   name: Set WP_VERSION_CODE env
-                # used in some directory path and conventional file naming
-                # Example : 5.6.5 => wp565
-                run: |
-                    echo "WP_VERSION_CODE=$(echo wp${{ matrix.wp-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
+      - name: Set WP_VERSION_CODE env
+        # used in some directory path and conventional file naming
+        # Example : 5.6.5 => wp565
+        run: |
+          echo "WP_VERSION_CODE=$(echo wp${{ matrix.wp-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
 
 
-            -   name: Start DDEV for ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
-                run: |
-                    cp .ddev/config_overrides/config.${{ env.WP_VERSION_CODE }}.yaml .ddev/config.${{ env.WP_VERSION_CODE }}.yaml
-                    cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
-                    cp .ddev/additional_docker_compose/docker-compose.playwright.yaml .ddev/docker-compose.playwright.yaml
-                    sed -i -e 's/^php_version:.*/php_version: ${{ matrix.php-version }}/g' .ddev/config.${{ env.WP_VERSION_CODE }}.yaml
-                    mkdir wp-content
-                    ddev start
-                    sudo chmod -R 777 ${{ github.workspace }}/wp-content
-                    sudo chmod -R 777 ${{ github.workspace }}/my-own-modules
+      - name: Start DDEV for ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
+        run: |
+          cp .ddev/config_overrides/config.${{ env.WP_VERSION_CODE }}.yaml .ddev/config.${{ env.WP_VERSION_CODE }}.yaml
+          cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
+          cp .ddev/additional_docker_compose/docker-compose.playwright.yaml .ddev/docker-compose.playwright.yaml
+          sed -i -e 's/^php_version:.*/php_version: ${{ matrix.php-version }}/g' .ddev/config.${{ env.WP_VERSION_CODE }}.yaml
+          mkdir wp-content
+          ddev start
+          sudo chmod -R 777 ${{ github.workspace }}/wp-content
+          sudo chmod -R 777 ${{ github.workspace }}/my-own-modules
 
-            -   name: Install WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
-                run: |
-                    wget https://wordpress.org/wordpress-${{ matrix.wp-version }}.tar.gz
-                    tar -xf wordpress-${{ matrix.wp-version }}.tar.gz wordpress
-                    cp -r wordpress/. ${{ github.workspace }}
-                    rm -rf wordpress
-                    rm wordpress-${{ matrix.wp-version }}.tar.gz
+      - name: Install WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
+        run: |
+          wget https://wordpress.org/wordpress-${{ matrix.wp-version }}.tar.gz
+          tar -xf wordpress-${{ matrix.wp-version }}.tar.gz wordpress
+          cp -r wordpress/. ${{ github.workspace }}
+          rm -rf wordpress
+          rm wordpress-${{ matrix.wp-version }}.tar.gz
 
-            -   name: Setup WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
-                run: |
-                    ddev exec wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'
+      - name: Setup WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
+        run: |
+          ddev exec wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'
 
 
-            -   name: Clone ${{ env.EXTENSION_NAME }} files
-                uses: actions/checkout@v2
-                with:
-                    path: my-own-modules/${{ env.EXTENSION_PATH }}
+      - name: Clone ${{ env.EXTENSION_NAME }} files
+        uses: actions/checkout@v2
+        with:
+          path: my-own-modules/${{ env.EXTENSION_PATH }}
 
-            -   name: Prepare for playwright test
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    chmod +x test-init.sh
-                    ./test-init.sh
-                    chmod +x run-tests.sh
+      - name: Prepare for playwright test
+        run: |
+          cd ${{ github.workspace }}
+          ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
+          ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
+          sha256sum -c GeoLite2-Country.tar.gz.sha256.txt
+          sha256sum -c GeoLite2-City.tar.gz.sha256.txt
+          tar -xf GeoLite2-Country.tar.gz
+          tar -xf GeoLite2-City.tar.gz
+          rm GeoLite2-Country.tar.gz GeoLite2-Country.tar.gz.sha256.txt GeoLite2-City.tar.gz GeoLite2-City.tar.gz.sha256.txt
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+          chmod +x test-init.sh
+          ./test-init.sh
+          chmod +x run-tests.sh
 
-            -   name: Run Plugin activation tests
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/1-activate-plugin.js"
+      - name: Run Plugin activation tests
+        run: |
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+          ./run-tests.sh ci "./__tests__/1-activate-plugin.js"
 
-            -   name: Configure CrowdSec and Wordpress bouncer plugin
-                run: |
-                    ddev crowdsec-config
+      - name: Configure CrowdSec and Wordpress bouncer plugin
+        run: |
+          ddev crowdsec-config
 
-            -   name: Run Live mode remediation tests
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/2-live-mode-remediations.js ./__tests__/3-live-mode-more.js"
+      - name: Run Live mode remediation tests
+        run: |
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+          ./run-tests.sh ci "./__tests__/2-live-mode-remediations.js ./__tests__/3-live-mode-more.js"
 
-            -   name: Run Live mode cache tests
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/4-live-mode-cache.js"
+      - name: Run Live mode cache tests
+        run: |
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+          ./run-tests.sh ci "./__tests__/4-live-mode-cache.js"
 
-            -   name: Prepare cron usage
-                run: |
-                  sed -i  's/fastcgi_finish_request/\/\/fastcgi_finish_request/g' wp-cron.php
+      - name: Prepare cron usage
+        run: |
+          sed -i  's/fastcgi_finish_request/\/\/fastcgi_finish_request/g' wp-cron.php
 
-            -   name: Run Stream mode tests
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/5-stream-mode.js"
+      - name: Run Stream mode tests
+        run: |
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+          ./run-tests.sh ci "./__tests__/5-stream-mode.js"
 
-            -   name: Run Redis tests
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/6-redis.js"
+      - name: Run Redis tests
+        run: |
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+          ./run-tests.sh ci "./__tests__/6-redis.js"
 
-            -   name: Run Memcached tests
-                run: |
-                    cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-                    ./run-tests.sh ci "./__tests__/7-memcached.js"
+      - name: Run Memcached tests
+        run: |
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+          ./run-tests.sh ci "./__tests__/7-memcached.js"
+
+      - name: Run Geolocation tests
+        run: |
+          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+          ./run-tests.sh ci "./__tests__/8-geolocation.js"

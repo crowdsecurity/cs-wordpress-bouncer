@@ -57,7 +57,7 @@ class Geolocation
                 $result['country'] = $record->country->isoCode;
             } catch (AddressNotFoundException $e) {
                 $result['not_found'] = $e->getMessage();
-            } catch (InvalidDatabaseException|InvalidArgumentException|BadMethodCallException $e) {
+            } catch (InvalidDatabaseException | InvalidArgumentException | BadMethodCallException $e) {
                 $result['error'] = $e->getMessage();
             }
 
@@ -77,8 +77,10 @@ class Geolocation
         $result = $this->resultTemplate;
         $saveInCache = !empty($geolocConfig['save_result']);
         if ($saveInCache) {
-            $cachedVariables = $apiCache->getIpVariables(Constants::CACHE_TAG_GEO,
-                ['crowdsec_geolocation_country', 'crowdsec_geolocation_not_found'], $ip
+            $cachedVariables = $apiCache->getIpVariables(
+                Constants::CACHE_TAG_GEO,
+                ['crowdsec_geolocation_country', 'crowdsec_geolocation_not_found'],
+                $ip
             );
             if ($country = $cachedVariables['crowdsec_geolocation_country']) {
                 $result['country'] = $country;
@@ -94,21 +96,29 @@ class Geolocation
             $configPath = $geolocConfig[Constants::GEOLOCATION_TYPE_MAXMIND];
             $result = $this->getMaxMindCountry($ip, $configPath['database_type'], $configPath['database_path']);
         } else {
-            throw new BouncerException('Unknown Geolocation type:'.$geolocConfig['type']);
+            throw new BouncerException('Unknown Geolocation type:' . $geolocConfig['type']);
         }
 
         if ($saveInCache) {
             if (!empty($result['country'])) {
-                $apiCache->setIpVariables(Constants::CACHE_TAG_GEO, ['crowdsec_geolocation_country' => $result['country']], $ip);
+                $apiCache->setIpVariables(
+                    Constants::CACHE_TAG_GEO,
+                    ['crowdsec_geolocation_country' => $result['country']],
+                    $ip
+                );
             } elseif (!empty($result['not_found'])) {
-                $apiCache->setIpVariables(Constants::CACHE_TAG_GEO, ['crowdsec_geolocation_not_found' => $result['not_found']], $ip);
+                $apiCache->setIpVariables(
+                    Constants::CACHE_TAG_GEO,
+                    ['crowdsec_geolocation_not_found' => $result['not_found']],
+                    $ip
+                );
             }
         }
 
         return $result;
     }
 
-    public function clearGeolocationCache(string $ip, ApiCache $apiCache)
+    public function clearGeolocationCache(string $ip, ApiCache $apiCache): void
     {
         $variables = ['crowdsec_geolocation_country', 'crowdsec_geolocation_not_found'];
         $apiCache->unsetIpVariables(Constants::CACHE_TAG_GEO, $variables, $ip);

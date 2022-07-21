@@ -196,13 +196,26 @@ function adminAdvancedSettings()
         return (int) $input > 0 ? (int) $input : Constants::CACHE_EXPIRATION_FOR_CAPTCHA ;
     }, ' seconds. <p>The lifetime of cached captcha flow for some IP. <br>If a user has to interact with a captcha wall, we store in cache some values in order to know if he has to resolve or not the captcha again.<br>Minimum 1 second. Default: '.Constants::CACHE_EXPIRATION_FOR_CAPTCHA.'.', Constants::CACHE_EXPIRATION_FOR_CAPTCHA, 'width: 115px;', 'number');
 
+    // Field "crowdsec_geolocation_cache_duration"
+    addFieldString('crowdsec_geolocation_cache_duration', 'Geolocation cache lifetime', 'crowdsec_plugin_advanced_settings',
+        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        if ( (int) $input <= 0) {
+            add_settings_error('Geolocation cache duration', 'crowdsec_error', 'Geolocation cache duration: Minimum is 1 second.');
+
+            return Constants::CACHE_EXPIRATION_FOR_GEO;
+        }
+
+        return (int) $input > 0 ? (int) $input : Constants::CACHE_EXPIRATION_FOR_CAPTCHA ;
+    }, ' seconds. <p>The lifetime of cached country geolocation result for some IP.<br>Minimum 1 second. Default: '
+       .Constants::CACHE_EXPIRATION_FOR_GEO.'.<br>See the <i>Geolocation</i> settings below to enable geolocalized country result save.', Constants::CACHE_EXPIRATION_FOR_GEO, 'width: 115px;', 'number');
+
 
     /***************************
      ** Section "Remediation" **
      **************************/
 
     add_settings_section('crowdsec_admin_advanced_remediations', 'Remediations', function () {
-        echo 'Configuration some details about remediations.';
+        echo 'Configure some details about remediations.';
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_fallback_remediation"
@@ -275,6 +288,50 @@ function adminAdvancedSettings()
     addFieldCheckbox('crowdsec_hide_mentions', 'Hide CrowdSec mentions', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function () {}, function () {}, '
     <p>Enable if you want to hide CrowdSec mentions on the Ban and Captcha pages</p>');
 
+    /***************************
+     ** Section "Geolocation" **
+     **************************/
+
+    add_settings_section('crowdsec_admin_advanced_geolocation', 'Geolocation', function () {
+        echo 'Configure some details about geolocation.';
+    }, 'crowdsec_advanced_settings');
+
+    // Field "Geolocation enabled"
+    addFieldCheckbox('crowdsec_geolocation_enabled', 'Enable geolocation feature', 'crowdsec_plugin_advanced_settings',
+        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function () {}, function () {}, '
+    <p>Enable if you want to use also CrowdSec country scoped decisions.<br>If enabled, bounced IP will be geolocalized and the final remediation will take into account any country related decision.</p>');
+
+    $geolocationTypes = [Constants::GEOLOCATION_TYPE_MAXMIND => 'MaxMind database' ];
+    addFieldSelect('crowdsec_geolocation_type', 'Geolocation type', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
+        'crowdsec_admin_advanced_geolocation', function ($input) {
+            if ($input !== Constants::GEOLOCATION_TYPE_MAXMIND) {
+                $input = Constants::GEOLOCATION_TYPE_MAXMIND;
+                add_settings_error('Geolocation type', 'crowdsec_error', 'Geolocation type: Incorrect geolocation type selected.');
+            }
+
+            return $input;
+        }, '<p>For now, only Maxmind database type is allowed</p>', $geolocationTypes);
+
+    $maxmindDatabaseTypes = [Constants::MAXMIND_COUNTRY => 'Country', Constants::MAXMIND_CITY => 'City'];
+    addFieldSelect('crowdsec_geolocation_maxmind_database_type', 'MaxMind database type', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
+        'crowdsec_admin_advanced_geolocation', function ($input) {
+            if (!in_array($input, [Constants::MAXMIND_COUNTRY, Constants::MAXMIND_CITY])) {
+                $input = Constants::MAXMIND_COUNTRY;
+                add_settings_error('Geolocation MaxMind database type', 'crowdsec_error', 'MaxMind database type: Incorrect type selected.');
+            }
+
+            return $input;
+        }, '<p></p>', $maxmindDatabaseTypes);
+
+    addFieldString('crowdsec_geolocation_maxmind_database_path', 'Path to the MaxMind database', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function ($input) {
+        return $input;
+    }, '<p>Relative path from <i>wp-content/plugins/crowdsec/geolocation</i> folder</p>', 'GeoLite2-Country.mmdb', '');
+
+    addFieldCheckbox('crowdsec_geolocation_save_result', 'Save geolocalized country in cache', 'crowdsec_plugin_advanced_settings',
+        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function () {}, function () {}, '
+    <p>Enabling this will avoid multiple call to the geolocation system (e.g. MaxMind database)</p> If enabled, the geolocalized country associated to the IP will be saved in cache.<br>See the <i>Geolocation cache lifetime</i> setting above to set the lifetime of this result.');
+
+
     /*******************************
      ** Section "Debug mode" **
      ******************************/
@@ -285,7 +342,7 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_debug_mode"
     addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>Should not be used in production.<br>When this mode is enabled, a debug.log file will be written in the <i>wp-content/plugins/cs-wordpress-bouncer/logs</i> folder.<br> Note that by default, there is always a prod.log file in the same folder.</p>');
+    <p>Should not be used in production.<br>When this mode is enabled, a debug.log file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.<br> Note that by default, there is always a prod.log file in the same folder.</p>');
 
 	/*******************************
 	 ** Section "Display errors" **
@@ -298,4 +355,25 @@ function adminAdvancedSettings()
 	// Field "crowdsec_display_errors"
 	addFieldCheckbox('crowdsec_display_errors', 'Enable errors display', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_display_errors', function () {}, function () {}, '
     <p>Do not use in production. When this mode is enabled, you will see every unexpected bouncing errors in the browser.</p>');
+
+    /*******************************
+     ** Section "Test mode" **
+     ******************************/
+
+    add_settings_section('crowdsec_admin_advanced_test', 'Test settings', function () {
+        echo 'Configure some test parameters.';
+    }, 'crowdsec_advanced_settings');
+
+    // Field "test ip"
+    addFieldString('crowdsec_forced_test_ip', 'Forced test IP', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_test', function ($input) {
+        return $input;
+    }, '<p>This Ip will be used instead of the current detected browser IP: '.$_SERVER['REMOTE_ADDR'].'.<br><strong>Must be empty in production.</strong></p>',
+    '1.2.3.4', '');
+
+    addFieldString('crowdsec_forced_test_forwarded_ip', 'Forced test X-Forwarded-For IP', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_test', function ($input) {
+        return $input;
+    }, '<p>This Ip will be used instead of the current X-Forwarded-For Ip if any.<br><strong>Must be empty in production.</strong></p>',
+        '1.2.3.4', '');
+
+
 }

@@ -2,8 +2,8 @@
 
 namespace CrowdSecBouncer;
 
-require_once __DIR__.'/templates/captcha.php';
-require_once __DIR__.'/templates/access-forbidden.php';
+require_once __DIR__ . '/templates/captcha.php';
+require_once __DIR__ . '/templates/access-forbidden.php';
 
 use CrowdSecBouncer\Fixes\Gregwar\Captcha\CaptchaBuilder;
 use Gregwar\Captcha\PhraseBuilder;
@@ -35,9 +35,16 @@ class Bouncer
     private $apiCache;
 
     /** @var int */
-    private $maxRemediationLevelIndex = null;
+    private $maxRemediationLevelIndex = 0;
 
-    public function __construct(TagAwareAdapterInterface $cacheAdapter = null, LoggerInterface $logger = null, ApiCache $apiCache = null)
+    /** @var array */
+    private $configs = [];
+
+    public function __construct(
+        TagAwareAdapterInterface $cacheAdapter = null,
+        LoggerInterface          $logger = null,
+        ApiCache                 $apiCache = null
+    )
     {
         if (!$logger) {
             $logger = new Logger('null');
@@ -45,6 +52,16 @@ class Bouncer
         }
         $this->logger = $logger;
         $this->apiCache = $apiCache ?: new ApiCache($logger, new ApiClient($logger), $cacheAdapter);
+    }
+
+    /**
+     * Retrieve Bouncer configurations
+     *
+     * @return array
+     */
+    public function getConfigs(): array
+    {
+        return $this->configs;
     }
 
     /**
@@ -56,33 +73,33 @@ class Bouncer
      */
     public function configure(array $config): void
     {
-        // Process input configuration.
+        // Process and validate input configuration.
         $configuration = new Configuration();
         $processor = new Processor();
-        $finalConfig = $processor->processConfiguration($configuration, [$config]);
+        $this->configs = $processor->processConfiguration($configuration, [$config]);
         /** @var int */
         $index = array_search(
-            $finalConfig['max_remediation_level'],
+            $this->configs['max_remediation_level'],
             Constants::ORDERED_REMEDIATIONS
         );
         $this->maxRemediationLevelIndex = $index;
         $cacheDurations = [
-            'clean_ip_cache_duration' => $finalConfig['clean_ip_cache_duration'],
-            'bad_ip_cache_duration' => $finalConfig['bad_ip_cache_duration'],
-            'captcha_cache_duration' => $finalConfig['captcha_cache_duration'],
-            'geolocation_cache_duration' => $finalConfig['geolocation_cache_duration'],
+            'clean_ip_cache_duration' => $this->configs['clean_ip_cache_duration'],
+            'bad_ip_cache_duration' => $this->configs['bad_ip_cache_duration'],
+            'captcha_cache_duration' => $this->configs['captcha_cache_duration'],
+            'geolocation_cache_duration' => $this->configs['geolocation_cache_duration'],
         ];
 
         // Configure Api Cache.
         $this->apiCache->configure(
-            $finalConfig['stream_mode'],
-            $finalConfig['api_url'],
-            $finalConfig['api_timeout'],
-            $finalConfig['api_user_agent'],
-            $finalConfig['api_key'],
+            $this->configs['stream_mode'],
+            $this->configs['api_url'],
+            $this->configs['api_timeout'],
+            $this->configs['api_user_agent'],
+            $this->configs['api_key'],
             $cacheDurations,
-            $finalConfig['fallback_remediation'],
-            $finalConfig['geolocation']
+            $this->configs['fallback_remediation'],
+            $this->configs['geolocation']
         );
     }
 
@@ -112,7 +129,7 @@ class Bouncer
      *
      * @return string the remediation to apply (ex: 'ban', 'captcha', 'bypass')
      *
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|\Psr\Cache\CacheException
      */
     public function getRemediationForIp(string $ip): string
     {
@@ -150,7 +167,12 @@ class Bouncer
      * Returns a default "CrowdSec Captcha" HTML template to display to a web browser using a captchable IP.
      * The input $config should match the TemplateConfiguration input format.
      */
-    public static function getCaptchaHtmlTemplate(bool $error, string $captchaImageSrc, string $captchaResolutionFormUrl, array $config): string
+    public static function getCaptchaHtmlTemplate(
+        bool   $error,
+        string $captchaImageSrc,
+        string $captchaResolutionFormUrl,
+        array  $config
+    ): string
     {
         // Process template configuration.
         $configuration = new TemplateConfiguration();
@@ -169,7 +191,7 @@ class Bouncer
      *
      * @return array "count": number of decisions added, "errors": decisions not added
      *
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|\Psr\Cache\CacheException
      */
     public function warmBlocklistCacheUp(): array
     {
@@ -182,7 +204,7 @@ class Bouncer
      *
      * @return array Number of deleted and new decisions, and errors when processing decisions
      *
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|\Psr\Cache\CacheException
      */
     public function refreshBlocklistCache(): array
     {
@@ -224,7 +246,8 @@ class Bouncer
     /**
      * Build a captcha couple.
      *
-     * @return array an array composed of two items, a "phrase" string representing the phrase and a "inlineImage" representing the image data
+     * @return array an array composed of two items, a "phrase" string representing the phrase and a "inlineImage"
+     *     representing the image data
      */
     public static function buildCaptchaCouple(): array
     {
@@ -241,8 +264,8 @@ class Bouncer
      * We are permissive with the user (0 is interpreted as "o" and 1 in interpreted as "l").
      *
      * @param string $expected The expected phrase
-     * @param string $try      The phrase to check (the user input)
-     * @param string $ip       The IP of the use (for logging purpose)
+     * @param string $try The phrase to check (the user input)
+     * @param string $ip The IP of the use (for logging purpose)
      *
      * @return bool If the captcha input was correct or not
      */
@@ -270,7 +293,7 @@ class Bouncer
         $this->apiCache->testConnection();
     }
 
-    public function getApiCache()
+    public function getApiCache(): ApiCache
     {
         return $this->apiCache;
     }
