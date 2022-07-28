@@ -22,7 +22,7 @@ interface IBounce
     /**
      * Init the logger.
      */
-    public function initLogger(): void;
+    public function initLogger(array $configs): void;
 
     /**
      * Get the bouncer instance.

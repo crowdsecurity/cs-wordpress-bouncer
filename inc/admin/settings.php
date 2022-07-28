@@ -1,6 +1,5 @@
 <?php
-
-use CrowdSecBouncer\Constants;
+require_once __DIR__ . '/../Constants.php';
 
 function adminSettings()
 {

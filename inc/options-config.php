@@ -1,6 +1,5 @@
 <?php
-
-use CrowdSecBouncer\Constants;
+require_once __DIR__ . '/Constants.php';
 
 function getCrowdSecOptionsConfig()
 {
@@ -44,7 +43,6 @@ function getCrowdSecOptionsConfig()
         ['name' => 'crowdsec_theme_text_ban_wall_subtitle', 'default' => 'This page is protected against cyber attacks and your IP has been banned by our system.', 'autoInit' => true],
         ['name' => 'crowdsec_theme_text_ban_wall_footer', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_theme_custom_css', 'default' => '', 'autoInit' => true],
-        ['name' => 'crowdsec_random_log_folder', 'default' => bin2hex(random_bytes(64)), 'autoInit' => false],
         ['name' => 'crowdsec_debug_mode', 'default' => '', 'autoInit' => true],
 		['name' => 'crowdsec_display_errors', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_forced_test_ip', 'default' => '', 'autoInit' => true],

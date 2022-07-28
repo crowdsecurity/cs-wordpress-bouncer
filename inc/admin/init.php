@@ -1,9 +1,9 @@
 <?php
 
-use CrowdSecBouncer\Constants;
 use CrowdSecBouncer\BouncerException;
 
 require_once __DIR__ . '/notice.php';
+require_once __DIR__ . '/../Constants.php';
 
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/theme.php';

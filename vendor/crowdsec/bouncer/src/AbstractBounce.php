@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace CrowdSecBouncer;
 
-require_once __DIR__ . '/templates/captcha.php';
-require_once __DIR__ . '/templates/access-forbidden.php';
-
-use Exception;
 use IPLib\Factory;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
@@ -30,12 +26,6 @@ abstract class AbstractBounce implements IBounce
 {
     /** @var array */
     protected $settings = [];
-
-    /** @var bool */
-    protected $debug = false;
-
-    /** @var bool */
-    protected $displayErrors = false;
 
     /** @var LoggerInterface */
     protected $logger;
@@ -64,35 +54,79 @@ abstract class AbstractBounce implements IBounce
     }
 
     /**
+     * @throws BouncerException
+     */
+    protected function prepareBouncerConfigs(): array
+    {
+        $bouncingLevel = $this->getStringSettings('bouncing_level');
+        $apiTimeout = $this->getIntegerSettings('api_timeout');
+
+        // Compute max remediation level
+        switch ($bouncingLevel) {
+            case Constants::BOUNCING_LEVEL_DISABLED:
+                $maxRemediationLevel = Constants::REMEDIATION_BYPASS;
+                break;
+            case Constants::BOUNCING_LEVEL_FLEX:
+                $maxRemediationLevel = Constants::REMEDIATION_CAPTCHA;
+                break;
+            case Constants::BOUNCING_LEVEL_NORMAL:
+                $maxRemediationLevel = Constants::REMEDIATION_BAN;
+                break;
+            default:
+                throw new BouncerException("Unknown $bouncingLevel");
+        }
+
+        return [
+            // LAPI connection
+            'api_key' => $this->getStringSettings('api_key'),
+            'api_url' => $this->getStringSettings('api_url'),
+            'api_user_agent' => $this->getStringSettings('api_user_agent'),
+            'api_timeout' => $apiTimeout > 0 ? $apiTimeout : Constants::API_TIMEOUT,
+            'use_curl' => $this->getBoolSettings('use_curl'),
+            // Debug
+            'debug_mode' => $this->getBoolSettings('debug_mode'),
+            'log_directory_path' => $this->getStringSettings('log_directory_path'),
+            'forced_test_ip' => $this->getStringSettings('forced_test_ip'),
+            'forced_test_forwarded_ip' => $this->getStringSettings('forced_test_forwarded_ip'),
+            'display_errors' => $this->getBoolSettings('display_errors'),
+            // Bouncer
+            'bouncing_level' => $bouncingLevel,
+            'trust_ip_forward_array' => $this->getArraySettings('trust_ip_forward_array'),
+            'fallback_remediation' => $this->getStringSettings('fallback_remediation'),
+            'max_remediation_level' => $maxRemediationLevel,
+            // Cache settings
+            'stream_mode' => $this->getBoolSettings('stream_mode'),
+            'cache_system' => $this->getStringSettings('cache_system'),
+            'fs_cache_path' => $this->getStringSettings('fs_cache_path'),
+            'redis_dsn' => $this->getStringSettings('redis_dsn'),
+            'memcached_dsn' => $this->getStringSettings('memcached_dsn'),
+            'clean_ip_cache_duration' => $this->getIntegerSettings('clean_ip_cache_duration'),
+            'bad_ip_cache_duration' => $this->getIntegerSettings('bad_ip_cache_duration'),
+            'captcha_cache_duration' => $this->getIntegerSettings('captcha_cache_duration'),
+            'geolocation_cache_duration' => $this->getIntegerSettings('geolocation_cache_duration'),
+            // Geolocation
+            'geolocation' => $this->getArraySettings('geolocation'),
+        ];
+    }
+
+    /**
      * Run a bounce.
      *
      * @return void
      * @throws CacheException
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|BouncerException
      */
     public function run(): void
     {
-        if ($this->shouldBounceCurrentIp()) {
-            $this->bounceCurrentIp();
-        }
-    }
-
-    public function setDebug(bool $debug): void
-    {
-        $this->debug = $debug;
-    }
-
-    public function setDisplayErrors(bool $displayErrors): void
-    {
-        $this->displayErrors = $displayErrors;
+        $this->bounceCurrentIp();
     }
 
     /**
-     * @param string $logDirectoryPath
+     * @param array $configs
      * @param string $loggerName
      * @return void
      */
-    protected function initLoggerHelper(string $logDirectoryPath, string $loggerName): void
+    protected function initLoggerHelper(array $configs, string $loggerName): void
     {
         // Singleton for this function
         if ($this->logger) {
@@ -100,14 +134,15 @@ abstract class AbstractBounce implements IBounce
         }
 
         $this->logger = new Logger($loggerName);
-        $logPath = $logDirectoryPath . '/prod.log';
+        $logDir = $configs['log_directory_path']??__DIR__.'/.logs';
+        $logPath = $logDir . '/prod.log';
         $fileHandler = new RotatingFileHandler($logPath, 0, Logger::INFO);
         $fileHandler->setFormatter(new LineFormatter("%datetime%|%level%|%context%\n"));
         $this->logger->pushHandler($fileHandler);
 
         // Set custom readable logger when debug=true
-        if ($this->debug) {
-            $debugLogPath = $logDirectoryPath . '/debug.log';
+        if (!empty($configs['debug_mode'])) {
+            $debugLogPath = $logDir . '/debug.log';
             $debugFileHandler = new RotatingFileHandler($debugLogPath, 0, Logger::DEBUG);
             $debugFileHandler->setFormatter(new LineFormatter("%datetime%|%level%|%context%\n"));
             $this->logger->pushHandler($debugFileHandler);
@@ -130,7 +165,7 @@ abstract class AbstractBounce implements IBounce
                 $ipList = array_map('trim', array_values(array_filter(explode(',', $XForwardedForHeader))));
                 $forwardedIp = end($ipList);
             }
-        } else if ($configs['forced_test_forwarded_ip'] === Constants::X_FORWARDED_DISABLED) {
+        } elseif ($configs['forced_test_forwarded_ip'] === Constants::X_FORWARDED_DISABLED) {
             $this->logger->debug('', [
                 'type' => 'DISABLED_X_FORWARDED_FOR_USAGE',
                 'original_ip' => $ip,
@@ -155,34 +190,21 @@ abstract class AbstractBounce implements IBounce
      * Bounce process
      *
      * @return void
-     * @throws InvalidArgumentException|CacheException
-     * @throws Exception
+     * @throws BouncerException
+     * @throws CacheException
+     * @throws InvalidArgumentException
      */
     protected function bounceCurrentIp(): void
     {
-        try {
-            if (!$this->bouncer) {
-                throw new BouncerException('Bouncer must be instantiated to bounce an IP.');
-            }
-            $configs = $this->bouncer->getConfigs();
-            // Retrieve the current IP (even if it is a proxy IP) or a testing IP
-            $ip = !empty($configs['forced_test_ip']) ? $configs['forced_test_ip'] : $this->getRemoteIp();
-            $ip = $this->handleForwardedFor($ip, $configs);
-            $remediation = $this->bouncer->getRemediationForIp($ip);
-            $this->handleRemediation($remediation, $ip);
-        } catch (Exception $e) {
-            $this->logger->warning('', [
-                'type' => 'UNKNOWN_EXCEPTION_WHILE_BOUNCING',
-                'ip' => $ip ?? '',
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-            if ($this->displayErrors) {
-                throw $e;
-            }
+        if (!$this->bouncer) {
+            throw new BouncerException('Bouncer must be instantiated to bounce an IP.');
         }
+        $configs = $this->bouncer->getConfigs();
+        // Retrieve the current IP (even if it is a proxy IP) or a testing IP
+        $ip = !empty($configs['forced_test_ip']) ? $configs['forced_test_ip'] : $this->getRemoteIp();
+        $ip = $this->handleForwardedFor($ip, $configs);
+        $remediation = $this->bouncer->getRemediationForIp($ip);
+        $this->handleRemediation($remediation, $ip);
     }
 
     protected function shouldTrustXforwardedFor(string $ip): bool
@@ -207,7 +229,7 @@ abstract class AbstractBounce implements IBounce
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|BouncerException
      */
     protected function displayCaptchaWall(string $ip): void
     {
@@ -237,7 +259,7 @@ abstract class AbstractBounce implements IBounce
      * @param string $ip
      * @return void
      * @throws InvalidArgumentException
-     * @throws CacheException
+     * @throws CacheException|BouncerException
      */
     protected function handleCaptchaResolutionForm(string $ip)
     {
@@ -321,7 +343,7 @@ abstract class AbstractBounce implements IBounce
      *
      * @return void
      * @throws InvalidArgumentException
-     * @throws CacheException
+     * @throws CacheException|BouncerException
      */
     protected function handleCaptchaRemediation(string $ip)
     {
@@ -362,7 +384,7 @@ abstract class AbstractBounce implements IBounce
      * @param string $ip
      * @return void
      * @throws InvalidArgumentException
-     * @throws CacheException
+     * @throws CacheException|BouncerException
      */
     protected function handleRemediation(string $remediation, string $ip)
     {
@@ -385,7 +407,7 @@ abstract class AbstractBounce implements IBounce
      * @param array $names
      * @param string $ip
      * @return array
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|BouncerException
      */
     public function getIpVariables(string $cacheTag, array $names, string $ip): array
     {
@@ -405,7 +427,7 @@ abstract class AbstractBounce implements IBounce
      * @param string $ip
      * @return void
      * @throws InvalidArgumentException
-     * @throws CacheException
+     * @throws CacheException|BouncerException
      */
     public function setIpVariables(string $cacheTag, array $pairs, string $ip): void
     {
@@ -424,7 +446,7 @@ abstract class AbstractBounce implements IBounce
      * @param string $ip
      * @return void
      * @throws InvalidArgumentException
-     * @throws CacheException
+     * @throws CacheException|BouncerException
      */
     public function unsetIpVariables(string $cacheTag, array $names, string $ip): void
     {

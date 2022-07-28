@@ -23,7 +23,7 @@ class TemplateConfiguration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $defaultSublitle = 'This page is protected against cyber attacks and your IP has been banned by our system.';
+        $defaultSubtitle = 'This page is protected against cyber attacks and your IP has been banned by our system.';
         $treeBuilder = new TreeBuilder('config');
         /** @var ArrayNodeDefinition $rootNode */
         $rootNode = $treeBuilder->getRootNode();
@@ -73,7 +73,7 @@ class TemplateConfiguration implements ConfigurationInterface
                             ->children()
                                 ->scalarNode('tab_title')->defaultValue('Oops..')->end()
                                 ->scalarNode('title')->defaultValue('🤭 Oh!')->end()
-                                ->scalarNode('subtitle')->defaultValue($defaultSublitle)->end()
+                                ->scalarNode('subtitle')->defaultValue($defaultSubtitle)->end()
                                 ->scalarNode('footer')->defaultValue('')->end()
                             ->end()
                         ->end()

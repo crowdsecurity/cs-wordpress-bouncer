@@ -6,6 +6,7 @@ namespace CrowdSecBouncer;
 
 use CrowdSecBouncer\Fixes\Memcached\TagAwareAdapter as MemcachedTagAwareAdapter;
 use DateTime;
+use ErrorException;
 use Exception;
 use IPLib\Address\AddressInterface;
 use IPLib\Address\Type;
@@ -13,9 +14,13 @@ use IPLib\Factory;
 use IPLib\Range\Subnet;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Cache\Adapter\MemcachedAdapter;
 use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Symfony\Component\Cache\Adapter\RedisTagAwareAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
+use Symfony\Component\Cache\Exception\CacheException;
 use Symfony\Component\Cache\PruneableInterface;
 
 /**
@@ -43,36 +48,39 @@ class ApiCache
     /** @var TagAwareAdapterInterface */
     private $adapter;
 
+    /** @var array  */
+    private $configs;
+
     /**
      * @var Geolocation
      */
     private $geolocation;
 
     /** @var bool */
-    private $streamMode = false;
+    private $streamMode;
 
     /**
      * @var int
      */
-    private $cacheExpirationForCleanIp = 0;
+    private $cacheExpirationForCleanIp;
 
     /**
      * @var int
      */
-    private $cacheExpirationForBadIp = 0;
+    private $cacheExpirationForBadIp;
 
     /**
      * @var int
      */
-    private $cacheExpirationForCaptcha = 0;
+    private $cacheExpirationForCaptcha;
 
     /**
      * @var int
      */
-    private $cacheExpirationForGeo = 0;
+    private $cacheExpirationForGeo;
 
     /** @var bool */
-    private $warmedUp = false;
+    private $warmedUp;
 
     /**
      * @var string
@@ -97,58 +105,35 @@ class ApiCache
     public const CACHE_SEP = '_';
 
     /**
-     * @param LoggerInterface $logger The logger to use
-     * @param ApiClient|null $apiClient The APIClient instance to use
-     * @param TagAwareAdapterInterface|null $adapter The AbstractAdapter adapter to use
-     * @param Geolocation|null $geolocation The Geolocation helper to use
-     */
-    public function __construct(
-        LoggerInterface $logger,
-        ApiClient $apiClient = null,
-        TagAwareAdapterInterface $adapter = null,
-        Geolocation $geolocation = null
-    ) {
-        $this->logger = $logger;
-        $this->apiClient = $apiClient ?: new ApiClient($logger);
-        $this->geolocation = $geolocation ?: new Geolocation();
-        $this->adapter = $adapter ?: new TagAwareAdapter(new PhpFilesAdapter());
-    }
-
-    /**
-     * Configure this instance.
-     *
-     * @param bool $streamMode If we use the stream mode (else we use the live mode)
-     * @param string $apiUrl The URL of the LAPI
-     * @param int $timeout The timeout well calling LAPI
-     * @param string $userAgent The user agent to use when calling LAPI
-     * @param string $apiKey The Bouncer API Key to use to connect LAPI
-     * @param array $cacheDurations The durations for some cache items (clean IP, bad, Ip, etc)
-     * @param string $fallbackRemediation The remediation to use when the remediation sent by LAPI is not supported by
-     *                                          this library
-     *
+     * @param array $configs
+     * @param LoggerInterface $logger
+     * @throws BouncerException
+     * @throws CacheException
+     * @throws ErrorException
      * @throws InvalidArgumentException
      */
-    public function configure(
-        bool $streamMode,
-        string $apiUrl,
-        int $timeout,
-        string $userAgent,
-        string $apiKey,
-        array $cacheDurations,
-        string $fallbackRemediation,
-        array $geolocConfig = []
-    ): void {
+    public function __construct(
+        array $configs,
+        LoggerInterface $logger
+    ) {
+        $this->logger = $logger;
+        $this->configs = $configs;
+        $this->apiClient = new ApiClient($this->configs, $logger);
+        $this->geolocation = new Geolocation();
+        $this->configureAdapter();
+
+        $streamMode = $configs['stream_mode'] ?? false;
         $this->streamMode = $streamMode;
         $this->cacheExpirationForCleanIp =
-            $cacheDurations['clean_ip_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_CLEAN_IP;
-        $this->cacheExpirationForBadIp =
-            $cacheDurations['bad_ip_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_BAD_IP;
+            $configs['clean_ip_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_CLEAN_IP;
+        $this->cacheExpirationForBadIp = $configs['bad_ip_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_BAD_IP;
         $this->cacheExpirationForCaptcha =
-            $cacheDurations['captcha_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_CAPTCHA;
-        $this->cacheExpirationForGeo =
-            $cacheDurations['geolocation_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_GEO;
-        $this->fallbackRemediation = $fallbackRemediation;
-        $this->geolocConfig = $geolocConfig;
+            $configs['captcha_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_CAPTCHA;
+        $this->cacheExpirationForGeo = $configs['geolocation_cache_duration'] ?? Constants::CACHE_EXPIRATION_FOR_GEO;
+        $this->fallbackRemediation = $configs['fallback_remediation'] ?? Constants::REMEDIATION_BYPASS;
+        $this->geolocConfig = $configs['geolocation'] ?? [];
+
+
         $cacheConfigItem = $this->adapter->getItem('cacheConfig');
         $cacheConfig = $cacheConfigItem->get();
         $this->warmedUp = (\is_array($cacheConfig) && isset($cacheConfig['warmed_up'])
@@ -157,6 +142,7 @@ class ApiCache
             'type' => 'API_CACHE_INIT',
             'adapter' => \get_class($this->adapter),
             'mode' => ($streamMode ? 'stream' : 'live'),
+            'fallback_remediation' => $this->fallbackRemediation,
             'exp_clean_ips' => $this->cacheExpirationForCleanIp,
             'exp_bad_ips' => $this->cacheExpirationForBadIp,
             'exp_captcha_flow' => $this->cacheExpirationForCaptcha,
@@ -164,8 +150,54 @@ class ApiCache
             'warmed_up' => ($this->warmedUp ? 'true' : 'false'),
             'geolocation' => $this->geolocConfig,
         ]);
-        $this->apiClient->configure($apiUrl, $timeout, $userAgent, $apiKey);
     }
+
+    /**
+     * @throws CacheException
+     * @throws ErrorException|BouncerException
+     */
+    private function configureAdapter(): void
+    {
+        $cacheSystem = $this->configs['cache_system'] ?? Constants::CACHE_SYSTEM_PHPFS;
+        switch ($cacheSystem) {
+            case Constants::CACHE_SYSTEM_PHPFS:
+                $this->adapter = new TagAwareAdapter(
+                    new PhpFilesAdapter('', 0, $this->configs['fs_cache_path'])
+                );
+                break;
+
+            case Constants::CACHE_SYSTEM_MEMCACHED:
+                $memcachedDsn = $this->configs['memcached_dsn'];
+                if (empty($memcachedDsn)) {
+                    throw new BouncerException('The selected cache technology is Memcached.' .
+                                               ' Please set a Memcached DSN or select another cache technology.');
+                }
+
+                $this->adapter = new MemcachedTagAwareAdapter(
+                    new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn))
+                );
+                break;
+
+            case Constants::CACHE_SYSTEM_REDIS:
+                $redisDsn = $this->configs['redis_dsn'];
+                if (empty($redisDsn)) {
+                    throw new BouncerException('The selected cache technology is Redis.' .
+                                               ' Please set a Redis DSN or select another cache technology.');
+                }
+
+                try {
+                    $this->adapter = new RedisTagAwareAdapter((RedisAdapter::createConnection($redisDsn)));
+                } catch (InvalidArgumentException $e) {
+                    throw new BouncerException('Error when connecting to Redis.' .
+                                               ' Please fix the Redis DSN or select another cache technology.');
+                }
+                break;
+
+            default:
+                throw new BouncerException("Unknown selected cache technology: $cacheSystem");
+        }
+    }
+
 
     /**
      * @return array
@@ -286,6 +318,7 @@ class ApiCache
 
     /**
      * Parse "duration" entries returned from API to a number of seconds.
+     * @throws BouncerException
      */
     private static function parseDurationToSeconds(string $duration): int
     {
@@ -317,6 +350,7 @@ class ApiCache
     /**
      * Format a remediation item of a cache item.
      * This format use a minimal amount of data allowing less cache data consumption.
+     * @throws BouncerException
      */
     private function formatRemediationFromDecision(?array $decision): array
     {
@@ -364,6 +398,7 @@ class ApiCache
      * Update the cached remediation of the specified cacheKey from these new decisions.
      *
      * @throws InvalidArgumentException|\Psr\Cache\CacheException
+     * @throws BouncerException
      */
     private function saveRemediationsForCacheKey(array $decisions, string $cacheKey): string
     {
@@ -401,6 +436,7 @@ class ApiCache
      * @param string $scope
      * @param string $value
      * @return string
+     * @throws BouncerException
      */
     private function getCacheKey(string $scope, string $value): string
     {
@@ -615,7 +651,7 @@ class ApiCache
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|BouncerException
      */
     public function clear(): bool
     {
@@ -640,7 +676,7 @@ class ApiCache
      *
      * @return array "count": number of decisions added, "errors": decisions not added
      *
-     * @throws InvalidArgumentException|\Psr\Cache\CacheException
+     * @throws InvalidArgumentException|\Psr\Cache\CacheException|BouncerException
      */
     public function warmUp(): array
     {
@@ -682,7 +718,7 @@ class ApiCache
      *
      * @return array number of deleted and new decisions, and errors when processing decisions
      *
-     * @throws InvalidArgumentException|\Psr\Cache\CacheException
+     * @throws InvalidArgumentException|\Psr\Cache\CacheException|BouncerException
      */
     public function pullUpdates(): array
     {
@@ -782,7 +818,7 @@ class ApiCache
      *
      * @return string
      * @throws InvalidArgumentException
-     * @throws \Psr\Cache\CacheException
+     * @throws \Psr\Cache\CacheException|BouncerException
      */
     private function handleCacheRemediation(string $cacheScope, string $value): string
     {
@@ -870,6 +906,7 @@ class ApiCache
 
     /**
      * Prune the cache (only when using PHP File System cache).
+     * @throws BouncerException
      */
     public function prune(): bool
     {
@@ -886,6 +923,7 @@ class ApiCache
     /**
      * When Memcached connection fail, it throws an unhandled warning.
      * To catch this warning as a clean exception we have to temporarily change the error handler.
+     * @throws BouncerException
      */
     private function setCustomErrorHandler(): void
     {
@@ -946,7 +984,7 @@ class ApiCache
      *
      * @return array|mixed
      *
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|BouncerException
      */
     private function getIpCachedVariables(string $cacheTag, string $ip)
     {
@@ -968,7 +1006,7 @@ class ApiCache
      * @param string $ip
      *
      * @return array
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|BouncerException
      */
     public function getIpVariables(string $cacheTag, array $names, string $ip): array
     {
@@ -1011,7 +1049,7 @@ class ApiCache
      * @param string $ip
      * @return void
      * @throws InvalidArgumentException
-     * @throws \Psr\Cache\CacheException
+     * @throws \Psr\Cache\CacheException|BouncerException
      */
     public function unsetIpVariables(string $cacheTag, array $pairs, string $ip)
     {
@@ -1040,5 +1078,16 @@ class ApiCache
         $item->expiresAt(new DateTime("+$duration seconds"));
         $item->tag($cacheTag);
         $this->adapter->save($item);
+    }
+
+
+    public function getClient(): ApiClient
+    {
+        return $this->apiClient;
+    }
+
+    public function getAdapter(): TagAwareAdapterInterface
+    {
+        return $this->adapter;
     }
 }

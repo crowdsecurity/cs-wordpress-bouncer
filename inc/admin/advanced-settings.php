@@ -1,8 +1,8 @@
 <?php
 
 use CrowdSecBouncer\BouncerException;
-use CrowdSecBouncer\Constants;
 use IPLib\Factory;
+require_once __DIR__ . '/../Constants.php';
 
 function adminAdvancedSettings()
 {
@@ -72,11 +72,43 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_redis_dsn"
     addFieldString('crowdsec_redis_dsn', 'Redis DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        try {
+            // Reload bouncer instance with the new cache system and so test if dsn is correct.
+            $settings = getDatabaseSettings();
+            $oldDsn = $settings['redis_dsn'] ?? '';
+            $settings['redis_dsn'] = $input;
+            $bouncer = getBouncerInstance($settings, true);
+            $bouncer->testConnection();
+        } catch (Exception $e) {
+            $message = __('There was an error while testing new DSN ('.$input.')');
+            if(isset($oldDsn)){
+                AdminNotice::displayError($message.': '.$e->getMessage().'<br><br>Rollback to old DSN: '.$oldDsn);
+                $input = $oldDsn;
+            } else{
+                AdminNotice::displayError($message.': '.$e->getMessage());
+            }
+        }
         return $input;
     }, '<p>Fill in this field only if you have chosen the Redis cache.<br>Example of DSN: redis://localhost:6379.', 'redis://...', '');
 
     // Field "crowdsec_memcached_dsn"
     addFieldString('crowdsec_memcached_dsn', 'Memcached DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
+        try {
+            // Reload bouncer instance with the new cache system and so test if dsn is correct.
+            $settings = getDatabaseSettings();
+            $oldDsn = $settings['memcached_dsn'] ?? '';
+            $settings['memcached_dsn'] = $input;
+            $bouncer = getBouncerInstance($settings, true);
+            $bouncer->testConnection();
+        } catch (Exception $e) {
+            $message = __('There was an error while testing new DSN ('.$input.')');
+            if(isset($oldDsn)){
+                AdminNotice::displayError($message.': '.$e->getMessage().'<br><br>Rollback to old DSN: '.$oldDsn);
+                $input = $oldDsn;
+            } else{
+                AdminNotice::displayError($message.': '.$e->getMessage());
+            }
+        }
         return $input;
     }, '<p>Fill in this field only if you have chosen the Memcached cache.<br>Example of DSN: memcached://localhost:11211.', 'memcached://...', '');
 
@@ -86,71 +118,52 @@ function adminAdvancedSettings()
             $input = Constants::CACHE_SYSTEM_PHPFS;
             add_settings_error('Technology', 'crowdsec_error', 'Technology: Incorrect cache technology selected.');
         }
+        $error = false;
+        $message = '';
 
         try {
             $settings = getDatabaseSettings();
+            $oldCacheSystem = $settings['cache_system'] ?? Constants::CACHE_SYSTEM_PHPFS;
             $bouncer = getBouncerInstance($settings);
-            try {
-                $bouncer->clearCache();
-            } catch (BouncerException $e) {
-                $cacheSystem = esc_attr(get_option('crowdsec_cache_system'));
-                switch ($cacheSystem) {
-                    case Constants::CACHE_SYSTEM_MEMCACHED:
-                        throw new BouncerException('Unable to connect Memcached.'.
-                            ' Please fix the Memcached DSN or select another cache technology.');
-
-                    case Constants::CACHE_SYSTEM_REDIS:
-                        throw new BouncerException('Unable to connect Redis.'.
-                            ' Please fix the Redis DSN or select another cache technology.');
-                    default:
-                    throw new BouncerException('Unable to connect the cache system: '.$e->getMessage());
-                }
-            }
-
-            $message = __('Cache system changed. Previous cache data has been cleared.');
+            $bouncer->clearCache();
+            $message =
+                __('Cache system changed. Previous cache (' . $settings['cache_system'] . ') data has been cleared.');
             AdminNotice::displaySuccess($message);
-
-        } catch (BouncerException $e) {
-            AdminNotice::displayError($e->getMessage());
+        } catch (Exception $e) {
+            if (isset($settings['cache_system'])) {
+                $message = __('Cache system changed but there was an error while clearing previous cache (' .
+                              $settings['cache_system'] . ')');
+                AdminNotice::displayWarning($message . ': ' . $e->getMessage());
+            } else {
+                AdminNotice::displayError($e->getMessage());
+            }
         }
 
         try {
             // Reload bouncer instance with the new cache system and so test if dsn is correct.
-            $settings = getDatabaseCacheSettings();
             $settings['cache_system'] = $input;
-            getCacheAdapterInstance($settings, true);
-            try {
-                // Try the adapter connection (Redis or Memcached will crash if the connection is incorrect)
-                $settings = getDatabaseSettings();
-                $settings['cache_system'] = $input;
-                $bouncer = getBouncerInstance($settings);
-                $bouncer->testConnection();
-            } catch (BouncerException $e) {
-                AdminNotice::displayError($e->getMessage());
-                throw new BouncerException($e->getMessage());
-            }
+            $bouncer = getBouncerInstance($settings, true);
+            $bouncer->testConnection();
         } catch (BouncerException $e) {
-            AdminNotice::displayError($e->getMessage());
+            $message = __('There was an error while testing new cache ('.$input.')');
+            $messageSuffix = isset($oldCacheSystem) ? __('<br><br> Rollback to previous cache: '.$oldCacheSystem) : '';
+            AdminNotice::displayError($message.': '.$e->getMessage().$messageSuffix);
+            if(isset($oldCacheSystem)){
+                $input = $oldCacheSystem;
+            }
+            $error = true;
         }
 
         try {
-            try {
-                //Update wp-cron schedule if stream mode is enabled
-                if ((bool) get_option('crowdsec_stream_mode')) {
-                    $settings = getDatabaseSettings();
-                    $settings['cache_system'] = $input;
-                    $bouncer = getBouncerInstance($settings,true); // Reload bouncer instance with the new cache
-                    // system
-                    $result = $bouncer->warmBlocklistCacheUp();
-                    $count = $result['count'];
-                    $message = __('As the stream mode is enabled, the cache has just been warmed up, '.($count > 0 ? 'there are now '.$count.' decisions' : 'there is now '.$count.' decision').' in cache.');
-                    AdminNotice::displaySuccess($message);
-                    scheduleBlocklistRefresh();
-                }
-            } catch (BouncerException $e) {
-                AdminNotice::displayError($e->getMessage());
+            if ((bool) get_option('crowdsec_stream_mode') && !$error) {
+                // system
+                $result = $bouncer->warmBlocklistCacheUp();
+                $count = $result['count'];
+                $message .= __('As the stream mode is enabled, the cache has just been warmed up, '.($count > 0 ? 'there are now '.$count.' decisions' : 'there is now '.$count.' decision').' in cache.');
+                AdminNotice::displaySuccess($message);
+                scheduleBlocklistRefresh();
             }
-        } catch (BouncerException $e) {
+        } catch (Exception $e) {
             AdminNotice::displayError($e->getMessage());
         }
 

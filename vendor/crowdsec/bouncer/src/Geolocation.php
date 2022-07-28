@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace CrowdSecBouncer;
 
-use BadMethodCallException;
 use Exception;
 use GeoIp2\Database\Reader;
 use GeoIp2\Exception\AddressNotFoundException;
-use InvalidArgumentException;
-use MaxMind\Db\Reader\InvalidDatabaseException;
 
 /**
  * The Library geolocation helper. You'll find here methods used for geolocation purposes.
@@ -57,7 +54,7 @@ class Geolocation
                 $result['country'] = $record->country->isoCode;
             } catch (AddressNotFoundException $e) {
                 $result['not_found'] = $e->getMessage();
-            } catch (InvalidDatabaseException | InvalidArgumentException | BadMethodCallException $e) {
+            } catch (Exception $e) {
                 $result['error'] = $e->getMessage();
             }
 
@@ -70,6 +67,13 @@ class Geolocation
     /**
      * Retrieve country from a geo-localised IP.
      *
+     * @param array $geolocConfig
+     * @param string $ip
+     * @param ApiCache $apiCache
+     * @return array
+     * @throws BouncerException
+     * @throws \Psr\Cache\CacheException
+     * @throws \Psr\Cache\InvalidArgumentException
      * @throws Exception
      */
     public function getCountryResult(array $geolocConfig, string $ip, ApiCache $apiCache): array
@@ -118,6 +122,11 @@ class Geolocation
         return $result;
     }
 
+    /**
+     * @throws \Psr\Cache\CacheException
+     * @throws BouncerException
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function clearGeolocationCache(string $ip, ApiCache $apiCache): void
     {
         $variables = ['crowdsec_geolocation_country', 'crowdsec_geolocation_not_found'];

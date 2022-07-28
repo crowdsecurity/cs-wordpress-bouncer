@@ -2,53 +2,20 @@
 
 declare(strict_types=1);
 
-namespace CrowdSecBouncer;
+namespace CrowdSecBouncer\RestClient;
 
+use CrowdSecBouncer\BouncerException;
 use Psr\Log\LoggerInterface;
 
-/**
- * The low level REST Client.
- *
- * @author    CrowdSec team
- *
- * @see      https://crowdsec.net CrowdSec Official Website
- *
- * @copyright Copyright (c) 2020+ CrowdSec
- * @license   MIT License
- */
-class RestClient
+class FileGetContents extends ClientAbstract
 {
     /** @var string|null */
-    private $headerString = null;
+    private $headerString;
 
-    /** @var int|null */
-    private $timeout = null;
-
-    /** @var string|null */
-    private $baseUri = null;
-
-    /** @var LoggerInterface */
-    private $logger;
-
-    public function __construct(LoggerInterface $logger)
+    public function __construct(array $configs, LoggerInterface $logger)
     {
-        $this->logger = $logger;
-    }
-
-    /**
-     * Configure this instance.
-     */
-    public function configure(string $baseUri, array $headers, int $timeout): void
-    {
-        $this->baseUri = $baseUri;
-        $this->headerString = $this->convertHeadersToString($headers);
-        $this->timeout = $timeout;
-
-        $this->logger->debug('', [
-            'type' => 'REST_CLIENT_INIT',
-            'base_uri' => $this->baseUri,
-            'timeout' => $this->timeout,
-        ]);
+        parent::__construct($configs, $logger);
+        $this->headerString = $this->convertHeadersToString($this->headers);
     }
 
     /**
@@ -67,7 +34,7 @@ class RestClient
     /**
      * Send an HTTP request using the file_get_contents and parse its JSON result if any.
      *
-     * @throws BouncerException when the response status is not 2xx
+     * @throws BouncerException
      */
     public function request(
         string $endpoint,
@@ -77,9 +44,6 @@ class RestClient
         array $headers = null,
         int $timeout = null
     ): ?array {
-        if (!$this->baseUri) {
-            throw new BouncerException('Base URI is required.');
-        }
         if ($queryParams) {
             $endpoint .= '?' . http_build_query($queryParams);
         }
@@ -112,7 +76,7 @@ class RestClient
         $parts = explode(' ', $http_response_header[0]);
         $status = 0;
         if (\count($parts) > 1) {
-            $status = (int) ($parts[1]);
+            $status = (int) $parts[1];
         }
 
         if ($status < 200 || $status >= 300) {
