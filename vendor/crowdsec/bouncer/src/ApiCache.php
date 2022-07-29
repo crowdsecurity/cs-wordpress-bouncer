@@ -468,6 +468,7 @@ class ApiCache
     private function saveRemediations(array $decisions): array
     {
         $errors = [];
+        $count = 0;
         foreach ($decisions as $decision) {
             $remediation = $this->formatRemediationFromDecision($decision);
             $type = $remediation[0];
@@ -492,9 +493,16 @@ class ApiCache
                 }
                 $cacheKey = $this->getCacheKey($decision['scope'], $address->toString());
                 $this->addRemediationToCacheItem($cacheKey, $type, $exp, $id);
+                ++$count;
             } elseif (Constants::SCOPE_RANGE === $decision['scope']) {
                 $range = Subnet::parseString($decision['value']);
-
+                if(null === $range) {
+                    $this->logger->warning('', [
+                        'type' => 'INVALID_RANGE_TO_ADD_FROM_REMEDIATION',
+                        'decision' => $decision,
+                    ]);
+                    continue;
+                }
                 $addressType = $range->getAddressType();
                 $isIpv6 = (Type::T_IPv6 === $addressType);
                 if ($isIpv6 || ($range->getNetworkPrefix() < 24)) {
@@ -527,13 +535,15 @@ class ApiCache
                         throw new BouncerException($message);
                     }
                 } while (0 !== strcmp($address->getComparableString(), $comparableEndAddress));
+                ++$count;
             } elseif (Constants::SCOPE_COUNTRY === $decision['scope']) {
                 $cacheKey = $this->getCacheKey($decision['scope'], $decision['value']);
                 $this->addRemediationToCacheItem($cacheKey, $type, $exp, $id);
+                ++$count;
             }
         }
 
-        return ['success' => $this->commit(), 'errors' => $errors];
+        return ['success' => $this->commit(), 'errors' => $errors, 'count' => $count];
     }
 
     /**
@@ -570,7 +580,13 @@ class ApiCache
                 }
             } elseif (Constants::SCOPE_RANGE === $decision['scope']) {
                 $range = Subnet::parseString($decision['value']);
-
+                if(null === $range) {
+                    $this->logger->warning('', [
+                        'type' => 'INVALID_RANGE_TO_REMOVE_FROM_REMEDIATION',
+                        'decision' => $decision,
+                    ]);
+                    continue;
+                }
                 $addressType = $range->getAddressType();
                 $isIpv6 = (Type::T_IPv6 === $addressType);
                 if ($isIpv6 || ($range->getNetworkPrefix() < 24)) {
@@ -751,8 +767,15 @@ class ApiCache
         $nbNew = 0;
         if ($newDecisions) {
             $saveResult = $this->saveRemediations($newDecisions);
-            $addErrors = $saveResult['errors'];
-            $nbNew = \count($newDecisions);
+            if(!empty($saveResult['success'])){
+                $addErrors = $saveResult['errors']??0;
+                $nbNew = $saveResult['count']??0;
+            }
+            else{
+                $this->logger->warning('', [
+                    'type' => 'CACHE_UPDATED_FAILED',
+                    'message' => 'Something went wrong while committing to cache adapter']);
+            }
         }
 
         $this->logger->debug('', ['type' => 'CACHE_UPDATED', 'deleted' => $nbDeleted, 'new' => $nbNew]);

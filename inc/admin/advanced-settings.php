@@ -77,7 +77,7 @@ function adminAdvancedSettings()
             $settings = getDatabaseSettings();
             $oldDsn = $settings['redis_dsn'] ?? '';
             $settings['redis_dsn'] = $input;
-            $bouncer = getBouncerInstance($settings, true);
+            $bouncer = getBouncerInstance($settings);
             $bouncer->testConnection();
         } catch (Exception $e) {
             $message = __('There was an error while testing new DSN ('.$input.')');
@@ -98,7 +98,7 @@ function adminAdvancedSettings()
             $settings = getDatabaseSettings();
             $oldDsn = $settings['memcached_dsn'] ?? '';
             $settings['memcached_dsn'] = $input;
-            $bouncer = getBouncerInstance($settings, true);
+            $bouncer = getBouncerInstance($settings);
             $bouncer->testConnection();
         } catch (Exception $e) {
             $message = __('There was an error while testing new DSN ('.$input.')');
@@ -142,7 +142,7 @@ function adminAdvancedSettings()
         try {
             // Reload bouncer instance with the new cache system and so test if dsn is correct.
             $settings['cache_system'] = $input;
-            $bouncer = getBouncerInstance($settings, true);
+            $bouncer = getBouncerInstance($settings);
             $bouncer->testConnection();
         } catch (BouncerException $e) {
             $message = __('There was an error while testing new cache ('.$input.')');
@@ -155,7 +155,7 @@ function adminAdvancedSettings()
         }
 
         try {
-            if ((bool) get_option('crowdsec_stream_mode') && !$error) {
+            if (get_option('crowdsec_stream_mode') && !$error) {
                 // system
                 $result = $bouncer->warmBlocklistCacheUp();
                 $count = $result['count'];

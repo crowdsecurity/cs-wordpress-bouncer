@@ -93,6 +93,7 @@ const selectByName = async (selectName, valueToSelect) => {
 };
 
 const setToggle = async (optionName, enable) => {
+    await page.waitForSelector(`[name=${optionName}]`, {state: "attached"});
     const isEnabled = await page.$eval(
         `[name=${optionName}]`,
         (el) => el.checked,
@@ -133,6 +134,7 @@ const computeCurrentPageRemediation = async (
         return "bypass";
     }
     await expect(page).toMatchTitle(/Oops/);
+    await page.waitForSelector(".desc");
     const description = await page.$eval(".desc", (el) => el.innerText);
     const banText = "cyber";
     const captchaText = "check";
@@ -233,8 +235,10 @@ const deleteExistingStandaloneSettings = async () => {
 
 const setDefaultConfig = async () => {
     await onAdminGoToSettingsPage();
+    await setToggle("crowdsec_bouncer_disabled", false);
     await fillInput("crowdsec_api_url", LAPI_URL_FROM_WP);
     await fillInput("crowdsec_api_key", BOUNCER_KEY);
+    await setToggle("crowdsec_use_curl", false);
     await onAdminSaveSettings(false);
 
     await onAdminGoToAdvancedPage();

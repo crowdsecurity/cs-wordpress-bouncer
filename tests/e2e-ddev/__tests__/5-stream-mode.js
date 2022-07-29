@@ -3,6 +3,7 @@ const {
 	waitForNavigation,
 	goToAdmin,
 	onAdminGoToAdvancedPage,
+	onAdminGoToSettingsPage,
 	onAdminSaveSettings,
 	onAdvancedPageEnableStreamMode,
 	publicHomepageShouldBeBanWall,
@@ -12,6 +13,7 @@ const {
 	forceCronRun,
 	onLoginPageLoginAsAdmin,
 	setDefaultConfig,
+	setToggle
 } = require("../utils/helpers");
 
 const { CURRENT_IP } = require("../utils/constants");
@@ -54,19 +56,36 @@ describe(`Run in Stream mode`, () => {
 			"The cache has just been refreshed (0 new decision, 0 deleted).",
 		);
 	});
+
+	it('Should enable cURL"', async () => {
+		await goToAdmin();
+		await onAdminGoToSettingsPage();
+		await setToggle("crowdsec_use_curl", true);
+		await onAdminSaveSettings();
+	});
+
+	it("Should display a ban wall via stream mode", async () => {
+		await banOwnIpForSeconds(15 * 60, CURRENT_IP);
+		await forceCronRun();
+		await publicHomepageShouldBeBanWall();
+	});
+
+	it("Should display back the homepage with no remediation via stream mode", async () => {
+		await removeAllDecisions();
+		await forceCronRun();
+		await publicHomepageShouldBeAccessible();
+	});
+
+	it("Should refresh the cache", async () => {
+		await goToAdmin();
+		await onAdminGoToAdvancedPage();
+		await page.click("#crowdsec_refresh_cache");
+		await waitForNavigation;
+
+		await expect(page).toHaveText(
+			"#wpbody-content > div.wrap > div.notice.notice-success",
+			"The cache has just been refreshed (0 new decision, 0 deleted).",
+		);
+	});
 });
 
-/*
-
-# Stream mode: Resync decisions each
-
-Remove all decisions + Ban current IP during 15min
-Set stream mode with 15 seconds resync
-Refresh cache
-(to finish writing)
-
-# Recheck clean IP (to write)
-
-# Recheck Bad IP (to write)
-
-*/

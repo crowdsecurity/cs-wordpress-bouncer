@@ -4,8 +4,10 @@ require_once __DIR__ . '/Constants.php';
 function getCrowdSecOptionsConfig()
 {
     return [
+        ['name' => 'crowdsec_bouncer_disabled', 'default' => 'on', 'autoInit' => true],
         ['name' => 'crowdsec_api_url', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_api_key', 'default' => '', 'autoInit' => true],
+        ['name' => 'crowdsec_use_curl', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_bouncing_level', 'default' => Constants::BOUNCING_LEVEL_NORMAL, 'autoInit' => true],
         ['name' => 'crowdsec_public_website_only', 'default' => 'on', 'autoInit' => true],
         ['name' => 'crowdsec_stream_mode', 'default' => '', 'autoInit' => true],

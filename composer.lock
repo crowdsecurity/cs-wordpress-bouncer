@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4f1e3213783162dc792fd83c23c3c3ee",
+    "content-hash": "aed468cc9791a7dbd1d5c3944b7a9cb9",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -84,16 +84,16 @@
         },
         {
             "name": "crowdsec/bouncer",
-            "version": "v0.26.0",
+            "version": "v0.27.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "49ca2067c2674ccede29bc20b63d8ba79c7ac3b8"
+                "reference": "aab56fb3731a970eba6c47f65dcace915bb97769"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/49ca2067c2674ccede29bc20b63d8ba79c7ac3b8",
-                "reference": "49ca2067c2674ccede29bc20b63d8ba79c7ac3b8",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/aab56fb3731a970eba6c47f65dcace915bb97769",
+                "reference": "aab56fb3731a970eba6c47f65dcace915bb97769",
                 "shasum": ""
             },
             "require": {
@@ -150,9 +150,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.26.0"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.27.0"
             },
-            "time": "2022-07-28T02:08:02+00:00"
+            "time": "2022-07-29T05:11:56+00:00"
         },
         {
             "name": "geoip2/geoip2",

@@ -76,6 +76,12 @@ jobs:
           sudo chmod -R 777 ${{ github.workspace }}/wp-content
           sudo chmod -R 777 ${{ github.workspace }}/my-own-modules
 
+      - name: Some DEBUG information
+        run: |
+          ddev --version
+          ddev exec php -v
+          ddev exec -s crowdsec crowdsec -version
+
       - name: Install WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
         run: |
           wget https://wordpress.org/wordpress-${{ matrix.wp-version }}.tar.gz

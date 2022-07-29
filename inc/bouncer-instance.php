@@ -21,6 +21,7 @@ function getDatabaseSettings(): array
         // LAPI connection
         'api_key' => esc_attr(get_option('crowdsec_api_key')),
         'api_url' => esc_attr(get_option('crowdsec_api_url')),
+        'use_curl' => !empty(get_option('crowdsec_use_curl')),
         'api_user_agent' => Constants::CROWDSEC_BOUNCER_USER_AGENT,
         'api_timeout' => Constants::API_TIMEOUT,
         // Debug
@@ -60,7 +61,7 @@ function getDatabaseSettings(): array
     ];
 }
 
-function getBouncerInstance(array $configs, bool $forceReload = false): Bouncer
+function getBouncerInstance(array $configs): Bouncer
 {
-    return getBouncerInstanceStandalone($configs, $forceReload);
+    return getBouncerInstanceStandalone($configs);
 }

@@ -26,7 +26,7 @@ class StandaloneBounce extends AbstractBounce
      * @throws ErrorException
      * @throws \Psr\Cache\InvalidArgumentException|BouncerException
      */
-    public function init(array $configs, array $forcedConfigs = []): Bouncer
+    public function init(array $configs): Bouncer
     {
         // Convert array of string to array of array with comparable IPs
         if (\is_array(($configs['trust_ip_forward_array']))) {
@@ -45,7 +45,7 @@ class StandaloneBounce extends AbstractBounce
             }
             $configs['trust_ip_forward_array'] = $finalForwardConfigs;
         }
-        $this->settings = array_merge($configs, $forcedConfigs);
+        $this->settings = $configs;
 
         return $this->getBouncerInstance($this->settings);
     }
@@ -57,12 +57,8 @@ class StandaloneBounce extends AbstractBounce
      * @throws ErrorException
      * @throws \Psr\Cache\InvalidArgumentException|BouncerException
      */
-    public function getBouncerInstance(array $settings, bool $forceReload = false): Bouncer
+    public function getBouncerInstance(array $settings): Bouncer
     {
-        // Singleton for this function (if no reload forcing)
-        if ($this->bouncer && !$forceReload) {
-            return $this->bouncer;
-        }
         $this->settings = array_merge($this->settings, $settings);
         $apiUserAgent = 'Standalone CrowdSec PHP Bouncer/' . Constants::VERSION;
 

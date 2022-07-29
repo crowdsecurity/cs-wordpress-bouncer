@@ -38,14 +38,8 @@ function getStandaloneCrowdSecLoggerInstance(string $crowdsecLogPath, bool $debu
 
 $crowdSecBouncer = null;
 
-function getBouncerInstanceStandalone(array $configs, bool $forceReload = false): Bouncer
+function getBouncerInstanceStandalone(array $configs): Bouncer
 {
-    // Singleton for this function
-    global $crowdSecBouncer;
-    if (!$forceReload && $crowdSecBouncer) {
-        return $crowdSecBouncer;
-    }
-
     // Init Bouncer instance
     $bouncingLevel = $configs['bouncing_level'];
     switch ($bouncingLevel) {

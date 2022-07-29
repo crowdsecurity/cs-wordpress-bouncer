@@ -4,6 +4,18 @@ require_once __DIR__ . '/../Constants.php';
 function adminSettings()
 {
     /**********************************
+     ** Section "Bouncer feature" **
+     *********************************/
+    add_settings_section('crowdsec_admin_general', 'Bouncing feature', function () {
+    }, 'crowdsec_settings');
+
+    // Field "Disable bouncing"
+    addFieldCheckbox('crowdsec_bouncer_disabled', 'Disable bouncing feature', 'crowdsec_plugin_settings',
+        'crowdsec_settings', 'crowdsec_admin_general', function () {}, function () {}, '<p>If checked, the bouncer will not be instantiated at all.
+<br>This should be checked until you have configured all the required parameters.</p>');
+
+
+    /**********************************
      ** Section "Connection details" **
      *********************************/
 
@@ -20,6 +32,11 @@ function adminSettings()
     addFieldString('crowdsec_api_key', 'Bouncer API key', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
         return $input;
     }, '<p>Generated with the cscli command, ex: <em>cscli bouncers add wordpress-bouncer</em></p>', 'Your bouncer key', 'width: 280px;', 'text');
+
+    // Field "Use cURL"
+    addFieldCheckbox('crowdsec_use_curl', 'Use cURL to call LAPI', 'crowdsec_plugin_settings',
+        'crowdsec_settings', 'crowdsec_admin_connection', function () {}, function () {}, '<p>If checked, calls to LAPI will be done with <i>cURL</i> (be sure to have <i>cURL</i> enabled on your system before enabling).
+<br>If not checked, calls are done with <i>file_get_contents</i> method (<i>allow_url_fopen</i> is required for this).</p>');
 
     /************************************
      ** Section "Bouncing refinements" **
@@ -60,5 +77,5 @@ function adminSettings()
     }, function () {
         // Stream mode just deactivated.
         unscheduleBlocklistRefresh();
-    }, '<p>If enabled, the wp-admin is not bounced, only the public website</p><p><strong>Important note:</strong> the login page is a common page to both sections. If you want to bounce it, you have to disable "Public website only".</p>');
+    }, '<p>If checked, the wp-admin is not bounced, only the public website</p><p><strong>Important note:</strong> the login page is a common page to both sections. If you want to bounce it, you have to disable "Public website only".</p>');
 }

@@ -52,7 +52,6 @@ class Curl extends ClientAbstract
 
     /**
      * Retrieve Curl options.
-     *
      */
     private function createOptions(
         string $endpoint,

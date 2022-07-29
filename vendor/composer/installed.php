@@ -3,11 +3,11 @@
         'name' => 'crowdsec/wordpress-bouncer',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '5b953901a869792ee4e92f17be60365fb2bc8494',
+        'reference' => '8836e491ba693331bdb9ee09a1dbdc93fc83f305',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'dev' => true,
+        'dev' => false,
     ),
     'versions' => array(
         'composer/ca-bundle' => array(
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'crowdsec/bouncer' => array(
-            'pretty_version' => 'v0.26.0',
-            'version' => '0.26.0.0',
-            'reference' => '49ca2067c2674ccede29bc20b63d8ba79c7ac3b8',
+            'pretty_version' => 'v0.27.0',
+            'version' => '0.27.0.0',
+            'reference' => 'aab56fb3731a970eba6c47f65dcace915bb97769',
             'type' => 'library',
             'install_path' => __DIR__ . '/../crowdsec/bouncer',
             'aliases' => array(),
@@ -31,7 +31,7 @@
         'crowdsec/wordpress-bouncer' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '5b953901a869792ee4e92f17be60365fb2bc8494',
+            'reference' => '8836e491ba693331bdb9ee09a1dbdc93fc83f305',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

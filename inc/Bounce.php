@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 
 use CrowdSecBouncer\AbstractBounce;
 use CrowdSecBouncer\Bouncer;
@@ -18,11 +18,10 @@ require_once __DIR__ . '/Constants.php';
  */
 class Bounce extends AbstractBounce
 {
-    public function init(array $crowdSecConfig, array $forcedConfigs = []): Bouncer
+    public function init(array $configs): Bouncer
     {
-        $finalConfigs = array_merge($crowdSecConfig, $forcedConfigs);
-
-        return $this->getBouncerInstance($finalConfigs);
+        $this->settings = $configs;
+        return $this->getBouncerInstance($this->settings);
     }
 
     protected function escape(string $value)
@@ -38,14 +37,15 @@ class Bounce extends AbstractBounce
     /**
      * @return Bouncer get the bouncer instance
      */
-    public function getBouncerInstance(array $settings, bool $forceReload = false): Bouncer
+    public function getBouncerInstance(array $settings): Bouncer
     {
-        $this->settings = $settings;
+        $this->settings = array_merge($this->settings, $settings);
 
         $configs = [
             // LAPI connection
             'api_key' => $this->escape($this->getStringSettings('crowdsec_api_key')),
             'api_url' => $this->escape($this->getStringSettings('crowdsec_api_url')),
+            'use_curl' => $this->getBoolSettings('crowdsec_use_curl'),
             'api_user_agent' => Constants::CROWDSEC_BOUNCER_USER_AGENT,
             'api_timeout' => Constants::API_TIMEOUT,
             // Debug
@@ -82,7 +82,7 @@ class Bounce extends AbstractBounce
             ]
         ];
 
-        $this->bouncer = getBouncerInstanceStandalone($configs, $forceReload);
+        $this->bouncer = getBouncerInstanceStandalone($configs);
 
         return $this->bouncer;
     }
@@ -210,6 +210,19 @@ class Bounce extends AbstractBounce
      */
     public function shouldBounceCurrentIp(): bool
     {
+        $shouldNotBounce = $this->getBoolSettings('crowdsec_bouncer_disabled');
+        if ($shouldNotBounce) {
+            if($this->logger){
+                $this->logger->warning('', [
+                    'type' => 'WP_CONFIG_BOUNCER_DISABLED',
+                    'message' => 'Will not bounce because bouncing is disabled.',
+                ]);
+            }
+
+            return false;
+        }
+
+
         // We should not bounce when headers already sent
         if (headers_sent()) {
             return false;

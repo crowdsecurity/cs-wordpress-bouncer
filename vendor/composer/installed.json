@@ -81,17 +81,17 @@
         },
         {
             "name": "crowdsec/bouncer",
-            "version": "v0.26.0",
-            "version_normalized": "0.26.0.0",
+            "version": "v0.27.0",
+            "version_normalized": "0.27.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "49ca2067c2674ccede29bc20b63d8ba79c7ac3b8"
+                "reference": "aab56fb3731a970eba6c47f65dcace915bb97769"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/49ca2067c2674ccede29bc20b63d8ba79c7ac3b8",
-                "reference": "49ca2067c2674ccede29bc20b63d8ba79c7ac3b8",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/aab56fb3731a970eba6c47f65dcace915bb97769",
+                "reference": "aab56fb3731a970eba6c47f65dcace915bb97769",
                 "shasum": ""
             },
             "require": {
@@ -111,7 +111,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2022-07-28T02:08:02+00:00",
+            "time": "2022-07-29T05:11:56+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -150,7 +150,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.26.0"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.27.0"
             },
             "install-path": "../crowdsec/bouncer"
         },
@@ -1779,6 +1779,6 @@
             "install-path": "../symfony/var-exporter"
         }
     ],
-    "dev": true,
+    "dev": false,
     "dev-package-names": []
 }
