@@ -86,8 +86,8 @@ jobs:
                     fi
                     CONSTANT_VERSION=$(grep -E "WordPress CrowdSec Bouncer/v(.*)"  inc/Constants.php | sed 's/[\x27(),/ ]//g')
                     echo $CONSTANT_VERSION
-                    echo "publicconstCROWDSEC_BOUNCER_USER_AGENTWordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }}"
-                    if [[ $CONSTANT_VERSION == "publicconstCROWDSEC_BOUNCER_USER_AGENTWordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }};" ]]
+                    echo "publicconstCROWDSEC_BOUNCER_USER_AGENT=WordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }};"
+                    if [[ $CONSTANT_VERSION == "publicconstCROWDSEC_BOUNCER_USER_AGENT=WordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }};" ]]
                     then
                         echo "Version in inc/Constants.php: OK"
                     else
