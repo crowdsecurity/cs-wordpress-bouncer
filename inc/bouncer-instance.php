@@ -1,41 +1,21 @@
 <?php
 
-require_once __DIR__.'/constants.php';
 require_once __DIR__.'/bouncer-instance-standalone.php';
+require_once __DIR__ . '/Constants.php';
 
 use CrowdSecBouncer\Bouncer;
-use CrowdSecBouncer\Constants;
 use Monolog\Logger;
-use \Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
 
-$crowdsecRandomLogFolder = get_option('crowdsec_random_log_folder') ?: '';
-crowdsecDefineConstants($crowdsecRandomLogFolder);
+
 
 function getCrowdSecLoggerInstance(): Logger
 {
-    return getStandaloneCrowdSecLoggerInstance(CROWDSEC_LOG_PATH, (bool) get_option('crowdsec_debug_mode'), CROWDSEC_DEBUG_LOG_PATH);
+    return getStandaloneCrowdSecLoggerInstance(
+        (bool) get_option('crowdsec_debug_mode'),
+        (bool) get_option('crowdsec_disable_prod_log')
+    );
 }
 
-function getDatabaseCacheSettings(): array
-{
-    return [
-        // Cache settings
-        'cache_system' => esc_attr(get_option('crowdsec_cache_system')),
-        'fs_cache_path' => CROWDSEC_CACHE_PATH,
-        'redis_dsn' =>  esc_attr(get_option('crowdsec_redis_dsn')),
-        'memcached_dsn' => esc_attr(get_option('crowdsec_memcached_dsn')),
-    ];
-}
-
-function getCacheAdapterInstance(array $settings, bool $forcedReload = false): TagAwareAdapterInterface
-{
-    $cacheSystem = $settings['cache_system'];
-    $memcachedDsn = $settings['memcached_dsn'];
-    $redisDsn = $settings['redis_dsn'];
-    $fsCachePath = $settings['fs_cache_path'];
-
-    return getCacheAdapterInstanceStandalone($cacheSystem, $memcachedDsn, $redisDsn, $fsCachePath, $forcedReload);
-}
 
 function getDatabaseSettings(): array
 {
@@ -43,11 +23,12 @@ function getDatabaseSettings(): array
         // LAPI connection
         'api_key' => esc_attr(get_option('crowdsec_api_key')),
         'api_url' => esc_attr(get_option('crowdsec_api_url')),
-        'api_user_agent' => CROWDSEC_BOUNCER_USER_AGENT,
-        'api_timeout' => CrowdSecBouncer\Constants::API_TIMEOUT,
+        'use_curl' => !empty(get_option('crowdsec_use_curl')),
+        'api_user_agent' => Constants::CROWDSEC_BOUNCER_USER_AGENT,
+        'api_timeout' => Constants::API_TIMEOUT,
         // Debug
         'debug_mode' => !empty(get_option('crowdsec_debug_mode')),
-        'log_directory_path' => CROWDSEC_LOG_BASE_PATH,
+        'log_directory_path' => Constants::CROWDSEC_LOG_BASE_PATH,
         'forced_test_ip' => esc_attr(get_option('crowdsec_forced_test_ip')),
         'forced_test_forwarded_ip' => esc_attr(get_option('crowdsec_forced_test_forwarded_ip')),
         'display_errors' => !empty(get_option('crowdsec_display_errors')),
@@ -58,7 +39,7 @@ function getDatabaseSettings(): array
         // Cache settings
         'stream_mode' => !empty(get_option('crowdsec_stream_mode')),
         'cache_system' => esc_attr(get_option('crowdsec_cache_system')),
-        'fs_cache_path' => CROWDSEC_CACHE_PATH,
+        'fs_cache_path' => Constants::CROWDSEC_CACHE_PATH,
         'redis_dsn' => esc_attr(get_option('crowdsec_redis_dsn')),
         'memcached_dsn' => esc_attr(get_option('crowdsec_memcached_dsn')),
         'clean_ip_cache_duration' => (int)get_option('crowdsec_clean_ip_cache_duration') ?:
@@ -76,13 +57,13 @@ function getDatabaseSettings(): array
             'save_result' => !empty(get_option('crowdsec_geolocation_save_result')),
             'maxmind' => [
                 'database_type' => esc_attr(get_option('crowdsec_geolocation_maxmind_database_type')),
-                'database_path' => CROWDSEC_BOUNCER_GEOLOCATION_DIR. '/'.ltrim(esc_attr(get_option('crowdsec_geolocation_maxmind_database_path')), '/'),
+                'database_path' => Constants::CROWDSEC_BOUNCER_GEOLOCATION_DIR. '/'.ltrim(esc_attr(get_option('crowdsec_geolocation_maxmind_database_path')), '/'),
             ]
         ]
     ];
 }
 
-function getBouncerInstance(array $configs, bool $forceReload = false): Bouncer
+function getBouncerInstance(array $configs): Bouncer
 {
-    return getBouncerInstanceStandalone($configs, $forceReload);
+    return getBouncerInstanceStandalone($configs);
 }

@@ -4,7 +4,7 @@ Donate link: https://crowdsec.net/
 Tags: crowdsec-bouncer, wordpress, security, firewall, captcha, ip-scanner, ip-blocker, ip-blocking, ip-address, ip-database, ip-range-check, crowdsec, ban-hosts, ban-management, anti-hacking, hacker-protection, captcha-image, captcha-generator, captcha-generation, captcha-service
 Requires at least: 4.9
 Tested up to: 6.0
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 Requires PHP: 7.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
@@ -43,6 +43,13 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 10. A Ban wall page customization (text and colors)
 
 == Changelog ==
+
+= 1.8 (2022-08-04)
+
+- Add `use_curl` configuration: should be used if `allow_url_fopen` is disabled and `curl` is available
+- Add `disable_prod_log` configuration
+- Change log path to `wp-content/plugins/crowdsec/logs`
+- By default, the `bouncing_level` setting is now `bouncing_disabled` (instead of `normal_bouncing`)
 
 = 1.7 (2022-07-20) =
 
@@ -105,7 +112,7 @@ With this release, you can enable debug log without throwing error on browser as
 
 You can:
 
-1. Block aggresive IPs
-2. Display a captcha for less aggresive IPs
+1. Block aggressive IPs
+2. Display a captcha for less aggressive IPs
 
 Get more info on the [CrowdSec official website](https://crowdsec.net).

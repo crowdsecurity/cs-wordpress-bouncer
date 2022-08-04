@@ -40,7 +40,7 @@ jobs:
                 uses: actions/checkout@v2
 
             -   name: Check version ${{ env.VERSION_NUMBER }} consistency in files
-                # Check crowdsec.php, readme.txt, inc/constants.php and CHANGELOG.md
+                # Check crowdsec.php, readme.txt, inc/Constants.php and CHANGELOG.md
                 run: |
                     CURRENT_DATE=$(date +'%Y-%m-%d')
                     CHANGELOG_VERSION=$(grep -o -E "## \[(.*)\] - $CURRENT_DATE"  CHANGELOG.md | head -1 | sed 's/ //g')
@@ -84,14 +84,14 @@ jobs:
                         echo "Stable tag in readme.txt: KO"
                         exit 1
                     fi
-                    CONSTANT_VERSION=$(grep -E "WordPress CrowdSec Bouncer/v(.*)"  inc/constants.php | sed 's/[\x27(),/ ]//g')
+                    CONSTANT_VERSION=$(grep -E "WordPress CrowdSec Bouncer/v(.*)"  inc/Constants.php | sed 's/[\x27(),/ ]//g')
                     echo $CONSTANT_VERSION
-                    echo "defineCROWDSEC_BOUNCER_USER_AGENTWordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }}"
-                    if [[ $CONSTANT_VERSION == "defineCROWDSEC_BOUNCER_USER_AGENTWordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }};" ]]
+                    echo "publicconstCROWDSEC_BOUNCER_USER_AGENTWordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }}"
+                    if [[ $CONSTANT_VERSION == "publicconstCROWDSEC_BOUNCER_USER_AGENTWordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }};" ]]
                     then
-                        echo "Version in inc/constants.php: OK"
+                        echo "Version in inc/Constants.php: OK"
                     else
-                        echo "Version in inc/constants.php: KO"
+                        echo "Version in inc/Constants.php: KO"
                         exit 1
                     fi
 

@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace CrowdSecBouncer;
 
 use Psr\Log\LoggerInterface;
+use CrowdSecBouncer\RestClient\FileGetContents;
+use CrowdSecBouncer\RestClient\Curl;
+use CrowdSecBouncer\RestClient\AbstractClient;
 
 /**
- * The LAPI/CAPI REST Client. This is used to retrieve decisions.
+ * The LAPI REST Client. This is used to retrieve decisions.
  *
  * @author    CrowdSec team
  *
@@ -20,36 +23,48 @@ class ApiClient
 {
     /** @var LoggerInterface */
     private $logger;
+    /** @var array */
+    private $configs;
 
     /**
-     * @var RestClient
+     * @var AbstractClient
      */
     private $restClient;
 
-    public function __construct(LoggerInterface $logger)
+    /**
+     * @param array $configs
+     * @param LoggerInterface $logger
+     * @throws BouncerException
+     */
+    public function __construct(array $configs, LoggerInterface $logger)
     {
         $this->logger = $logger;
-        $this->restClient = new RestClient($this->logger);
-    }
-
-    /**
-     * Configure this instance.
-     */
-    public function configure(string $baseUri, int $timeout, string $userAgent, string $apiKey): void
-    {
-        $this->restClient->configure($baseUri, [
-            'User-Agent' => $userAgent,
-            'X-Api-Key' => $apiKey,
+        $this->configs = $configs;
+        $useCurl = !empty($this->configs['use_curl']);
+        if (empty($this->configs['api_user_agent'])) {
+            throw new BouncerException('User agent is required');
+        }
+        $userAgent = $this->configs['api_user_agent'];
+        $this->configs['headers'] = [
+            'User-Agent' => $this->configs['api_user_agent'],
+            'X-Api-Key' => $this->configs['api_key'],
             'Accept' => 'application/json',
-        ], $timeout);
+        ];
+
+        $this->restClient = $useCurl ?
+            new Curl($this->configs, $this->logger) :
+            new FileGetContents($this->configs, $this->logger);
+
         $this->logger->debug('', [
             'type' => 'API_CLIENT_INIT',
             'user_agent' => $userAgent,
+            'rest_client' => \get_class($this->restClient)
         ]);
     }
 
     /**
      * Request decisions using the specified $filter array.
+     * @throws BouncerException
      */
     public function getFilteredDecisions(array $filter): array
     {
@@ -59,15 +74,22 @@ class ApiClient
     /**
      * Request decisions using the stream mode. When the $startup flag is used, all the decisions are returned.
      * Else only the decisions updates (add or remove) from the last stream call are returned.
+     * @throws BouncerException
      */
     public function getStreamedDecisions(
-        bool $startup = false,
+        bool  $startup = false,
         array $scopes = [Constants::SCOPE_IP, Constants::SCOPE_RANGE]
-    ): array {
+    ): array
+    {
         /** @var array */
         return $this->restClient->request(
             '/v1/decisions/stream',
             ['startup' => $startup ? 'true' : 'false', 'scopes' => implode(',', $scopes)]
         );
+    }
+
+    public function getRestClient(): AbstractClient
+    {
+        return $this->restClient;
     }
 }

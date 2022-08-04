@@ -17,17 +17,17 @@ interface IBounce
     /**
      * Init the bouncer.
      */
-    public function init(array $configs, array $forcedConfigs = []): Bouncer;
+    public function init(array $configs): Bouncer;
 
     /**
      * Init the logger.
      */
-    public function initLogger(): void;
+    public function initLogger(array $configs): void;
 
     /**
      * Get the bouncer instance.
      */
-    public function getBouncerInstance(array $settings, bool $forceReload = false): Bouncer;
+    public function getBouncerInstance(array $settings): Bouncer;
 
     /**
      * If there is any technical problem while bouncing, don't block the user. Bypass bouncing and log the error.

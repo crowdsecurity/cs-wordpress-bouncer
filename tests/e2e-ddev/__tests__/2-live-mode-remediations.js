@@ -2,6 +2,7 @@
 const {
 	goToAdmin,
 	onAdminGoToAdvancedPage,
+	onAdminGoToSettingsPage,
 	onAdminGoToThemePage,
 	onAdminSaveSettings,
 	onLoginPageLoginAsAdmin,
@@ -15,7 +16,7 @@ const {
 	onCaptchaPageRefreshCaptchaImage,
 	fillInput,
 	setDefaultConfig,
-	removeAllDecisions,
+	removeAllDecisions, selectByName,
 } = require("../utils/helpers");
 
 const { CURRENT_IP } = require("../utils/constants");
@@ -117,6 +118,46 @@ describe(`Run in Live mode`, () => {
 		await onAdminGoToAdvancedPage();
 		await setToggle("crowdsec_hide_mentions", false);
 		await onAdminSaveSettings();
+	});
+
+	it('Should display a ban wall"', async () => {
+		await banOwnIpForSeconds(15 * 60, CURRENT_IP);
+		await publicHomepageShouldBeBanWall();
+	});
+
+	it('Should bypass is bouncing disabled"', async () => {
+		await goToAdmin();
+		await onAdminGoToSettingsPage();
+		await selectByName("crowdsec_bouncing_level", "bouncing_disabled");
+    	await onAdminSaveSettings();
+		await publicHomepageShouldBeAccessible();
+	});
+
+	it('Should enable cURL"', async () => {
+		await removeAllDecisions();
+		await goToAdmin();
+		await onAdminGoToSettingsPage();
+		await selectByName("crowdsec_bouncing_level", "normal_bouncing");
+		await setToggle("crowdsec_use_curl", true);
+		await onAdminSaveSettings();
+	});
+
+	it('Should display the homepage with no remediation"', async () => {
+		await publicHomepageShouldBeAccessible();
+	});
+
+	it('Should display a captcha wall"', async () => {
+		await captchaOwnIpForSeconds(15 * 60, CURRENT_IP);
+		await publicHomepageShouldBeCaptchaWallWithMentions();
+
+		// Disable CrowdSec Mentions
+		await goToAdmin();
+		// await onLoginPageLoginAsAdmin();
+		await onAdminGoToAdvancedPage();
+		await setToggle("crowdsec_hide_mentions", true);
+		await onAdminSaveSettings();
+		await publicHomepageShouldBeCaptchaWallWithoutMentions();
+	
 	});
 
 	it('Should display a ban wall"', async () => {

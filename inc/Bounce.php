@@ -1,12 +1,10 @@
 <?php
-
-require_once __DIR__.'/constants.php';
+declare(strict_types=1);
 
 use CrowdSecBouncer\AbstractBounce;
 use CrowdSecBouncer\Bouncer;
-use CrowdSecBouncer\Constants;
-use CrowdSecBouncer\IBounce;
 use CrowdSecBouncer\BouncerException;
+require_once __DIR__ . '/Constants.php';
 
 /**
  * The class that apply a bounce.
@@ -20,18 +18,10 @@ use CrowdSecBouncer\BouncerException;
  */
 class Bounce extends AbstractBounce
 {
-    public function init(array $crowdSecConfig, array $forcedConfigs = []): Bouncer
+    public function init(array $configs): Bouncer
     {
-        $finalConfigs = array_merge($crowdSecConfig, $forcedConfigs);
-        $crowdsecRandomLogFolder = $finalConfigs['crowdsec_random_log_folder'];
-        crowdsecDefineConstants($crowdsecRandomLogFolder);
-        $this->setDebug($finalConfigs['crowdsec_debug_mode']??false);
-        $this->setDisplayErrors($finalConfigs['crowdsec_display_errors'] ?? false);
-        $this->initLogger();
-
-
-
-        return $this->getBouncerInstance($finalConfigs);
+        $this->settings = $configs;
+        return $this->getBouncerInstance($this->settings);
     }
 
     protected function escape(string $value)
@@ -47,22 +37,21 @@ class Bounce extends AbstractBounce
     /**
      * @return Bouncer get the bouncer instance
      */
-    public function getBouncerInstance(array $settings, bool $forceReload = false): Bouncer
+    public function getBouncerInstance(array $settings): Bouncer
     {
-        $crowdSecLogPath = CROWDSEC_LOG_PATH;
-        $crowdSecDebugLogPath = CROWDSEC_DEBUG_LOG_PATH;
-        $this->logger = getStandaloneCrowdSecLoggerInstance($crowdSecLogPath, $this->debug, $crowdSecDebugLogPath);
-        $this->settings = $settings;
+        $this->settings = array_merge($this->settings, $settings);
 
         $configs = [
             // LAPI connection
             'api_key' => $this->escape($this->getStringSettings('crowdsec_api_key')),
             'api_url' => $this->escape($this->getStringSettings('crowdsec_api_url')),
-            'api_user_agent' => CROWDSEC_BOUNCER_USER_AGENT,
-            'api_timeout' => CrowdSecBouncer\Constants::API_TIMEOUT,
+            'use_curl' => $this->getBoolSettings('crowdsec_use_curl'),
+            'api_user_agent' => Constants::CROWDSEC_BOUNCER_USER_AGENT,
+            'api_timeout' => Constants::API_TIMEOUT,
             // Debug
             'debug_mode' => $this->getBoolSettings('crowdsec_debug_mode'),
-            'log_directory_path' => CROWDSEC_LOG_BASE_PATH,
+            'disable_prod_log' => $this->getBoolSettings('crowdsec_disable_prod_log'),
+            'log_directory_path' => Constants::CROWDSEC_LOG_BASE_PATH,
             'forced_test_ip' => $this->getStringSettings('crowdsec_forced_test_ip'),
             'forced_test_forwarded_ip' => $this->getStringSettings('crowdsec_forced_test_forwarded_ip'),
             'display_errors' => $this->getBoolSettings('crowdsec_display_errors'),
@@ -73,7 +62,7 @@ class Bounce extends AbstractBounce
             // Cache settings
             'stream_mode' => $this->getBoolSettings('crowdsec_stream_mode'),
             'cache_system' => $this->escape($this->getStringSettings('crowdsec_cache_system')),
-            'fs_cache_path' => CROWDSEC_CACHE_PATH,
+            'fs_cache_path' => Constants::CROWDSEC_CACHE_PATH,
             'redis_dsn' => $this->escape($this->getStringSettings('crowdsec_redis_dsn')),
             'memcached_dsn' => $this->escape($this->getStringSettings('crowdsec_memcached_dsn')),
             'clean_ip_cache_duration' => $this->getIntegerSettings('crowdsec_clean_ip_cache_duration')?:Constants::CACHE_EXPIRATION_FOR_CLEAN_IP,
@@ -89,12 +78,12 @@ class Bounce extends AbstractBounce
                 'save_result' => $this->getBoolSettings('crowdsec_geolocation_save_result'),
                 'maxmind' => [
                     'database_type' => $this->getStringSettings('crowdsec_geolocation_maxmind_database_type')?:Constants::MAXMIND_COUNTRY,
-                    'database_path' => CROWDSEC_BOUNCER_GEOLOCATION_DIR. '/'.ltrim($this->getStringSettings('crowdsec_geolocation_maxmind_database_path'), '/'),
+                    'database_path' => Constants::CROWDSEC_BOUNCER_GEOLOCATION_DIR. '/'.ltrim($this->getStringSettings('crowdsec_geolocation_maxmind_database_path'), '/'),
                 ]
             ]
         ];
 
-        $this->bouncer = getBouncerInstanceStandalone($configs, $forceReload);
+        $this->bouncer = getBouncerInstanceStandalone($configs);
 
         return $this->bouncer;
     }
@@ -222,6 +211,21 @@ class Bounce extends AbstractBounce
      */
     public function shouldBounceCurrentIp(): bool
     {
+        $bouncingDisabled = (Constants::BOUNCING_LEVEL_DISABLED === $this->escape($this->getStringSettings('crowdsec_bouncing_level')));
+        if ($bouncingDisabled) {
+            if($this->logger){
+                $this->logger->warning('', [
+                    'type' => 'WP_CONFIG_BOUNCER_DISABLED',
+                    'message' => 'Will not bounce because bouncing is disabled.',
+                ]);
+            }
+            return false;
+        }
+
+        // We should not bounce when headers already sent
+        if (headers_sent()) {
+            return false;
+        }
         // Don't bounce favicon calls.
         if ('/favicon.ico' === $_SERVER['REQUEST_URI']) {
             return false;
@@ -269,10 +273,6 @@ class Bounce extends AbstractBounce
             return false;
         }
 
-        $bouncingDisabled = (Constants::BOUNCING_LEVEL_DISABLED === $this->escape($this->getStringSettings('crowdsec_bouncing_level')));
-        if ($bouncingDisabled) {
-            return false;
-        }
 
         return true;
     }
@@ -309,10 +309,6 @@ class Bounce extends AbstractBounce
 
     public function safelyBounce(array $configs): bool
     {
-        if (headers_sent()) {
-            // We should not bounce when headers already sent
-            return false;
-        }
         // If there is any technical problem while bouncing, don't block the user. Bypass boucing and log the error.
         set_error_handler(function ($errno, $errstr) {
             throw new BouncerException("$errstr (Error level: $errno)");
@@ -325,8 +321,12 @@ class Bounce extends AbstractBounce
             }elseif($configs['crowdsec_bouncing_level'] === 'flex_boucing'){
                 $configs['crowdsec_bouncing_level'] = Constants::BOUNCING_LEVEL_FLEX;
             }
-            $this->init($configs);
-            $this->run();
+            $this->settings = $configs;
+            $this->initLogger($configs);
+            if ($this->shouldBounceCurrentIp()) {
+                $this->init($configs);
+                $this->run();
+            }
             $result = true;
         } catch (\Exception $e) {
             if(!$this->logger){
@@ -344,7 +344,7 @@ class Bounce extends AbstractBounce
                     'line' => $e->getLine(),
                 ]);
             }
-            if ($this->displayErrors) {
+            if (!empty($configs['crowdsec_display_errors'])) {
                 throw $e;
             }
         }
@@ -364,40 +364,28 @@ class Bounce extends AbstractBounce
             $apiUrl = $this->escape($this->getStringSettings('crowdsec_api_url'));
             if (empty($apiUrl)) {
                 $issues['errors'][] = [
-                'type' => 'INCORRECT_API_URL',
-                'message' => 'Bouncer enabled but no API URL provided',
-            ];
+                    'type' => 'INCORRECT_API_URL',
+                    'message' => 'Bouncer enabled but no API URL provided',
+                ];
             }
 
             $apiKey = $this->escape($this->getStringSettings('crowdsec_api_key'));
             if (empty($apiKey)) {
                 $issues['errors'][] = [
-                'type' => 'INCORRECT_API_KEY',
-                'message' => 'Bouncer enabled but no API key provided',
-            ];
-            }
-
-            try {
-                $cacheSystem = $this->escape($this->getStringSettings('crowdsec_cache_system'));
-                $memcachedDsn = $this->escape($this->getStringSettings('crowdsec_memcached_dsn'));
-                $redisDsn = $this->escape($this->getStringSettings('crowdsec_redis_dsn'));
-                $fsCachePath = CROWDSEC_CACHE_PATH;
-                getCacheAdapterInstanceStandalone($cacheSystem, $memcachedDsn, $redisDsn, $fsCachePath);
-            } catch (BouncerException $e) {
-                $issues['errors'][] = [
-                'type' => 'CACHE_CONFIG_ERROR',
-                'message' => $e->getMessage(),
-            ];
+                    'type' => 'INCORRECT_API_KEY',
+                    'message' => 'Bouncer enabled but no API key provided',
+                ];
             }
         }
 
         return !count($issues['errors']) && !count($issues['warnings']);
     }
 
-    public function initLogger(): void
+    public function initLogger(array $configs): void
     {
-        $crowdSecLogPath = CROWDSEC_LOG_PATH;
-        $crowdSecDebugLogPath = CROWDSEC_DEBUG_LOG_PATH;
-        $this->logger = getStandaloneCrowdSecLoggerInstance($crowdSecLogPath, $this->debug, $crowdSecDebugLogPath);
+        $isDebug = !empty($configs['crowdsec_debug_mode']);
+        $disableProd = !empty($configs['crowdsec_disable_prod_log']);
+        $this->logger = getStandaloneCrowdSecLoggerInstance($isDebug, $disableProd);
+
     }
 }

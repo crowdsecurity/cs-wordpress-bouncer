@@ -1,6 +1,5 @@
 <?php
 
-use CrowdSecBouncer\Constants;
 
 require_once __DIR__ . '/Bounce.php';
 require_once __DIR__.'/options-config.php';
@@ -22,7 +21,7 @@ function safelyBounceCurrentIp()
 	if(defined("ALREADY_BOUNCED_WITH_STANDALONE")){
 		return;
 	}
-	$crowdSecConfig = getConfigs();
+	$crowdSecConfigs = getConfigs();
     $crowdSecBounce = new Bounce();
-    $crowdSecBounce->safelyBounce($crowdSecConfig);
+    $crowdSecBounce->safelyBounce($crowdSecConfigs);
 }

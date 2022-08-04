@@ -16,6 +16,7 @@ class Remediation
 {
     /**
      * Compare two priorities.
+     * @noinspection PhpUnusedPrivateMethodInspection
      */
     private static function comparePriorities(array $a, array $b): int
     {

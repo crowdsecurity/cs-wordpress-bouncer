@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__.'/options-config.php';
+require_once __DIR__ . '/Constants.php';
+
 
 function writeStaticConfigFile($name = null, $newValue = null)
 {
@@ -13,7 +15,7 @@ function writeStaticConfigFile($name = null, $newValue = null)
         $data[$name] = $newValue;
     }
     $json = json_encode($data);
-    file_put_contents(CROWDSEC_CONFIG_PATH, "<?php \$crowdSecJsonStandaloneConfig='$json';");
+    file_put_contents(Constants::CROWDSEC_CONFIG_PATH, "<?php \$crowdSecJsonStandaloneConfig='$json';");
 }
 
 /**
@@ -32,9 +34,6 @@ function activate_crowdsec_plugin()
         }
     }
 
-    if (!get_option('crowdsec_random_log_folder')) {
-        update_option('crowdsec_random_log_folder', bin2hex(random_bytes(64)));
-    }
     writeStaticConfigFile();
 }
 

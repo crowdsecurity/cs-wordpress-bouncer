@@ -12,9 +12,6 @@ const {
     PROXY_IP,
 } = require("./constants");
 
-const COOKIES_FILE_PATH = `${__dirname}/../.cookies.json`;
-const STANDALONE_SETTINGS_FILE_PATH = `${__dirname}/../../../inc/standalone-settings.php`;
-
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 jest.setTimeout(TIMEOUT);
@@ -93,6 +90,7 @@ const selectByName = async (selectName, valueToSelect) => {
 };
 
 const setToggle = async (optionName, enable) => {
+    await page.waitForSelector(`[name=${optionName}]`, {state: "attached"});
     const isEnabled = await page.$eval(
         `[name=${optionName}]`,
         (el) => el.checked,
@@ -133,6 +131,7 @@ const computeCurrentPageRemediation = async (
         return "bypass";
     }
     await expect(page).toMatchTitle(/Oops/);
+    await page.waitForSelector(".desc");
     const description = await page.$eval(".desc", (el) => el.innerText);
     const banText = "cyber";
     const captchaText = "check";
@@ -213,35 +212,21 @@ const forceCronRun = async () => {
     await wait(2000);
 };
 
-const storeCookies = async () => {
-    const cookies = await context.cookies();
-    const cookieJson = JSON.stringify(cookies);
-    fs.writeFileSync(COOKIES_FILE_PATH, cookieJson);
-};
-
-const loadCookies = async (context) => {
-    const cookies = fs.readFileSync(COOKIES_FILE_PATH, "utf8");
-    const deserializedCookies = JSON.parse(cookies);
-    await context.addCookies(deserializedCookies);
-};
-
-const deleteExistingStandaloneSettings = async () => {
-    if (fs.existsSync(STANDALONE_SETTINGS_FILE_PATH)) {
-        fs.unlinkSync(STANDALONE_SETTINGS_FILE_PATH);
-    }
-};
 
 const setDefaultConfig = async () => {
     await onAdminGoToSettingsPage();
     await fillInput("crowdsec_api_url", LAPI_URL_FROM_WP);
     await fillInput("crowdsec_api_key", BOUNCER_KEY);
+    await setToggle("crowdsec_use_curl", false);
+    await selectByName("crowdsec_bouncing_level", "normal_bouncing");
     await onAdminSaveSettings(false);
 
     await onAdminGoToAdvancedPage();
     await setToggle("crowdsec_debug_mode", true);
+    await setToggle("crowdsec_disable_prod_log", false);
     await setToggle("crowdsec_display_errors", true);
     await setToggle("crowdsec_hide_mentions", false);
-    await page.selectOption("[name=crowdsec_cache_system]", "phpfs");
+    await selectByName("crowdsec_cache_system", "phpfs");
     await setToggle("crowdsec_stream_mode", false);
     // We have to save in order that cache duration fields to be visible (not disabled)
     await onAdminSaveSettings(false);
@@ -250,7 +235,7 @@ const setDefaultConfig = async () => {
     await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
 
     await fillInput("crowdsec_trust_ip_forward_list", PROXY_IP);
-    await page.selectOption("[name=crowdsec_fallback_remediation]", "captcha");
+    await selectByName("crowdsec_fallback_remediation", "captcha");
 
     // Geolocation
     await setToggle("crowdsec_geolocation_enabled", false);
@@ -289,9 +274,6 @@ module.exports = {
     onCaptchaPageRefreshCaptchaImage,
     forceCronRun,
     fillInput,
-    storeCookies,
-    loadCookies,
-    deleteExistingStandaloneSettings,
     setDefaultConfig,
     selectElement,
     selectByName,
