@@ -50,6 +50,7 @@ class Bounce extends AbstractBounce
             'api_timeout' => Constants::API_TIMEOUT,
             // Debug
             'debug_mode' => $this->getBoolSettings('crowdsec_debug_mode'),
+            'disable_prod_log' => $this->getBoolSettings('crowdsec_disable_prod_log'),
             'log_directory_path' => Constants::CROWDSEC_LOG_BASE_PATH,
             'forced_test_ip' => $this->getStringSettings('crowdsec_forced_test_ip'),
             'forced_test_forwarded_ip' => $this->getStringSettings('crowdsec_forced_test_forwarded_ip'),
@@ -210,18 +211,16 @@ class Bounce extends AbstractBounce
      */
     public function shouldBounceCurrentIp(): bool
     {
-        $shouldNotBounce = $this->getBoolSettings('crowdsec_bouncer_disabled');
-        if ($shouldNotBounce) {
+        $bouncingDisabled = (Constants::BOUNCING_LEVEL_DISABLED === $this->escape($this->getStringSettings('crowdsec_bouncing_level')));
+        if ($bouncingDisabled) {
             if($this->logger){
                 $this->logger->warning('', [
                     'type' => 'WP_CONFIG_BOUNCER_DISABLED',
                     'message' => 'Will not bounce because bouncing is disabled.',
                 ]);
             }
-
             return false;
         }
-
 
         // We should not bounce when headers already sent
         if (headers_sent()) {
@@ -274,10 +273,6 @@ class Bounce extends AbstractBounce
             return false;
         }
 
-        $bouncingDisabled = (Constants::BOUNCING_LEVEL_DISABLED === $this->escape($this->getStringSettings('crowdsec_bouncing_level')));
-        if ($bouncingDisabled) {
-            return false;
-        }
 
         return true;
     }
@@ -389,7 +384,8 @@ class Bounce extends AbstractBounce
     public function initLogger(array $configs): void
     {
         $isDebug = !empty($configs['crowdsec_debug_mode']);
-        $this->logger = getStandaloneCrowdSecLoggerInstance(Constants::CROWDSEC_LOG_PATH, $isDebug, Constants::CROWDSEC_DEBUG_LOG_PATH);
+        $disableProd = !empty($configs['crowdsec_disable_prod_log']);
+        $this->logger = getStandaloneCrowdSecLoggerInstance($isDebug, $disableProd);
 
     }
 }

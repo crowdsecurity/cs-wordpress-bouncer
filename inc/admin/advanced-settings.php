@@ -355,7 +355,11 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_debug_mode"
     addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>Should not be used in production.<br>When this mode is enabled, a debug.log file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.<br> Note that by default, there is always a prod.log file in the same folder.</p>');
+    <p>Should not be used in production.<br>When this mode is enabled, a debug.log file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.</p>');
+
+    // Field "crowdsec_disable_prod_log"
+    addFieldCheckbox('crowdsec_disable_prod_log', 'Disable prod log', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
+    <p>By default, a prod.log file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.<br>You can disable this log here.</p>');
 
 	/*******************************
 	 ** Section "Display errors" **

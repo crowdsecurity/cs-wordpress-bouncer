@@ -7,7 +7,7 @@ namespace CrowdSecBouncer\RestClient;
 use CrowdSecBouncer\BouncerException;
 use Psr\Log\LoggerInterface;
 
-class FileGetContents extends ClientAbstract
+class FileGetContents extends AbstractClient
 {
     /** @var string|null */
     private $headerString;

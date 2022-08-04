@@ -40,6 +40,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('forced_test_ip')->defaultValue('')->end()
                 ->scalarNode('forced_test_forwarded_ip')->defaultValue('')->end()
                 ->booleanNode('debug_mode')->defaultValue(false)->end()
+                ->booleanNode('disable_prod_log')->defaultValue(false)->end()
                 ->scalarNode('log_directory_path')->end()
                 ->booleanNode('display_errors')->defaultValue(false)->end()
                 // Bouncer

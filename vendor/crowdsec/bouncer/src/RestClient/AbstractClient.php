@@ -18,7 +18,7 @@ use Psr\Log\LoggerInterface;
  * @copyright Copyright (c) 2020+ CrowdSec
  * @license   MIT License
  */
-abstract class ClientAbstract
+abstract class AbstractClient
 {
     /** @var int|mixed|null */
     protected $timeout = null;

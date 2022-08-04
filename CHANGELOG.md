@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+## [1.8.0] - 2022-08-04
+
+### Added
+- Add `use_curl` configuration: should be used if `allow_url_fopen` is disabled and `curl` is available
+- Add `disable_prod_log` configuration
+
+### Changed
+- Change log path to `wp-content/plugins/crowdsec/logs`
+- By default, the `bouncing_level` setting is `bouncing_disabled` (instead of `normal_bouncing`)
+
+
 ## [1.7.0] - 2022-07-21
 
 ### Added

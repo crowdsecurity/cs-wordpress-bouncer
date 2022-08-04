@@ -10,8 +10,10 @@ use Monolog\Logger;
 
 function getCrowdSecLoggerInstance(): Logger
 {
-    return getStandaloneCrowdSecLoggerInstance(Constants::CROWDSEC_LOG_PATH, (bool) get_option('crowdsec_debug_mode'),
-        Constants::CROWDSEC_DEBUG_LOG_PATH);
+    return getStandaloneCrowdSecLoggerInstance(
+        (bool) get_option('crowdsec_debug_mode'),
+        (bool) get_option('crowdsec_disable_prod_log')
+    );
 }
 
 

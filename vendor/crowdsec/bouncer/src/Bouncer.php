@@ -6,7 +6,7 @@ require_once __DIR__ . '/templates/captcha.php';
 require_once __DIR__ . '/templates/access-forbidden.php';
 
 use CrowdSecBouncer\Fixes\Gregwar\Captcha\CaptchaBuilder;
-use CrowdSecBouncer\RestClient\ClientAbstract;
+use CrowdSecBouncer\RestClient\AbstractClient;
 use ErrorException;
 use Gregwar\Captcha\PhraseBuilder;
 use IPLib\Factory;
@@ -74,7 +74,7 @@ class Bouncer
             'type' => 'BOUNCER_INIT',
             'logger' => \get_class($this->logger),
             'max_remediation_level' => $this->maxRemediationLevelIndex,
-            'configs' => $this->configs
+            'configs' => array_merge($this->configs, ['api_key' => '***'])
         ]);
     }
 
@@ -317,7 +317,7 @@ class Bouncer
         return $this->getApiCache()->getClient();
     }
 
-    public function getRestClient(): ClientAbstract
+    public function getRestClient(): AbstractClient
     {
         return $this->getClient()->getRestClient();
     }

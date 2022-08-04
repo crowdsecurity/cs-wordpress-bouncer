@@ -135,10 +135,12 @@ abstract class AbstractBounce implements IBounce
 
         $this->logger = new Logger($loggerName);
         $logDir = $configs['log_directory_path']??__DIR__.'/.logs';
-        $logPath = $logDir . '/prod.log';
-        $fileHandler = new RotatingFileHandler($logPath, 0, Logger::INFO);
-        $fileHandler->setFormatter(new LineFormatter("%datetime%|%level%|%context%\n"));
-        $this->logger->pushHandler($fileHandler);
+        if (empty($configs['disable_prod_log'])) {
+            $logPath = $logDir . '/prod.log';
+            $fileHandler = new RotatingFileHandler($logPath, 0, Logger::INFO);
+            $fileHandler->setFormatter(new LineFormatter("%datetime%|%level%|%context%\n"));
+            $this->logger->pushHandler($fileHandler);
+        }
 
         // Set custom readable logger when debug=true
         if (!empty($configs['debug_mode'])) {

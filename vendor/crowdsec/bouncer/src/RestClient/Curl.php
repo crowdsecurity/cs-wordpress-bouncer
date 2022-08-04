@@ -8,7 +8,7 @@ namespace CrowdSecBouncer\RestClient;
 
 use CrowdSecBouncer\BouncerException;
 
-class Curl extends ClientAbstract
+class Curl extends AbstractClient
 {
     /**
      * Send an HTTP request using cURL and parse its JSON result if any.

@@ -7,7 +7,7 @@ namespace CrowdSecBouncer;
 use Psr\Log\LoggerInterface;
 use CrowdSecBouncer\RestClient\FileGetContents;
 use CrowdSecBouncer\RestClient\Curl;
-use CrowdSecBouncer\RestClient\ClientAbstract;
+use CrowdSecBouncer\RestClient\AbstractClient;
 
 /**
  * The LAPI REST Client. This is used to retrieve decisions.
@@ -27,7 +27,7 @@ class ApiClient
     private $configs;
 
     /**
-     * @var ClientAbstract
+     * @var AbstractClient
      */
     private $restClient;
 
@@ -88,7 +88,7 @@ class ApiClient
         );
     }
 
-    public function getRestClient(): ClientAbstract
+    public function getRestClient(): AbstractClient
     {
         return $this->restClient;
     }

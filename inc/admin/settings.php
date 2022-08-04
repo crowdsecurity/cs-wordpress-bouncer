@@ -4,18 +4,6 @@ require_once __DIR__ . '/../Constants.php';
 function adminSettings()
 {
     /**********************************
-     ** Section "Bouncer feature" **
-     *********************************/
-    add_settings_section('crowdsec_admin_general', 'Bouncing feature', function () {
-    }, 'crowdsec_settings');
-
-    // Field "Disable bouncing"
-    addFieldCheckbox('crowdsec_bouncer_disabled', 'Disable bouncing feature', 'crowdsec_plugin_settings',
-        'crowdsec_settings', 'crowdsec_admin_general', function () {}, function () {}, '<p>If checked, the bouncer will not be instantiated at all.
-<br>This should be checked until you have configured all the required parameters.</p>');
-
-
-    /**********************************
      ** Section "Connection details" **
      *********************************/
 

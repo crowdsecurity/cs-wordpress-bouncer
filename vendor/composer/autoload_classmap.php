@@ -21,7 +21,7 @@ return array(
     'CrowdSecBouncer\\Geolocation' => $vendorDir . '/crowdsec/bouncer/src/Geolocation.php',
     'CrowdSecBouncer\\IBounce' => $vendorDir . '/crowdsec/bouncer/src/IBounce.php',
     'CrowdSecBouncer\\Remediation' => $vendorDir . '/crowdsec/bouncer/src/Remediation.php',
-    'CrowdSecBouncer\\RestClient\\ClientAbstract' => $vendorDir . '/crowdsec/bouncer/src/RestClient/ClientAbstract.php',
+    'CrowdSecBouncer\\RestClient\\AbstractClient' => $vendorDir . '/crowdsec/bouncer/src/RestClient/AbstractClient.php',
     'CrowdSecBouncer\\RestClient\\Curl' => $vendorDir . '/crowdsec/bouncer/src/RestClient/Curl.php',
     'CrowdSecBouncer\\RestClient\\FileGetContents' => $vendorDir . '/crowdsec/bouncer/src/RestClient/FileGetContents.php',
     'CrowdSecBouncer\\StandaloneBounce' => $vendorDir . '/crowdsec/bouncer/src/StandaloneBounce.php',

@@ -4,11 +4,10 @@ require_once __DIR__ . '/Constants.php';
 function getCrowdSecOptionsConfig()
 {
     return [
-        ['name' => 'crowdsec_bouncer_disabled', 'default' => 'on', 'autoInit' => true],
         ['name' => 'crowdsec_api_url', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_api_key', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_use_curl', 'default' => '', 'autoInit' => true],
-        ['name' => 'crowdsec_bouncing_level', 'default' => Constants::BOUNCING_LEVEL_NORMAL, 'autoInit' => true],
+        ['name' => 'crowdsec_bouncing_level', 'default' => Constants::BOUNCING_LEVEL_DISABLED, 'autoInit' => true],
         ['name' => 'crowdsec_public_website_only', 'default' => 'on', 'autoInit' => true],
         ['name' => 'crowdsec_stream_mode', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_stream_mode_refresh_frequency', 'default' => 60, 'autoInit' => true],
@@ -46,6 +45,7 @@ function getCrowdSecOptionsConfig()
         ['name' => 'crowdsec_theme_text_ban_wall_footer', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_theme_custom_css', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_debug_mode', 'default' => '', 'autoInit' => true],
+        ['name' => 'crowdsec_disable_prod_log', 'default' => '', 'autoInit' => true],
 		['name' => 'crowdsec_display_errors', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_forced_test_ip', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_forced_test_forwarded_ip', 'default' => '', 'autoInit' => true],

@@ -16,7 +16,7 @@ const {
 	onCaptchaPageRefreshCaptchaImage,
 	fillInput,
 	setDefaultConfig,
-	removeAllDecisions,
+	removeAllDecisions, selectByName,
 } = require("../utils/helpers");
 
 const { CURRENT_IP } = require("../utils/constants");
@@ -128,7 +128,7 @@ describe(`Run in Live mode`, () => {
 	it('Should bypass is bouncing disabled"', async () => {
 		await goToAdmin();
 		await onAdminGoToSettingsPage();
-		await setToggle("crowdsec_bouncer_disabled", true);
+		await selectByName("crowdsec_bouncing_level", "bouncing_disabled");
     	await onAdminSaveSettings();
 		await publicHomepageShouldBeAccessible();
 	});
@@ -137,7 +137,7 @@ describe(`Run in Live mode`, () => {
 		await removeAllDecisions();
 		await goToAdmin();
 		await onAdminGoToSettingsPage();
-		await setToggle("crowdsec_bouncer_disabled", false);
+		await selectByName("crowdsec_bouncing_level", "normal_bouncing");
 		await setToggle("crowdsec_use_curl", true);
 		await onAdminSaveSettings();
 	});

@@ -72,12 +72,6 @@ also be able to test your settings.
 
 ***
 
-`Bouncing feature → Disable bouncing feature`
-
-Until you have configured all the required parameters, you should disable the bouncing feature.
-
-***
-
 
 `Connection details → LAPI URL`
 
@@ -302,9 +296,16 @@ See the `Geolocation cache lifetime` setting above to set the lifetime of this r
 
 Enable if you want to see some debug information in a specific log file.
 
-When this mode is enabled, a `debug.log` file will be written in a `wp-content/plugins/crowdsec/logs` 
-sub folder.
-Note that by default, there is always a `prod.log` file in the same folder.
+When this mode is enabled, a `debug.log` file will be written in `wp-content/plugins/crowdsec/logs` folder.
+
+***
+
+`Debug mode → Disable prod log`
+
+By default, a `prod.log` file will be written in `wp-content/plugins/crowdsec/logs` folder.
+
+You can disable this log here.
+
 
 ***
 

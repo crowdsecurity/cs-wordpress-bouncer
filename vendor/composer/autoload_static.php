@@ -183,7 +183,7 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
         'CrowdSecBouncer\\Geolocation' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Geolocation.php',
         'CrowdSecBouncer\\IBounce' => __DIR__ . '/..' . '/crowdsec/bouncer/src/IBounce.php',
         'CrowdSecBouncer\\Remediation' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Remediation.php',
-        'CrowdSecBouncer\\RestClient\\ClientAbstract' => __DIR__ . '/..' . '/crowdsec/bouncer/src/RestClient/ClientAbstract.php',
+        'CrowdSecBouncer\\RestClient\\AbstractClient' => __DIR__ . '/..' . '/crowdsec/bouncer/src/RestClient/AbstractClient.php',
         'CrowdSecBouncer\\RestClient\\Curl' => __DIR__ . '/..' . '/crowdsec/bouncer/src/RestClient/Curl.php',
         'CrowdSecBouncer\\RestClient\\FileGetContents' => __DIR__ . '/..' . '/crowdsec/bouncer/src/RestClient/FileGetContents.php',
         'CrowdSecBouncer\\StandaloneBounce' => __DIR__ . '/..' . '/crowdsec/bouncer/src/StandaloneBounce.php',
