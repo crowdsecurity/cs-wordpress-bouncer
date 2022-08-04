@@ -344,7 +344,7 @@ class Bounce extends AbstractBounce
                     'line' => $e->getLine(),
                 ]);
             }
-            if (!empty($configs['display_errors'])) {
+            if (!empty($configs['crowdsec_display_errors'])) {
                 throw $e;
             }
         }
