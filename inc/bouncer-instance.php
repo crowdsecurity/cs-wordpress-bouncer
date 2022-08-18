@@ -33,12 +33,12 @@ function getDatabaseSettings(): array
         'forced_test_forwarded_ip' => esc_attr(get_option('crowdsec_forced_test_forwarded_ip')),
         'display_errors' => !empty(get_option('crowdsec_display_errors')),
         // Bouncer
-        'bouncing_level' => esc_attr(get_option('crowdsec_bouncing_level')),
+        'bouncing_level' => esc_attr(get_option('crowdsec_bouncing_level'))?:Constants::BOUNCING_LEVEL_DISABLED,
         'trust_ip_forward_array' => get_option('crowdsec_trust_ip_forward_array'),
         'fallback_remediation' => esc_attr(get_option('crowdsec_fallback_remediation')),
         // Cache settings
         'stream_mode' => !empty(get_option('crowdsec_stream_mode')),
-        'cache_system' => esc_attr(get_option('crowdsec_cache_system')),
+        'cache_system' => esc_attr(get_option('crowdsec_cache_system'))?:Constants::CACHE_SYSTEM_PHPFS,
         'fs_cache_path' => Constants::CROWDSEC_CACHE_PATH,
         'redis_dsn' => esc_attr(get_option('crowdsec_redis_dsn')),
         'memcached_dsn' => esc_attr(get_option('crowdsec_memcached_dsn')),
@@ -53,10 +53,10 @@ function getDatabaseSettings(): array
         // Geolocation
         'geolocation' => [
             'enabled' => !empty(get_option('crowdsec_geolocation_enabled')),
-            'type' => esc_attr(get_option('crowdsec_geolocation_type')),
+            'type' => esc_attr(get_option('crowdsec_geolocation_type')) ?: Constants::GEOLOCATION_TYPE_MAXMIND,
             'save_result' => !empty(get_option('crowdsec_geolocation_save_result')),
             'maxmind' => [
-                'database_type' => esc_attr(get_option('crowdsec_geolocation_maxmind_database_type')),
+                'database_type' => esc_attr(get_option('crowdsec_geolocation_maxmind_database_type')) ?: Constants::MAXMIND_COUNTRY,
                 'database_path' => Constants::CROWDSEC_BOUNCER_GEOLOCATION_DIR. '/'.ltrim(esc_attr(get_option('crowdsec_geolocation_maxmind_database_path')), '/'),
             ]
         ]

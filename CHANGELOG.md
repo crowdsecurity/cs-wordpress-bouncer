@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [1.8.1] - 2022-08-18
+
+### Fixed
+- Set missing default values in settings
+
 ## [1.8.0] - 2022-08-04
 
 ### Added

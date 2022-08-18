@@ -56,12 +56,12 @@ class Bounce extends AbstractBounce
             'forced_test_forwarded_ip' => $this->getStringSettings('crowdsec_forced_test_forwarded_ip'),
             'display_errors' => $this->getBoolSettings('crowdsec_display_errors'),
             // Bouncer
-            'bouncing_level' => $this->getStringSettings('crowdsec_bouncing_level'),
+            'bouncing_level' => $this->getStringSettings('crowdsec_bouncing_level')?:Constants::BOUNCING_LEVEL_DISABLED,
             'trust_ip_forward_array' => $this->getArraySettings('crowdsec_trust_ip_forward_array'),
             'fallback_remediation' => $this->getStringSettings('crowdsec_fallback_remediation'),
             // Cache settings
             'stream_mode' => $this->getBoolSettings('crowdsec_stream_mode'),
-            'cache_system' => $this->escape($this->getStringSettings('crowdsec_cache_system')),
+            'cache_system' => $this->escape($this->getStringSettings('crowdsec_cache_system'))?:Constants::CACHE_SYSTEM_PHPFS,
             'fs_cache_path' => Constants::CROWDSEC_CACHE_PATH,
             'redis_dsn' => $this->escape($this->getStringSettings('crowdsec_redis_dsn')),
             'memcached_dsn' => $this->escape($this->getStringSettings('crowdsec_memcached_dsn')),
