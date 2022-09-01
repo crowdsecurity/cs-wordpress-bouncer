@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "077a1f9822f9f7fa0c02ebd076939a40",
+    "content-hash": "fad5b32074a74d33f2cfd92112229bca",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -84,16 +84,16 @@
         },
         {
             "name": "crowdsec/bouncer",
-            "version": "v0.28.0",
+            "version": "v0.29.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "5abadcb497dfd4cbbd0420ee0f93561f276a529b"
+                "reference": "055323f2203180db6ed539cc7b7fd01da49cda78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/5abadcb497dfd4cbbd0420ee0f93561f276a529b",
-                "reference": "5abadcb497dfd4cbbd0420ee0f93561f276a529b",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/055323f2203180db6ed539cc7b7fd01da49cda78",
+                "reference": "055323f2203180db6ed539cc7b7fd01da49cda78",
                 "shasum": ""
             },
             "require": {
@@ -150,22 +150,22 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.28.0"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.29.0"
             },
-            "time": "2022-08-04T01:18:58+00:00"
+            "time": "2022-08-11T04:56:02+00:00"
         },
         {
             "name": "geoip2/geoip2",
-            "version": "v2.12.2",
+            "version": "v2.13.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/maxmind/GeoIP2-php.git",
-                "reference": "83adb44ac4b9553d36b579a14673ed124583082f"
+                "url": "git@github.com:maxmind/GeoIP2-php.git",
+                "reference": "6a41d8fbd6b90052bc34dff3b4252d0f88067b23"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/maxmind/GeoIP2-php/zipball/83adb44ac4b9553d36b579a14673ed124583082f",
-                "reference": "83adb44ac4b9553d36b579a14673ed124583082f",
+                "url": "https://api.github.com/repos/maxmind/GeoIP2-php/zipball/6a41d8fbd6b90052bc34dff3b4252d0f88067b23",
+                "reference": "6a41d8fbd6b90052bc34dff3b4252d0f88067b23",
                 "shasum": ""
             },
             "require": {
@@ -206,11 +206,7 @@
                 "geolocation",
                 "maxmind"
             ],
-            "support": {
-                "issues": "https://github.com/maxmind/GeoIP2-php/issues",
-                "source": "https://github.com/maxmind/GeoIP2-php/tree/v2.12.2"
-            },
-            "time": "2021-11-30T18:15:25+00:00"
+            "time": "2022-08-05T20:32:58+00:00"
         },
         {
             "name": "gregwar/captcha",
@@ -1029,16 +1025,16 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v5.4.11",
+            "version": "v5.4.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "6699fb0228d1bc35b12aed6dd5e7455457609ddd"
+                "reference": "2d67c1f9a1937406a9be3171b4b22250c0a11447"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/6699fb0228d1bc35b12aed6dd5e7455457609ddd",
-                "reference": "6699fb0228d1bc35b12aed6dd5e7455457609ddd",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/2d67c1f9a1937406a9be3171b4b22250c0a11447",
+                "reference": "2d67c1f9a1937406a9be3171b4b22250c0a11447",
                 "shasum": ""
             },
             "require": {
@@ -1073,7 +1069,7 @@
             "description": "Provides basic utilities for the filesystem",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v5.4.11"
+                "source": "https://github.com/symfony/filesystem/tree/v5.4.12"
             },
             "funding": [
                 {
@@ -1089,7 +1085,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-07-20T13:00:38+00:00"
+            "time": "2022-08-02T13:48:16+00:00"
         },
         {
             "name": "symfony/finder",
