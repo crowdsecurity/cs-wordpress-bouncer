@@ -22,6 +22,9 @@ jobs:
         name: Deploy and create release
         runs-on: ubuntu-latest
 
+        env:
+            GITHUB_URL: "https://github.com/crowdsecurity/cs-wordpress-bouncer"
+
         steps:
             -   name: Check naming convention
                 run: |
@@ -38,8 +41,6 @@ jobs:
 
             -   name: Clone sources
                 uses: actions/checkout@v2
-                with:
-                    fetch-depth: 0
 
             -   name: Check version ${{ env.VERSION_NUMBER }} consistency in files
                 # Check crowdsec.php, readme.txt, inc/Constants.php and CHANGELOG.md
@@ -49,7 +50,7 @@ jobs:
                     echo $CURRENT_DATE
                     echo $CHANGELOG_VERSION
                     echo "##[${{ env.VERSION_NUMBER }}]-$CURRENT_DATE"
-                    if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE" ]]
+                    if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}](${{ env.GITHUB_URL }}/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE" ]]
                     then
                        echo "Version in CHANGELOG.md: OK"
                     else
@@ -57,7 +58,7 @@ jobs:
                        exit 1
                     fi
                     COMPARISON=$(grep -oP "\/compare\/\K(.*)$" CHANGELOG.md | head -1)
-                    LAST_TAG=$(git describe --abbrev=0 --tags)
+                    LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} ${{ env.GITHUB_URL }}/releases/latest | grep -oP "\/tag\/\K(.*)$")
                     if [[ $COMPARISON == "$LAST_TAG...v${{ env.VERSION_NUMBER }})" ]]
                     then
                       echo "VERSION COMPARISON OK"
