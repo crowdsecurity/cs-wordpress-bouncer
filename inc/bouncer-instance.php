@@ -20,7 +20,7 @@ function getCrowdSecLoggerInstance(): Logger
 function getDatabaseSettings(): array
 {
     return [
-        // LAPI connection
+        // Local API connection
         'api_key' => esc_attr(get_option('crowdsec_api_key')),
         'api_url' => esc_attr(get_option('crowdsec_api_url')),
         'use_curl' => !empty(get_option('crowdsec_use_curl')),

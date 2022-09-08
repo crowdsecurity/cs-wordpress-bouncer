@@ -224,10 +224,10 @@ We will start using "live" mode. You'll understand what it is after try the stre
 
 #### Discover the cache system
 
-* In a browser tab, visit the public home of your local WordPress site. You're allowed because LAPI said your IP is clean.
+* In a browser tab, visit the public home of your local WordPress site. You're allowed because Local API said your IP is clean.
 
 > To avoid latencies when the clean IP browse the website, the bouncer will keep this information in cache for 30 
-> seconds (you can change this value in the avdanced settings page). In other words, LAPI will not be requested to 
+> seconds (you can change this value in the avdanced settings page). In other words, Local API will not be requested to 
 > check this IP for the next 30 seconds.
 
 * If you want to skip this delay, feel free to clear the cache in the wp-admin.
@@ -269,9 +269,9 @@ ddev exec -s exec crowdsec cscli decisions add --ip <YOUR_HOST_IP> --duration 15
 
 ### Stream mode, for the high traffic websites
 
-With live mode, as you tried it just before, each time a user arrives to the website for the first time, a call is made to LAPI. If the traffic on your website is high, the bouncer will call LAPI very often.
+With live mode, as you tried it just before, each time a user arrives to the website for the first time, a call is made to Local API. If the traffic on your website is high, the bouncer will call Local API very often.
 
-To avoid this, LAPI offers a "stream" mode. The decisions list is updated at a predefined frequency and kept in cache. Let's try it!
+To avoid this, Local API offers a "stream" mode. The decisions list is updated at a predefined frequency and kept in cache. Let's try it!
 
 > This bouncer uses the WordPress cron system. For demo purposes, we encourage you to install the WP-Control plugin, a plugin to view and control each Wordpress Cron task jobs.
 
@@ -297,7 +297,7 @@ ddev exec -s crowdsec cscli decisions add --ip <YOUR_HOST_IP> --duration 4h --ty
 
 * In less than 30 seconds your IP will be banned and the public home will be locked.
 
-Conclusion: with the stream mode, LAPI decisions are fetched on a regular basis rather than being called when user arrives for the first time.
+Conclusion: with the stream mode, Local API decisions are fetched on a regular basis rather than being called when user arrives for the first time.
 
 ### Try Redis or Memcached
 

@@ -8,13 +8,13 @@ function adminSettings()
      *********************************/
 
     add_settings_section('crowdsec_admin_connection', 'Connection details', function () {
-        echo 'Connect WordPress to your CrowdSec LAPI.';
+        echo 'Connect WordPress to your CrowdSec Local API.';
     }, 'crowdsec_settings');
 
     // Field "crowdsec_api_url"
-    addFieldString('crowdsec_api_url', 'LAPI URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
+    addFieldString('crowdsec_api_url', 'Local API URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
         return $input;
-    }, '<p>If the CrowdSec Agent is installed on this server, you will set this field to http://localhost:8080.</p>', 'Your LAPI URL', '');
+    }, '<p>If the CrowdSec Agent is installed on this server, you will set this field to http://localhost:8080.</p>', 'Your Local API URL', '');
 
     // Field "crowdsec_api_key"
     addFieldString('crowdsec_api_key', 'Bouncer API key', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
@@ -22,8 +22,8 @@ function adminSettings()
     }, '<p>Generated with the cscli command, ex: <em>cscli bouncers add wordpress-bouncer</em></p>', 'Your bouncer key', 'width: 280px;', 'text');
 
     // Field "Use cURL"
-    addFieldCheckbox('crowdsec_use_curl', 'Use cURL to call LAPI', 'crowdsec_plugin_settings',
-        'crowdsec_settings', 'crowdsec_admin_connection', function () {}, function () {}, '<p>If checked, calls to LAPI will be done with <i>cURL</i> (be sure to have <i>cURL</i> enabled on your system before enabling).
+    addFieldCheckbox('crowdsec_use_curl', 'Use cURL to call Local API', 'crowdsec_plugin_settings',
+        'crowdsec_settings', 'crowdsec_admin_connection', function () {}, function () {}, '<p>If checked, calls to Local API will be done with <i>cURL</i> (be sure to have <i>cURL</i> enabled on your system before enabling).
 <br>If not checked, calls are done with <i>file_get_contents</i> method (<i>allow_url_fopen</i> is required for this).</p>');
 
     /************************************
