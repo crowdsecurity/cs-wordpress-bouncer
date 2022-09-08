@@ -38,21 +38,34 @@ jobs:
 
             -   name: Clone sources
                 uses: actions/checkout@v2
+                with:
+                    fetch-depth: 0
 
             -   name: Check version ${{ env.VERSION_NUMBER }} consistency in files
                 # Check crowdsec.php, readme.txt, inc/Constants.php and CHANGELOG.md
                 run: |
                     CURRENT_DATE=$(date +'%Y-%m-%d')
-                    CHANGELOG_VERSION=$(grep -o -E "## \[(.*)\] - $CURRENT_DATE"  CHANGELOG.md | head -1 | sed 's/ //g')
+                    CHANGELOG_VERSION=$(grep -o -E "## \[(.*)\].* - $CURRENT_DATE"  CHANGELOG.md | head -1 | sed 's/ //g')
                     echo $CURRENT_DATE
                     echo $CHANGELOG_VERSION
                     echo "##[${{ env.VERSION_NUMBER }}]-$CURRENT_DATE"
-                    if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}]-$CURRENT_DATE" ]]
+                    if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE" ]]
                     then
                        echo "Version in CHANGELOG.md: OK"
                     else
                        echo "Version in CHANGELOG.md: KO"
                        exit 1
+                    fi
+                    COMPARISON=$(grep -oP "\/compare\/\K(.*)$" CHANGELOG.md | head -1)
+                    LAST_TAG=$(git describe --abbrev=0 --tags)
+                    if [[ $COMPARISON == "$LAST_TAG...v${{ env.VERSION_NUMBER }})" ]]
+                    then
+                      echo "VERSION COMPARISON OK"
+                    else
+                      echo "VERSION COMPARISON KO"
+                      echo $COMPARISON
+                      echo "$LAST_TAG...v${{ env.VERSION_NUMBER }})"
+                      exit 1
                     fi
                     CROWDSEC_VERSION=$(grep -E "Version: (.*)"  crowdsec.php | sed 's/ //g')
                     echo $CROWDSEC_VERSION
