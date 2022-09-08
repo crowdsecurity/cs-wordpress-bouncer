@@ -135,7 +135,7 @@ jobs:
 
             -   name: Prepare release notes
                 run: |
-                    VERSION_RELEASE_NOTES=$(awk -v ver="[${{ env.VERSION_NUMBER }}]" '/^## / { if (p) { exit }; if ($2 == ver) { p=1; next} } p && NF' CHANGELOG.md)
+                    VERSION_RELEASE_NOTES=$(awk -v ver="[${{ env.VERSION_NUMBER }}](${{ env.GITHUB_URL }}/releases/tag/v${{ env.VERSION_NUMBER }})" '/^## / { if (p) { exit }; if ($2 == ver) { p=1; next} } p && NF' CHANGELOG.md | sed ':a;N;$!ba;s/\n---/ /g')
                     echo "$VERSION_RELEASE_NOTES" >> CHANGELOG.txt
                     cat CHANGELOG.txt
 
