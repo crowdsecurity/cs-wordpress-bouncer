@@ -118,5 +118,5 @@ PLUGIN_PATH=$PLUGIN_PATH \
 yarn --cwd $YARN_PATH test \
     $JEST_PARAMS \
     --json \
-    --outputFile=./.test-results-$M2VERSION.json \
+    --outputFile=./.test-results.json \
     $FILE_LIST
