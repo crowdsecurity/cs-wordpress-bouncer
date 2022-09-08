@@ -45,6 +45,7 @@ WORDPRESS_URL=https://$HOSTNAME
 PROXY_IP=$(ddev find-ip ddev-router)
 BOUNCER_KEY=$(ddev exec wp option get crowdsec_api_key | tail -n 2 | head -n 1 | sed 's/\r//g')
 JEST_PARAMS="--bail=true  --runInBand --verbose"
+TLS_PATH="tls" # Relative to var path
 # If FAIL_FAST, will exit on first individual test fail
 # @see CustomEnvironment.js
 FAIL_FAST=true
@@ -52,37 +53,41 @@ FAIL_FAST=true
 
 case $TYPE in
   "host")
+    CROWDSEC_URL_FROM_HOST=$(ddev describe | grep -A 1 "crowdsec" | sed 's/Host: //g' |  sed -e 's|│||g' | sed s/'\s'//g | tail -1)
     cd "../"
     DEBUG_STRING="PWDEBUG=1"
     YARN_PATH="./"
     COMMAND="yarn --cwd ${YARN_PATH} cross-env"
-    LAPI_URL_FROM_PLAYWRIGHT=http://$HOSTNAME:8080
+    LAPI_URL_FROM_PLAYWRIGHT=https://${CROWDSEC_URL_FROM_HOST}
     CURRENT_IP=$(ddev find-ip host)
     TIMEOUT=31000
     HEADLESS=false
     SLOWMO=150
+    PLUGIN_PATH="../../../../wp-content/plugins/crowdsec"
     ;;
 
   "docker")
     DEBUG_STRING=""
     YARN_PATH="./var/www/html/my-own-modules/crowdsec-bouncer/tests/e2e-ddev"
     COMMAND="ddev exec -s playwright yarn --cwd ${YARN_PATH} cross-env"
-    LAPI_URL_FROM_PLAYWRIGHT=http://crowdsec:8080
+    LAPI_URL_FROM_PLAYWRIGHT=https://crowdsec:8080
     CURRENT_IP=$(ddev find-ip playwright)
     TIMEOUT=31000
     HEADLESS=true
     SLOWMO=0
+    PLUGIN_PATH="/var/www/html/wp-content/plugins/crowdsec"
     ;;
 
   "ci")
     DEBUG_STRING="DEBUG=pw:api"
     YARN_PATH="./var/www/html/my-own-modules/crowdsec-bouncer/tests/e2e-ddev"
     COMMAND="ddev exec -s playwright xvfb-run --auto-servernum -- yarn --cwd ${YARN_PATH} cross-env"
-    LAPI_URL_FROM_PLAYWRIGHT=http://crowdsec:8080
+    LAPI_URL_FROM_PLAYWRIGHT=https://crowdsec:8080
     CURRENT_IP=$(ddev find-ip playwright)
     TIMEOUT=60000
     HEADLESS=true
     SLOWMO=0
+    PLUGIN_PATH="/var/www/html/wp-content/plugins/crowdsec"
     ;;
 
   *)
@@ -108,6 +113,8 @@ TIMEOUT=$TIMEOUT \
 HEADLESS=$HEADLESS \
 FAIL_FAST=$FAIL_FAST \
 SLOWMO=$SLOWMO \
+TLS_PATH=$TLS_PATH \
+PLUGIN_PATH=$PLUGIN_PATH \
 yarn --cwd $YARN_PATH test \
     $JEST_PARAMS \
     --json \

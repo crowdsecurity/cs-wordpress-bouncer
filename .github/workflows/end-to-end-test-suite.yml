@@ -48,7 +48,7 @@ jobs:
 
       - name: Install DDEV
         env:
-          DDEV_VERSION: v1.19.3
+          DDEV_VERSION: v1.21.1
         run: |
           # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
           sudo apt-get -qq update
@@ -103,6 +103,8 @@ jobs:
       - name: Prepare for playwright test
         run: |
           cd ${{ github.workspace }}
+          mkdir -p wp-content/plugins/crowdsec/tls
+          cp -r .ddev/custom_files/crowdsec/cfssl/* wp-content/plugins/crowdsec/tls
           ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
           ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
           cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation

@@ -92,8 +92,10 @@ class Bouncer
     /**
      * Retrieve Bouncer configuration by name
      *
+     * @param string $name
+     * @return mixed
      */
-    public function getConfig($name)
+    public function getConfig(string $name)
     {
         return $this->configs[$name];
     }

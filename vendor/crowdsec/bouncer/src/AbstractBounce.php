@@ -27,7 +27,7 @@ abstract class AbstractBounce implements IBounce
     /** @var array */
     protected $settings = [];
 
-    /** @var LoggerInterface */
+    /** @var LoggerInterface|null */
     protected $logger;
 
     /** @var Bouncer|null */
@@ -75,9 +75,15 @@ abstract class AbstractBounce implements IBounce
             default:
                 throw new BouncerException("Unknown $bouncingLevel");
         }
+        $authType = $this->getStringSettings('auth_type');
 
         return [
             // LAPI connection
+            'auth_type' => $authType ?: Constants::AUTH_KEY,
+            'tls_cert_path' => $this->getStringSettings('tls_cert_path'),
+            'tls_key_path' => $this->getStringSettings('tls_key_path'),
+            'tls_verify_peer' => $this->getBoolSettings('tls_verify_peer'),
+            'tls_ca_cert_path' => $this->getStringSettings('tls_ca_cert_path'),
             'api_key' => $this->getStringSettings('api_key'),
             'api_url' => $this->getStringSettings('api_url'),
             'api_user_agent' => $this->getStringSettings('api_user_agent'),
@@ -134,7 +140,7 @@ abstract class AbstractBounce implements IBounce
         }
 
         $this->logger = new Logger($loggerName);
-        $logDir = $configs['log_directory_path']??__DIR__.'/.logs';
+        $logDir = $configs['log_directory_path'] ?? __DIR__ . '/.logs';
         if (empty($configs['disable_prod_log'])) {
             $logPath = $logDir . '/prod.log';
             $fileHandler = new RotatingFileHandler($logPath, 0, Logger::INFO);
@@ -168,17 +174,19 @@ abstract class AbstractBounce implements IBounce
                 $forwardedIp = end($ipList);
             }
         } elseif ($configs['forced_test_forwarded_ip'] === Constants::X_FORWARDED_DISABLED) {
-            $this->logger->debug('', [
-                'type' => 'DISABLED_X_FORWARDED_FOR_USAGE',
-                'original_ip' => $ip,
-            ]);
+            if ($this->logger) {
+                $this->logger->debug('', [
+                    'type' => 'DISABLED_X_FORWARDED_FOR_USAGE',
+                    'original_ip' => $ip,
+                ]);
+            }
         } else {
             $forwardedIp = (string) $configs['forced_test_forwarded_ip'];
         }
 
         if (is_string($forwardedIp) && $this->shouldTrustXforwardedFor($ip)) {
             $ip = $forwardedIp;
-        } else {
+        } elseif ($this->logger) {
             $this->logger->warning('', [
                 'type' => 'NON_AUTHORIZED_X_FORWARDED_FOR_USAGE',
                 'original_ip' => $ip,
@@ -211,15 +219,18 @@ abstract class AbstractBounce implements IBounce
 
     protected function shouldTrustXforwardedFor(string $ip): bool
     {
-        $comparableAddress = Factory::parseAddressString($ip, 3)->getComparableString();
-        if (null === $comparableAddress) {
-            $this->logger->warning('', [
-                'type' => 'INVALID_INPUT_IP',
-                'ip' => $ip,
-            ]);
+        $parsedAddress = Factory::parseAddressString($ip, 3);
+        if (null === $parsedAddress) {
+            if ($this->logger) {
+                $this->logger->warning('', [
+                    'type' => 'INVALID_INPUT_IP',
+                    'ip' => $ip,
+                ]);
+            }
 
             return false;
         }
+        $comparableAddress = $parsedAddress->getComparableString();
 
         foreach ($this->getTrustForwardedIpBoundsList() as $comparableIpBounds) {
             if ($comparableAddress >= $comparableIpBounds[0] && $comparableAddress <= $comparableIpBounds[1]) {
@@ -309,7 +320,7 @@ abstract class AbstractBounce implements IBounce
             if (
                 $this->bouncer->checkCaptcha(
                     (string)$cachedCaptchaVariables['crowdsec_captcha_phrase_to_guess'],
-                    $this->getPostedVariable('phrase'),
+                    (string)$this->getPostedVariable('phrase'),
                     $ip
                 )
             ) {

@@ -44,7 +44,7 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 
 == Changelog ==
 
-= 1.8 (2022-08-04)
+= 1.8 (2022-08-04) =
 
 - Add `use_curl` configuration: should be used if `allow_url_fopen` is disabled and `curl` is available
 - Add `disable_prod_log` configuration
