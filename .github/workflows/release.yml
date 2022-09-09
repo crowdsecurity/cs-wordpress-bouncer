@@ -22,9 +22,6 @@ jobs:
         name: Deploy and create release
         runs-on: ubuntu-latest
 
-        env:
-            GITHUB_URL: "https://github.com/crowdsecurity/cs-wordpress-bouncer"
-
         steps:
             -   name: Check naming convention
                 run: |
@@ -50,7 +47,7 @@ jobs:
                     echo $CURRENT_DATE
                     echo $CHANGELOG_VERSION
                     echo "##[${{ env.VERSION_NUMBER }}]-$CURRENT_DATE"
-                    if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}](${{ env.GITHUB_URL }}/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE" ]]
+                    if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}](${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE" ]]
                     then
                        echo "Version in CHANGELOG.md: OK"
                     else
@@ -58,7 +55,7 @@ jobs:
                        exit 1
                     fi
                     COMPARISON=$(grep -oP "\/compare\/\K(.*)$" CHANGELOG.md | head -1)
-                    LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} ${{ env.GITHUB_URL }}/releases/latest | grep -oP "\/tag\/\K(.*)$")
+                    LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} ${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/latest | grep -oP "\/tag\/\K(.*)$")
                     if [[ $COMPARISON == "$LAST_TAG...v${{ env.VERSION_NUMBER }})" ]]
                     then
                       echo "VERSION COMPARISON OK"
@@ -135,7 +132,7 @@ jobs:
 
             -   name: Prepare release notes
                 run: |
-                    VERSION_RELEASE_NOTES=$(awk -v ver="[${{ env.VERSION_NUMBER }}](${{ env.GITHUB_URL }}/releases/tag/v${{ env.VERSION_NUMBER }})" '/^## / { if (p) { exit }; if ($2 == ver) { p=1; next} } p && NF' CHANGELOG.md | sed ':a;N;$!ba;s/\n---/ /g')
+                    VERSION_RELEASE_NOTES=$(awk -v ver="[${{ env.VERSION_NUMBER }}](${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/tag/v${{ env.VERSION_NUMBER }})" '/^## / { if (p) { exit }; if ($2 == ver) { p=1; next} } p && NF' CHANGELOG.md | sed ':a;N;$!ba;s/\n---/ /g')
                     echo "$VERSION_RELEASE_NOTES" >> CHANGELOG.txt
                     cat CHANGELOG.txt
 

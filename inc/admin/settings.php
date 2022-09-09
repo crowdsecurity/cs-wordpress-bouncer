@@ -56,7 +56,7 @@ function adminSettings()
         'crowdsec_settings', 'crowdsec_admin_connection', function () {}, function () {}, '<p>This option determines whether request handler verifies the authenticity of the peer\'s certificate</p>');
 
     // Field "crowdsec_tls_ca_cert_path"
-    addFieldString('crowdsec_ca_cert_path', 'Path to the CA used to process peer verification', 'crowdsec_plugin_settings', 'crowdsec_settings',
+    addFieldString('crowdsec_tls_ca_cert_path', 'Path to the CA used to process peer verification', 'crowdsec_plugin_settings', 'crowdsec_settings',
         'crowdsec_admin_connection', function ($input) {
             return $input;
         }, '<p>Relative path from <i>wp-content/plugins/crowdsec/tls</i> folder</p>', 'ca-chain.pem', 'width: 180px;',

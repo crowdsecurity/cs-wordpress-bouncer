@@ -103,6 +103,9 @@ jobs:
       - name: Prepare for playwright test
         run: |
           cd ${{ github.workspace }}
+          cp -r .ddev/custom_files/crowdsec/cfssl/* my-own-modules/${{ env.EXTENSION_PATH }}/tls
+          cd my-own-modules/${{ env.EXTENSION_PATH }}
+          docker cp "tls" ddev-${{ env.WP_VERSION_CODE }}-playwright://var/www/html/wp-content/plugins/crowdsec
           ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
           ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
           cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/geolocation
