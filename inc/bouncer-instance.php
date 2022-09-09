@@ -22,6 +22,7 @@ function getDatabaseSettings(): array
     return [
         // Local API connection
         'api_key' => esc_attr(get_option('crowdsec_api_key')),
+        'auth_type' => esc_attr(get_option('crowdsec_auth_type'))?:Constants::AUTH_KEY,
         'api_url' => esc_attr(get_option('crowdsec_api_url')),
         'use_curl' => !empty(get_option('crowdsec_use_curl')),
         'api_user_agent' => Constants::CROWDSEC_BOUNCER_USER_AGENT,

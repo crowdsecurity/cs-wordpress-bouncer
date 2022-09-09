@@ -16,6 +16,28 @@ function adminSettings()
         return $input;
     }, '<p>If the CrowdSec Agent is installed on this server, you will set this field to http://localhost:8080.</p>', 'Your Local API URL', '');
 
+    // Field "crowdsec_bouncing_level"
+    addFieldSelect('crowdsec_auth_type', 'Authentication type', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
+        if (!in_array($input, [
+            Constants::AUTH_KEY,
+            Constants::AUTH_TLS,
+        ])) {
+            $input = Constants::AUTH_KEY;
+            add_settings_error('Bouncing auth type', 'crowdsec_error', 'Auth type: Incorrect authentication type selected.');
+        }
+
+        return $input;
+    }, '<p>
+    Select one of the two authentication types:<br>
+    <ul>
+        <li><strong>API key</strong>: Use the bouncer api key</li>
+        <li><strong>TLS</strong>: Use TLS authentication</li>
+    </ul>
+</p>', [
+        Constants::AUTH_KEY => 'API key',
+        Constants::AUTH_TLS => 'TLS',
+    ]);
+
     // Field "crowdsec_api_key"
     addFieldString('crowdsec_api_key', 'Bouncer API key', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
         return $input;
@@ -29,12 +51,12 @@ function adminSettings()
     /************************************
      ** Section "Bouncing refinements" **
      ***********************************/
-    add_settings_section('crowdsec_admin_boucing', 'Bouncing', function () {
+    add_settings_section('crowdsec_admin_bouncing', 'Bouncing', function () {
         echo 'Refine bouncing according to your needs.';
     }, 'crowdsec_settings');
 
     // Field "crowdsec_bouncing_level"
-    addFieldSelect('crowdsec_bouncing_level', 'Bouncing level', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_boucing', function ($input) {
+    addFieldSelect('crowdsec_bouncing_level', 'Bouncing level', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_bouncing', function ($input) {
     	if (!in_array($input, [
             Constants::BOUNCING_LEVEL_DISABLED,
             Constants::BOUNCING_LEVEL_NORMAL,
@@ -59,7 +81,7 @@ function adminSettings()
         Constants::BOUNCING_LEVEL_NORMAL => '🛡️ Normal bouncing',
     ]);
 
-    addFieldCheckbox('crowdsec_public_website_only', 'Public website only', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_boucing', function () {
+    addFieldCheckbox('crowdsec_public_website_only', 'Public website only', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_bouncing', function () {
         // Stream mode just activated.
         scheduleBlocklistRefresh();
     }, function () {

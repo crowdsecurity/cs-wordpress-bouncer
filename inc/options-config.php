@@ -5,6 +5,7 @@ function getCrowdSecOptionsConfig()
 {
     return [
         ['name' => 'crowdsec_api_url', 'default' => '', 'autoInit' => true],
+        ['name' => 'crowdsec_auth_type', 'default' => Constants::AUTH_KEY, 'autoInit' => true],
         ['name' => 'crowdsec_api_key', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_use_curl', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_bouncing_level', 'default' => Constants::BOUNCING_LEVEL_DISABLED, 'autoInit' => true],
