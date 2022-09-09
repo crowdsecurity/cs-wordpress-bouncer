@@ -14,7 +14,8 @@ function adminSettings()
     // Field "crowdsec_api_url"
     addFieldString('crowdsec_api_url', 'Local API URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
         return $input;
-    }, '<p>If the CrowdSec Agent is installed on this server, you will set this field to http://localhost:8080.</p>', 'Your Local API URL', '');
+    }, '',
+        'http://localhost:8080', '');
 
     // Field "crowdsec_bouncing_level"
     addFieldSelect('crowdsec_auth_type', 'Authentication type', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
@@ -27,21 +28,39 @@ function adminSettings()
         }
 
         return $input;
-    }, '<p>
-    Select one of the two authentication types:<br>
-    <ul>
-        <li><strong>API key</strong>: Use the bouncer api key</li>
-        <li><strong>TLS</strong>: Use TLS authentication</li>
-    </ul>
-</p>', [
-        Constants::AUTH_KEY => 'API key',
-        Constants::AUTH_TLS => 'TLS',
+    }, '', [
+        Constants::AUTH_KEY => 'Bouncer API key',
+        Constants::AUTH_TLS => 'TLS certificates',
     ]);
 
     // Field "crowdsec_api_key"
     addFieldString('crowdsec_api_key', 'Bouncer API key', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
         return $input;
     }, '<p>Generated with the cscli command, ex: <em>cscli bouncers add wordpress-bouncer</em></p>', 'Your bouncer key', 'width: 280px;', 'text');
+
+    // Field "crowdsec_tls_cert_path"
+    addFieldString('crowdsec_tls_cert_path', 'Path to the bouncer certificate', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
+        return $input;
+    }, '<p>Relative path from <i>wp-content/plugins/crowdsec/tls</i> folder</p>', 'bouncer.pem', 'width: 180px;',
+        'text');
+
+    // Field "crowdsec_tls_key_path"
+    addFieldString('crowdsec_tls_key_path', 'Path to the bouncer key', 'crowdsec_plugin_settings', 'crowdsec_settings',
+        'crowdsec_admin_connection', function ($input) {
+        return $input;
+    }, '<p>Relative path from <i>wp-content/plugins/crowdsec/tls</i> folder</p>', 'bouncer-key.pem', 'width: 180px;',
+        'text');
+
+    // Field "TLS verify peer"
+    addFieldCheckbox('crowdsec_tls_verify_peer', 'Verify peer', 'crowdsec_plugin_settings',
+        'crowdsec_settings', 'crowdsec_admin_connection', function () {}, function () {}, '<p>This option determines whether request handler verifies the authenticity of the peer\'s certificate</p>');
+
+    // Field "crowdsec_tls_ca_cert_path"
+    addFieldString('crowdsec_ca_cert_path', 'Path to the CA used to process peer verification', 'crowdsec_plugin_settings', 'crowdsec_settings',
+        'crowdsec_admin_connection', function ($input) {
+            return $input;
+        }, '<p>Relative path from <i>wp-content/plugins/crowdsec/tls</i> folder</p>', 'ca-chain.pem', 'width: 180px;',
+        'text');
 
     // Field "Use cURL"
     addFieldCheckbox('crowdsec_use_curl', 'Use cURL to call Local API', 'crowdsec_plugin_settings',

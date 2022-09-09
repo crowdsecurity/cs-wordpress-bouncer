@@ -216,7 +216,7 @@ const forceCronRun = async () => {
 const setDefaultConfig = async () => {
     await onAdminGoToSettingsPage();
     await fillInput("crowdsec_api_url", LAPI_URL_FROM_WP);
-    await fillInput("crowdsec_auth_type", "api_key");
+    await selectByName("crowdsec_auth_type", "api_key");
     await fillInput("crowdsec_api_key", BOUNCER_KEY);
     await setToggle("crowdsec_use_curl", false);
     await selectByName("crowdsec_bouncing_level", "normal_bouncing");

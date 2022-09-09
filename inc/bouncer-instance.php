@@ -23,6 +23,10 @@ function getDatabaseSettings(): array
         // Local API connection
         'api_key' => esc_attr(get_option('crowdsec_api_key')),
         'auth_type' => esc_attr(get_option('crowdsec_auth_type'))?:Constants::AUTH_KEY,
+        'tls_cert_path' => esc_attr(get_option('crowdsec_tls_cert_path')),
+        'tls_key_path' => esc_attr(get_option('crowdsec_tls_key_path')),
+        'tls_verify_peer' => !empty(get_option('crowdsec_tls_verify_peer')),
+        'tls_ca_cert_path' => esc_attr(get_option('crowdsec_tls_ca_cert_path')),
         'api_url' => esc_attr(get_option('crowdsec_api_url')),
         'use_curl' => !empty(get_option('crowdsec_use_curl')),
         'api_user_agent' => Constants::CROWDSEC_BOUNCER_USER_AGENT,
