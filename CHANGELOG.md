@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v1.9.0) - 2022-09-15
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v1.8.1...v1.9.0)
+### Added
+- Add TLS authentication feature
+### Fixed
+- Fix false negative connection test from admin when `trust_ip_forward_array` setting is not in database
+---
 
 ## [1.8.1](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v1.8.1) - 2022-08-18
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v1.8.0...v1.8.1)

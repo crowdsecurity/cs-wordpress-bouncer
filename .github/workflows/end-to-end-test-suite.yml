@@ -141,7 +141,6 @@ jobs:
           test_path: ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 3-live-mode-more.js
 
-
       - name: Run Live mode cache tests
         uses: ./my-own-modules/crowdsec-bouncer/.github/workflows/end-to-end/run-single-test
         with:
