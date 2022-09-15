@@ -9,7 +9,7 @@
 **Table of Contents**
 
 - [Local development](#local-development)
-  - [DDEV-Local setup](#ddev-local-setup)
+  - [DDEV setup](#ddev-setup)
     - [DDEV installation](#ddev-installation)
   - [Prepare DDEV WordPress environment](#prepare-ddev-wordpress-environment)
   - [WordPress installation](#wordpress-installation)
