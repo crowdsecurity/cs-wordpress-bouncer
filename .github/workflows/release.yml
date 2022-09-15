@@ -46,7 +46,7 @@ jobs:
                     CHANGELOG_VERSION=$(grep -o -E "## \[(.*)\].* - $CURRENT_DATE"  CHANGELOG.md | head -1 | sed 's/ //g')
                     echo $CURRENT_DATE
                     echo $CHANGELOG_VERSION
-                    echo "##[${{ env.VERSION_NUMBER }}]-$CURRENT_DATE"
+                    echo ##[${{ env.VERSION_NUMBER }}](${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE"
                     if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}](${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE" ]]
                     then
                        echo "Version in CHANGELOG.md: OK"
