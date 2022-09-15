@@ -39,7 +39,7 @@ function getDatabaseSettings(): array
         'display_errors' => !empty(get_option('crowdsec_display_errors')),
         // Bouncer
         'bouncing_level' => esc_attr(get_option('crowdsec_bouncing_level'))?:Constants::BOUNCING_LEVEL_DISABLED,
-        'trust_ip_forward_array' => get_option('crowdsec_trust_ip_forward_array'),
+        'trust_ip_forward_array' => get_option('crowdsec_trust_ip_forward_array')?:[],
         'fallback_remediation' => esc_attr(get_option('crowdsec_fallback_remediation')),
         // Cache settings
         'stream_mode' => !empty(get_option('crowdsec_stream_mode')),
