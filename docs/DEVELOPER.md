@@ -148,11 +148,41 @@ Activate the CrowdSec plugin
 
 ##### End-to-end tests
 
+We are using a Jest/Playwright Node.js stack to launch a suite of end-to-end tests.
+
+**Please note** that those tests modify local configurations and log content on the fly.
+
+As we use a TLS ready CrowdSec container, you have first to copy some certificates and key:
+
+```bash
+cd wp-sources
+cp -r .ddev/custom_files/crowdsec/cfssl/* wp-content/plugins/crowdsec/tls
+```
+
+Then, ensure that `run-tests.sh` and `test-init.sh` files are executable.
+
 ```
 cd wp-sources/my-own-module/crowdsec-bouncer/tests/e2e-ddev/__scripts__
 ```
-Ensure that `run-tests.sh` and `test-init.sh` files are executable. Run `chmod +x run-tests.sh test-init.sh` if not.
+Run `chmod +x run-tests.sh test-init.sh` if not.
 
+Then you can use the `run-test.sh` script to run the tests:
+
+- the first parameter specifies if you want to run the test on your machine (`host`) or in the
+  docker containers (`docker`). You can also use `ci` if you want to have the same behavior as in GitHub action.
+- the second parameter list the test files you want to execute. If empty, all the test suite will be launched.
+
+In other words, you can test by running:
+
+`./run-tests.sh [context] [files]` where `[context]` can be `ci`, `docker` or `host` and files is the list of file to
+test (all files if empty);
+
+For example:
+```
+./run-tests.sh host "./2-live-mode-remediations.js"
+```
+
+**N.B**
 
 Before testing with the `docker` or `ci` parameter, you have to install all the required dependencies
 in the playwright container with this command :
@@ -166,15 +196,7 @@ yarn --cwd ./tests/e2e-ddev --force
 yarn global add cross-env
 ```
 
-Finally, you can test by running:
 
-`./run-tests.sh [context] [files]` where `[context]` can be `ci`, `docker` or `host` and files is the list of file to
-test (all files if empty);
-
-For example:
-```
-./run-tests.sh host "./2-live-mode-remediations.js"
-```
 
 #### Update composer dependencies
 
@@ -204,7 +226,7 @@ ddev composer update --no-dev --prefer-dist --optimize-autoloader --working-dir 
 
 This guide exposes you the main features of the plugin.
 
-Before all, please retrieve your host IP (a.k.a. <YOUR_HOST_IP>)with the command:
+Before all, please retrieve your host IP (a.k.a. <YOUR_HOST_IP>) with the command:
 
 `ddev find-ip`
 
@@ -264,8 +286,9 @@ ddev exec -s exec crowdsec cscli decisions add --ip <YOUR_HOST_IP> --duration 15
 
 * Unless you manage to solve the captcha, you'll not be able to access the website.
 
-> Note: when you resolve the captcha in your browser, the associated PHP session is considered as sure.
-> If you remove the captcha decision with `cscli`, then you add a new captcha decision for your IP, you'll not be prompted for the current PHP session. To view the captcha page, You can force using a new PHP session opening the front page with incognito mode.
+> Note: when you resolve the captcha in your browser, the result is stored in cache.
+> If you remove the captcha decision with `cscli`, then you add a new captcha decision for your IP, you'll not be 
+> prompted until you clear the cache or the lifetime for captcha decision has been reached.
 
 ### Stream mode, for the high traffic websites
 
@@ -273,7 +296,8 @@ With live mode, as you tried it just before, each time a user arrives to the web
 
 To avoid this, Local API offers a "stream" mode. The decisions list is updated at a predefined frequency and kept in cache. Let's try it!
 
-> This bouncer uses the WordPress cron system. For demo purposes, we encourage you to install the WP-Control plugin, a plugin to view and control each Wordpress Cron task jobs.
+> This bouncer uses the WordPress cron system. For demo purposes, we encourage you to install the WP-Control plugin, 
+> a plugin to view and control each WordPress Cron task jobs.
 
 First, clear the previous decisions:
 
@@ -366,13 +390,13 @@ Before publishing a new release, there are some manual steps to take:
 
 - Change the version number and stable tag in the `crowdsec.php` file
 - Change the stable tag  in the `readme.txt` file
-- Change the version number in the `inc/constants.php` file
+- Change the version number in the `inc/Constants.php` file
 - Update the `CHANGELOG.md` file
 
 Then, you have to [run the action manually from the GitHub repository](https://github.com/crowdsecurity/cs-wordpress-bouncer/actions/workflows/release.yml)
 
 
-Alternatively, you could use the [Github CLI](https://github.com/cli/cli):
+Alternatively, you could use the [GitHub CLI](https://github.com/cli/cli):
 - create a draft release:
 ```
 gh workflow run release.yml -f tag_name=vx.y.z -f draft=true
@@ -386,7 +410,7 @@ gh workflow run release.yml -f tag_name=vx.y.z -f prerelease=true
 gh workflow run release.yml -f tag_name=vx.y.z
 ```
 
-Note that the Github action will fail if the tag `tag_name` already exits.
+Note that the GitHub action will fail if the tag `tag_name` already exits.
 
 
 

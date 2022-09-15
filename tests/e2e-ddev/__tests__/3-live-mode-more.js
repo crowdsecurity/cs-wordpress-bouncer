@@ -207,7 +207,7 @@ describe(`Run in Live mode`, () => {
 			);
 	
 			// Good settings without curl
-			await setToggle("crowdsec_use_curl", true);
+			await setToggle("crowdsec_use_curl", false);
 			await onAdminSaveSettings();
 			await page.click("#crowdsec_action_test_connection #submit");
 			await wait(2000);
