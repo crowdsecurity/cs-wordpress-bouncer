@@ -1,5 +1,50 @@
 <div class="wrap">
 	<h1>Configure your CrowdSec Bouncer</h1>
+    <script type="text/javascript">
+
+        jQuery(() => {
+            const $authType = jQuery('[name=crowdsec_auth_type]');
+            const $verifyPeer = jQuery('[name=crowdsec_tls_verify_peer]');
+            const $apiKeyTr = jQuery('[name=crowdsec_api_key]').parent().parent();
+            const $tlsCertTr = jQuery('[name=crowdsec_tls_cert_path]').parent().parent();
+            const $tlsKeyTr = jQuery('[name=crowdsec_tls_key_path]').parent().parent();
+            const $tlsVerifyPeerTr = $verifyPeer.parent().parent().parent();
+            const $tlsCaTr = jQuery('[name=crowdsec_tls_ca_cert_path]').parent().parent();
+
+            function handleCaCert () {
+                if(!$verifyPeer.is(":checked")) {
+                    $tlsCaTr.hide();
+                } else {$tlsCaTr.show()}
+            }
+
+            function updateTlsDisplay () {
+                $tlsCertTr.addClass('crowdsec-tls');
+                $tlsKeyTr.addClass('crowdsec-tls');
+                $tlsVerifyPeerTr.removeClass('ui-toggle').addClass('crowdsec-tls');
+                $tlsCaTr.addClass('crowdsec-tls');
+                $apiKeyTr.addClass('crowdsec-api-key');
+                switch ($authType.val()) {
+                    case 'api_key':
+                        jQuery('[class=crowdsec-tls]').hide();
+                        jQuery('[class=crowdsec-api-key]').show();
+                        break;
+                    case 'tls':
+                        jQuery('[class=crowdsec-tls]').show();
+                        jQuery('[class=crowdsec-api-key]').hide();
+                        if(!$verifyPeer.is(":checked")) {
+                            $tlsCaTr.hide();
+                        }
+                        break;
+                    default:
+                        jQuery('[class=crowdsec-tls]').hide();
+                        jQuery('[class=crowdsec-api-key]').show();
+                }
+            }
+            updateTlsDisplay();
+            $authType.change(updateTlsDisplay);
+            $verifyPeer.change(handleCaCert);
+        });
+    </script>
 	<?php settings_errors(); ?>
 	<div class="tab-content">
 		<div id="tab-1" class="tab-pane active">

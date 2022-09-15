@@ -40,12 +40,12 @@
 
 There are many ways to install this plugin on a local WordPress environment.
 
-We are using [DDEV-Local](https://ddev.readthedocs.io/en/stable/) because it is quite simple to use and customize.
+We are using [DDEV](https://ddev.readthedocs.io/en/stable/) because it is quite simple to use and customize.
 
 Of course, you may use your own local stack, but we provide here some useful tools that depends on DDEV.
 
 
-### DDEV-Local setup
+### DDEV setup
 
 For a quick start, follow the below steps.
 
@@ -54,14 +54,14 @@ __We will suppose here that you want to install WordPress 5.9. Please change "5.
 
 #### DDEV installation
 
-This project is fully compatible with DDEV 1.19.3, and it is recommended to use this specific version.
+This project is fully compatible with DDEV 1.21.1, and it is recommended to use this specific version.
 For the DDEV installation, please follow the [official instructions](https://ddev.readthedocs.io/en/stable/#installation).
 On a Linux distribution, you can run:
 ```
 sudo apt-get -qq update
 sudo apt-get -qq -y install libnss3-tools
 curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
-bash install_ddev.sh v1.19.3
+bash install_ddev.sh v1.21.1
 rm install_ddev.sh
 ```
 
@@ -148,11 +148,41 @@ Activate the CrowdSec plugin
 
 ##### End-to-end tests
 
+We are using a Jest/Playwright Node.js stack to launch a suite of end-to-end tests.
+
+**Please note** that those tests modify local configurations and log content on the fly.
+
+As we use a TLS ready CrowdSec container, you have first to copy some certificates and key:
+
+```bash
+cd wp-sources
+cp -r .ddev/custom_files/crowdsec/cfssl/* wp-content/plugins/crowdsec/tls
+```
+
+Then, ensure that `run-tests.sh` and `test-init.sh` files are executable.
+
 ```
 cd wp-sources/my-own-module/crowdsec-bouncer/tests/e2e-ddev/__scripts__
 ```
-Ensure that `run-tests.sh` and `test-init.sh` files are executable. Run `chmod +x run-tests.sh test-init.sh` if not.
+Run `chmod +x run-tests.sh test-init.sh` if not.
 
+Then you can use the `run-test.sh` script to run the tests:
+
+- the first parameter specifies if you want to run the test on your machine (`host`) or in the
+  docker containers (`docker`). You can also use `ci` if you want to have the same behavior as in GitHub action.
+- the second parameter list the test files you want to execute. If empty, all the test suite will be launched.
+
+In other words, you can test by running:
+
+`./run-tests.sh [context] [files]` where `[context]` can be `ci`, `docker` or `host` and files is the list of file to
+test (all files if empty);
+
+For example:
+```
+./run-tests.sh host "./2-live-mode-remediations.js"
+```
+
+**N.B**
 
 Before testing with the `docker` or `ci` parameter, you have to install all the required dependencies
 in the playwright container with this command :
@@ -166,15 +196,7 @@ yarn --cwd ./tests/e2e-ddev --force
 yarn global add cross-env
 ```
 
-Finally, you can test by running:
 
-`./run-tests.sh [context] [files]` where `[context]` can be `ci`, `docker` or `host` and files is the list of file to
-test (all files if empty);
-
-For example:
-```
-./run-tests.sh host "./2-live-mode-remediations.js"
-```
 
 #### Update composer dependencies
 
@@ -204,7 +226,7 @@ ddev composer update --no-dev --prefer-dist --optimize-autoloader --working-dir 
 
 This guide exposes you the main features of the plugin.
 
-Before all, please retrieve your host IP (a.k.a. <YOUR_HOST_IP>)with the command:
+Before all, please retrieve your host IP (a.k.a. <YOUR_HOST_IP>) with the command:
 
 `ddev find-ip`
 
@@ -224,10 +246,10 @@ We will start using "live" mode. You'll understand what it is after try the stre
 
 #### Discover the cache system
 
-* In a browser tab, visit the public home of your local WordPress site. You're allowed because LAPI said your IP is clean.
+* In a browser tab, visit the public home of your local WordPress site. You're allowed because Local API said your IP is clean.
 
 > To avoid latencies when the clean IP browse the website, the bouncer will keep this information in cache for 30 
-> seconds (you can change this value in the avdanced settings page). In other words, LAPI will not be requested to 
+> seconds (you can change this value in the avdanced settings page). In other words, Local API will not be requested to 
 > check this IP for the next 30 seconds.
 
 * If you want to skip this delay, feel free to clear the cache in the wp-admin.
@@ -264,16 +286,18 @@ ddev exec -s exec crowdsec cscli decisions add --ip <YOUR_HOST_IP> --duration 15
 
 * Unless you manage to solve the captcha, you'll not be able to access the website.
 
-> Note: when you resolve the captcha in your browser, the associated PHP session is considered as sure.
-> If you remove the captcha decision with `cscli`, then you add a new captcha decision for your IP, you'll not be prompted for the current PHP session. To view the captcha page, You can force using a new PHP session opening the front page with incognito mode.
+> Note: when you resolve the captcha in your browser, the result is stored in cache.
+> If you remove the captcha decision with `cscli`, then you add a new captcha decision for your IP, you'll not be 
+> prompted until you clear the cache or the lifetime for captcha decision has been reached.
 
 ### Stream mode, for the high traffic websites
 
-With live mode, as you tried it just before, each time a user arrives to the website for the first time, a call is made to LAPI. If the traffic on your website is high, the bouncer will call LAPI very often.
+With live mode, as you tried it just before, each time a user arrives to the website for the first time, a call is made to Local API. If the traffic on your website is high, the bouncer will call Local API very often.
 
-To avoid this, LAPI offers a "stream" mode. The decisions list is updated at a predefined frequency and kept in cache. Let's try it!
+To avoid this, Local API offers a "stream" mode. The decisions list is updated at a predefined frequency and kept in cache. Let's try it!
 
-> This bouncer uses the WordPress cron system. For demo purposes, we encourage you to install the WP-Control plugin, a plugin to view and control each Wordpress Cron task jobs.
+> This bouncer uses the WordPress cron system. For demo purposes, we encourage you to install the WP-Control plugin, 
+> a plugin to view and control each WordPress Cron task jobs.
 
 First, clear the previous decisions:
 
@@ -297,7 +321,7 @@ ddev exec -s crowdsec cscli decisions add --ip <YOUR_HOST_IP> --duration 4h --ty
 
 * In less than 30 seconds your IP will be banned and the public home will be locked.
 
-Conclusion: with the stream mode, LAPI decisions are fetched on a regular basis rather than being called when user arrives for the first time.
+Conclusion: with the stream mode, Local API decisions are fetched on a regular basis rather than being called when user arrives for the first time.
 
 ### Try Redis or Memcached
 
@@ -366,13 +390,13 @@ Before publishing a new release, there are some manual steps to take:
 
 - Change the version number and stable tag in the `crowdsec.php` file
 - Change the stable tag  in the `readme.txt` file
-- Change the version number in the `inc/constants.php` file
+- Change the version number in the `inc/Constants.php` file
 - Update the `CHANGELOG.md` file
 
 Then, you have to [run the action manually from the GitHub repository](https://github.com/crowdsecurity/cs-wordpress-bouncer/actions/workflows/release.yml)
 
 
-Alternatively, you could use the [Github CLI](https://github.com/cli/cli):
+Alternatively, you could use the [GitHub CLI](https://github.com/cli/cli):
 - create a draft release:
 ```
 gh workflow run release.yml -f tag_name=vx.y.z -f draft=true
@@ -386,7 +410,7 @@ gh workflow run release.yml -f tag_name=vx.y.z -f prerelease=true
 gh workflow run release.yml -f tag_name=vx.y.z
 ```
 
-Note that the Github action will fail if the tag `tag_name` already exits.
+Note that the GitHub action will fail if the tag `tag_name` already exits.
 
 
 

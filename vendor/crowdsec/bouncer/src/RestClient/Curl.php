@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace CrowdSecBouncer\RestClient;
 
 use CrowdSecBouncer\BouncerException;
+use CrowdSecBouncer\Constants;
 
 class Curl extends AbstractClient
 {
@@ -58,7 +59,7 @@ class Curl extends AbstractClient
         ?array $queryParams,
         ?array $bodyParams,
         string $method,
-        ?array $headers
+        array $headers
     ): array {
         $url = $this->baseUri . $endpoint;
 
@@ -73,6 +74,21 @@ class Curl extends AbstractClient
             foreach (\is_array($values) ? $values : [$values] as $value) {
                 $options[\CURLOPT_HTTPHEADER][] = sprintf('%s:%s', $key, $value);
             }
+        }
+
+        if (isset($this->configs['auth_type']) && Constants::AUTH_TLS === $this->configs['auth_type']) {
+            $verifyPeer = $this->configs['tls_verify_peer'] ?? true;
+            $options[\CURLOPT_SSL_VERIFYPEER] = $verifyPeer;
+            //   The --cert option
+            $options[\CURLOPT_SSLCERT] = $this->configs['tls_cert_path'] ?? '';
+            // The --key option
+            $options[\CURLOPT_SSLKEY] = $this->configs['tls_key_path'] ?? '';
+            if ($verifyPeer) {
+                // The --cacert option
+                $options[\CURLOPT_CAINFO] = $this->configs['tls_ca_cert_path'] ?? '';
+            }
+        } else {
+            $options[\CURLOPT_SSL_VERIFYPEER] = false;
         }
 
         if ('POST' === strtoupper($method)) {
@@ -103,6 +119,10 @@ class Curl extends AbstractClient
         return $options;
     }
 
+    /**
+     * @param $handle
+     * @return mixed
+     */
     protected function getResponseHttpCode($handle)
     {
         return curl_getinfo($handle, \CURLINFO_HTTP_CODE);

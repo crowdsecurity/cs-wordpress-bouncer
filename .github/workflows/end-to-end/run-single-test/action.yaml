@@ -1,0 +1,33 @@
+name: "Single end-to-end test"
+author: "Julien Loizelet"
+description: "A Github Action that runs a single end-to-end test"
+inputs:
+  test_path:
+    required: true
+    description: "Path to end to end scripts"
+
+  file_path:
+    required: true
+    description: "Path to the js test file"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run test
+      shell: bash
+      run: |
+        cd ${{ inputs.test_path }}/__scripts__
+        ./run-tests.sh ci "./__tests__/${{ inputs.file_path }}"
+        cd ${{ inputs.test_path }}
+        PENDING_TESTS=$(grep -oP '"numPendingTests":\K(.*),"numRuntimeErrorTestSuites"' .test-results.json | sed  's/,"numRuntimeErrorTestSuites"//g')
+        if [[ $PENDING_TESTS == "0" ]]
+        then
+        echo "No pending tests: OK"
+        else
+        echo "There are pending tests: $PENDING_TESTS (KO)"
+        exit 1
+        fi
+
+branding:
+  icon: "code"
+  color: "green"

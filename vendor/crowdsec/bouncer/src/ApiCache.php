@@ -187,7 +187,7 @@ class ApiCache
 
                 try {
                     $this->adapter = new RedisTagAwareAdapter((RedisAdapter::createConnection($redisDsn)));
-                } catch (InvalidArgumentException $e) {
+                } catch (Exception $e) {
                     throw new BouncerException('Error when connecting to Redis.' .
                                                ' Please fix the Redis DSN or select another cache technology.');
                 }
@@ -496,7 +496,7 @@ class ApiCache
                 ++$count;
             } elseif (Constants::SCOPE_RANGE === $decision['scope']) {
                 $range = Subnet::parseString($decision['value']);
-                if(null === $range) {
+                if (null === $range) {
                     $this->logger->warning('', [
                         'type' => 'INVALID_RANGE_TO_ADD_FROM_REMEDIATION',
                         'decision' => $decision,
@@ -525,6 +525,13 @@ class ApiCache
                 $ipCount = 1;
                 do {
                     $address = $address->getNextAddress();
+                    if (null === $address) {
+                        $this->logger->warning('', [
+                            'type' => 'INVALID_NEXT_ADDRESS_TO_REMOVE_FROM_REMEDIATION',
+                            'decision' => $decision,
+                        ]);
+                        break;
+                    }
                     $cacheKey = $this->getCacheKey($decision['scope'], $address->toString());
                     $this->addRemediationToCacheItem($cacheKey, $type, $exp, $id);
                     ++$ipCount;
@@ -580,7 +587,7 @@ class ApiCache
                 }
             } elseif (Constants::SCOPE_RANGE === $decision['scope']) {
                 $range = Subnet::parseString($decision['value']);
-                if(null === $range) {
+                if (null === $range) {
                     $this->logger->warning('', [
                         'type' => 'INVALID_RANGE_TO_REMOVE_FROM_REMEDIATION',
                         'decision' => $decision,
@@ -614,6 +621,13 @@ class ApiCache
                 $success = true;
                 do {
                     $address = $address->getNextAddress();
+                    if (null === $address) {
+                        $this->logger->warning('', [
+                            'type' => 'INVALID_NEXT_ADDRESS_TO_REMOVE_FROM_REMEDIATION',
+                            'decision' => $decision,
+                        ]);
+                        break;
+                    }
                     $cacheKey = $this->getCacheKey($decision['scope'], $address->toString());
                     if (!$this->removeDecisionFromRemediationItem($cacheKey, $decision['id'])) {
                         $success = false;
@@ -767,11 +781,10 @@ class ApiCache
         $nbNew = 0;
         if ($newDecisions) {
             $saveResult = $this->saveRemediations($newDecisions);
-            if(!empty($saveResult['success'])){
-                $addErrors = $saveResult['errors']??0;
-                $nbNew = $saveResult['count']??0;
-            }
-            else{
+            if (!empty($saveResult['success'])) {
+                $addErrors = $saveResult['errors'] ?? 0;
+                $nbNew = $saveResult['count'] ?? 0;
+            } else {
                 $this->logger->warning('', [
                     'type' => 'CACHE_UPDATED_FAILED',
                     'message' => 'Something went wrong while committing to cache adapter']);
@@ -1087,7 +1100,7 @@ class ApiCache
     /**
      * @param string $cacheTag
      * @param string $cacheKey
-     * @param $cachedVariables
+     * @param mixed $cachedVariables
      * @return void
      * @throws InvalidArgumentException
      * @throws \Psr\Cache\CacheException

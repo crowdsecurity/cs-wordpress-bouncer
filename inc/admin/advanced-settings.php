@@ -170,7 +170,7 @@ function adminAdvancedSettings()
         return $input;
     }, ((Constants::CACHE_SYSTEM_PHPFS === get_option('crowdsec_cache_system')) ?
         '<input style="margin-right:10px" type="button" id="crowdsec_prune_cache" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_action_prune_cache\').submit();">' : '').
-        '<p>The File system cache is faster than calling LAPI. Redis or Memcached is faster than the File System cache.</p>', [
+        '<p>The File system cache is faster than calling Local API. Redis or Memcached is faster than the File System cache.</p>', [
         Constants::CACHE_SYSTEM_PHPFS => 'File system',
         Constants::CACHE_SYSTEM_REDIS => 'Redis',
         Constants::CACHE_SYSTEM_MEMCACHED => 'Memcached',
@@ -185,7 +185,7 @@ function adminAdvancedSettings()
         }
 
         return (int) $input > 0 ? (int) $input : 1 ;
-    }, ' seconds. <p>The duration between re-asking LAPI about an already checked clean IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
+    }, ' seconds. <p>The duration between re-asking Local API about an already checked clean IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
     // Field "crowdsec_bad_ip_cache_duration"
     addFieldString('crowdsec_bad_ip_cache_duration', 'Recheck bad IPs each<br>(live mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
@@ -196,7 +196,7 @@ function adminAdvancedSettings()
         }
 
         return (int) $input > 0 ? (int) $input : 1 ;
-    }, ' seconds. <p>The duration between re-asking LAPI about an already checked bad IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
+    }, ' seconds. <p>The duration between re-asking Local API about an already checked bad IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
     // Field "crowdsec_captcha_cache_duration"
     addFieldString('crowdsec_captcha_cache_duration', 'Captcha flow cache lifetime', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {

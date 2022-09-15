@@ -43,16 +43,27 @@ jobs:
                 # Check crowdsec.php, readme.txt, inc/Constants.php and CHANGELOG.md
                 run: |
                     CURRENT_DATE=$(date +'%Y-%m-%d')
-                    CHANGELOG_VERSION=$(grep -o -E "## \[(.*)\] - $CURRENT_DATE"  CHANGELOG.md | head -1 | sed 's/ //g')
+                    CHANGELOG_VERSION=$(grep -o -E "## \[(.*)\].* - $CURRENT_DATE"  CHANGELOG.md | head -1 | sed 's/ //g')
                     echo $CURRENT_DATE
                     echo $CHANGELOG_VERSION
                     echo "##[${{ env.VERSION_NUMBER }}]-$CURRENT_DATE"
-                    if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}]-$CURRENT_DATE" ]]
+                    if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}](${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE" ]]
                     then
                        echo "Version in CHANGELOG.md: OK"
                     else
                        echo "Version in CHANGELOG.md: KO"
                        exit 1
+                    fi
+                    COMPARISON=$(grep -oP "\/compare\/\K(.*)$" CHANGELOG.md | head -1)
+                    LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} ${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/latest | grep -oP "\/tag\/\K(.*)$")
+                    if [[ $COMPARISON == "$LAST_TAG...v${{ env.VERSION_NUMBER }})" ]]
+                    then
+                      echo "VERSION COMPARISON OK"
+                    else
+                      echo "VERSION COMPARISON KO"
+                      echo $COMPARISON
+                      echo "$LAST_TAG...v${{ env.VERSION_NUMBER }})"
+                      exit 1
                     fi
                     CROWDSEC_VERSION=$(grep -E "Version: (.*)"  crowdsec.php | sed 's/ //g')
                     echo $CROWDSEC_VERSION
@@ -121,7 +132,7 @@ jobs:
 
             -   name: Prepare release notes
                 run: |
-                    VERSION_RELEASE_NOTES=$(awk -v ver="[${{ env.VERSION_NUMBER }}]" '/^## / { if (p) { exit }; if ($2 == ver) { p=1; next} } p && NF' CHANGELOG.md)
+                    VERSION_RELEASE_NOTES=$(awk -v ver="[${{ env.VERSION_NUMBER }}](${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/tag/v${{ env.VERSION_NUMBER }})" '/^## / { if (p) { exit }; if ($2 == ver) { p=1; next} } p && NF' CHANGELOG.md | sed ':a;N;$!ba;s/\n---/ /g')
                     echo "$VERSION_RELEASE_NOTES" >> CHANGELOG.txt
                     cat CHANGELOG.txt
 

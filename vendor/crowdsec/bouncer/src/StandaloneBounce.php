@@ -285,19 +285,23 @@ class StandaloneBounce extends AbstractBounce
     {
         $excludedURIs = $this->getArraySettings('excluded_uris');
         if (\in_array($_SERVER['REQUEST_URI'], $excludedURIs)) {
-            $this->logger->debug('', [
-                'type' => 'SHOULD_NOT_BOUNCE',
-                'message' => 'This URI is excluded from bouncing: ' . $_SERVER['REQUEST_URI'],
-            ]);
+            if ($this->logger) {
+                $this->logger->debug('', [
+                    'type' => 'SHOULD_NOT_BOUNCE',
+                    'message' => 'This URI is excluded from bouncing: ' . $_SERVER['REQUEST_URI'],
+                ]);
+            }
 
             return false;
         }
         $bouncingDisabled = (Constants::BOUNCING_LEVEL_DISABLED === $this->getStringSettings('bouncing_level'));
         if ($bouncingDisabled) {
-            $this->logger->debug('', [
-                'type' => 'SHOULD_NOT_BOUNCE',
-                'message' => Constants::BOUNCING_LEVEL_DISABLED,
-            ]);
+            if ($this->logger) {
+                $this->logger->debug('', [
+                    'type' => 'SHOULD_NOT_BOUNCE',
+                    'message' => Constants::BOUNCING_LEVEL_DISABLED,
+                ]);
+            }
 
             return false;
         }

@@ -4,7 +4,7 @@ Donate link: https://crowdsec.net/
 Tags: crowdsec-bouncer, wordpress, security, firewall, captcha, ip-scanner, ip-blocker, ip-blocking, ip-address, ip-database, ip-range-check, crowdsec, ban-hosts, ban-management, anti-hacking, hacker-protection, captcha-image, captcha-generator, captcha-generation, captcha-service
 Requires at least: 4.9
 Tested up to: 6.0
-Stable tag: 1.8.1
+Stable tag: 1.9.0
 Requires PHP: 7.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
@@ -44,7 +44,11 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 
 == Changelog ==
 
-= 1.8 (2022-08-04)
+= 1.9 (2022-09-15) =
+
+- Add TLS authentication option
+
+= 1.8 (2022-08-04) =
 
 - Add `use_curl` configuration: should be used if `allow_url_fopen` is disabled and `curl` is available
 - Add `disable_prod_log` configuration

@@ -20,8 +20,13 @@ function getCrowdSecLoggerInstance(): Logger
 function getDatabaseSettings(): array
 {
     return [
-        // LAPI connection
+        // Local API connection
         'api_key' => esc_attr(get_option('crowdsec_api_key')),
+        'auth_type' => esc_attr(get_option('crowdsec_auth_type'))?:Constants::AUTH_KEY,
+        'tls_cert_path' => Constants::CROWDSEC_BOUNCER_TLS_DIR. '/'.ltrim(esc_attr(get_option('crowdsec_tls_cert_path')), '/'),
+        'tls_key_path' => Constants::CROWDSEC_BOUNCER_TLS_DIR. '/'.ltrim(esc_attr(get_option('crowdsec_tls_key_path')), '/'),
+        'tls_verify_peer' => !empty(get_option('crowdsec_tls_verify_peer')),
+        'tls_ca_cert_path' => Constants::CROWDSEC_BOUNCER_TLS_DIR. '/'.ltrim(esc_attr(get_option('crowdsec_tls_ca_cert_path')), '/'),
         'api_url' => esc_attr(get_option('crowdsec_api_url')),
         'use_curl' => !empty(get_option('crowdsec_use_curl')),
         'api_user_agent' => Constants::CROWDSEC_BOUNCER_USER_AGENT,
@@ -34,7 +39,7 @@ function getDatabaseSettings(): array
         'display_errors' => !empty(get_option('crowdsec_display_errors')),
         // Bouncer
         'bouncing_level' => esc_attr(get_option('crowdsec_bouncing_level'))?:Constants::BOUNCING_LEVEL_DISABLED,
-        'trust_ip_forward_array' => get_option('crowdsec_trust_ip_forward_array'),
+        'trust_ip_forward_array' => get_option('crowdsec_trust_ip_forward_array')?:[],
         'fallback_remediation' => esc_attr(get_option('crowdsec_fallback_remediation')),
         // Cache settings
         'stream_mode' => !empty(get_option('crowdsec_stream_mode')),

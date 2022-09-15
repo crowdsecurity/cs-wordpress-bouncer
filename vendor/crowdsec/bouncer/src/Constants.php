@@ -20,10 +20,16 @@ class Constants
     public const DEFAULT_LAPI_URL = 'http://localhost:8080';
 
     /** @var string The last version of this library */
-    public const VERSION = 'v0.28.0';
+    public const VERSION = 'v0.29.0';
 
     /** @var string The user agent used to send request to LAPI */
     public const BASE_USER_AGENT = 'PHP CrowdSec Bouncer/' . self::VERSION;
+
+    /** @var string The API-KEY auth type */
+    public const AUTH_KEY = 'api_key';
+
+    /** @var string The TLS auth type */
+    public const AUTH_TLS = 'tls';
 
     /** @var int The timeout when calling LAPI */
     public const API_TIMEOUT = 1;

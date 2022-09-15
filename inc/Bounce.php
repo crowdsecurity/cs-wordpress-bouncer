@@ -44,6 +44,11 @@ class Bounce extends AbstractBounce
         $configs = [
             // LAPI connection
             'api_key' => $this->escape($this->getStringSettings('crowdsec_api_key')),
+            'auth_type' => $this->getStringSettings('crowdsec_auth_type')?:Constants::AUTH_KEY,
+            'tls_cert_path' => Constants::CROWDSEC_BOUNCER_TLS_DIR. '/'.ltrim($this->getStringSettings('crowdsec_tls_cert_path'), '/'),
+            'tls_key_path' => Constants::CROWDSEC_BOUNCER_TLS_DIR. '/'.ltrim($this->getStringSettings('crowdsec_tls_key_path'), '/'),
+            'tls_verify_peer' => $this->getBoolSettings('crowdsec_tls_verify_peer'),
+            'tls_ca_cert_path' => Constants::CROWDSEC_BOUNCER_TLS_DIR. '/'.ltrim($this->getStringSettings('crowdsec_tls_ca_cert_path'), '/'),
             'api_url' => $this->escape($this->getStringSettings('crowdsec_api_url')),
             'use_curl' => $this->getBoolSettings('crowdsec_use_curl'),
             'api_user_agent' => Constants::CROWDSEC_BOUNCER_USER_AGENT,
