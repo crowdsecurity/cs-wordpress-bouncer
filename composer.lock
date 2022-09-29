@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fad5b32074a74d33f2cfd92112229bca",
+    "content-hash": "8accb12cf498914f6093fd27d455a460",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -84,16 +84,16 @@
         },
         {
             "name": "crowdsec/bouncer",
-            "version": "v0.29.0",
+            "version": "v0.32.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "055323f2203180db6ed539cc7b7fd01da49cda78"
+                "reference": "5d11ef5084c8fc73ac29b3cf06bc2c734fbe5d21"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/055323f2203180db6ed539cc7b7fd01da49cda78",
-                "reference": "055323f2203180db6ed539cc7b7fd01da49cda78",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/5d11ef5084c8fc73ac29b3cf06bc2c734fbe5d21",
+                "reference": "5d11ef5084c8fc73ac29b3cf06bc2c734fbe5d21",
                 "shasum": ""
             },
             "require": {
@@ -102,9 +102,10 @@
                 "gregwar/captcha": "^1.1",
                 "mlocati/ip-lib": "^1.18",
                 "monolog/monolog": "^1.17 || ^2.1",
-                "php": "^7.2 || ^8.0",
-                "symfony/cache": "5.4.7 || 6.0.6",
-                "symfony/config": "^4.4.27 || ^5.2"
+                "php": ">=7.2.5",
+                "symfony/cache": "^5.4.11 || ^6.0.11",
+                "symfony/config": "^4.4.27 || ^5.2 || ^6.0",
+                "twig/twig": "^3.4.2"
             },
             "require-dev": {
                 "ext-curl": "*",
@@ -134,7 +135,7 @@
                     "role": "Developer"
                 }
             ],
-            "description": "The official PHP bouncer library for the CrowdSec LAPI",
+            "description": "The official PHP bouncer library for the CrowdSec Local API",
             "keywords": [
                 "IP",
                 "blocker",
@@ -150,9 +151,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.29.0"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v0.32.0"
             },
-            "time": "2022-08-11T04:56:02+00:00"
+            "time": "2022-09-29T01:15:44+00:00"
         },
         {
             "name": "geoip2/geoip2",
@@ -703,16 +704,16 @@
         },
         {
             "name": "symfony/cache",
-            "version": "v5.4.7",
+            "version": "v5.4.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/cache.git",
-                "reference": "ba06841ed293fcaf79a592f59fdaba471f7c756c"
+                "reference": "5a0fff46df349f0db3fe242263451fddf5277362"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/cache/zipball/ba06841ed293fcaf79a592f59fdaba471f7c756c",
-                "reference": "ba06841ed293fcaf79a592f59fdaba471f7c756c",
+                "url": "https://api.github.com/repos/symfony/cache/zipball/5a0fff46df349f0db3fe242263451fddf5277362",
+                "reference": "5a0fff46df349f0db3fe242263451fddf5277362",
                 "shasum": ""
             },
             "require": {
@@ -780,7 +781,7 @@
                 "psr6"
             ],
             "support": {
-                "source": "https://github.com/symfony/cache/tree/v5.4.7"
+                "source": "https://github.com/symfony/cache/tree/v5.4.11"
             },
             "funding": [
                 {
@@ -796,7 +797,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-03-22T15:31:03+00:00"
+            "time": "2022-07-28T15:25:17+00:00"
         },
         {
             "name": "symfony/cache-contracts",
@@ -1707,6 +1708,82 @@
                 }
             ],
             "time": "2022-05-27T12:56:18+00:00"
+        },
+        {
+            "name": "twig/twig",
+            "version": "v3.4.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/twigphp/Twig.git",
+                "reference": "c38fd6b0b7f370c198db91ffd02e23b517426b58"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/c38fd6b0b7f370c198db91ffd02e23b517426b58",
+                "reference": "c38fd6b0b7f370c198db91ffd02e23b517426b58",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.5",
+                "symfony/polyfill-ctype": "^1.8",
+                "symfony/polyfill-mbstring": "^1.3"
+            },
+            "require-dev": {
+                "psr/container": "^1.0",
+                "symfony/phpunit-bridge": "^4.4.9|^5.0.9|^6.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.4-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Twig\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Twig Team",
+                    "role": "Contributors"
+                },
+                {
+                    "name": "Armin Ronacher",
+                    "email": "armin.ronacher@active-4.com",
+                    "role": "Project Founder"
+                }
+            ],
+            "description": "Twig, the flexible, fast, and secure template language for PHP",
+            "homepage": "https://twig.symfony.com",
+            "keywords": [
+                "templating"
+            ],
+            "support": {
+                "issues": "https://github.com/twigphp/Twig/issues",
+                "source": "https://github.com/twigphp/Twig/tree/v3.4.3"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/twig/twig",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2022-09-28T08:42:51+00:00"
         }
     ],
     "packages-dev": [],

@@ -49,7 +49,7 @@ jobs:
                     echo "##[${{ env.VERSION_NUMBER }}]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE"
                     if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE" ]]
                     then
-                       echo "Version in CHANGELOG.md: OK"
+                        echo "Version in CHANGELOG.md: OK"
                     else
                        echo "Version in CHANGELOG.md: KO"
                        exit 1

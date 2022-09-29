@@ -72,10 +72,11 @@ also be able to test your settings.
 
 ***
 
-
 `Connection details → Local API URL`
 
 Url to join your CrowdSec Local API.
+
+If the CrowdSec Agent is installed on this server, you could set this field to `http://localhost:8080`.
 
 ***
 

@@ -20,19 +20,6 @@ class FileGetContents extends AbstractClient
     }
 
     /**
-     * Convert a key-value array of headers to the official HTTP header string.
-     */
-    private function convertHeadersToString(array $headers): string
-    {
-        $builtHeaderString = '';
-        foreach ($headers as $key => $value) {
-            $builtHeaderString .= "$key: $value\r\n";
-        }
-
-        return $builtHeaderString;
-    }
-
-    /**
      * Send an HTTP request using the file_get_contents and parse its JSON result if any.
      *
      * @throws BouncerException
@@ -48,32 +35,8 @@ class FileGetContents extends AbstractClient
         if ($queryParams) {
             $endpoint .= '?' . http_build_query($queryParams);
         }
-        $header = $headers ? $this->convertHeadersToString($headers) : $this->headerString;
-        $config = [
-            'http' => [
-                'method' => $method,
-                'header' => $header,
-                'timeout' => $timeout ?: $this->timeout,
-                'ignore_errors' => true,
-            ],
-        ];
-        if (isset($this->configs['auth_type']) && Constants::AUTH_TLS === $this->configs['auth_type']) {
-            $verifyPeer = $this->configs['tls_verify_peer'] ?? true;
-            $config['ssl'] = [
-                'verify_peer' => $verifyPeer,
-                'local_cert' => $this->configs['tls_cert_path'] ?? '',
-                'local_pk' => $this->configs['tls_key_path'] ?? '',
-            ];
-            if ($verifyPeer) {
-                $config['ssl']['cafile'] = $this->configs['tls_ca_cert_path'] ?? '';
-            }
-        } else {
-            $config['ssl'] = ['verify_peer' => false];
-        }
 
-        if ($bodyParams) {
-            $config['http']['content'] = json_encode($bodyParams);
-        }
+        $config = $this->createConfig($bodyParams, $method, $headers, $timeout);
         $context = stream_context_create($config);
 
         $this->logger->debug('', [
@@ -100,5 +63,53 @@ class FileGetContents extends AbstractClient
         }
 
         return json_decode($response, true);
+    }
+
+    /**
+     * Convert a key-value array of headers to the official HTTP header string.
+     */
+    private function convertHeadersToString(array $headers): string
+    {
+        $builtHeaderString = '';
+        foreach ($headers as $key => $value) {
+            $builtHeaderString .= "$key: $value\r\n";
+        }
+
+        return $builtHeaderString;
+    }
+
+    private function createConfig(
+        array $bodyParams = null,
+        string $method = 'GET',
+        array $headers = null,
+        int $timeout = null
+    ): array {
+        $header = $headers ? $this->convertHeadersToString($headers) : $this->headerString;
+        $config = [
+            'http' => [
+                'method' => $method,
+                'header' => $header,
+                'timeout' => $timeout ?: $this->timeout,
+                'ignore_errors' => true,
+            ],
+        ];
+        $config['ssl'] = ['verify_peer' => false];
+        if (isset($this->configs['auth_type']) && Constants::AUTH_TLS === $this->configs['auth_type']) {
+            $verifyPeer = $this->configs['tls_verify_peer'] ?? true;
+            $config['ssl'] = [
+                'verify_peer' => $verifyPeer,
+                'local_cert' => $this->configs['tls_cert_path'] ?? '',
+                'local_pk' => $this->configs['tls_key_path'] ?? '',
+            ];
+            if ($verifyPeer) {
+                $config['ssl']['cafile'] = $this->configs['tls_ca_cert_path'] ?? '';
+            }
+        }
+
+        if ($bodyParams) {
+            $config['http']['content'] = json_encode($bodyParams);
+        }
+
+        return $config;
     }
 }
