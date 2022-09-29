@@ -8,6 +8,7 @@ use Gregwar\Captcha\CaptchaBuilder as GregwarCaptchaBuilder;
  * Override to fix "implicit conversion error on PHP  8.1"
  * @see https://github.com/crowdsecurity/php-cs-bouncer/issues/62 and
  * @see https://github.com/Gregwar/Captcha/pull/101/files
+ * @SuppressWarnings(PHPMD.ElseExpression)
  *
  */
 class CaptchaBuilder extends GregwarCaptchaBuilder

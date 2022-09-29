@@ -20,20 +20,17 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractClient
 {
-    /** @var int|mixed|null */
-    protected $timeout = null;
-
     /** @var mixed|null */
     protected $baseUri = null;
-
+    /** @var array */
+    protected $configs;
     /** @var array */
     protected $headers = [];
 
     /** @var LoggerInterface */
     protected $logger;
-
-    /** @var array */
-    protected $configs;
+    /** @var int|mixed|null */
+    protected $timeout = null;
 
     /**
      * @throws BouncerException

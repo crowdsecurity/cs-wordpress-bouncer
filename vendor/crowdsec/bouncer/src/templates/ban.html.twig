@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include('partials/head.html.twig') with {'tab_title': config.text.ban_wall.tab_title} %}
+</head>
+<body>
+<div class="container">
+    <div class="main">
+        <h1>{{ config.text.ban_wall.title | e }}</h1>
+        <p class="desc">{{ config.text.ban_wall.subtitle }}</p>
+        {% if config.text.ban_wall.footer is not empty %}
+            <p class="footer">{{ config.text.ban_wall.footer | e }}</p>
+        {% endif %}
+        {% if config.hide_crowdsec_mentions is empty %}
+            {% include('partials/mentions.html.twig') %}
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>

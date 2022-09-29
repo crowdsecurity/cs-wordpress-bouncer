@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include('partials/head.html.twig') with {'tab_title': config.text.captcha_wall.tab_title} %}
+    {% include('partials/captcha-js.html.twig') %}
+</head>
+<body>
+<div class="container">
+    <div class="main">
+        <h1>
+            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="exclamation-triangle" role="img"
+                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" class="warning">
+                <path fill="#f39b2f"
+                      d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937 0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288 354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"></path>
+            </svg>
+            {{ config.text.captcha_wall.title |e }}
+        </h1>
+        <p class="desc">{{ config.text.captcha_wall.subtitle |e }}</p>
+
+        <img src="{{ config.captcha_img }}" alt="captcha"/>
+        <p><small><a id="refresh_link" href="#"
+                     onclick="newImage()">{{ config.text.captcha_wall.refresh_image_link |e }}</a></small></p>
+
+        <form method="post" id="captcha" action="#">
+            <script>document.querySelector("#captcha").setAttribute("action", "{{config.captcha_resolution_url}}")</script>
+            <input type="text" name="phrase" placeholder="{{ config.text.captcha_wall.captcha_placeholder |e }}" autofocus
+                   autocomplete="off"/>
+            <input type="hidden" name="crowdsec_captcha" value="1">
+            <input type="hidden" name="refresh" value="0" id="refresh">
+            {% if config.error is not empty %}
+                <p class="error">{{ config.text.captcha_wall.error_message |e }}</p>
+            {% endif %}
+            <button type="submit">{{ config.text.captcha_wall.send_button |e }}</button>
+        </form>
+        {% if config.text.ban_wall.footer is not empty %}
+            <p class="footer">{{ config.text.ban_wall.footer | e }}</p>
+        {% endif %}
+        {% if config.hide_crowdsec_mentions is empty %}
+            {% include('partials/mentions.html.twig') %}
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>

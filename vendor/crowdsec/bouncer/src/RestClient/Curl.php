@@ -25,7 +25,6 @@ class Curl extends AbstractClient
         int $timeout = null
     ): ?array {
         $handle = curl_init();
-
         $curlOptions = $this->createOptions($endpoint, $queryParams, $bodyParams, $method, $headers ?: $this->headers);
 
         curl_setopt_array($handle, $curlOptions);
@@ -52,6 +51,26 @@ class Curl extends AbstractClient
     }
 
     /**
+     * @param $handle
+     *
+     * @return bool|string
+     */
+    protected function exec($handle)
+    {
+        return curl_exec($handle);
+    }
+
+    /**
+     * @param $handle
+     *
+     * @return mixed
+     */
+    protected function getResponseHttpCode($handle)
+    {
+        return curl_getinfo($handle, \CURLINFO_HTTP_CODE);
+    }
+
+    /**
      * Retrieve Curl options.
      */
     private function createOptions(
@@ -75,7 +94,7 @@ class Curl extends AbstractClient
                 $options[\CURLOPT_HTTPHEADER][] = sprintf('%s:%s', $key, $value);
             }
         }
-
+        $options[\CURLOPT_SSL_VERIFYPEER] = false;
         if (isset($this->configs['auth_type']) && Constants::AUTH_TLS === $this->configs['auth_type']) {
             $verifyPeer = $this->configs['tls_verify_peer'] ?? true;
             $options[\CURLOPT_SSL_VERIFYPEER] = $verifyPeer;
@@ -87,10 +106,24 @@ class Curl extends AbstractClient
                 // The --cacert option
                 $options[\CURLOPT_CAINFO] = $this->configs['tls_ca_cert_path'] ?? '';
             }
-        } else {
-            $options[\CURLOPT_SSL_VERIFYPEER] = false;
+        }
+        $this->updateOptionsByMethod($options, $url, $method, $queryParams, $bodyParams);
+
+        $options[\CURLOPT_URL] = $url;
+        if ($this->timeout > 0) {
+            $options[\CURLOPT_TIMEOUT] = $this->timeout;
         }
 
+        return $options;
+    }
+
+    private function updateOptionsByMethod(
+        array &$options,
+        string &$url,
+        string $method,
+        ?array $queryParams,
+        ?array $bodyParams
+    ): void {
         if ('POST' === strtoupper($method)) {
             $parameters = $bodyParams;
             $options[\CURLOPT_POST] = true;
@@ -110,31 +143,5 @@ class Curl extends AbstractClient
             $options[\CURLOPT_POST] = false;
             $options[\CURLOPT_CUSTOMREQUEST] = 'DELETE';
         }
-
-        $options[\CURLOPT_URL] = $url;
-        if ($this->timeout > 0) {
-            $options[\CURLOPT_TIMEOUT] = $this->timeout;
-        }
-
-        return $options;
-    }
-
-    /**
-     * @param $handle
-     * @return mixed
-     */
-    protected function getResponseHttpCode($handle)
-    {
-        return curl_getinfo($handle, \CURLINFO_HTTP_CODE);
-    }
-
-    /**
-     * @param $handle
-     *
-     * @return bool|string
-     */
-    protected function exec($handle)
-    {
-        return curl_exec($handle);
     }
 }
