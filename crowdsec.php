@@ -12,7 +12,7 @@
  * License URI: https://opensource.org/licenses/MIT
  * Requires PHP: 7.2
  * Requires at least: 4.9
- * Tested up to: 6.0
+ * Tested up to: 6.1
  * Stable tag: 1.9.0
  * Text Domain: crowdsec-wp
  * First release: 2021.
