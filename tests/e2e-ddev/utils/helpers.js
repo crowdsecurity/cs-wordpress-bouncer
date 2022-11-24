@@ -124,7 +124,7 @@ const onAdminAdvancedSettingsPageSetBadIpCacheDurationTo = async (seconds) => {
 };
 
 const computeCurrentPageRemediation = async (
-    accessibleTextInTitle = "Just another WordPress site",
+    accessibleTextInTitle = "WordPress",
 ) => {
     const title = await page.title();
     if (title.includes(accessibleTextInTitle)) {
