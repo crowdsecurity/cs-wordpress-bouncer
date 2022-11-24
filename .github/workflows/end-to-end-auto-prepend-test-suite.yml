@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        wp-version: [ "4.9", "5.0", "5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "6.0" ]
+        wp-version: [ "4.9", "5.0", "5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "6.0", "6.1" ]
         php-version: [ "7.2", "7.4", "8.0" ]
         exclude:
           - { php-version: "7.4", wp-version: "4.9" }
@@ -41,7 +41,7 @@ jobs:
     steps:
 
       - name: Clone DDEV files
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: .ddev
           repository: julienloizelet/ddev-wp
@@ -96,7 +96,7 @@ jobs:
 
 
       - name: Clone ${{ env.EXTENSION_NAME }} files
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: my-own-modules/${{ env.EXTENSION_PATH }}
 

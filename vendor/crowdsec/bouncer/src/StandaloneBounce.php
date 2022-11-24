@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CrowdSecBouncer;
 
 use ErrorException;
@@ -128,7 +130,7 @@ class StandaloneBounce extends AbstractBounce
      */
     public function getHttpMethod(): string
     {
-        return $_SERVER['REQUEST_METHOD'];
+        return $_SERVER['REQUEST_METHOD'] ?? "";
     }
 
     /**
@@ -141,7 +143,7 @@ class StandaloneBounce extends AbstractBounce
             return null;
         }
 
-        return $_SERVER[$headerName];
+        return is_string($_SERVER[$headerName]) ? $_SERVER[$headerName] : null;
     }
 
     /**
@@ -153,7 +155,7 @@ class StandaloneBounce extends AbstractBounce
             return null;
         }
 
-        return $_POST[$name];
+        return is_string($_POST[$name]) ? $_POST[$name] : null;
     }
 
     /**
@@ -161,7 +163,7 @@ class StandaloneBounce extends AbstractBounce
      */
     public function getRemoteIp(): string
     {
-        return $_SERVER['REMOTE_ADDR'];
+        return $_SERVER['REMOTE_ADDR'] ?? "";
     }
 
     /**
@@ -289,7 +291,7 @@ class StandaloneBounce extends AbstractBounce
     public function shouldBounceCurrentIp(): bool
     {
         $excludedURIs = $this->getArraySettings('excluded_uris');
-        if (\in_array($_SERVER['REQUEST_URI'], $excludedURIs)) {
+        if (isset($_SERVER['REQUEST_URI']) && \in_array($_SERVER['REQUEST_URI'], $excludedURIs)) {
             if ($this->logger) {
                 $this->logger->debug('', [
                     'type' => 'SHOULD_NOT_BOUNCE',
@@ -314,7 +316,7 @@ class StandaloneBounce extends AbstractBounce
         return true;
     }
 
-    private function getColorConfigs()
+    private function getColorConfigs(): array
     {
         return [
             'text' => [

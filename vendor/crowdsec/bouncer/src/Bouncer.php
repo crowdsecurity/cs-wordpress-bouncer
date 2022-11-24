@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CrowdSecBouncer;
 
 use CrowdSecBouncer\Fixes\Gregwar\Captcha\CaptchaBuilder;
@@ -12,7 +14,7 @@ use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\Exception\CacheException;
 use Symfony\Component\Config\Definition\Processor;
 
@@ -52,7 +54,7 @@ class Bouncer
         }
         $this->logger = $logger;
         $this->configure($configs);
-        /** @var int */
+        /** @var int $index */
         $index = array_search(
             $this->configs['max_remediation_level'],
             Constants::ORDERED_REMEDIATIONS
@@ -148,7 +150,7 @@ class Bouncer
         return $this->apiCache;
     }
 
-    public function getCacheAdapter(): TagAwareAdapterInterface
+    public function getCacheAdapter(): AdapterInterface
     {
         return $this->getApiCache()->getAdapter();
     }

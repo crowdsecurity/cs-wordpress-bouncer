@@ -150,7 +150,7 @@ abstract class AbstractBounce implements IBounce
 
     protected function getBoolSettings(string $name): bool
     {
-        return !empty($this->settings[$name]) && $this->settings[$name];
+        return !empty($this->settings[$name]);
     }
 
     protected function getIntegerSettings(string $name): int
