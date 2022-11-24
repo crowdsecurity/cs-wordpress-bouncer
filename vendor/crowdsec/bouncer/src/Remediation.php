@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CrowdSecBouncer;
 
 /**
@@ -55,8 +57,8 @@ class Remediation
         }
 
         // Sort by priorities.
-        /** @var $compareFunction callable */
-        $compareFunction = 'self::comparePriorities';
+        /** @var callable $compareFunction  */
+        $compareFunction = self::class . '::comparePriorities';
         usort($remediationsWithPriorities, $compareFunction);
 
         return $remediationsWithPriorities;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CrowdSecBouncer;
 
-use CrowdSecBouncer\Fixes\Memcached\TagAwareAdapter as MemcachedTagAwareAdapter;
 use DateTime;
 use ErrorException;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
 use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
@@ -31,7 +31,7 @@ use Symfony\Component\Cache\Exception\CacheException;
 abstract class AbstractCache
 {
     public const CACHE_SEP = '_';
-    /** @var TagAwareAdapterInterface */
+    /** @var AdapterInterface */
     protected $adapter;
     /**
      * @var ApiClient
@@ -125,9 +125,9 @@ abstract class AbstractCache
     }
 
     /**
-     * @return TagAwareAdapterInterface
+     * @return AdapterInterface
      */
-    public function getAdapter(): TagAwareAdapterInterface
+    public function getAdapter(): AdapterInterface
     {
         return $this->adapter;
     }
@@ -145,17 +145,24 @@ abstract class AbstractCache
         if (!isset($this->cacheKeys[$scope][$value])) {
             switch ($scope) {
                 case Constants::SCOPE_RANGE:
-                    $this->cacheKeys[$scope][$value] = Constants::SCOPE_IP . self::CACHE_SEP . $value;
+                    $result = Constants::SCOPE_IP . self::CACHE_SEP . $value;
                     break;
                 case Constants::SCOPE_IP:
                 case Constants::CACHE_TAG_GEO . self::CACHE_SEP . Constants::SCOPE_IP:
                 case Constants::CACHE_TAG_CAPTCHA . self::CACHE_SEP . Constants::SCOPE_IP:
                 case Constants::SCOPE_COUNTRY:
-                    $this->cacheKeys[$scope][$value] = $scope . self::CACHE_SEP . $value;
+                    $result = $scope . self::CACHE_SEP . $value;
                     break;
                 default:
                     throw new BouncerException('Unknown scope:' . $scope);
             }
+
+            /**
+             * Replace unauthorized symbols.
+             *
+             * @see https://symfony.com/doc/current/components/cache/cache_items.html#cache-item-keys-and-values
+             */
+            $this->cacheKeys[$scope][$value] = preg_replace('/[^A-Za-z0-9_.]/', self::CACHE_SEP, $result);
         }
 
         return $this->cacheKeys[$scope][$value];
@@ -285,12 +292,15 @@ abstract class AbstractCache
         ]; // erase previous decision with the same id
 
         // Build the item lifetime in cache and sort remediations by priority
-        $maxLifetime = max(array_column($remediations, 1));
+        $exps = array_column($remediations, 1);
+        $maxLifetime = $exps ? max($exps) : 0;
         $prioritizedRemediations = Remediation::sortRemediationByPriority($remediations);
 
         $item->set($prioritizedRemediations);
         $item->expiresAt(new DateTime('@' . $maxLifetime));
-        $item->tag(Constants::CACHE_TAG_REM);
+        if ($this->adapter instanceof TagAwareAdapterInterface) {
+            $item->tag(Constants::CACHE_TAG_REM);
+        }
 
         // Save the cache without committing it to the cache system.
         // Useful to improve performance when updating the cache.
@@ -339,22 +349,14 @@ abstract class AbstractCache
     protected function formatRemediationFromDecision(?array $decision): array
     {
         if (!$decision) {
-            $duration = time() + $this->cacheExpirationForCleanIp;
-            if ($this->streamMode) {
-                /**
-                 * In stream mode we consider a clean IP forever... until the next resync.
-                 * in this case, forever is 10 years as PHP_INT_MAX will cause trouble with the Memcached Adapter
-                 * (int to float unwanted conversion)
-                 * */
-                $duration = 315360000;
-            }
+            $duration = $this->cacheExpirationForCleanIp;
 
-            return [Constants::REMEDIATION_BYPASS, $duration, 0];
+            return [Constants::REMEDIATION_BYPASS, time() + $duration, 0];
         }
 
         $duration = self::parseDurationToSeconds($decision['duration']);
 
-        // Don't set a max duration in stream mode to avoid bugs. Only the stream update has to change the cache state.
+        // In stream mode, only the stream update has to change the cache state.
         if (!$this->streamMode) {
             $duration = min($this->cacheExpirationForBadIp, $duration);
         }
@@ -425,6 +427,10 @@ abstract class AbstractCache
                 ]);
             }
         }
+        // In stream mode, we do not save bypass decision in cache
+        if ($this->streamMode && !$decisions) {
+            return Constants::REMEDIATION_BYPASS;
+        }
 
         return $this->saveRemediationsForCacheKey($decisions, $cacheKey);
     }
@@ -459,16 +465,19 @@ abstract class AbstractCache
                 'type' => 'CACHE_ITEM_REMOVED',
                 'cache_key' => $cacheKey,
             ]);
-            $this->adapter->delete(base64_encode($cacheKey));
+            $this->adapter->deleteItem(base64_encode($cacheKey));
 
             return true;
         }
         // Build the item lifetime in cache and sort remediations by priority
-        $maxLifetime = max(array_column($remediations, 1));
+        $exps = array_column($remediations, 1);
+        $maxLifetime = $exps ? max($exps) : 0;
         $cacheContent = Remediation::sortRemediationByPriority($remediations);
         $item->expiresAt(new DateTime('@' . $maxLifetime));
         $item->set($cacheContent);
-        $item->tag(Constants::CACHE_TAG_REM);
+        if ($this->adapter instanceof TagAwareAdapterInterface) {
+            $item->tag(Constants::CACHE_TAG_REM);
+        }
 
         // Save the cache without committing it to the cache system.
         // Useful to improve performance when updating the cache.
@@ -499,7 +508,9 @@ abstract class AbstractCache
         $item = $this->adapter->getItem(base64_encode($cacheKey));
         $item->set($cachedVariables);
         $item->expiresAt(new DateTime("+$duration seconds"));
-        $item->tag($cacheTag);
+        if ($this->adapter instanceof TagAwareAdapterInterface) {
+            $item->tag($cacheTag);
+        }
         $this->adapter->save($item);
     }
 
@@ -510,7 +521,7 @@ abstract class AbstractCache
      */
     protected function setCustomErrorHandler(): void
     {
-        if ($this->adapter instanceof MemcachedTagAwareAdapter) {
+        if ($this->adapter instanceof MemcachedAdapter) {
             set_error_handler(function ($errno, $errstr) {
                 $message = "Error when connecting to Memcached. (Error level: $errno)" .
                            "Please fix the Memcached DSN or select another cache technology." .
@@ -525,7 +536,7 @@ abstract class AbstractCache
      * */
     protected function unsetCustomErrorHandler(): void
     {
-        if ($this->adapter instanceof MemcachedTagAwareAdapter) {
+        if ($this->adapter instanceof MemcachedAdapter) {
             restore_error_handler();
         }
     }
@@ -554,10 +565,11 @@ abstract class AbstractCache
                     throw new BouncerException('The selected cache technology is Memcached.' .
                                                ' Please set a Memcached DSN or select another cache technology.');
                 }
-
-                $this->adapter = new MemcachedTagAwareAdapter(
-                    new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn))
-                );
+                /**
+                 * Using a MemcachedAdapter with a TagAwareAdapter for storing tags is discouraged.
+                 * @see \Symfony\Component\Cache\Adapter\MemcachedAdapter::__construct comment
+                 */
+                $this->adapter = new MemcachedAdapter(MemcachedAdapter::createConnection($memcachedDsn));
                 break;
 
             case Constants::CACHE_SYSTEM_REDIS:
@@ -571,7 +583,8 @@ abstract class AbstractCache
                     $this->adapter = new RedisTagAwareAdapter((RedisAdapter::createConnection($redisDsn)));
                 } catch (Exception $e) {
                     throw new BouncerException('Error when connecting to Redis.' .
-                                               ' Please fix the Redis DSN or select another cache technology.');
+                                               ' Please fix the Redis DSN or select another cache technology.' .
+                                                ' Initial error was: ' . $e->getMessage());
                 }
                 break;
 
@@ -607,7 +620,7 @@ abstract class AbstractCache
         $re = '/(-?)(?:(?:(\d+)h)?(\d+)m)?(\d+).\d+(m?)s/m';
         preg_match($re, $duration, $matches);
         if (!\count($matches)) {
-            throw new BouncerException("Unable to parse the following duration: ${$duration}.");
+            throw new BouncerException('Unable to parse the following duration: ' . $duration);
         }
         $seconds = 0;
         if (isset($matches[2])) {
@@ -616,12 +629,14 @@ abstract class AbstractCache
         if (isset($matches[3])) {
             $seconds += ((int)$matches[3]) * 60; // minutes
         }
+        $secondsPart = 0;
         if (isset($matches[4])) {
-            $seconds += ((int)$matches[4]); // seconds
+            $secondsPart += ((int)$matches[4]); // seconds
         }
         if ('m' === ($matches[5])) { // units in milliseconds
-            $seconds *= 0.001;
+            $secondsPart *= 0.001;
         }
+        $seconds += $secondsPart;
         if ('-' === ($matches[1])) { // negative
             $seconds *= -1;
         }

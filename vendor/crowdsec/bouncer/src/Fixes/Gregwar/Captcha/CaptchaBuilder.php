@@ -5,7 +5,11 @@ namespace CrowdSecBouncer\Fixes\Gregwar\Captcha;
 use Gregwar\Captcha\CaptchaBuilder as GregwarCaptchaBuilder;
 
 /**
- * Override to fix "implicit conversion error on PHP  8.1"
+ * Override to :
+ * - fix "implicit conversion error on PHP  8.1"
+ * - fix "creation of dynamic property $background error on PHP 8.2"
+ *
+ *
  * @see https://github.com/crowdsecurity/php-cs-bouncer/issues/62 and
  * @see https://github.com/Gregwar/Captcha/pull/101/files
  * @SuppressWarnings(PHPMD.ElseExpression)
@@ -13,6 +17,10 @@ use Gregwar\Captcha\CaptchaBuilder as GregwarCaptchaBuilder;
  */
 class CaptchaBuilder extends GregwarCaptchaBuilder
 {
+    /**
+     * @var false|int
+     */
+    protected $background = false;
     /**
      * Writes the phrase on the image
      */
