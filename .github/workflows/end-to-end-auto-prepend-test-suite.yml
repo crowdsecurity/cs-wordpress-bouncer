@@ -41,7 +41,7 @@ jobs:
     steps:
 
       - name: Clone DDEV files
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: .ddev
           repository: julienloizelet/ddev-wp
@@ -96,7 +96,7 @@ jobs:
 
 
       - name: Clone ${{ env.EXTENSION_NAME }} files
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: my-own-modules/${{ env.EXTENSION_PATH }}
 
