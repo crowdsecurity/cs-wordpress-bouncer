@@ -4,13 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [?.?.?](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v1.10.0) - 2022-??-??
+## [1.10.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v1.10.0) - 2022-12-01
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v1.9.0...v1.10.0)
 ### Changed
+- Modify ban and captcha walls templating for W3C validity
 - Do not use cache tags for `memcached` as it is discouraged
-- Replace unauthorized chars by underscore _ in cache key
-### Fixed
-- Fix ban and captcha walls W3C validity
+- Replace unauthorized chars by underscore `_` in cache keys
+### Added
+- Add tests for WordPress 6.1
 
 ---
 
