@@ -68,7 +68,7 @@ function adminSettings()
 <br>If not checked, calls are done with <i>file_get_contents</i> method (<i>allow_url_fopen</i> is required for this).</p>');
 
     // Field "timeout"
-    addFieldString('crowdsec_api_timeout', 'Local Api request timeout', 'crowdsec_plugin_settings', 'crowdsec_settings',
+    addFieldString('crowdsec_api_timeout', 'Local API request timeout', 'crowdsec_plugin_settings', 'crowdsec_settings',
         'crowdsec_admin_connection', function ($input) {
         if ((int) $input === 0) {
             add_settings_error('Local API timeout', 'crowdsec_error', 'Local API timeout: Must be different than 0.');
@@ -77,7 +77,7 @@ function adminSettings()
         }
 
         return (int) $input !== 0 ? (int) $input : Constants::API_TIMEOUT ;
-    }, ' seconds. <p>Authorized timeout for a Local API request.<br> Set a negative value to allow unlimited timeout.<br> Default to' . Constants::API_TIMEOUT .'.',
+    }, ' seconds. <p>Maximum execution time (in seconds) for a Local API request.<br> Set a negative value (e.g. -1) to allow unlimited request timeout.<br>Default to ' . Constants::API_TIMEOUT .'.',
         Constants::API_TIMEOUT, 'width: 115px;', 'number');
 
     /************************************
