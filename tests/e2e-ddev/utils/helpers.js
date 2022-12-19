@@ -16,16 +16,12 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 jest.setTimeout(TIMEOUT);
 
-const waitForNavigation = page.waitForNavigation();
-
 const goToAdmin = async () => {
     await page.goto(ADMIN_URL);
-    await waitForNavigation;
 };
 
 const goToPublicPage = async () => {
     await page.goto(`${BASE_URL}`);
-    await waitForNavigation;
 };
 
 const onAdminGoToSettingsPage = async () => {
@@ -33,7 +29,6 @@ const onAdminGoToSettingsPage = async () => {
     await page.click(
         "#adminmenuwrap > #adminmenu > #toplevel_page_crowdsec_plugin > .wp-has-submenu > .wp-menu-name",
     );
-    await waitForNavigation;
 };
 
 const onAdminGoToAdvancedPage = async () => {
@@ -42,7 +37,6 @@ const onAdminGoToAdvancedPage = async () => {
     await page.click(
         "#toplevel_page_crowdsec_plugin > ul > li:nth-child(4) > a",
     );
-    await waitForNavigation;
     await wait(1000);
     await expect(page).toMatchTitle(/Advanced/);
 };
@@ -53,7 +47,6 @@ const onAdminGoToThemePage = async () => {
     await page.click(
         "#toplevel_page_crowdsec_plugin > ul > li:nth-child(3) > a",
     );
-    await waitForNavigation;
     await wait(1000);
 
     await expect(page).toMatchTitle(/Theme customization/);
@@ -64,12 +57,10 @@ const onLoginPageLoginAsAdmin = async () => {
     await page.fill("#user_pass", ADMIN_PASSWORD);
     await page.waitForSelector("#wp-submit");
     await page.click("#wp-submit");
-    await waitForNavigation;
 };
 
 const onAdminSaveSettings = async (check = true) => {
     await page.click("[type=submit]");
-    await waitForNavigation;
 
     if (check) {
         await expect(page).toHaveText(
@@ -201,7 +192,6 @@ const removeAllDecisions = async () => {
 
 const onCaptchaPageRefreshCaptchaImage = async () => {
     await page.click("#refresh_link");
-    await waitForNavigation;
 };
 
 const forceCronRun = async () => {
@@ -251,7 +241,6 @@ const setDefaultConfig = async () => {
 module.exports = {
     addDecision,
     wait,
-    waitForNavigation,
     goToAdmin,
     goToPublicPage,
     onAdminGoToSettingsPage,
