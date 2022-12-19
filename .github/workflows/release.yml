@@ -107,11 +107,11 @@ jobs:
                     fi
 
             -   name: Create Tag ${{ github.event.inputs.tag_name }}
-                uses: actions/github-script@v3
+                uses: actions/github-script@v6
                 with:
                     github-token: ${{ github.token }}
                     script: |
-                        github.git.createRef({
+                        github.rest.git.createRef({
                           owner: context.repo.owner,
                           repo: context.repo.repo,
                           ref: "refs/tags/${{ github.event.inputs.tag_name }}",

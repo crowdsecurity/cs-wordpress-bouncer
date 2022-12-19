@@ -21,8 +21,7 @@ class Curl extends AbstractClient
         array $queryParams = null,
         array $bodyParams = null,
         string $method = 'GET',
-        array $headers = null,
-        int $timeout = null
+        array $headers = null
     ): ?array {
         $handle = curl_init();
         $curlOptions = $this->createOptions($endpoint, $queryParams, $bodyParams, $method, $headers ?: $this->headers);

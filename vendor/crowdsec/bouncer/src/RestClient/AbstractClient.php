@@ -68,7 +68,6 @@ abstract class AbstractClient
         array $queryParams = null,
         array $bodyParams = null,
         string $method = 'GET',
-        array $headers = null,
-        int $timeout = null
+        array $headers = null
     ): ?array;
 }

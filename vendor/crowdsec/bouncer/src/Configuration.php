@@ -152,7 +152,7 @@ class Configuration implements ConfigurationInterface
                 ->info('Absolute path to the CA used to process TLS handshake')->defaultValue('')
             ->end()
             ->booleanNode('tls_verify_peer')->defaultValue(false)->end()
-            ->integerNode('api_timeout')->min(Constants::API_TIMEOUT)->defaultValue(Constants::API_TIMEOUT)->end()
+            ->integerNode('api_timeout')->defaultValue(Constants::API_TIMEOUT)->end()
             ->booleanNode('use_curl')->defaultValue(false)->end()
         ->end();
     }

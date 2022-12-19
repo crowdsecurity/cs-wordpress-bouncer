@@ -52,7 +52,7 @@ class Bounce extends AbstractBounce
             'api_url' => $this->escape($this->getStringSettings('crowdsec_api_url')),
             'use_curl' => $this->getBoolSettings('crowdsec_use_curl'),
             'api_user_agent' => Constants::CROWDSEC_BOUNCER_USER_AGENT,
-            'api_timeout' => Constants::API_TIMEOUT,
+            'api_timeout' => $this->getIntegerSettings('crowdsec_api_timeout')?:Constants::API_TIMEOUT,
             // Debug
             'debug_mode' => $this->getBoolSettings('crowdsec_debug_mode'),
             'disable_prod_log' => $this->getBoolSettings('crowdsec_disable_prod_log'),

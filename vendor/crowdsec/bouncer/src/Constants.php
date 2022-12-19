@@ -17,7 +17,7 @@ namespace CrowdSecBouncer;
 class Constants
 {
     /** @var int The timeout when calling LAPI */
-    public const API_TIMEOUT = 1;
+    public const API_TIMEOUT = 120;
     /** @var string The API-KEY auth type */
     public const AUTH_KEY = 'api_key';
     /** @var string The TLS auth type */
@@ -75,7 +75,7 @@ class Constants
     /** @var string Path for html templates folder (e.g. ban and captcha wall) */
     public const TEMPLATES_DIR = __DIR__ . "/templates";
     /** @var string The last version of this library */
-    public const VERSION = 'v0.34.0';
+    public const VERSION = 'v0.35.0';
     /** @var string The "disabled" x-forwarded-for setting */
     public const X_FORWARDED_DISABLED = 'no_forward';
 }

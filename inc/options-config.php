@@ -12,6 +12,7 @@ function getCrowdSecOptionsConfig()
         ['name' => 'crowdsec_tls_ca_cert_path', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_api_key', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_use_curl', 'default' => '', 'autoInit' => true],
+        ['name' => 'crowdsec_api_timeout', 'default' => Constants::API_TIMEOUT, 'autoInit' => true],
         ['name' => 'crowdsec_bouncing_level', 'default' => Constants::BOUNCING_LEVEL_DISABLED, 'autoInit' => true],
         ['name' => 'crowdsec_public_website_only', 'default' => 'on', 'autoInit' => true],
         ['name' => 'crowdsec_stream_mode', 'default' => '', 'autoInit' => true],

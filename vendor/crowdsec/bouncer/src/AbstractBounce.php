@@ -404,7 +404,7 @@ abstract class AbstractBounce implements IBounce
             'api_key' => $this->getStringSettings('api_key'),
             'api_url' => $this->getStringSettings('api_url'),
             'api_user_agent' => $this->getStringSettings('api_user_agent'),
-            'api_timeout' => $apiTimeout > 0 ? $apiTimeout : Constants::API_TIMEOUT,
+            'api_timeout' => $apiTimeout !== 0 ? $apiTimeout : Constants::API_TIMEOUT,
             'use_curl' => $this->getBoolSettings('use_curl'),
             // Debug
             'debug_mode' => $this->getBoolSettings('debug_mode'),
