@@ -53,8 +53,11 @@ const onAdminGoToThemePage = async () => {
 };
 
 const onLoginPageLoginAsAdmin = async () => {
+    await wait(2000);
     await page.fill("#user_login", ADMIN_LOGIN);
+    await wait(2000);
     await page.fill("#user_pass", ADMIN_PASSWORD);
+    await wait(2000);
     await page.waitForSelector("#wp-submit");
     await page.click("#wp-submit");
 };
