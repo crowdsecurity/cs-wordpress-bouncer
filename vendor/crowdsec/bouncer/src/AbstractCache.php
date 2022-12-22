@@ -396,9 +396,9 @@ abstract class AbstractCache
         $remediations = $this->adapter->getItem(base64_encode($ip))->get();
 
         // We apply array values first because keys are ids.
+        /** @var array $firstRemediation */
         $firstRemediation = array_values($remediations)[0];
 
-        /** @var string */
         return $firstRemediation[0];
     }
 

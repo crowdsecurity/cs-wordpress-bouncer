@@ -58,7 +58,7 @@
                 ?>
 			</form>
             <h2><?php echo __("Test your settings");?></h2>
-            <p><?php echo __("Here you can check if your saved settings are correct.");?></p>
+            <p><?php echo __("Here you can check if your <b>saved</b> settings are correct.");?></p>
             <p><?php echo __("Click the 'Test bouncing' button and the bouncer will try to get the remediation for the following IP:");?></p>
             <form action="admin-post.php" method="post" id="crowdsec_action_test_connection">
                 <input type="hidden" name="action" value="crowdsec_test_connection"/>

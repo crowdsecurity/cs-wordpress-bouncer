@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 const {
 	wait,
-	waitForNavigation,
 	goToAdmin,
 	onAdminGoToAdvancedPage,
 	onAdminSaveSettings,
@@ -29,7 +28,6 @@ describe(`Run in Live mode`, () => {
 		await goToAdmin();
 		await onAdminGoToAdvancedPage();
 		await page.click("#crowdsec_prune_cache");
-		await waitForNavigation;
 
 		await expect(page).toHaveText(
 			"#wpbody-content > div.wrap > div.notice.notice-success",
@@ -56,7 +54,6 @@ describe(`Run in Live mode`, () => {
 			await dialog.accept();
 		});
 		await page.click("#crowdsec_clear_cache");
-		await waitForNavigation;
 
 		await expect(page).toHaveText(
 			"#wpbody-content > div.wrap > div.notice.notice-success",

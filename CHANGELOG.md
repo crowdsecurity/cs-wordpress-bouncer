@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [1.11.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v1.11.0) - 2022-12-22
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v1.10.0...v1.11.0)
+
+### Added
+- Add LAPI request timeout setting (default to 120 seconds)
+---
+
 ## [1.10.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v1.10.0) - 2022-12-01
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v1.9.0...v1.10.0)
 ### Changed

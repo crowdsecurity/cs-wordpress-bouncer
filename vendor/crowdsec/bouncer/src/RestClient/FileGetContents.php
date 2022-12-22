@@ -29,14 +29,13 @@ class FileGetContents extends AbstractClient
         array $queryParams = null,
         array $bodyParams = null,
         string $method = 'GET',
-        array $headers = null,
-        int $timeout = null
+        array $headers = null
     ): ?array {
         if ($queryParams) {
             $endpoint .= '?' . http_build_query($queryParams);
         }
 
-        $config = $this->createConfig($bodyParams, $method, $headers, $timeout);
+        $config = $this->createConfig($bodyParams, $method, $headers);
         $context = stream_context_create($config);
 
         $this->logger->debug('', [
@@ -81,15 +80,14 @@ class FileGetContents extends AbstractClient
     private function createConfig(
         array $bodyParams = null,
         string $method = 'GET',
-        array $headers = null,
-        int $timeout = null
+        array $headers = null
     ): array {
         $header = $headers ? $this->convertHeadersToString($headers) : $this->headerString;
         $config = [
             'http' => [
                 'method' => $method,
                 'header' => $header,
-                'timeout' => $timeout ?: $this->timeout,
+                'timeout' => $this->timeout,
                 'ignore_errors' => true,
             ],
         ];

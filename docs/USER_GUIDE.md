@@ -149,9 +149,18 @@ By default, `file_get_contents` method is used to call Local API. This method re
 Here, you can choose to use `cURL` requests instead. Beware that in this case, you need to have php `cURL` extension 
 installed and enabled on your system.
 
+
+***
+
+`Connection details → Local API request timeout`
+
+By default, the maximum allowed time to perform a Local API request is 120 seconds. You can change this setting here.
+If you set a negative value, request timeout will be unlimited. 
+
 ![Connection details](images/screenshots/config-bouncing.jpg)
 
 ***
+
 
 `Bouncing → Bouncing level`
 

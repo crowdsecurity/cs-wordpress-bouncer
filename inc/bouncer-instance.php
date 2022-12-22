@@ -30,7 +30,7 @@ function getDatabaseSettings(): array
         'api_url' => esc_attr(get_option('crowdsec_api_url')),
         'use_curl' => !empty(get_option('crowdsec_use_curl')),
         'api_user_agent' => Constants::CROWDSEC_BOUNCER_USER_AGENT,
-        'api_timeout' => Constants::API_TIMEOUT,
+        'api_timeout' => (int)get_option('crowdsec_api_timeout') ?:Constants::API_TIMEOUT,
         // Debug
         'debug_mode' => !empty(get_option('crowdsec_debug_mode')),
         'log_directory_path' => Constants::CROWDSEC_LOG_BASE_PATH,

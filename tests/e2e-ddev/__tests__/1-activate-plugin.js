@@ -9,7 +9,6 @@ const {
 } = require("../utils/constants");
 
 const {
-    waitForNavigation,
     goToAdmin,
     onLoginPageLoginAsAdmin,
     wait,
@@ -32,7 +31,6 @@ describe(`Setup CrowdSec plugin`, () => {
             await page.click('[aria-label="Activate CrowdSec"]');
         }
 
-        await waitForNavigation;
         await expect(page).toHaveText("#message", "Plugin activated.");
     });
 });

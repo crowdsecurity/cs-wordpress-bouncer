@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 const {
-	waitForNavigation,
 	goToAdmin,
 	onAdminGoToAdvancedPage,
 	onAdminGoToSettingsPage,
@@ -49,7 +48,6 @@ describe(`Run in Stream mode`, () => {
 		await goToAdmin();
 		await onAdminGoToAdvancedPage();
 		await page.click("#crowdsec_refresh_cache");
-		await waitForNavigation;
 
 		await expect(page).toHaveText(
 			"#wpbody-content > div.wrap > div.notice.notice-success",
@@ -80,7 +78,6 @@ describe(`Run in Stream mode`, () => {
 		await goToAdmin();
 		await onAdminGoToAdvancedPage();
 		await page.click("#crowdsec_refresh_cache");
-		await waitForNavigation;
 
 		await expect(page).toHaveText(
 			"#wpbody-content > div.wrap > div.notice.notice-success",
