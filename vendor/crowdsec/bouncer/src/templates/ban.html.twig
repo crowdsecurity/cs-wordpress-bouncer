@@ -11,7 +11,7 @@
         {% if config.text.ban_wall.footer is not empty %}
             <p class="footer">{{ config.text.ban_wall.footer | e }}</p>
         {% endif %}
-        {% if config.hide_crowdsec_mentions is empty %}
+        {% if config.hide_mentions is empty %}
             {% include('partials/mentions.html.twig') %}
         {% endif %}
     </div>

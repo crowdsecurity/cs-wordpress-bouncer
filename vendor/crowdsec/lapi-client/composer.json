@@ -1,0 +1,51 @@
+{
+    "name": "crowdsec/lapi-client",
+    "description": "The official PHP client for the CrowdSec Local API (LAPI)",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "keywords": [
+        "security",
+        "crowdsec",
+        "rest",
+        "client",
+        "curl",
+        "lapi",
+        "bouncer"
+    ],
+    "authors": [
+        {
+            "name": "CrowdSec",
+            "email": "info@crowdsec.net"
+        },
+        {
+            "name": "Julien Loizelet",
+            "homepage": "https://github.com/julienloizelet/",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "CrowdSec\\LapiClient\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CrowdSec\\LapiClient\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^7.2.5 || ^8.0",
+        "ext-json": "*",
+        "symfony/config": "^4.4.44 || ^5.4.11 || ^6.0.11",
+        "monolog/monolog": "^1.17 || ^2.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.5.30 || ^9.3",
+        "mikey179/vfsstream": "^1.6.11",
+        "ext-curl": "*"
+    },
+    "suggest": {
+        "ext-curl": "*"
+    }
+}

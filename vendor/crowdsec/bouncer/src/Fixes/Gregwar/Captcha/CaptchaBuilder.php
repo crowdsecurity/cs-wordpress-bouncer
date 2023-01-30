@@ -13,6 +13,7 @@ use Gregwar\Captcha\CaptchaBuilder as GregwarCaptchaBuilder;
  * @see https://github.com/crowdsecurity/php-cs-bouncer/issues/62 and
  * @see https://github.com/Gregwar/Captcha/pull/101/files
  * @SuppressWarnings(PHPMD.ElseExpression)
+ * @codeCoverageIgnore
  *
  */
 class CaptchaBuilder extends GregwarCaptchaBuilder

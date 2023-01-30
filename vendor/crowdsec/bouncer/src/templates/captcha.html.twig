@@ -19,7 +19,7 @@
 
         <img src="{{ config.captcha_img }}" alt="captcha"/>
         <p><small><a id="refresh_link" href="#"
-                     onclick="newImage()">{{ config.text.captcha_wall.refresh_image_link |e }}</a></small></p>
+                     onclick="newImageForCrowdSec()">{{ config.text.captcha_wall.refresh_image_link |e }}</a></small></p>
 
         <form method="post" id="captcha" action="#">
             <script>document.querySelector("#captcha").setAttribute("action", "{{config.captcha_resolution_url}}")</script>
@@ -35,7 +35,7 @@
         {% if config.text.ban_wall.footer is not empty %}
             <p class="footer">{{ config.text.ban_wall.footer | e }}</p>
         {% endif %}
-        {% if config.hide_crowdsec_mentions is empty %}
+        {% if config.hide_mentions is empty %}
             {% include('partials/mentions.html.twig') %}
         {% endif %}
     </div>

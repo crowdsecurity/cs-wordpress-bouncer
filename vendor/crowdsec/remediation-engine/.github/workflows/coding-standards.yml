@@ -1,0 +1,110 @@
+name: Coding Standards
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+    inputs:
+      coverage_report:
+        type: boolean
+        description: Generate PHPUNIT Code Coverage report
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  test-suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.4', '8.0', '8.1', '8.2']
+
+    name: Coding standards test
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
+    env:
+      EXTENSION_PATH: "my-own-modules/remediation-engine"
+
+    steps:
+      - name: Clone DDEV files
+        uses: actions/checkout@v3
+        with:
+          path: .ddev
+          repository: julienloizelet/ddev-php
+          ref: "main"
+
+      - name: Install DDEV
+        env:
+          DDEV_VERSION: v1.21.4
+        run: |
+          # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
+          sudo apt-get -qq update
+          sudo apt-get -qq -y install libnss3-tools
+          curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
+          bash install_ddev.sh ${{env.DDEV_VERSION}}
+          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+          rm install_ddev.sh
+
+      - name: Set PHP_VERSION_CODE env
+        # used in some directory path and conventional file naming
+        # Example : 7.4 => php74
+        run: |
+           echo "PHP_VERSION_CODE=$(echo php${{ matrix.php-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
+
+      - name: Start DDEV  with PHP ${{ matrix.php-version }}
+        run: |
+          cp .ddev/config_overrides/config.${{ env.PHP_VERSION_CODE }}.yaml .ddev/config.${{ env.PHP_VERSION_CODE }}.yaml
+          ddev start
+
+      - name: Some DEBUG information
+        run: |
+          ddev --version
+          ddev exec php -v
+
+      - name: Clone PHP lib Crowdsec files
+        uses: actions/checkout@v3
+        with:
+          path: ${{env.EXTENSION_PATH}}
+
+      - name: Validate composer.json
+        run: | 
+          ddev composer validate --strict --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Install CrowdSec lib dependencies and Coding standards tools
+        run: |
+          ddev composer update --working-dir ./${{env.EXTENSION_PATH}}
+          ddev composer update --working-dir ./${{env.EXTENSION_PATH}}/tools/coding-standards
+
+      - name: Run PHPCS
+        run: ddev phpcs ./${{env.EXTENSION_PATH}}/tools/coding-standards ${{env.EXTENSION_PATH}}/src PSR12
+
+      - name: Run PHPMD
+        run: ddev phpmd ./${{env.EXTENSION_PATH}}/tools/coding-standards phpmd/rulesets.xml ../../src
+
+      - name: Run PHPSTAN
+        run: ddev phpstan /var/www/html/${{env.EXTENSION_PATH}}/tools/coding-standards phpstan/phpstan.neon /var/www/html/${{env.EXTENSION_PATH}}/src
+
+      - name: Run PSALM
+        run: ddev psalm ./${{env.EXTENSION_PATH}}/tools/coding-standards /var/www/html/${{env.EXTENSION_PATH}}/tools/coding-standards/psalm
+
+      - name: Prepare PHP UNIT tests
+        if: github.event.inputs.coverage_report == 'true'
+        run: |
+          ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/${{env.EXTENSION_PATH}}/tests/geolocation
+          ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/${{env.EXTENSION_PATH}}/tests/geolocation
+          cd ${{env.EXTENSION_PATH}}/tests/geolocation
+          sha256sum -c GeoLite2-Country.tar.gz.sha256.txt
+          sha256sum -c GeoLite2-City.tar.gz.sha256.txt
+          tar -xf GeoLite2-Country.tar.gz
+          tar -xf GeoLite2-City.tar.gz
+          rm GeoLite2-Country.tar.gz GeoLite2-Country.tar.gz.sha256.txt GeoLite2-City.tar.gz GeoLite2-City.tar.gz.sha256.txt
+
+      - name: Run PHPUNIT Code Coverage
+        if: github.event.inputs.coverage_report == 'true'
+        run: |
+          ddev xdebug
+          ddev php -dxdebug.mode=coverage  ./${{env.EXTENSION_PATH}}/tools/coding-standards/vendor/bin/phpunit --configuration ./${{env.EXTENSION_PATH}}/tools/coding-standards/phpunit/phpunit.xml --coverage-text=./${{env.EXTENSION_PATH}}/coding-standards/phpunit/code-coverage/report.txt
+          cat ${{env.EXTENSION_PATH}}/coding-standards/phpunit/code-coverage/report.txt

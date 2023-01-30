@@ -62,3 +62,14 @@ function getCrowdSecOptionsConfig()
         ['name' => 'crowdsec_geolocation_maxmind_database_path', 'default' => '', 'autoInit' => true],
     ];
 }
+
+function getDatabaseConfigs(): array
+{
+    $crowdSecWpPluginOptions = getCrowdSecOptionsConfig();
+    $finalConfigs = [];
+    foreach ($crowdSecWpPluginOptions as $option) {
+        $finalConfigs[$option['name']] = get_option($option['name']);
+    }
+
+    return $finalConfigs;
+}

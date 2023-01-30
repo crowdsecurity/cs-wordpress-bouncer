@@ -1,0 +1,9 @@
+#Tools
+.php-cs-fixer.cache
+.php-cs-fixer.php
+.phpunit.cache
+*.html
+*.css
+*.js
+*.svg
+*.txt

@@ -35,8 +35,7 @@ describe(`Geolocation and country scoped decision`, () => {
         // Prepare Geolocation test config
         await fillInput("crowdsec_forced_test_ip", FRANCE_IP);
         await setToggle("crowdsec_geolocation_enabled", true);
-        await setToggle("crowdsec_geolocation_enabled", true);
-        await setToggle("crowdsec_geolocation_save_result", false);
+        await fillInput("crowdsec_geolocation_cache_duration", 0);
         await selectByName(
             "crowdsec_geolocation_maxmind_database_type",
             "country",
@@ -99,13 +98,13 @@ describe(`Geolocation and country scoped decision`, () => {
         await publicHomepageShouldBeAccessible();
     });
 
-    it("Should call or not call the GeoIp database depending on save result config", async () => {
+    it("Should call or not call the GeoIp database depending on cache duration config", async () => {
         await goToAdmin();
         await onAdminGoToSettingsPage();
         await onAdminGoToAdvancedPage();
 
         // Do not save result
-        await setToggle("crowdsec_geolocation_save_result", false);
+        await fillInput("crowdsec_geolocation_cache_duration", 0);
 
         // Set a good path
         await fillInput(
@@ -141,7 +140,7 @@ describe(`Geolocation and country scoped decision`, () => {
 
         // Save result
         await onAdminGoToAdvancedPage();
-        await setToggle("crowdsec_geolocation_save_result", true);
+        await fillInput("crowdsec_geolocation_cache_duration", 120);
 
         // Set a good path
         await fillInput(

@@ -37,7 +37,7 @@ describe(`Use Redis technology`, () => {
 		await onAdminSaveSettings();
 		await expect(page).toHaveText(
 			"#wpbody-content > div.wrap > div.notice.notice-success",
-			"As the stream mode is enabled, the cache has just been warmed up, there is now 0 decision in cache.",
+			"As the stream mode is enabled, the cache has just been refreshed, there is now 0 decision in cache.",
 		);
 
 		await publicHomepageShouldBeAccessible();

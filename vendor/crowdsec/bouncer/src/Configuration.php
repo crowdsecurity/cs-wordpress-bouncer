@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CrowdSecBouncer;
 
 use InvalidArgumentException;
-use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -24,22 +23,106 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 class Configuration implements ConfigurationInterface
 {
     /**
+     * @var string[]
+     */
+    protected $keys = [
+        'use_curl',
+        'forced_test_ip',
+        'forced_test_forwarded_ip',
+        'debug_mode',
+        'disable_prod_log',
+        'log_directory_path',
+        'display_errors',
+        'cache_system',
+        'captcha_cache_duration',
+        'excluded_uris',
+        'trust_ip_forward_array',
+        'bouncing_level',
+        'hide_mentions',
+        'custom_css',
+        'color',
+        'text',
+    ];
+
+    /**
+     * Keep only necessary configs
+     * @param array $configs
+     * @return array
+     */
+    public function cleanConfigs(array $configs): array
+    {
+        return array_intersect_key($configs, array_flip($this->keys));
+    }
+
+    /**
      * {@inheritdoc}
-     * @throws InvalidArgumentException|RuntimeException
+     * @throws InvalidArgumentException
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('config');
         /** @var ArrayNodeDefinition $rootNode */
         $rootNode = $treeBuilder->getRootNode();
-        $this->validate($rootNode);
         $this->addConnectionNodes($rootNode);
         $this->addDebugNodes($rootNode);
         $this->addBouncerNodes($rootNode);
         $this->addCacheNodes($rootNode);
-        $this->addGeolocationNodes($rootNode);
+        $this->addTemplateNodes($rootNode);
 
         return $treeBuilder;
+    }
+
+    private function addTemplateNodes($rootNode)
+    {
+        $defaultSubtitle = 'This page is protected against cyber attacks and your IP has been banned by our system.';
+        $rootNode->children()
+            ->arrayNode('color')->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('text')->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('primary')->defaultValue('black')->end()
+                            ->scalarNode('secondary')->defaultValue('#AAA')->end()
+                            ->scalarNode('button')->defaultValue('white')->end()
+                            ->scalarNode('error_message')->defaultValue('#b90000')->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('background')->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('page')->defaultValue('#eee')->end()
+                            ->scalarNode('container')->defaultValue('white')->end()
+                            ->scalarNode('button')->defaultValue('#626365')->end()
+                            ->scalarNode('button_hover')->defaultValue('#333')->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+            ->arrayNode('text')->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('captcha_wall')->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('tab_title')->defaultValue('Oops..')->end()
+                            ->scalarNode('title')->defaultValue('Hmm, sorry but...')->end()
+                            ->scalarNode('subtitle')->defaultValue('Please complete the security check.')->end()
+                            ->scalarNode('refresh_image_link')->defaultValue('refresh image')->end()
+                            ->scalarNode('captcha_placeholder')->defaultValue('Type here...')->end()
+                            ->scalarNode('send_button')->defaultValue('CONTINUE')->end()
+                            ->scalarNode('error_message')->defaultValue('Please try again.')->end()
+                            ->scalarNode('footer')->defaultValue('')->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('ban_wall')->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('tab_title')->defaultValue('Oops..')->end()
+                            ->scalarNode('title')->defaultValue('🤭 Oh!')->end()
+                            ->scalarNode('subtitle')->defaultValue($defaultSubtitle)->end()
+                            ->scalarNode('footer')->defaultValue('')->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+            ->booleanNode('hide_mentions')->defaultValue(false)->end()
+            ->scalarNode('custom_css')->defaultValue('')->end()
+        ->end();
     }
 
     /**
@@ -62,14 +145,6 @@ class Configuration implements ConfigurationInterface
                 )
                 ->defaultValue(Constants::BOUNCING_LEVEL_NORMAL)
             ->end()
-            ->enumNode('max_remediation_level')
-                ->values(Constants::ORDERED_REMEDIATIONS)
-                ->defaultValue(Constants::REMEDIATION_BAN)
-            ->end()
-            ->enumNode('fallback_remediation')
-                ->values(Constants::ORDERED_REMEDIATIONS)
-                ->defaultValue(Constants::REMEDIATION_CAPTCHA)
-            ->end()
             ->arrayNode('trust_ip_forward_array')
                 ->arrayPrototype()
                     ->scalarPrototype()->end()
@@ -91,7 +166,6 @@ class Configuration implements ConfigurationInterface
     private function addCacheNodes($rootNode)
     {
         $rootNode->children()
-            ->booleanNode('stream_mode')->defaultValue(false)->end()
             ->enumNode('cache_system')
                 ->values(
                     [
@@ -102,20 +176,8 @@ class Configuration implements ConfigurationInterface
                 )
                 ->defaultValue(Constants::CACHE_SYSTEM_PHPFS)
             ->end()
-            ->scalarNode('fs_cache_path')->end()
-            ->scalarNode('redis_dsn')->end()
-            ->scalarNode('memcached_dsn')->end()
-            ->integerNode('clean_ip_cache_duration')
-                ->min(1)->defaultValue(Constants::CACHE_EXPIRATION_FOR_CLEAN_IP)
-            ->end()
-            ->integerNode('bad_ip_cache_duration')
-                ->min(1)->defaultValue(Constants::CACHE_EXPIRATION_FOR_BAD_IP)
-            ->end()
             ->integerNode('captcha_cache_duration')
                 ->min(1)->defaultValue(Constants::CACHE_EXPIRATION_FOR_CAPTCHA)
-            ->end()
-            ->integerNode('geolocation_cache_duration')
-                ->min(1)->defaultValue(Constants::CACHE_EXPIRATION_FOR_GEO)
             ->end()
         ->end();
     }
@@ -125,34 +187,10 @@ class Configuration implements ConfigurationInterface
      *
      * @param NodeDefinition|ArrayNodeDefinition $rootNode
      * @return void
-     * @throws InvalidArgumentException
      */
     private function addConnectionNodes($rootNode)
     {
         $rootNode->children()
-            ->enumNode('auth_type')
-                ->values(
-                    [
-                        Constants::AUTH_KEY,
-                        Constants::AUTH_TLS,
-                    ]
-                )
-                ->defaultValue(Constants::AUTH_KEY)
-            ->end()
-            ->scalarNode('api_key')->end()
-            ->scalarNode('api_url')->defaultValue(Constants::DEFAULT_LAPI_URL)->end()
-            ->scalarNode('api_user_agent')->defaultValue(Constants::BASE_USER_AGENT)->end()
-            ->scalarNode('tls_cert_path')
-                ->info('Absolute path to the Bouncer certificate')->defaultValue('')
-            ->end()
-                ->scalarNode('tls_key_path')
-            ->info('Absolute path to the Bouncer key')->defaultValue('')
-            ->end()
-            ->scalarNode('tls_ca_cert_path')
-                ->info('Absolute path to the CA used to process TLS handshake')->defaultValue('')
-            ->end()
-            ->booleanNode('tls_verify_peer')->defaultValue(false)->end()
-            ->integerNode('api_timeout')->defaultValue(Constants::API_TIMEOUT)->end()
             ->booleanNode('use_curl')->defaultValue(false)->end()
         ->end();
     }
@@ -172,86 +210,6 @@ class Configuration implements ConfigurationInterface
             ->booleanNode('disable_prod_log')->defaultValue(false)->end()
             ->scalarNode('log_directory_path')->end()
             ->booleanNode('display_errors')->defaultValue(false)->end()
-        ->end();
-    }
-
-    /**
-     * Geolocation settings
-     *
-     * @param NodeDefinition|ArrayNodeDefinition $rootNode
-     * @return void
-     * @throws InvalidArgumentException
-     */
-    private function addGeolocationNodes($rootNode)
-    {
-        $rootNode->children()
-            ->arrayNode('geolocation')
-                ->addDefaultsIfNotSet()
-                ->children()
-                    ->booleanNode('save_result')
-                        ->defaultTrue()
-                    ->end()
-                    ->booleanNode('enabled')
-                        ->defaultFalse()
-                    ->end()
-                    ->enumNode('type')
-                        ->defaultValue(Constants::GEOLOCATION_TYPE_MAXMIND)
-                        ->values([Constants::GEOLOCATION_TYPE_MAXMIND])
-                    ->end()
-                    ->arrayNode(Constants::GEOLOCATION_TYPE_MAXMIND)
-                        ->addDefaultsIfNotSet()
-                        ->children()
-                            ->enumNode('database_type')
-                                ->defaultValue(Constants::MAXMIND_COUNTRY)
-                                ->values([Constants::MAXMIND_COUNTRY, Constants::MAXMIND_CITY])
-                            ->end()
-                            ->scalarNode('database_path')
-                            ->cannotBeEmpty()
-                            ->end()
-                        ->end()
-                    ->end()
-                ->end()
-            ->end()
-        ->end();
-    }
-
-    /**
-     * Conditional validation
-     *
-     * @param NodeDefinition|ArrayNodeDefinition $rootNode
-     * @return void
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     */
-    private function validate($rootNode)
-    {
-        $rootNode->validate()
-            ->ifTrue(function (array $v) {
-                if ($v['auth_type'] === Constants::AUTH_KEY && empty($v['api_key'])) {
-                    return true;
-                }
-                return false;
-            })
-            ->thenInvalid('Api key is required as auth type is api_key')
-        ->end()
-        ->validate()
-            ->ifTrue(function (array $v) {
-                if ($v['auth_type'] === Constants::AUTH_TLS) {
-                    return empty($v['tls_cert_path']) || empty($v['tls_key_path']);
-                }
-                return false;
-            })
-            ->thenInvalid('Bouncer certificate and key paths are required for tls authentification.')
-        ->end()
-        ->validate()
-            ->ifTrue(function (array $v) {
-                if ($v['auth_type'] === Constants::AUTH_TLS && $v['tls_verify_peer'] === true) {
-                    return empty($v['tls_ca_cert_path']);
-                }
-
-                return false;
-            })
-            ->thenInvalid('CA path is required for tls authentification with verify_peer.')
-        ->end();
+            ->end();
     }
 }

@@ -27,7 +27,6 @@ require_once __DIR__.'/inc/plugin-setup.php';
 require_once __DIR__.'/inc/scheduling.php';
 register_activation_hook(__FILE__, 'activate_crowdsec_plugin');
 register_deactivation_hook(__FILE__, 'deactivate_crowdsec_plugin');
-require_once __DIR__.'/inc/bouncer-instance.php';
 require_once __DIR__.'/inc/admin/init.php';
 require_once __DIR__.'/inc/bounce-current-ip.php';
 

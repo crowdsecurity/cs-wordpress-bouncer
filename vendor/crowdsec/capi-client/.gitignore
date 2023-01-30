@@ -1,0 +1,15 @@
+# Composer
+vendor
+composer.lock
+
+# Systems
+.DS_Store
+
+#log
+*.log
+
+# File storage
+src/Storage/*.json
+
+# Integration test
+.enrollment_key.txt

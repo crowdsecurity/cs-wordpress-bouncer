@@ -1,9 +1,12 @@
 <?php
 
 use CrowdSecBouncer\BouncerException;
+use CrowdSec\RemediationEngine\Geolocation;
 
 require_once __DIR__ . '/notice.php';
 require_once __DIR__ . '/../Constants.php';
+require_once __DIR__ . '/../Bouncer.php';
+require_once __DIR__ . '/../options-config.php';
 
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/theme.php';
@@ -34,26 +37,30 @@ if (is_admin()) {
     function clearBouncerCacheInAdminPage()
     {
         try {
-            $settings = getDatabaseSettings();
-            $bouncer = getBouncerInstance($settings);
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
             $bouncer->clearCache();
             $message = __('CrowdSec cache has just been cleared.');
 
             // In stream mode, immediatelly warm the cache up.
             if (get_option('crowdsec_stream_mode')) {
-                $result = $bouncer->warmBlocklistCacheUp()['count'];
-                $message .= __(' As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+                $refresh = $bouncer->refreshBlocklistCache();
+                $result = $refresh['new']??0;
+                $message .= __(' As the stream mode is enabled, the cache has just been refreshed, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
             }
 
             AdminNotice::displaySuccess($message);
         } catch (BouncerException $e) {
-            getCrowdSecLoggerInstance()->error('', [
-                'type' => 'WP_EXCEPTION_WHILE_CLEARING_CACHE',
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
+            if(isset($bouncer) && $bouncer->getLogger()){
+                $bouncer->getLogger()->error('Exception during cache clearing', [
+                    'type' => 'WP_EXCEPTION_WHILE_CLEARING_CACHE',
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            }
+
             AdminNotice::displayError('Technical error while clearing the cache: '.$e->getMessage());
         }
     }
@@ -65,21 +72,23 @@ if (is_admin()) {
                 return false;
             }
 
-            // In stream mode, immediatelly warm the cache up.
+            // In stream mode, immediately warm the cache up.
             if (get_option('crowdsec_stream_mode')) {
-                $settings = getDatabaseSettings();
-                $bouncer = getBouncerInstance($settings);
+                $configs = getDatabaseConfigs();
+                $bouncer = new Bouncer($configs);
                 $result = $bouncer->refreshBlocklistCache();
                 AdminNotice::displaySuccess(__(' The cache has just been refreshed ('.($result['new'] > 0 ? $result['new'].' new decisions' : $result['new'].' new decision').', '.$result['deleted'].' deleted).'));
             }
         } catch (BouncerException $e) {
-            getCrowdSecLoggerInstance()->error('', [
-                'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
+            if(isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            }
             AdminNotice::displayError('Technical error while refreshing the cache: '.$e->getMessage());
         }
     }
@@ -87,19 +96,21 @@ if (is_admin()) {
     function pruneBouncerCacheInAdminPage()
     {
         try {
-            $settings = getDatabaseSettings();
-            $bouncer = getBouncerInstance($settings);
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
             $bouncer->pruneCache();
 
             AdminNotice::displaySuccess(__('CrowdSec cache has just been pruned.'));
         } catch (BouncerException $e) {
-            getCrowdSecLoggerInstance()->error('', [
-                'type' => 'WP_EXCEPTION_WHILE_PRUNING',
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
+            if(isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type' => 'WP_EXCEPTION_WHILE_PRUNING',
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            }
             AdminNotice::displayError('Technical error while pruning the cache: '.$e->getMessage());
         }
     }
@@ -107,20 +118,22 @@ if (is_admin()) {
     function testBouncerConnexionInAdminPage($ip)
     {
         try {
-            $settings = getDatabaseSettings();
-            $bouncer = getBouncerInstance($settings);
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
             $remediation = $bouncer->getRemediationForIp($ip);
             $message = __("Bouncing has been successfully tested for IP: $ip. Result is: $remediation.");
 
             AdminNotice::displaySuccess($message);
         } catch (BouncerException $e) {
-            getCrowdSecLoggerInstance()->error('', [
-                'type' => 'WP_EXCEPTION_WHILE_TESTING_CONNECTION',
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
+            if(isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type' => 'WP_EXCEPTION_WHILE_TESTING_CONNECTION',
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            }
             AdminNotice::displayError('Technical error while testing bouncer connection: '.$e->getMessage());
         }
     }
@@ -131,12 +144,13 @@ if (is_admin()) {
             if (!get_option('crowdsec_geolocation_maxmind_database_path')) {
                 throw new BouncerException("Maxmind database path can not be empty");
             }
-            $settings = getDatabaseSettings();
-            $bouncer = getBouncerInstance($settings);
-            $geolocationConfig =  $settings['geolocation'];
-            $apiCache = $bouncer->getApiCache();
-            $geolocation = new CrowdSecBouncer\Geolocation();
-            $countryResult = $geolocation->getCountryResult($geolocationConfig, $ip, $apiCache);
+            $configs = getDatabaseConfigs();
+
+            $bouncer = new Bouncer($configs);
+            $remediation = $bouncer->getRemediationEngine();
+            $cache = $remediation->getCacheStorage();
+            $geolocation = new Geolocation($remediation->getConfig('geolocation')??[], $cache, $bouncer->getLogger());
+            $countryResult = $geolocation->handleCountryResultForIp($ip);
             if (!empty($countryResult['country'])) {
                 $countryMessage = $countryResult['country'];
             } elseif (!empty($countryResult['not_found'])) {
@@ -147,19 +161,19 @@ if (is_admin()) {
             else{
                 $countryMessage = __('Something went wrong.');
             }
-
-
             $message = __("Geolocation has been tested for IP: $ip. <br>Result is: $countryMessage");
 
             AdminNotice::displaySuccess($message);
         } catch (BouncerException $e) {
-            getCrowdSecLoggerInstance()->error('', [
-                'type' => 'WP_EXCEPTION_WHILE_TESTING_GEOLOCATION',
-                'message' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
+            if(isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type' => 'WP_EXCEPTION_WHILE_TESTING_GEOLOCATION',
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            }
             AdminNotice::displayError('Technical error while testing geolocation: '.$e->getMessage());
         }
     }
@@ -250,7 +264,6 @@ if (is_admin()) {
                     if ($previousState && !$currentState) {
                         $onDeactivation();
                     }
-                    getCrowdSecLoggerInstance()->info('', ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
                 }
 
                 return $input;
@@ -277,7 +290,6 @@ if (is_admin()) {
 
                 if ($previousState !== $currentState) {
                     $currentState = $onChange($currentState);
-                    getCrowdSecLoggerInstance()->info('', ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
                 }
 
                 return $currentState;
@@ -309,7 +321,6 @@ if (is_admin()) {
 
                 if ($previousState !== $currentState) {
                     $currentState = $onChange($currentState);
-                    getCrowdSecLoggerInstance()->info('', ['type' => 'WP_SETTING_UPDATE', $optionName => $currentState]);
                 }
 
                 return $currentState;

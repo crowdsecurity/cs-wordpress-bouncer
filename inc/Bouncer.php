@@ -1,0 +1,306 @@
+<?php
+declare(strict_types=1);
+
+use CrowdSec\RemediationEngine\CacheStorage\CacheStorageException;
+use CrowdSec\RemediationEngine\LapiRemediation;
+use CrowdSec\RemediationEngine\Logger\FileLog;
+use CrowdSecBouncer\AbstractBouncer;
+use CrowdSecBouncer\BouncerException;
+use Psr\Log\LoggerInterface;
+
+require_once __DIR__ . '/Constants.php';
+
+/**
+ * The class that apply a bounce.
+ *
+ * @author    CrowdSec team
+ *
+ * @see      https://crowdsec.net CrowdSec Official Website
+ *
+ * @copyright Copyright (c) 2020+ CrowdSec
+ * @license   MIT License
+ */
+class Bouncer extends AbstractBouncer
+{
+
+    protected $shouldNotBounceWpAdmin = true;
+
+    /**
+     * @throws BouncerException
+     * @throws CacheStorageException
+     */
+    public function __construct(array $configs, LoggerInterface $logger = null)
+    {
+        $this->shouldNotBounceWpAdmin = (bool)($configs['crowdsec_public_website_only']??true);
+        $configs = $this->handleRawConfigs($configs);
+        $this->logger = $logger ?: new FileLog($configs, 'wordpress_bouncer');
+        $configs['user_agent_version'] = Constants::VERSION;
+        $configs['user_agent_suffix'] = 'WordPress';
+        $client = $this->handleClient($configs, $this->logger);
+        $cache = $this->handleCache($configs, $this->logger);
+        $remediation = new LapiRemediation($configs, $client, $cache, $this->logger);
+
+        parent::__construct($configs, $remediation, $this->logger);
+    }
+
+    protected function escape(string $value): string
+    {
+        return htmlspecialchars($value, \ENT_QUOTES, 'UTF-8');
+    }
+
+    protected function specialcharsDecodeEntQuotes(string $value): string
+    {
+        return htmlspecialchars_decode($value, \ENT_QUOTES);
+    }
+
+    /**
+     * Prepare ready-to-use configs
+     * @return
+     */
+    public function handleRawConfigs(array $rawConfigs): array
+    {
+        return [
+            // LAPI connection
+            'api_key' => $this->escape($rawConfigs['crowdsec_api_key'] ?? ''),
+            'auth_type' => (string)($rawConfigs['crowdsec_auth_type'] ?? Constants::AUTH_KEY),
+            'tls_cert_path' => Constants::TLS_DIR . '/' . ltrim($rawConfigs['crowdsec_tls_cert_path'] ?? '', '/'),
+            'tls_key_path' => Constants::TLS_DIR . '/' . ltrim($rawConfigs['crowdsec_tls_key_path'] ?? '', '/'),
+            'tls_verify_peer' => (bool)($rawConfigs['crowdsec_tls_verify_peer'] ?? false),
+            'tls_ca_cert_path' => Constants::TLS_DIR . '/' .
+                                  ltrim($rawConfigs['crowdsec_tls_ca_cert_path'], '/'),
+            'api_url' => $this->escape($rawConfigs['crowdsec_api_url'] ?? ''),
+            'use_curl' => (bool)($rawConfigs['crowdsec_use_curl'] ?? false),
+            'api_timeout' => (int)($rawConfigs['crowdsec_api_timeout'] ?? Constants::API_TIMEOUT),
+            // Debug
+            'debug_mode' => (bool)($rawConfigs['crowdsec_debug_mode'] ?? false),
+            'disable_prod_log' => (bool)($rawConfigs['crowdsec_disable_prod_log'] ?? false),
+            'log_directory_path' => Constants::LOG_BASE_PATH,
+            'forced_test_ip' => (string)($rawConfigs['crowdsec_forced_test_ip'] ?? ''),
+            'forced_test_forwarded_ip' => (string)($rawConfigs['crowdsec_forced_test_forwarded_ip'] ?? ''),
+            'display_errors' => (bool)($rawConfigs['crowdsec_display_errors'] ?? false),
+            // Bouncer
+            'bouncing_level' => (string)($rawConfigs['crowdsec_bouncing_level'] ?? Constants::BOUNCING_LEVEL_DISABLED),
+            'trust_ip_forward_array' => (array)($rawConfigs['crowdsec_trust_ip_forward_array'] ?? []),
+            'fallback_remediation' => (string)($rawConfigs['crowdsec_fallback_remediation'] ??
+                                               Constants::REMEDIATION_BYPASS),
+            // Cache settings
+            'stream_mode' => (bool)($rawConfigs['crowdsec_stream_mode'] ?? false),
+            'cache_system' => $this->escape($rawConfigs['crowdsec_cache_system'] ?? Constants::CACHE_SYSTEM_PHPFS),
+            'fs_cache_path' => Constants::CACHE_PATH,
+            'redis_dsn' => $this->escape($rawConfigs['crowdsec_redis_dsn'] ?? ''),
+            'memcached_dsn' => $this->escape($rawConfigs['crowdsec_memcached_dsn'] ?? ''),
+            'clean_ip_cache_duration' => (int)($rawConfigs['crowdsec_clean_ip_cache_duration'] ??
+                                               Constants::CACHE_EXPIRATION_FOR_CLEAN_IP),
+            'bad_ip_cache_duration' => (int)($rawConfigs['crowdsec_bad_ip_cache_duration'] ??
+                                             Constants::CACHE_EXPIRATION_FOR_BAD_IP),
+            'captcha_cache_duration' => (int)($rawConfigs['crowdsec_captcha_cache_duration'] ??
+                                              Constants::CACHE_EXPIRATION_FOR_CAPTCHA),
+            // Geolocation
+            'geolocation' => [
+                'enabled' => (bool)($rawConfigs['crowdsec_geolocation_enabled'] ?? false),
+                'type' => (string)($rawConfigs['crowdsec_geolocation_type'] ?? Constants::GEOLOCATION_TYPE_MAXMIND),
+                'cache_duration' => (int)($rawConfigs['crowdsec_geolocation_cache_duration']
+                                          ?? Constants::CACHE_EXPIRATION_FOR_GEO),
+                'maxmind' => [
+                    'database_type' => (string)($rawConfigs['crowdsec_geolocation_maxmind_database_type'] ??
+                                                Constants::MAXMIND_COUNTRY),
+                    'database_path' => Constants::GEOLOCATION_DIR . '/' .
+                                       ltrim((string)($rawConfigs['crowdsec_geolocation_maxmind_database_path'] ?? ''),
+                                           '/'),
+                ]
+            ],
+            // Ban and Captcha walls
+            'hide_mentions' => (bool)($rawConfigs['crowdsec_hide_mentions'] ?? false),
+            'custom_css' => $this->specialcharsDecodeEntQuotes(
+                (string)($rawConfigs['crowdsec_theme_custom_css'] ?? '')
+            ),
+            'color' => [
+                'text' => [
+                    'primary' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_color_text_primary'] ?? '')
+                    ),
+                    'secondary' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_color_text_secondary'] ?? '')
+                    ),
+                    'button' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_color_text_button'] ?? '')
+                    ),
+                    'error_message' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_color_text_error_message'] ?? '')
+                    ),
+                ],
+                'background' => [
+                    'page' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_color_background_page'] ?? '')
+                    ),
+                    'container' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_color_background_container'] ?? '')
+                    ),
+                    'button' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_color_background_button'] ?? '')
+                    ),
+                    'button_hover' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_color_background_button_hover'] ?? '')
+                    ),
+                ],
+            ],
+            'text' => [
+                'ban_wall' => [
+                    'tab_title' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_ban_wall_tab_title'] ?? '')
+                    ),
+                    'title' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_ban_wall_title'] ?? '')
+                    ),
+                    'subtitle' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_ban_wall_subtitle'] ?? '')
+                    ),
+                    'footer' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_ban_wall_footer'] ?? '')
+                    ),
+                ],
+                'captcha_wall' => [
+                    'tab_title' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_captcha_wall_tab_title'] ?? '')
+                    ),
+                    'title' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_captcha_wall_title'] ?? '')
+                    ),
+                    'subtitle' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_captcha_wall_subtitle'] ?? '')
+                    ),
+                    'refresh_image_link' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_captcha_wall_refresh_image_link'] ?? '')
+                    ),
+                    'captcha_placeholder' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_captcha_wall_captcha_placeholder'] ?? '')
+                    ),
+                    'send_button' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_captcha_wall_send_button'] ?? '')
+                    ),
+                    'error_message' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_captcha_wall_error_message'] ?? '')
+                    ),
+                    'footer' => $this->specialcharsDecodeEntQuotes(
+                        (string)($rawConfigs['crowdsec_theme_text_captcha_wall_footer'] ?? '')
+                    ),
+                ],
+            ],
+
+        ];
+    }
+
+    /**
+     * @return string Ex: "X-Forwarded-For"
+     */
+    public function getHttpRequestHeader(string $name): ?string
+    {
+        $headerName = 'HTTP_' . str_replace('-', '_', strtoupper($name));
+        if (!array_key_exists($headerName, $_SERVER)) {
+            return null;
+        }
+
+        return $_SERVER[$headerName];
+    }
+
+    /**
+     * @return string The current IP, even if it's the IP of a proxy
+     */
+    public function getRemoteIp(): string
+    {
+        return $_SERVER['REMOTE_ADDR'];
+    }
+
+    /**
+     * The current URI.
+     */
+    public function getRequestUri(): string
+    {
+        return $_SERVER['REQUEST_URI'] ?? "";
+    }
+
+    /**
+     * @return string The current IP, even if it's the IP of a proxy
+     */
+    public function getHttpMethod(): string
+    {
+        return $_SERVER['REQUEST_METHOD'];
+    }
+
+    /**
+     * Get the value of a posted field.
+     */
+    public function getPostedVariable(string $name): ?string
+    {
+        if (!isset($_POST[$name])) {
+            return null;
+        }
+
+        return $_POST[$name];
+    }
+
+    /**
+     * If the current IP should be bounced or not, matching custom business rules.
+     */
+    public function shouldBounceCurrentIp(): bool
+    {
+        $bouncingDisabled = (Constants::BOUNCING_LEVEL_DISABLED === $this->getConfig('bouncing_level'));
+        if ($bouncingDisabled) {
+            $this->logger->warning('Will not bounce', [
+                'type' => 'WP_CONFIG_BOUNCER_DISABLED',
+                'message' => 'Will not bounce because bouncing is disabled.',
+            ]);
+
+            return false;
+        }
+
+        // We should not bounce when headers already sent
+        if (headers_sent()) {
+            return false;
+        }
+        // Don't bounce favicon calls.
+        if ('/favicon.ico' === $this->getRequestUri()) {
+            return false;
+        }
+        // Don't bounce cli
+        if (PHP_SAPI === 'cli') {
+            return false;
+        }
+
+        // when the "crowdsec_public_website_only" is disabled...
+        if ($this->shouldNotBounceWpAdmin) {
+            // In standalone context, is_admin() does not work. So we check admin section with another method.
+            if (defined('CROWDSEC_STANDALONE_RUNNING_CONTEXT')) {
+                // TODO improve the way to detect these pages
+                // ...don't bounce back office pages
+                if (0 === strpos($_SERVER['PHP_SELF'], '/wp-admin')) {
+                    return false;
+                }
+                // ...don't bounce wp-login and wp-cron pages
+                if (0 === strpos($_SERVER['PHP_SELF'], '/wp-login.php')) {
+                    return false;
+                }
+                if (0 === strpos($_SERVER['PHP_SELF'], '/wp-cron.php')) {
+                    return false;
+                }
+            } else {
+                // ...don't bounce back office pages
+                if (is_admin()) {
+                    return false;
+                }
+                // ...don't bounce wp-login and wp-cron pages
+                if (in_array($GLOBALS['pagenow'], ['wp-login.php', 'wp-cron.php'])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
+    public function testCacheConnection(): void
+    {
+        $cache = $this->getRemediationEngine()->getCacheStorage();
+        $cache->getItem($cache::CONFIG);
+    }
+}

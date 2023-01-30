@@ -30,6 +30,9 @@ return array(
     'IPLib\\' => array($vendorDir . '/mlocati/ip-lib/src'),
     'Gregwar\\' => array($vendorDir . '/gregwar/captcha/src/Gregwar'),
     'GeoIp2\\' => array($vendorDir . '/geoip2/geoip2/src'),
+    'CrowdSec\\RemediationEngine\\' => array($vendorDir . '/crowdsec/remediation-engine/src'),
+    'CrowdSec\\LapiClient\\' => array($vendorDir . '/crowdsec/lapi-client/src'),
+    'CrowdSec\\CapiClient\\' => array($vendorDir . '/crowdsec/capi-client/src'),
     'CrowdSecBouncer\\' => array($vendorDir . '/crowdsec/bouncer/src'),
     'Composer\\CaBundle\\' => array($vendorDir . '/composer/ca-bundle/src'),
 );

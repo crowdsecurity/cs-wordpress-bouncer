@@ -1,0 +1,10 @@
+# Composer
+vendor
+composer.lock
+composer-dev.*
+
+.cache
+
+*.log
+
+tests/**/*.json

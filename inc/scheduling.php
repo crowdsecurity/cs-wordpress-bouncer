@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/options-config.php';
+require_once __DIR__ . '/Bouncer.php';
+
 use CrowdSecBouncer\BouncerException;
 define('CROWDSEC_REFRESH_BLOCKLIST_CRON_HOOK', 'crowdsec_refresh_blocklist_cron_hook');
 define('CROWDSEC_REFRESH_BLOCKLIST_CRON_INTERVAL', 'crowdsec_refresh_blocklist_cron_interval');
@@ -19,17 +22,19 @@ add_filter('cron_schedules', function ($schedules) {
 function crowdSecRefreshBlocklist()
 {
     try {
-        $settings = getDatabaseSettings();
-        $bouncer = getBouncerInstance($settings);
+        $configs = getDatabaseConfigs();
+        $bouncer = new Bouncer($configs);
         $bouncer->refreshBlocklistCache();
     } catch (BouncerException $e) {
-        getCrowdSecLoggerInstance()->error('', [
-            'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
-            'message' => $e->getMessage(),
-            'code' => $e->getCode(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-        ]);
+        if(isset($bouncer) && $bouncer->getLogger()) {
+            $bouncer->getLogger()->error('', [
+                'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+        }
     }
 }
 
