@@ -25,7 +25,7 @@ try {
                           '(line ' . $e->getLine() . ')', true
         ));
     }
-    $displayErrors = $crowdSecConfigs['crowdsec_display_errors'] ?? false;
+    $displayErrors =  (bool)($crowdSecConfigs['crowdsec_display_errors'] ?? false);
     if (true === $displayErrors) {
         throw new BouncerException($e->getMessage(), $e->getCode(), $e);
     }

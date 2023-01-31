@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/Constants.php';
 
-function getCrowdSecOptionsConfig()
+function getCrowdSecOptionsConfig(): array
 {
     return [
         ['name' => 'crowdsec_api_url', 'default' => '', 'autoInit' => true],

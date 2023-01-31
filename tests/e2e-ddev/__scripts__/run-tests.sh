@@ -60,10 +60,10 @@ case $TYPE in
     COMMAND="yarn --cwd ${YARN_PATH} cross-env"
     LAPI_URL_FROM_PLAYWRIGHT=https://${CROWDSEC_URL_FROM_HOST}
     CURRENT_IP=$(ddev find-ip host)
-    TIMEOUT=31000
+    TIMEOUT=60000
     HEADLESS=false
     SLOWMO=150
-    PLUGIN_PATH="../../../../wp-content/plugins/crowdsec"
+    PLUGIN_PATH="../../"
     ;;
 
   "docker")
@@ -72,7 +72,7 @@ case $TYPE in
     COMMAND="ddev exec -s playwright yarn --cwd ${YARN_PATH} cross-env"
     LAPI_URL_FROM_PLAYWRIGHT=https://crowdsec:8080
     CURRENT_IP=$(ddev find-ip playwright)
-    TIMEOUT=31000
+    TIMEOUT=60000
     HEADLESS=true
     SLOWMO=0
     PLUGIN_PATH="/var/www/html/wp-content/plugins/crowdsec"

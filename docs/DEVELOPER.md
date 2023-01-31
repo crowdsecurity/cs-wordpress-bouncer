@@ -150,6 +150,14 @@ As we use a TLS ready CrowdSec container, you have first to copy some certificat
 cd wp-sources
 cp -r .ddev/custom_files/crowdsec/cfssl/* wp-content/plugins/crowdsec/tls
 ```
+And we use also a custom php script to make some cache test. Thus, you should copy this php script too in the root 
+folder: 
+
+```bash
+cd wp-sources
+cp  .ddev/custom_files/crowdsec/php/cache-actions.php cache-actions.php
+```
+
 
 Then, ensure that `run-tests.sh` and `test-init.sh` files are executable.
 
