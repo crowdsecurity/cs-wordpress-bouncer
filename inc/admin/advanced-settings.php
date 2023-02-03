@@ -215,7 +215,7 @@ function adminAdvancedSettings()
             return Constants::CACHE_EXPIRATION_FOR_CAPTCHA;
         }
 
-        return (int) $input > 0 ? (int) $input : Constants::CACHE_EXPIRATION_FOR_CAPTCHA ;
+        return (int) $input;
     }, ' seconds. <p>The lifetime of cached captcha flow for some IP. <br>If a user has to interact with a captcha wall, we store in cache some values in order to know if he has to resolve or not the captcha again.<br>Minimum 1 second. Default: '.Constants::CACHE_EXPIRATION_FOR_CAPTCHA.'.', Constants::CACHE_EXPIRATION_FOR_CAPTCHA, 'width: 115px;', 'number');
 
 
@@ -251,14 +251,14 @@ function adminAdvancedSettings()
         foreach ($stringRangeArray as $stringRange) {
             $stringRange = trim($stringRange);
             if (false !== strpos($stringRange, '/')) {
-                $range = Factory::rangeFromString($stringRange);
+                $range = Factory::parseRangeString($stringRange);
                 if (null === $range) {
                     throw new BouncerException('Invalid IP List format.');
                 }
                 $bounds = [$range->getComparableStartString(), $range->getComparableEndString()];
                 $comparableIpBoundsList = array_merge($comparableIpBoundsList, [$bounds]);
             } else {
-                $address = Factory::addressFromString($stringRange);
+                $address = Factory::parseAddressString($stringRange, 3);
                 if (null === $address) {
                     throw new BouncerException('Invalid IP List format.');
                 }

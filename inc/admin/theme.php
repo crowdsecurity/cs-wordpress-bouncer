@@ -82,7 +82,7 @@ function themeSettings()
      ** Section "Colors" **
      *********************/
 
-    add_settings_section('crowdsec_theme_colors', 'Use your own colors!', function () {
+    add_settings_section('crowdsec_theme_colors', 'Use your own colors', function () {
         echo 'You can customize remediation wall colors (ban wall and captcha wall).';
     }, 'crowdsec_theme_settings');
 
@@ -130,7 +130,7 @@ function themeSettings()
      ** Section "Custom CSS" **
      *************************/
 
-    add_settings_section('crowdsec_theme_css', 'Use your own CSS code!', function () {
+    add_settings_section('crowdsec_theme_css', 'Use your own CSS code', function () {
         echo 'You can customize remediation walls with CSS code (ban wall and captcha wall).';
     }, 'crowdsec_theme_settings');
 

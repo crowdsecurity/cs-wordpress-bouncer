@@ -32,6 +32,7 @@ attacks by using [CrowdSec](https://www.crowdsec.net/) technology.
 ## Prerequisites
 
 To be able to use this bouncer, the first step is to install [CrowdSec v1](https://doc.crowdsec.net/docs/getting_started/install_crowdsec/).
+
 CrowdSec is only in charge of the "detection", and won't block anything on its own. You need to deploy a bouncer to "apply" decisions.
 
 Please note that first and foremost CrowdSec must be installed on a server that is accessible via the WordPress site.
@@ -61,7 +62,7 @@ On the other hand, all texts are also fully customizable. This will allow you, f
 
 This plugin comes with configurations that you will find under `CrowdSec` admin section.
 
-These configurations are divided in three main parts : `CrowdSec`, `Theme customization`,and `Advanced`.
+These configurations are divided in three main parts : `CrowdSec`, `Theme customization` and `Advanced`.
 
 #### General settings
 
@@ -123,11 +124,7 @@ This option determines whether request handler verifies the authenticity of the 
 
 Only if you chose `TLS certificates` as authentication type.
 
-When negotiating a TLS or SSL connection, the server sends a certificate indicating its identity.
-If `Verify peer` is checked, request handler verifies whether the certificate is authentic.
-This trust is based on a chain of digital signatures,
-rooted in certification authority (CA) certificate you supply using the `Path to the CA used to process for peer 
-verification` setting below.
+When negotiating a TLS or SSL connection, the server sends a certificate indicating its identity. If `Verify peer` is checked, request handler verifies whether the certificate is authentic. This trust is based on a chain of digital signatures, rooted in certification authority (CA) certificate you supply using the `Path to the CA used to process for peer verification` setting below.
 
 ***
 
@@ -144,18 +141,15 @@ Only if you chose `TLS certificates` as authentication type.
 
 `Connection details → Use cURL to call Local API`
 
-By default, `file_get_contents` method is used to call Local API. This method requires to have enabled the option 
-`allow_url_fopen`. 
-Here, you can choose to use `cURL` requests instead. Beware that in this case, you need to have php `cURL` extension 
-installed and enabled on your system.
+By default, `file_get_contents` method is used to call Local API. This method requires to have enabled the option `allow_url_fopen`. 
+Here, you can choose to use `cURL` requests instead. Beware that in this case, you need to have php `cURL` extension installed and enabled on your system.
 
 
 ***
 
 `Connection details → Local API request timeout`
 
-By default, the maximum allowed time to perform a Local API request is 120 seconds. You can change this setting here.
-If you set a negative value, request timeout will be unlimited. 
+By default, the maximum allowed time to perform a Local API request is 120 seconds. You can change this setting here. If you set a negative value, request timeout will be unlimited. 
 
 ![Connection details](images/screenshots/config-bouncing.jpg)
 
@@ -166,14 +160,13 @@ If you set a negative value, request timeout will be unlimited.
 
 Choose if you want to apply CrowdSec directives (`Normal bouncing`) or be more permissive (`Flex bouncing`).
 
-With the `Flex mode`, it is impossible to accidentally block access to your site to people who don’t deserve it. This
-mode makes it possible to never ban an IP but only to offer a Captcha, in the worst-case scenario.
+With the `Flex mode`, it is impossible to accidentally block access to your site to people who don’t deserve it. This mode makes it possible to never ban an IP but only to offer a captcha, in the worst-case scenario.
 
 ***
 
 `Bouncing → Public website only`
 
-If enabled, the admin is not bounced.
+If enabled, the admin view is not bounced.
 
 ***
 
@@ -181,9 +174,7 @@ If enabled, the admin is not bounced.
 
 `Test your settings → Test bouncing`
 
-Click the "Test bouncing" button and the configured bouncer will try to get the remediation (bypass, captcha or ban) 
-for 
-the IP entered in the text field. By default, tested IP is the current detected remote IP.
+Click the "Test bouncing" button and the configured bouncer will try to get the remediation (bypass, captcha or ban) for the IP entered in the text field. By default, tested IP is the current detected remote IP.
 
 This test allows you to know if your connection, bouncing and cache settings are correct.
 
@@ -195,8 +186,6 @@ This test allows you to know if your connection, bouncing and cache settings are
 Click the "Test geolocation" button to try getting country for the IP entered in the text field.
 
 This test allows you to know if your geolocation settings are correct.
-
-
 
 #### Theme customization
 
@@ -211,8 +200,7 @@ In the `Theme customization` part, you can modify texts and colors of ban and ca
 
 #### Advanced settings
 
-In the `Advanced` part, you can enable/disable the stream mode, choose your cache system for your CrowdSec
-Local API, handle your remediation policy, manage geolocation feature, adjust some debug parameters and testing parameters. 
+In the `Advanced` part, you can enable/disable the stream mode, choose your cache system for your CrowdSec Local API, handle your remediation policy, manage geolocation feature, adjust some debug parameters and testing parameters. 
 
 ![Communication mode](images/screenshots/config-communication-mode.jpg)
 
@@ -232,8 +220,7 @@ But you can also activate the `stream mode`. This mode allows you to constantly 
 
 `Communication mode to the API → Resync decisions each (stream mode only)`
 
-With the stream mode, every decision is retrieved in an asynchronous way. Here you can define the frequency of this
-cache refresh.
+With the stream mode, every decision is retrieved in an asynchronous way. Here you can define the frequency of this cache refresh.
 
 **N.B** : There is also a refresh button if you want to refresh the cache manually.
 
@@ -249,8 +236,7 @@ Choose the cache technology that will use your CrowdSec Local API.
 
 The File system cache is faster than calling Local API. Redis or Memcached is faster than the File System cache.
 
-**N.B** : There are also a `Clear now` button fo all cache technologies and a `Prune now` button dedicated to the
-file system cache.
+**N.B**. : There are also a `Clear now` button fo all cache technologies and a `Prune now` button dedicated to the file system cache.
 
 ***
 
@@ -281,16 +267,6 @@ we store in cache some values in order to know if he has to resolve or not the c
 Minimum 1 second. Default: 86400 seconds.
 
 ***
-
-`Caching configuration → Geolocation cache lifetime`
-
-The lifetime of cached country geolocation result for some IP.
-
-Minimum 1 second. Default: 86400 seconds.
-
-
-***
-
 
 ![Remediations](images/screenshots/config-remediations.jpg)
 
@@ -345,11 +321,10 @@ Relative path from `wp-content/plugins/crowdsec/geolocation` folder.
 
 ***
 
-`Geolocation → Save geolocalized country in cache`
+`Geolocation → Geolocation cache lifetime`
 
-Enabling this will avoid multiple call to the geolocation system (e.g. MaxMind database)
-If enabled, the geolocalized country associated to the IP will be saved in cache.
-See the `Geolocation cache lifetime` setting above to set the lifetime of this result.
+The lifetime of cached country geolocation result for some IP. Default: 86400.
+Set 0 to disable caching. Enabling this will avoid multiple call to the geolocation system (e.g. MaxMind database)
 
 ***
 
@@ -392,6 +367,7 @@ Should be disabled in production.
 `Test settings → Forced test IP`
 
 This Ip will be used instead of the current detected browser IP.
+
 **Must be empty in production.**
 
 ***
@@ -399,27 +375,23 @@ This Ip will be used instead of the current detected browser IP.
 `Test settings → Forced test X-Forwarded-For IP`
 
 This Ip will be used instead of the current X-Forwarded-For Ip if any.
+
 **Must be empty in production.**
-
-
 
 ### Auto Prepend File mode
 
 By default, this extension will bounce every web requests that pass through the classical process of WordPress core loading.
-This implies that if another php public script is called (any of your custom public php script for example)
-or if you are using some plugin that bypass the WordPress core load process
-(as the [WP Super Cache plugin](https://wordpress.org/plugins/wp-super-cache/) in Simple mode for example), bouncing will not be effective.
+This implies that if another php public script is called (any of your custom public php script for example) or if you are using some plugin that bypass the WordPress core load process (as the [WP Super Cache plugin](https://wordpress.org/plugins/wp-super-cache/) in Simple mode for example), bouncing will not be effective.
 
 To ensure that any php script will be bounced if called from a browser, you should try the `auto prepend file` mode.
 
-In this mode, every browser access to a php script will be bounced.
+In this mode, every browser access to a PHP script will be bounced.
 
-To enable the `auto prepend file` mode, you have to configure your server by adding an `auto_prepend_file` directive 
-for your php setup.
+To enable the `auto prepend file` mode, you have to configure your server by adding an `auto_prepend_file` directive  for your php setup.
 
-**N.B:**
-- In this mode, a setting file `inc/standalone-settings.php` will be generated each time you save the 
-  CrowdSec plugin configuration from the WordPress admin.
+**N.B.:**
+
+- In this mode, a setting file `inc/standalone-settings.php` will be generated each time you save the CrowdSec plugin configuration from the WordPress admin.
 
 
 Adding an `auto_prepend_file` directive can be done in different ways:
