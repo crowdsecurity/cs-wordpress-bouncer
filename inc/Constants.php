@@ -18,8 +18,6 @@ class Constants extends LibConstants
 {
 
     public const LOG_BASE_PATH = __DIR__ . '/../logs/';
-    public const LOG_PATH = __DIR__ . '/../logs/prod.log';
-    public const DEBUG_LOG_PATH = __DIR__ . '/../logs/debug.log';
     public const CACHE_PATH = __DIR__ . '/../.cache';
     public const CONFIG_PATH = __DIR__ . '/standalone-settings.php';
     public const VERSION = 'v2.0.0';

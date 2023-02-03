@@ -12,13 +12,30 @@
 
     <rule ref="rulesets/codesize.xml" >
         <exclude name="ExcessiveClassComplexity"/>
+        <exclude name="TooManyMethods"/>
     </rule>
-    <rule ref="rulesets/cleancode.xml" />
+    <rule ref="rulesets/cleancode.xml">
+        <exclude name="MissingImport"/>
+    </rule>
     <rule ref="rulesets/unusedcode.xml" />
     <!-- Allow more complexity -->
     <rule ref="rulesets/codesize.xml/ExcessiveClassComplexity">
         <properties>
             <property name="maximum" value="100" />
+        </properties>
+    </rule>
+    <!-- Allow more methods -->
+    <rule ref="rulesets/codesize.xml/TooManyMethods">
+        <properties>
+            <property name="maxmethods" value="30" />
+        </properties>
+    </rule>
+    <!-- Allow global missing import -->
+    <rule ref="rulesets/cleancode.xml/MissingImport">
+        <properties>
+            <property name="ignore-global" >
+                <value>true</value>
+            </property>
         </properties>
     </rule>
 </ruleset>

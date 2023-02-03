@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CrowdSec\CapiClient\Configuration\Signal;
 
-use CrowdSec\CapiClient\Configuration\AbstractConfiguration;
-use CrowdSec\CapiClient\Configuration\Signal;
+use CrowdSec\CapiClient\Constants;
+use CrowdSec\Common\Configuration\AbstractConfiguration;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
@@ -32,14 +32,12 @@ class Decisions extends AbstractConfiguration
         'simulated',
         'id',
         'type',
-        'value'
+        'value',
     ];
 
     /**
      * Keep only necessary configs
-     * Override because $configs is an array of array (decision) and we want to clean each decision
-     * @param array $configs
-     * @return array
+     * Override because $configs is an array of array (decision) and we want to clean each decision.
      */
     public function cleanConfigs(array $configs): array
     {
@@ -70,9 +68,9 @@ class Decisions extends AbstractConfiguration
                         ->isRequired()->cannotBeEmpty()
                         ->validate()
                         ->ifTrue(function (string $value) {
-                            return 1 !== preg_match(Signal::SCENARIO_REGEX, $value);
+                            return 1 !== preg_match(Constants::SCENARIO_REGEX, $value);
                         })
-                        ->thenInvalid('Invalid scenario. Must match with ' . Signal::SCENARIO_REGEX . ' regex')
+                        ->thenInvalid('Invalid scenario. Must match with ' . Constants::SCENARIO_REGEX . ' regex')
                         ->end()
                     ->end()
                     ->scalarNode('origin')

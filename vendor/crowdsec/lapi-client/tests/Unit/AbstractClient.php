@@ -15,6 +15,8 @@ namespace CrowdSec\LapiClient\Tests\Unit;
  * @license   MIT License
  */
 
+use CrowdSec\Common\Client\RequestHandler\Curl;
+use CrowdSec\Common\Client\RequestHandler\FileGetContents;
 use CrowdSec\LapiClient\Constants;
 use CrowdSec\LapiClient\Tests\Constants as TestConstants;
 use PHPUnit\Framework\TestCase;
@@ -41,17 +43,15 @@ abstract class AbstractClient extends TestCase
 
     protected function getCurlMock(array $methods = [])
     {
-        $methods = array_merge(['exec', 'getResponseHttpCode'], $methods);
-
-        return $this->getMockBuilder('CrowdSec\LapiClient\RequestHandler\Curl')
+        return $this->getMockBuilder(Curl::class)
             ->onlyMethods($methods)
             ->getMock();
     }
 
-    protected function getFGCMock()
+    protected function getFGCMock(array $methods = [])
     {
-        return $this->getMockBuilder('CrowdSec\LapiClient\RequestHandler\FileGetContents')
-            ->onlyMethods(['exec'])
+        return $this->getMockBuilder(FileGetContents::class)
+            ->onlyMethods($methods)
             ->getMock();
     }
 }

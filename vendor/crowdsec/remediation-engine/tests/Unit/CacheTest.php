@@ -21,7 +21,7 @@ use CrowdSec\RemediationEngine\CacheStorage\Memcached;
 use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
 use CrowdSec\RemediationEngine\Constants;
-use CrowdSec\RemediationEngine\Logger\FileLog;
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\Tests\Constants as TestConstants;
 use CrowdSec\RemediationEngine\Tests\PHPUnitUtil;
 use org\bovigo\vfs\vfsStream;
@@ -29,11 +29,9 @@ use org\bovigo\vfs\vfsStreamDirectory;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @uses \CrowdSec\RemediationEngine\Logger\FileLog::__construct
  * @uses \CrowdSec\RemediationEngine\Configuration\Cache\Memcached::getConfigTreeBuilder
  * @uses \CrowdSec\RemediationEngine\Configuration\Cache\PhpFiles::getConfigTreeBuilder
  * @uses \CrowdSec\RemediationEngine\Configuration\Cache\Redis::getConfigTreeBuilder
- * @uses \CrowdSec\RemediationEngine\Configuration\AbstractConfiguration::cleanConfigs
  *
  * @covers \CrowdSec\RemediationEngine\CacheStorage\Memcached::clear
  * @covers \CrowdSec\RemediationEngine\CacheStorage\Memcached::commit

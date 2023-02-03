@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CrowdSec\CapiClient\Configuration\Signal;
 
-use CrowdSec\CapiClient\Configuration\AbstractConfiguration;
+use CrowdSec\Common\Configuration\AbstractConfiguration;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
@@ -30,7 +30,7 @@ class Source extends AbstractConfiguration
         'longitude',
         'cn',
         'as_name',
-        'as_number'
+        'as_number',
     ];
 
     public function getConfigTreeBuilder(): TreeBuilder

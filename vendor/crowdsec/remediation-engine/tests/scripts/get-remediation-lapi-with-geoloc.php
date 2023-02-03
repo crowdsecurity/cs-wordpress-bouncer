@@ -8,7 +8,7 @@ use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
 use CrowdSec\RemediationEngine\Constants;
 use CrowdSec\RemediationEngine\LapiRemediation;
-use CrowdSec\RemediationEngine\Logger\FileLog;
+use CrowdSec\Common\Logger\FileLog;
 
 $ip = $argv[1] ?? null;
 
@@ -30,7 +30,7 @@ if (!$bouncerKey || !$lapiUrl) {
 }
 
 // Init  logger
-$logger = new FileLog(['debug_mode' => true]);
+$logger = new FileLog(['debug_mode' => true], 'remediation-engine-logger');
 // Init client
 $clientConfigs = [
     'auth_type' => 'api_key',

@@ -5,6 +5,60 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## Public API
+
+The purpose of this section is to declare the public API of this library as required by  [item 1 of semantic versioning specification](https://semver.org/spec/v2.0.0.html#spec-item-1).
+
+The public API of this library consists of all public or protected methods, properties and constants belonging to the `src` folder.
+
+---
+
+## [2.0.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v2.0.0) - 2023-02-02
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v1.0.1...v2.0.0)
+
+### Changed
+
+- *Breaking change*: Update `crowdsec/capi-client` to a new major version [2.0.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v2.0.0)
+- *Breaking change*: Update `crowdsec/lapi-client` to a new major version [2.0.0](https://github.com/crowdsecurity/php-lapi-client/releases/tag/v2.0.0)
+- Use `crowdsec/common` [package](https://github.com/crowdsecurity/php-common) as a dependency for code factoring
+
+### Removed
+
+- *Breaking change*: Remove `CrowdSec\RemediationEngine\Logger\FileLog` (replaced by `CrowdSec\Common\Logger\FileLog`)
+
+
+---
+
+
+## [1.0.1](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v1.0.1) - 2023-01-27
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v1.0.0...v1.0.1)
+
+### Added
+
+- Add public API declaration
+
+---
+
+## [1.0.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v1.0.0) - 2023-01-27
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v0.7.0...v1.0.0)
+
+### Changed
+
+- Change version to `1.0.0`: first stable release
+
+---
+
+## [0.7.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v0.7.0) - 2023-01-13
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v0.6.1...v0.7.0)
+
+### Changed
+
+- Update `crowdsec/capi-client` dependency to `v0.11.0`
+
+
+--- 
+
+
 ## [0.6.1](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v0.6.1) - 2023-01-12
 [_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v0.6.0...v0.6.1)
 

@@ -7,6 +7,7 @@ namespace CrowdSec\RemediationEngine\Configuration;
 use CrowdSec\RemediationEngine\CapiRemediation;
 use CrowdSec\RemediationEngine\Constants;
 use CrowdSec\RemediationEngine\LapiRemediation;
+use CrowdSec\Common\Configuration\AbstractConfiguration;
 
 /**
  * The remediation common configuration.

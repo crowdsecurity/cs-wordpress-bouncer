@@ -13,13 +13,15 @@ namespace CrowdSec\CapiClient\Tests\Integration;
  * @license   MIT License
  */
 
-use CrowdSec\CapiClient\AbstractClient;
 use CrowdSec\CapiClient\ClientException;
-use CrowdSec\CapiClient\RequestHandler\FileGetContents;
+use CrowdSec\CapiClient\Constants;
 use CrowdSec\CapiClient\Storage\FileStorage;
 use CrowdSec\CapiClient\Tests\Constants as TestConstants;
 use CrowdSec\CapiClient\Tests\PHPUnitUtil;
 use CrowdSec\CapiClient\Watcher;
+use CrowdSec\Common\Client\AbstractClient;
+use CrowdSec\Common\Client\RequestHandler\Curl;
+use CrowdSec\Common\Client\RequestHandler\FileGetContents;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Util\Exception;
 
@@ -89,6 +91,59 @@ final class WatcherTest extends TestCase
             $error,
             'Should throw an error for bad formatted signal'
         );
+
+        // Build Simple Signal
+        $signal = $client->buildSimpleSignalForIp(TestConstants::IP, $this->configs['scenarios'][0], null);
+        $response = $client->pushSignals([$signal]);
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/OK/',
+            $response['message'],
+            'Signals should be pushed'
+        );
+
+        // Build Signal
+        $properties = [
+            'scenario' => $this->configs['scenarios'][0],
+            'scenario_trust' => 'certified',
+            'scenario_version' => 'v1.2.0',
+            'scenario_hash' => 'azertyuiop',
+            'created_at' => new \DateTime('2023-01-13T01:34:56.778054Z'),
+            'message' => 'This is a test message',
+            'start_at' => new \DateTime('2023-01-12T23:48:45.123456Z'),
+            'stop_at' => new \DateTime('2022-01-13T01:34:55.432150Z'),
+        ];
+
+        $sourceScope = Constants::SCOPE_IP;
+        $sourceValue = TestConstants::IP;
+
+        $source = [
+            'scope' => $sourceScope,
+            'value' => $sourceValue,
+        ];
+
+        $decisions = [
+            [
+                'id' => 1979,
+                'duration' => 3600,
+                'origin' => 'crowdsec-integration-test',
+                'scope' => $sourceScope,
+                'value' => $sourceValue,
+                'type' => 'custom',
+                'simulated' => true,
+            ],
+        ];
+
+        $signal = $client->buildSignal($properties, $source, $decisions);
+        $response = $client->pushSignals([$signal]);
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/OK/',
+            $response['message'],
+            'Signals should be pushed'
+        );
     }
 
     /**
@@ -136,13 +191,13 @@ final class WatcherTest extends TestCase
     {
         if (null === $requestHandler) {
             $this->assertEquals(
-                'CrowdSec\CapiClient\RequestHandler\Curl',
+                Curl::class,
                 get_class($client->getRequestHandler()),
                 'Request handler should be curl by default'
             );
         } else {
             $this->assertEquals(
-                'CrowdSec\CapiClient\RequestHandler\FileGetContents',
+                FileGetContents::class,
                 get_class($client->getRequestHandler()),
                 'Request handler should be file_get_contents'
             );

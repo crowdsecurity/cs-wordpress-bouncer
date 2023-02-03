@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use CrowdSec\RemediationEngine\CacheStorage\CacheStorageException;
 use CrowdSec\RemediationEngine\LapiRemediation;
-use CrowdSec\RemediationEngine\Logger\FileLog;
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSecBouncer\AbstractBouncer;
 use CrowdSecBouncer\BouncerException;
 use Psr\Log\LoggerInterface;
@@ -55,7 +55,8 @@ class Bouncer extends AbstractBouncer
 
     /**
      * Prepare ready-to-use configs
-     * @return
+     * @param array $rawConfigs
+     * @return array
      */
     public function handleRawConfigs(array $rawConfigs): array
     {
@@ -295,12 +296,5 @@ class Bouncer extends AbstractBouncer
             }
         }
         return true;
-    }
-
-
-    public function testCacheConnection(): void
-    {
-        $cache = $this->getRemediationEngine()->getCacheStorage();
-        $cache->getItem($cache::CONFIG);
     }
 }

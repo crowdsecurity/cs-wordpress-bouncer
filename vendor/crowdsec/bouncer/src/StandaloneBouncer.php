@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CrowdSecBouncer;
 
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\CacheStorage\CacheStorageException;
 use CrowdSec\RemediationEngine\LapiRemediation;
-use CrowdSec\RemediationEngine\Logger\FileLog;
 use IPLib\Factory;
 use Psr\Log\LoggerInterface;
 

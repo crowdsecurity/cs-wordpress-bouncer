@@ -13,10 +13,10 @@ namespace CrowdSec\LapiClient\Tests\Integration;
  * @license   MIT License
  */
 
-use CrowdSec\LapiClient\AbstractClient;
+use CrowdSec\Common\Client\AbstractClient;
+use CrowdSec\Common\Client\RequestHandler\FileGetContents;
 use CrowdSec\LapiClient\Bouncer;
 use CrowdSec\LapiClient\Constants;
-use CrowdSec\LapiClient\RequestHandler\FileGetContents;
 use CrowdSec\LapiClient\Tests\Constants as TestConstants;
 use PHPUnit\Framework\TestCase;
 
@@ -173,15 +173,15 @@ final class BouncerTest extends TestCase
     private function checkRequestHandler(AbstractClient $client, $requestHandler)
     {
         if (null === $requestHandler) {
-            $this->assertEquals(
-                'CrowdSec\LapiClient\RequestHandler\Curl',
-                get_class($client->getRequestHandler()),
+            $this->assertInstanceOf(
+                'CrowdSec\Common\Client\RequestHandler\Curl',
+                $client->getRequestHandler(),
                 'Request handler should be curl by default'
             );
         } else {
-            $this->assertEquals(
-                'CrowdSec\LapiClient\RequestHandler\FileGetContents',
-                get_class($client->getRequestHandler()),
+            $this->assertInstanceOf(
+                'CrowdSec\Common\Client\RequestHandler\FileGetContents',
+                $client->getRequestHandler(),
                 'Request handler should be file_get_contents'
             );
         }

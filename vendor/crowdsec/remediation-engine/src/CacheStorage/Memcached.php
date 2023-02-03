@@ -28,7 +28,11 @@ class Memcached extends AbstractCache
             $adapter = new MemcachedAdapter(MemcachedAdapter::createConnection($this->configs['memcached_dsn']));
             // @codeCoverageIgnoreStart
         } catch (\Exception $e) {
-            throw new CacheStorageException('Error when creating Memcached cache adapter:' . $e->getMessage());
+            throw new CacheStorageException(
+                'Error when creating Memcached cache adapter:' . $e->getMessage(),
+                (int)$e->getCode(),
+                $e
+            );
             // @codeCoverageIgnoreEnd
         } finally {
             $this->unsetCustomErrorHandler();

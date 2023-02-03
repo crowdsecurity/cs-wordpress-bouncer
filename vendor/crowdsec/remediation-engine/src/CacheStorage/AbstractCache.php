@@ -469,7 +469,6 @@ abstract class AbstractCache
 
     /**
      * @throws CacheStorageException
-     * @throws CacheStorageException
      */
     private function handleRangeScoped(Decision $decision, string $cachedIndex, callable $method): array
     {

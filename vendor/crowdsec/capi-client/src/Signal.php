@@ -23,8 +23,6 @@ use Symfony\Component\Config\Definition\Processor;
  */
 class Signal
 {
-    public const TRUST_MANUAL = 'manual';
-
     /**
      * @var array
      */

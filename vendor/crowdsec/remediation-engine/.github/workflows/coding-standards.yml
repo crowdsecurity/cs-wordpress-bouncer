@@ -40,6 +40,8 @@ jobs:
         env:
           DDEV_VERSION: v1.21.4
         run: |
+          # @see https://github.com/actions/runner-images/issues/675#issuecomment-610483420
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
           # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
           sudo apt-get -qq update
           sudo apt-get -qq -y install libnss3-tools
@@ -64,7 +66,7 @@ jobs:
           ddev --version
           ddev exec php -v
 
-      - name: Clone PHP lib Crowdsec files
+      - name: Clone sources
         uses: actions/checkout@v3
         with:
           path: ${{env.EXTENSION_PATH}}
@@ -73,7 +75,7 @@ jobs:
         run: | 
           ddev composer validate --strict --working-dir ./${{env.EXTENSION_PATH}}
 
-      - name: Install CrowdSec lib dependencies and Coding standards tools
+      - name: Install dependencies and Coding standards tools
         run: |
           ddev composer update --working-dir ./${{env.EXTENSION_PATH}}
           ddev composer update --working-dir ./${{env.EXTENSION_PATH}}/tools/coding-standards

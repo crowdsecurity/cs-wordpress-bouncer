@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CrowdSec\LapiClient;
 
+use CrowdSec\Common\Client\ClientException as CommonClientException;
+
 /**
  * Exception interface for all exceptions thrown by CrowdSec LAPI Client.
  *
@@ -14,6 +16,6 @@ namespace CrowdSec\LapiClient;
  * @copyright Copyright (c) 2022+ CrowdSec
  * @license   MIT License
  */
-class ClientException extends \RuntimeException
+class ClientException extends CommonClientException
 {
 }

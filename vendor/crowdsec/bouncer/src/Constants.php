@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CrowdSecBouncer;
 
+use CrowdSec\RemediationEngine\Constants as RemConstants;
+
 /**
  * Every constant of the library are set here.
  *
@@ -14,28 +16,16 @@ namespace CrowdSecBouncer;
  * @copyright Copyright (c) 2020+ CrowdSec
  * @license   MIT License
  */
-class Constants
+class Constants extends RemConstants
 {
-    /** @var int The timeout when calling LAPI */
-    public const API_TIMEOUT = 120;
-    /** @var string The API-KEY auth type */
-    public const AUTH_KEY = 'api_key';
-    /** @var string The TLS auth type */
-    public const AUTH_TLS = 'tls';
     /** @var string The "disabled" bouncing level */
     public const BOUNCING_LEVEL_DISABLED = 'bouncing_disabled';
     /** @var string The "flex" bouncing level */
     public const BOUNCING_LEVEL_FLEX = 'flex_bouncing';
     /** @var string The "normal" bouncing level */
     public const BOUNCING_LEVEL_NORMAL = 'normal_bouncing';
-    /** @var int The duration we keep a bad IP in cache */
-    public const CACHE_EXPIRATION_FOR_BAD_IP = 20;
     /** @var int The duration we keep a captcha flow in cache */
     public const CACHE_EXPIRATION_FOR_CAPTCHA = 86400;
-    /** @var int The duration we keep a clean IP in cache */
-    public const CACHE_EXPIRATION_FOR_CLEAN_IP = 5;
-    /** @var int The duration we keep a geolocation result in cache */
-    public const CACHE_EXPIRATION_FOR_GEO = 86400;
     /** @var string The "MEMCACHED" cache system */
     public const CACHE_SYSTEM_MEMCACHED = 'memcached';
     /** @var string The "PHPFS" cache system */
@@ -46,26 +36,10 @@ class Constants
     public const CACHE_TAG_CAPTCHA = 'captcha';
     /** @var string The Default URL of the CrowdSec LAPI */
     public const DEFAULT_LAPI_URL = 'http://localhost:8080';
-    /** @var string The "MaxMind" geolocation type */
-    public const GEOLOCATION_TYPE_MAXMIND = 'maxmind';
-    /** @var string The Maxmind "Country" database type */
-    public const MAXMIND_COUNTRY = 'country';
-    /** @var string The ban remediation */
-    public const REMEDIATION_BAN = 'ban';
-    /** @var string The bypass remediation */
-    public const REMEDIATION_BYPASS = 'bypass';
-    /** @var string The captcha remediation */
-    public const REMEDIATION_CAPTCHA = 'captcha';
-    /** @var string The CrowdSec country scope for decisions */
-    public const SCOPE_COUNTRY = 'country';
-    /** @var string The CrowdSec Ip scope for decisions */
-    public const SCOPE_IP = 'ip';
-    /** @var string The CrowdSec Range scope for decisions */
-    public const SCOPE_RANGE = 'range';
     /** @var string Path for html templates folder (e.g. ban and captcha wall) */
     public const TEMPLATES_DIR = __DIR__ . "/templates";
     /** @var string The last version of this library */
-    public const VERSION = 'v0.36.0';
+    public const VERSION = 'v1.0.0';
     /** @var string The "disabled" x-forwarded-for setting */
     public const X_FORWARDED_DISABLED = 'no_forward';
 }

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CrowdSec\CapiClient\Configuration;
 
-use CrowdSec\CapiClient\Signal as SignalClass;
+use CrowdSec\CapiClient\Constants;
+use CrowdSec\Common\Configuration\AbstractConfiguration;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
@@ -20,9 +21,6 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
  */
 class Signal extends AbstractConfiguration
 {
-    public const SCENARIO_REGEX = '#^[A-Za-z0-9]{0,16}\/[A-Za-z0-9_-]{0,32}$#';
-
-    public const ISO8601_REGEX = '#^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.\d{6})?Z$#';
     /**
      * @var string[]
      */
@@ -36,7 +34,7 @@ class Signal extends AbstractConfiguration
         'scenario_version',
         'message',
         'start_at',
-        'stop_at'
+        'stop_at',
     ];
 
     /**
@@ -49,7 +47,7 @@ class Signal extends AbstractConfiguration
         /** @var ArrayNodeDefinition $rootNode */
         $rootNode = $treeBuilder->getRootNode();
         $rootNode->children()
-            ->scalarNode('scenario_trust')->defaultValue(SignalClass::TRUST_MANUAL)->end()
+            ->scalarNode('scenario_trust')->defaultValue(Constants::TRUST_MANUAL)->end()
             ->scalarNode('scenario_hash')
                 ->isRequired()->defaultValue('')
             ->end()
@@ -57,9 +55,9 @@ class Signal extends AbstractConfiguration
                 ->isRequired()->cannotBeEmpty()
                 ->validate()
                 ->ifTrue(function (string $value) {
-                    return 1 !== preg_match(self::SCENARIO_REGEX, $value);
+                    return 1 !== preg_match(Constants::SCENARIO_REGEX, $value);
                 })
-                ->thenInvalid('Invalid scenario. Must match with ' . self::SCENARIO_REGEX . ' regex')
+                ->thenInvalid('Invalid scenario. Must match with ' . Constants::SCENARIO_REGEX . ' regex')
                 ->end()
             ->end()
             ->integerNode('alert_id')->min(0)->end()
@@ -67,9 +65,9 @@ class Signal extends AbstractConfiguration
                 ->cannotBeEmpty()
                 ->validate()
                 ->ifTrue(function (string $value) {
-                    return 1 !== preg_match(self::ISO8601_REGEX, $value);
+                    return 1 !== preg_match(Constants::ISO8601_REGEX, $value);
                 })
-                ->thenInvalid('Invalid created_at. Must match with ' . self::ISO8601_REGEX)
+                ->thenInvalid('Invalid created_at. Must match with ' . Constants::ISO8601_REGEX)
                 ->end()
             ->end()
             ->scalarNode('machine_id')->cannotBeEmpty()->end()
@@ -79,18 +77,18 @@ class Signal extends AbstractConfiguration
                 ->isRequired()->cannotBeEmpty()
                 ->validate()
                 ->ifTrue(function (string $value) {
-                    return 1 !== preg_match(self::ISO8601_REGEX, $value);
+                    return 1 !== preg_match(Constants::ISO8601_REGEX, $value);
                 })
-                ->thenInvalid('Invalid start_at. Must match with ' . self::ISO8601_REGEX)
+                ->thenInvalid('Invalid start_at. Must match with ' . Constants::ISO8601_REGEX)
                 ->end()
             ->end()
             ->scalarNode('stop_at')
                 ->isRequired()->cannotBeEmpty()
                 ->validate()
                 ->ifTrue(function (string $value) {
-                    return 1 !== preg_match(self::ISO8601_REGEX, $value);
+                    return 1 !== preg_match(Constants::ISO8601_REGEX, $value);
                 })
-                ->thenInvalid('Invalid stop_at. Must match with ' . self::ISO8601_REGEX)
+                ->thenInvalid('Invalid stop_at. Must match with ' . Constants::ISO8601_REGEX)
                 ->end()
             ->end()
         ->end()

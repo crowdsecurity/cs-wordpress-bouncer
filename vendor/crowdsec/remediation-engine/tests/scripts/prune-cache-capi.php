@@ -6,10 +6,10 @@ use CrowdSec\CapiClient\Storage\FileStorage;
 use CrowdSec\CapiClient\Watcher;
 use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CapiRemediation;
-use CrowdSec\RemediationEngine\Logger\FileLog;
+use CrowdSec\Common\Logger\FileLog;
 
 // Init  logger
-$logger = new FileLog(['debug_mode' => true]);
+$logger = new FileLog(['debug_mode' => true], 'remediation-engine-logger');
 
 // Init client
 $clientConfigs = [

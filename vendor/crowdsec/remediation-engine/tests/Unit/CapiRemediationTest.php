@@ -23,7 +23,7 @@ use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
 use CrowdSec\RemediationEngine\CapiRemediation;
 use CrowdSec\RemediationEngine\Constants;
-use CrowdSec\RemediationEngine\Logger\FileLog;
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\Tests\Constants as TestConstants;
 use CrowdSec\RemediationEngine\Tests\MockedData;
 use CrowdSec\RemediationEngine\Tests\PHPUnitUtil;
@@ -50,11 +50,9 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @uses \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::validateCommon
  * @uses \CrowdSec\RemediationEngine\Decision::getOrigin
  * @uses \CrowdSec\RemediationEngine\Decision::toArray
- * @uses \CrowdSec\RemediationEngine\Logger\FileLog::__construct
  * @uses \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::addGeolocationNodes
  * @uses \CrowdSec\RemediationEngine\AbstractRemediation::getCountryForIp
  * @uses \CrowdSec\RemediationEngine\AbstractRemediation::getCacheStorage
- * @uses \CrowdSec\RemediationEngine\Configuration\AbstractConfiguration::cleanConfigs
  * @uses \CrowdSec\RemediationEngine\AbstractRemediation::getIpType
  *
  * @covers \CrowdSec\RemediationEngine\Decision::getExpiresAt

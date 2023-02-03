@@ -8,10 +8,10 @@ use CrowdSec\RemediationEngine\CacheStorage\Memcached;
 use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
 use CrowdSec\RemediationEngine\CapiRemediation;
-use CrowdSec\RemediationEngine\Logger\FileLog;
+use CrowdSec\Common\Logger\FileLog;
 
 // Init  logger
-$logger = new FileLog(['debug_mode' => true]);
+$logger = new FileLog(['debug_mode' => true], 'remediation-engine-logger');
 // Init client
 $clientConfigs = [
     'machine_id_prefix' => 'remediationtest',

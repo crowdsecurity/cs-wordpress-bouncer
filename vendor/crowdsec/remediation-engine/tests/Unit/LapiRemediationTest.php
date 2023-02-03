@@ -23,7 +23,7 @@ use CrowdSec\RemediationEngine\CacheStorage\Redis;
 use CrowdSec\RemediationEngine\Constants;
 use CrowdSec\RemediationEngine\Constants as RemConstants;
 use CrowdSec\RemediationEngine\LapiRemediation;
-use CrowdSec\RemediationEngine\Logger\FileLog;
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\Tests\Constants as TestConstants;
 use CrowdSec\RemediationEngine\Tests\MockedData;
 use CrowdSec\RemediationEngine\Tests\PHPUnitUtil;
@@ -31,28 +31,28 @@ use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 
 /**
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::__construct
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::cleanCachedValues
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getAdapter
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getMaxExpiration
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\Memcached::__construct
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\Memcached::clear
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\Memcached::commit
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\Memcached::configure
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::__construct
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::configure
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\Redis::__construct
- * @uses   \CrowdSec\RemediationEngine\CacheStorage\Redis::configure
- * @uses   \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::addCommonNodes
- * @uses   \CrowdSec\RemediationEngine\Configuration\Cache\Memcached::getConfigTreeBuilder
- * @uses   \CrowdSec\RemediationEngine\Configuration\Cache\PhpFiles::getConfigTreeBuilder
- * @uses   \CrowdSec\RemediationEngine\Configuration\Cache\Redis::getConfigTreeBuilder
- * @uses   \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::validateCommon
- * @uses   \CrowdSec\RemediationEngine\Decision::getOrigin
- * @uses   \CrowdSec\RemediationEngine\Decision::toArray
- * @uses   \CrowdSec\RemediationEngine\Logger\FileLog::__construct
- * @uses   \CrowdSec\RemediationEngine\Configuration\Lapi::getConfigTreeBuilder
- * @uses   \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::addGeolocationNodes
+ *
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::__construct
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::cleanCachedValues
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getAdapter
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getMaxExpiration
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\Memcached::__construct
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\Memcached::clear
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\Memcached::commit
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\Memcached::configure
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::__construct
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::configure
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\Redis::__construct
+ * @uses \CrowdSec\RemediationEngine\CacheStorage\Redis::configure
+ * @uses \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::addCommonNodes
+ * @uses \CrowdSec\RemediationEngine\Configuration\Cache\Memcached::getConfigTreeBuilder
+ * @uses \CrowdSec\RemediationEngine\Configuration\Cache\PhpFiles::getConfigTreeBuilder
+ * @uses \CrowdSec\RemediationEngine\Configuration\Cache\Redis::getConfigTreeBuilder
+ * @uses \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::validateCommon
+ * @uses \CrowdSec\RemediationEngine\Decision::getOrigin
+ * @uses \CrowdSec\RemediationEngine\Decision::toArray
+ * @uses \CrowdSec\RemediationEngine\Configuration\Lapi::getConfigTreeBuilder
+ * @uses \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::addGeolocationNodes
  * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getIpCachedVariables
  * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getIpVariables
  * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::saveCacheItem
@@ -60,7 +60,6 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @uses \CrowdSec\RemediationEngine\Geolocation::__construct
  * @uses \CrowdSec\RemediationEngine\Geolocation::getMaxMindCountryResult
  * @uses \CrowdSec\RemediationEngine\Geolocation::handleCountryResultForIp
- * @uses \CrowdSec\RemediationEngine\Configuration\AbstractConfiguration::cleanConfigs
  *
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getCacheStorage
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::handleIpV6RangeDecisions
@@ -120,6 +119,7 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::getScopes
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::isWarm
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::warmUp
+ *
  */
 final class LapiRemediationTest extends AbstractRemediation
 {

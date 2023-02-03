@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CrowdSec\RemediationEngine;
 
+use CrowdSec\Common\Exception;
+
 /**
- * Exception interface for all exceptions thrown by CrowdSec Remediation engine.
+ * Exception class for all exceptions thrown by CrowdSec Remediation engine.
  *
  * @author    CrowdSec team
  *
@@ -14,6 +16,6 @@ namespace CrowdSec\RemediationEngine;
  * @copyright Copyright (c) 2022+ CrowdSec
  * @license   MIT License
  */
-class RemediationException extends \RuntimeException
+class RemediationException extends Exception
 {
 }

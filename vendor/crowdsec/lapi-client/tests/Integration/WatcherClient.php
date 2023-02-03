@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace CrowdSec\LapiClient\Tests\Integration;
 
-use CrowdSec\LapiClient\AbstractClient;
+use CrowdSec\Common\Client\AbstractClient;
 use CrowdSec\LapiClient\ClientException;
 use CrowdSec\LapiClient\Constants;
-use CrowdSec\LapiClient\HttpMessage\Request;
 
 class WatcherClient extends AbstractClient
 {
@@ -121,16 +120,15 @@ class WatcherClient extends AbstractClient
 
     protected function getFinalScope($scope, $value)
     {
-
         $scope = (Constants::SCOPE_IP === $scope && 2 === count(explode('/', $value))) ? Constants::SCOPE_RANGE :
             $scope;
         /**
          * Must use capital first letter as the crowdsec agent seems to query with first capital letter
-         * during getStreamDecisions
+         * during getStreamDecisions.
+         *
          * @see https://github.com/crowdsecurity/crowdsec/blob/ae6bf3949578a5f3aa8ec415e452f15b404ba5af/pkg/database/decisions.go#L56
          */
         return ucfirst($scope);
-
     }
 
     public function addDecision(

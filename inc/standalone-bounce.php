@@ -13,7 +13,7 @@ use CrowdSecBouncer\BouncerException;
 
 // If there is any technical problem while bouncing, don't block the user.
 try {
-    /** @var array $crowdSecJsonStandaloneConfig */
+    /** @var $crowdSecJsonStandaloneConfig */
     $crowdSecConfigs = json_decode($crowdSecJsonStandaloneConfig, true);
     $bouncer = new Bouncer($crowdSecConfigs);
     $bouncer->run();

@@ -17,7 +17,7 @@ namespace CrowdSec\RemediationEngine\Tests\Unit;
 
 use CrowdSec\RemediationEngine\CacheStorage\AbstractCache;
 use CrowdSec\RemediationEngine\Geolocation;
-use CrowdSec\RemediationEngine\Logger\FileLog;
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\RemediationException;
 use CrowdSec\RemediationEngine\Tests\Constants as TestConstants;
 use CrowdSec\RemediationEngine\Tests\PHPUnitUtil;
@@ -32,8 +32,6 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @uses \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::__construct
  * @uses \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::configure
  * @uses \CrowdSec\RemediationEngine\Configuration\Cache\PhpFiles::getConfigTreeBuilder
- * @uses \CrowdSec\RemediationEngine\Logger\FileLog::__construct
- * @uses \CrowdSec\RemediationEngine\Configuration\AbstractConfiguration::cleanConfigs
  *
  * @covers \CrowdSec\RemediationEngine\Geolocation::__construct()
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::saveCacheItem

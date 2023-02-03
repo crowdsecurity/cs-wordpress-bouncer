@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CrowdSecBouncer;
 
+use CrowdSec\Common\Client\RequestHandler\Curl;
+use CrowdSec\Common\Client\RequestHandler\FileGetContents;
 use CrowdSec\LapiClient\Bouncer as BouncerClient;
-use CrowdSec\LapiClient\RequestHandler\Curl;
-use CrowdSec\LapiClient\RequestHandler\FileGetContents;
 use CrowdSec\RemediationEngine\AbstractRemediation;
 use CrowdSec\RemediationEngine\CacheStorage\AbstractCache;
 use CrowdSec\RemediationEngine\CacheStorage\CacheStorageException;
@@ -94,10 +94,15 @@ abstract class AbstractBouncer
      * @return bool If the cache has been successfully cleared or not
      *
      *
+     * @throws BouncerException
      */
     public function clearCache(): bool
     {
-        return $this->getRemediationEngine()->clearCache();
+        try {
+            return $this->getRemediationEngine()->clearCache();
+        } catch (\Exception $e) {
+            throw new BouncerException('Error while clearing cache: ' . $e->getMessage(), (int)$e->getCode(), $e);
+        }
     }
 
     /**
@@ -162,7 +167,7 @@ abstract class AbstractBouncer
         try {
             return $this->capRemediationLevel($this->getRemediationEngine()->getIpRemediation($ip));
         } catch (\Exception $e) {
-            throw new BouncerException($e->getMessage(), $e->getCode(), $e);
+            throw new BouncerException($e->getMessage(), (int)$e->getCode(), $e);
         }
     }
 
@@ -180,12 +185,16 @@ abstract class AbstractBouncer
      * This method prune the cache: it removes all the expired cache items.
      *
      * @return bool If the cache has been successfully pruned or not
-     * @throws CacheStorageException
      *
+     * @throws BouncerException
      */
     public function pruneCache(): bool
     {
-        return $this->getRemediationEngine()->pruneCache();
+        try {
+            return $this->getRemediationEngine()->pruneCache();
+        } catch (\Exception $e) {
+            throw new BouncerException('Error while pruning cache: ' . $e->getMessage(), (int)$e->getCode(), $e);
+        }
     }
 
     /**
@@ -194,11 +203,15 @@ abstract class AbstractBouncer
      *
      * @return array Number of deleted and new decisions
      *
-     *
+     * @throws BouncerException
      */
     public function refreshBlocklistCache(): array
     {
-        return $this->getRemediationEngine()->refreshDecisions();
+        try {
+            return $this->getRemediationEngine()->refreshDecisions();
+        } catch (\Exception $e) {
+            throw new BouncerException('Error while refreshing decisions: ' . $e->getMessage(), (int)$e->getCode(), $e);
+        }
     }
 
     /**
@@ -227,7 +240,7 @@ abstract class AbstractBouncer
                 'line' => $e->getLine(),
             ]);
             if (true === $this->getConfig('display_errors')) {
-                throw new BouncerException($e->getMessage(), $e->getCode(), $e);
+                throw new BouncerException($e->getMessage(), (int)$e->getCode(), $e);
             }
         }
 
@@ -260,6 +273,27 @@ abstract class AbstractBouncer
         }
 
         return true;
+    }
+
+    /**
+     * Process a simple cache test
+     *
+     * @return void
+     * @throws BouncerException
+     * @throws InvalidArgumentException
+     */
+    public function testCacheConnection(): void
+    {
+        try {
+            $cache = $this->getRemediationEngine()->getCacheStorage();
+            $cache->getItem(AbstractCache::CONFIG);
+        } catch (\Exception $e) {
+            throw new BouncerException(
+                'Error while testing cache connection: ' . $e->getMessage(),
+                (int)$e->getCode(),
+                $e
+            );
+        }
     }
 
     /**

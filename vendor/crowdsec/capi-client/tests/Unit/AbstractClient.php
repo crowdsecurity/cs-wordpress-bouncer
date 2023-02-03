@@ -16,6 +16,8 @@ namespace CrowdSec\CapiClient\Tests\Unit;
  */
 
 use CrowdSec\CapiClient\Tests\Constants as TestConstants;
+use CrowdSec\Common\Client\RequestHandler\Curl;
+use CrowdSec\Common\Client\RequestHandler\FileGetContents;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractClient extends TestCase
@@ -32,7 +34,7 @@ abstract class AbstractClient extends TestCase
     {
         $methods = array_merge(['exec', 'getResponseHttpCode'], $methods);
 
-        return $this->getMockBuilder('CrowdSec\CapiClient\RequestHandler\Curl')
+        return $this->getMockBuilder(Curl::class)
             ->onlyMethods($methods)
             ->getMock();
     }
@@ -57,7 +59,7 @@ abstract class AbstractClient extends TestCase
 
     protected function getFGCMock()
     {
-        return $this->getMockBuilder('CrowdSec\CapiClient\RequestHandler\FileGetContents')
+        return $this->getMockBuilder(FileGetContents::class)
             ->onlyMethods(['exec'])
             ->getMock();
     }

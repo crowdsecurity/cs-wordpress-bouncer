@@ -40,7 +40,6 @@ use Symfony\Component\Config\Definition\Processor;
  * @covers \CrowdSec\RemediationEngine\Configuration\Cache\PhpFiles::getConfigTreeBuilder
  * @covers \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::getDefaultOrderedRemediations
  * @covers \CrowdSec\RemediationEngine\Configuration\Lapi::getConfigTreeBuilder
- * @covers \CrowdSec\RemediationEngine\Configuration\AbstractConfiguration::cleanConfigs
  */
 final class ConfigurationTest extends TestCase
 {

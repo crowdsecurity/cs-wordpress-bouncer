@@ -2,9 +2,9 @@
 
 require_once __DIR__ . '/../../../../vendor/autoload.php';
 
-use CrowdSec\CapiClient\RequestHandler\FileGetContents;
 use CrowdSec\CapiClient\Storage\FileStorage;
 use CrowdSec\CapiClient\Watcher;
+use CrowdSec\Common\Client\RequestHandler\FileGetContents;
 
 $scenarios = isset($argv[1]) ? json_decode($argv[1], true) : false;
 if (is_null($scenarios)) {

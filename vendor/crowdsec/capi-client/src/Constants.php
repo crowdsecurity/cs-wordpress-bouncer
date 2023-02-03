@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CrowdSec\CapiClient;
 
+use CrowdSec\Common\Constants as CommonConstants;
+
 /**
  * Main constants of the library.
  *
@@ -14,20 +16,16 @@ namespace CrowdSec\CapiClient;
  * @copyright Copyright (c) 2022+ CrowdSec
  * @license   MIT License
  */
-class Constants
+class Constants extends CommonConstants
 {
     /**
-     * @var int the default timeout (in seconds) when calling CAPI
+     * @var string The decisions stream endpoint
      */
-    public const API_TIMEOUT = 120;
+    public const DECISIONS_STREAM_ENDPOINT = '/decisions/stream';
     /**
-     * @var string The date format for CrowdSec data
+     * @var string The watchers enroll endpoint
      */
-    public const DATE_FORMAT = 'Y-m-d\TH:i:s.u\Z';
-    /**
-     * @var int The CrowdSec TTL for decisions (in seconds)
-     */
-    public const DURATION = 86400;
+    public const ENROLL_ENDPOINT = '/watchers/enroll';
     /**
      * @var string The development environment flag
      */
@@ -37,17 +35,37 @@ class Constants
      */
     public const ENV_PROD = 'prod';
     /**
-     * @var string The CrowdSec origin for decisions
+     * @var string The watchers login endpoint
      */
-    public const ORIGIN = 'crowdsec';
+    public const LOGIN_ENDPOINT = '/watchers/login';
     /**
-     * @var string The ban remediation
+     * @var int The number of login retry attempts in case of 401
      */
-    public const REMEDIATION_BAN = 'ban';
+    public const LOGIN_RETRY = 1;
     /**
-     * @var string The CrowdSec Ip scope for decisions
+     * @var int The machine_id length
      */
-    public const SCOPE_IP = 'ip';
+    public const MACHINE_ID_LENGTH = 48;
+    /**
+     * @var int The password length
+     */
+    public const PASSWORD_LENGTH = 32;
+    /**
+     * @var string The watchers register endpoint
+     */
+    public const REGISTER_ENDPOINT = '/watchers';
+    /**
+     * @var int The number of register retry attempts in case of 500
+     */
+    public const REGISTER_RETRY = 1;
+    /**
+     * @var string The signals push endpoint
+     */
+    public const SIGNALS_ENDPOINT = '/signals';
+    /**
+     * @var string The signal manual trust
+     */
+    public const TRUST_MANUAL = 'manual';
     /**
      * @var string The Development URL of the CrowdSec CAPI
      */
@@ -63,5 +81,5 @@ class Constants
     /**
      * @var string The current version of this library
      */
-    public const VERSION = 'v0.10.0';
+    public const VERSION = 'v2.0.0';
 }

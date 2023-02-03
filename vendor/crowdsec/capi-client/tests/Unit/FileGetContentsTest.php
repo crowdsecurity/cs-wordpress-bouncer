@@ -18,19 +18,17 @@ namespace CrowdSec\CapiClient\Tests\Unit;
  */
 
 use CrowdSec\CapiClient\ClientException;
-use CrowdSec\CapiClient\HttpMessage\Request;
-use CrowdSec\CapiClient\RequestHandler\FileGetContents;
+use CrowdSec\CapiClient\Constants;
 use CrowdSec\CapiClient\Storage\FileStorage;
 use CrowdSec\CapiClient\Tests\Constants as TestConstants;
 use CrowdSec\CapiClient\Tests\MockedData;
 use CrowdSec\CapiClient\Tests\PHPUnitUtil;
 use CrowdSec\CapiClient\Watcher;
+use CrowdSec\Common\Client\ClientException as CommonClientException;
+use CrowdSec\Common\Client\HttpMessage\Request;
+use CrowdSec\Common\Client\RequestHandler\FileGetContents;
 
 /**
- * @uses \CrowdSec\CapiClient\AbstractClient
- * @uses \CrowdSec\CapiClient\HttpMessage\Request
- * @uses \CrowdSec\CapiClient\HttpMessage\Response
- * @uses \CrowdSec\CapiClient\HttpMessage\AbstractMessage
  * @uses \CrowdSec\CapiClient\Configuration\Watcher::getConfigTreeBuilder
  * @uses \CrowdSec\CapiClient\Watcher::__construct
  * @uses \CrowdSec\CapiClient\Watcher::configure
@@ -45,12 +43,7 @@ use CrowdSec\CapiClient\Watcher;
  * @uses \CrowdSec\CapiClient\Watcher::refreshCredentials
  * @uses \CrowdSec\CapiClient\Watcher::areEquals
  * @uses \CrowdSec\CapiClient\Storage\FileStorage::__construct
- * @uses \CrowdSec\CapiClient\Configuration\AbstractConfiguration::cleanConfigs
  *
- * @covers \CrowdSec\CapiClient\RequestHandler\FileGetContents::handle
- * @covers \CrowdSec\CapiClient\RequestHandler\FileGetContents::createContextConfig
- * @covers \CrowdSec\CapiClient\RequestHandler\FileGetContents::convertHeadersToString
- * @covers \CrowdSec\CapiClient\RequestHandler\FileGetContents::getResponseHttpCode
  * @covers \CrowdSec\CapiClient\Watcher::login
  * @covers \CrowdSec\CapiClient\Watcher::handleTokenHeader
  * @covers \CrowdSec\CapiClient\Watcher::register
@@ -59,8 +52,6 @@ use CrowdSec\CapiClient\Watcher;
  * @covers \CrowdSec\CapiClient\Watcher::handleLogin
  * @covers \CrowdSec\CapiClient\Watcher::pushSignals
  * @covers \CrowdSec\CapiClient\Watcher::getStreamDecisions
- * @covers \CrowdSec\CapiClient\RequestHandler\AbstractRequestHandler::__construct
- * @covers \CrowdSec\CapiClient\RequestHandler\AbstractRequestHandler::getConfig
  */
 final class FileGetContentsTest extends AbstractClient
 {
@@ -95,6 +86,9 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
                 'content' => '{"machine_id":"test","password":"test"}',
                 'timeout' => TestConstants::API_TIMEOUT,
             ],
+            'ssl' => [
+                'verify_peer' => false,
+            ],
         ];
 
         $this->assertEquals(
@@ -125,6 +119,9 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
 ',
                 'ignore_errors' => true,
                 'timeout' => TestConstants::API_TIMEOUT,
+            ],
+            'ssl' => [
+                'verify_peer' => false,
             ],
         ];
 
@@ -249,7 +246,7 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
         $error = false;
         try {
             $mockFGCRequest->handle($request);
-        } catch (ClientException $e) {
+        } catch (CommonClientException $e) {
             $error = $e->getMessage();
         }
 
@@ -271,7 +268,7 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
         $code = 0;
         try {
             $mockFGCRequest->handle($request);
-        } catch (ClientException $e) {
+        } catch (CommonClientException $e) {
             $error = $e->getMessage();
             $code = $e->getCode();
         }
@@ -377,7 +374,7 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
     public function testRegister()
     {
         // All tests are based on register retry attempts value
-        $this->assertEquals(Watcher::REGISTER_RETRY, 1);
+        $this->assertEquals(Constants::REGISTER_RETRY, 1);
         $mockFileStorage = $this->getFileStorageMock();
         $mockFGCRequest = $this->getFGCMock();
         $mockFGCRequest->method('exec')->will(

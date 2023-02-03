@@ -7,7 +7,7 @@ use CrowdSec\RemediationEngine\CacheStorage\Memcached;
 use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
 use CrowdSec\RemediationEngine\LapiRemediation;
-use CrowdSec\RemediationEngine\Logger\FileLog;
+use CrowdSec\Common\Logger\FileLog;
 
 $bouncerKey = $argv[1] ?? false;
 $lapiUrl = $argv[2] ?? false;
@@ -19,7 +19,7 @@ if (!$bouncerKey || !$lapiUrl) {
 }
 
 // Init  logger
-$logger = new FileLog(['debug_mode' => true]);
+$logger = new FileLog(['debug_mode' => true], 'remediation-engine-logger');
 // Init client
 $clientConfigs = [
     'auth_type' => 'api_key',
@@ -42,7 +42,7 @@ $cacheRedisConfigs = [
     'redis_dsn' => 'redis://redis:6379',
 ];
 $redisCache = new Redis($cacheRedisConfigs, $logger);
-// Init CAPI remediation
+// Init LAPI remediation
 $remediationConfigs = [];
 $remediationEngine = new LapiRemediation($remediationConfigs, $lapiClient, $phpFileCache, $logger);
 // Retrieve fresh decisions from LAPI and update the cache

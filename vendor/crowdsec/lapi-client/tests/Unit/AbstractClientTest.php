@@ -15,28 +15,19 @@ namespace CrowdSec\LapiClient\Tests\Unit;
  * @license   MIT License
  */
 
+use CrowdSec\Common\Client\ClientException;
+use CrowdSec\Common\Client\HttpMessage\Response;
 use CrowdSec\LapiClient\Bouncer;
-use CrowdSec\LapiClient\ClientException;
 use CrowdSec\LapiClient\Constants;
-use CrowdSec\LapiClient\HttpMessage\Response;
 use CrowdSec\LapiClient\Tests\MockedData;
 use CrowdSec\LapiClient\Tests\PHPUnitUtil;
 
 /**
- * @uses \CrowdSec\LapiClient\HttpMessage\Response
  * @uses \CrowdSec\LapiClient\Configuration::getConfigTreeBuilder
  * @uses \CrowdSec\LapiClient\Bouncer::formatUserAgent
  * @uses \CrowdSec\LapiClient\Configuration::addConnectionNodes
  * @uses \CrowdSec\LapiClient\Configuration::validate
- * @uses \CrowdSec\LapiClient\RequestHandler\AbstractRequestHandler::__construct
- * @uses \CrowdSec\LapiClient\Configuration::cleanConfigs
  *
- * @covers \CrowdSec\LapiClient\AbstractClient::__construct
- * @covers \CrowdSec\LapiClient\AbstractClient::getConfig
- * @covers \CrowdSec\LapiClient\AbstractClient::getUrl
- * @covers \CrowdSec\LapiClient\AbstractClient::getRequestHandler
- * @covers \CrowdSec\LapiClient\AbstractClient::formatResponseBody
- * @covers \CrowdSec\LapiClient\AbstractClient::getFullUrl
  * @covers \CrowdSec\LapiClient\Bouncer::__construct
  * @covers \CrowdSec\LapiClient\Bouncer::configure
  */
@@ -60,7 +51,7 @@ final class AbstractClientTest extends AbstractClient
 
         $requestHandler = $client->getRequestHandler();
         $this->assertEquals(
-            'CrowdSec\LapiClient\RequestHandler\Curl',
+            'CrowdSec\Common\Client\RequestHandler\Curl',
             get_class($requestHandler),
             'Request handler must be curl by default'
         );
@@ -87,7 +78,7 @@ final class AbstractClientTest extends AbstractClient
 
         PHPUnitUtil::assertRegExp(
             $this,
-            '/must .*RequestHandlerInterface/',
+            '/must .*RequestHandler/',
             $error,
             'Bad request handler should throw an error'
         );

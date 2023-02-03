@@ -308,7 +308,7 @@ abstract class AbstractRemediation
             $duration = min((int) $this->getConfig('bad_ip_cache_duration'), $duration);
         }
 
-        return time() + (int) $duration;
+        return time() + $duration;
     }
 
     private function handleDecisionIdentifier(

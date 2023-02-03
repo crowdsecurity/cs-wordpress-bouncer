@@ -17,18 +17,15 @@ namespace CrowdSec\CapiClient\Tests\Unit;
 
 use CrowdSec\CapiClient\ClientException;
 use CrowdSec\CapiClient\Constants;
-use CrowdSec\CapiClient\HttpMessage\Request;
 use CrowdSec\CapiClient\Storage\FileStorage;
 use CrowdSec\CapiClient\Tests\Constants as TestConstants;
 use CrowdSec\CapiClient\Tests\MockedData;
 use CrowdSec\CapiClient\Tests\PHPUnitUtil;
 use CrowdSec\CapiClient\Watcher;
+use CrowdSec\Common\Client\HttpMessage\Request;
+use CrowdSec\Common\Client\RequestHandler\Curl;
 
 /**
- * @uses \CrowdSec\CapiClient\AbstractClient
- * @uses \CrowdSec\CapiClient\HttpMessage\Request
- * @uses \CrowdSec\CapiClient\HttpMessage\Response
- * @uses \CrowdSec\CapiClient\HttpMessage\AbstractMessage
  * @uses \CrowdSec\CapiClient\Configuration\Watcher::getConfigTreeBuilder
  * @uses \CrowdSec\CapiClient\Watcher::__construct
  * @uses \CrowdSec\CapiClient\Watcher::configure
@@ -42,10 +39,7 @@ use CrowdSec\CapiClient\Watcher;
  * @uses \CrowdSec\CapiClient\Watcher::refreshCredentials
  * @uses \CrowdSec\CapiClient\Watcher::areEquals
  * @uses \CrowdSec\CapiClient\Storage\FileStorage::__construct
- * @uses \CrowdSec\CapiClient\Configuration\AbstractConfiguration::cleanConfigs
  *
- * @covers \CrowdSec\CapiClient\RequestHandler\Curl::createOptions
- * @covers \CrowdSec\CapiClient\RequestHandler\Curl::handle
  * @covers \CrowdSec\CapiClient\Watcher::login
  * @covers \CrowdSec\CapiClient\Watcher::handleTokenHeader
  * @covers \CrowdSec\CapiClient\Watcher::getStreamDecisions
@@ -55,9 +49,6 @@ use CrowdSec\CapiClient\Watcher;
  * @covers \CrowdSec\CapiClient\Watcher::handleLogin
  * @covers \CrowdSec\CapiClient\Watcher::pushSignals
  * @covers \CrowdSec\CapiClient\Watcher::manageRequest
- * @covers \CrowdSec\CapiClient\RequestHandler\Curl::handleConfigs
- * @covers \CrowdSec\CapiClient\RequestHandler\AbstractRequestHandler::__construct
- * @covers \CrowdSec\CapiClient\RequestHandler\AbstractRequestHandler::getConfig
  */
 final class CurlTest extends AbstractClient
 {
@@ -91,68 +82,6 @@ final class CurlTest extends AbstractClient
             json_decode(MockedData::DECISIONS_STREAM_LIST, true),
             $decisionsResponse,
             'Success get decisions stream'
-        );
-    }
-
-    public function testHandleError()
-    {
-        $mockCurlRequest = $this->getCurlMock();
-
-        $request = new Request('test-uri', 'POST', ['User-Agent' => null]);
-        $error = '';
-        $code = 0;
-        try {
-            $mockCurlRequest->handle($request);
-        } catch (ClientException $e) {
-            $error = $e->getMessage();
-            $code = $e->getCode();
-        }
-
-        $this->assertEquals(400, $code);
-
-        $this->assertEquals(
-            'User agent is required',
-            $error,
-            'Should failed and throw if no user agent'
-        );
-
-        $mockCurlRequest->method('exec')->will(
-            $this->onConsecutiveCalls(
-                false
-            )
-        );
-
-        $request = new Request('test-uri', 'POST', ['User-Agent' => TestConstants::USER_AGENT_SUFFIX]);
-
-        $code = 0;
-        try {
-            $mockCurlRequest->handle($request);
-        } catch (ClientException $e) {
-            $error = $e->getMessage();
-            $code = $e->getCode();
-        }
-
-        $this->assertEquals(500, $code);
-
-        $this->assertEquals(
-            'Unexpected CURL call failure: ',
-            $error,
-            'Should failed and throw if no response'
-        );
-
-        $mockCurlRequest->method('getResponseHttpCode')->willReturn(0);
-
-        $error = false;
-        try {
-            $mockCurlRequest->handle($request);
-        } catch (ClientException $e) {
-            $error = $e->getMessage();
-        }
-
-        $this->assertEquals(
-            'Unexpected empty response http code',
-            $error,
-            'Should failed and throw if no response status'
         );
     }
 
@@ -218,83 +147,6 @@ final class CurlTest extends AbstractClient
             '/' . MockedData::HTTP_400 . '.*Invalid request body/',
             $error,
             'Bad request login case'
-        );
-    }
-
-    public function testOptions()
-    {
-        $url = Constants::URL_DEV . 'watchers';
-        $method = 'POST';
-        $parameters = ['machine_id' => 'test', 'password' => 'test'];
-        $configs = ['scenarios' => TestConstants::SCENARIOS, 'api_timeout' => TestConstants::API_TIMEOUT];
-
-        $client = new Watcher($configs, new FileStorage());
-        $curlRequester = $client->getRequestHandler();
-        $request = new Request($url, $method, ['User-Agent' => TestConstants::USER_AGENT_SUFFIX], $parameters);
-
-        $curlOptions = PHPUnitUtil::callMethod(
-            $curlRequester,
-            'createOptions',
-            [$request]
-        );
-        $expected = [
-            \CURLOPT_HEADER => false,
-            \CURLOPT_RETURNTRANSFER => true,
-            \CURLOPT_USERAGENT => TestConstants::USER_AGENT_SUFFIX,
-            \CURLOPT_HTTPHEADER => [
-                'Accept:application/json',
-                'Content-Type:application/json',
-                'User-Agent:' . TestConstants::USER_AGENT_SUFFIX,
-            ],
-            \CURLOPT_POST => true,
-            \CURLOPT_POSTFIELDS => '{"machine_id":"test","password":"test"}',
-            \CURLOPT_URL => $url,
-            \CURLOPT_CUSTOMREQUEST => $method,
-            \CURLOPT_TIMEOUT => TestConstants::API_TIMEOUT,
-            \CURLOPT_ENCODING => ''
-        ];
-
-        $this->assertEquals(
-            $expected,
-            $curlOptions,
-            'Curl options must be as expected for POST'
-        );
-
-        $url = Constants::URL_DEV . 'decisions/stream';
-        $method = 'GET';
-        $parameters = ['foo' => 'bar', 'crowd' => 'sec'];
-        $client = new Watcher($configs, new FileStorage());
-        $curlRequester = $client->getRequestHandler();
-
-        $request = new Request($url, $method, ['User-Agent' => TestConstants::USER_AGENT_SUFFIX], $parameters);
-
-        $curlOptions = PHPUnitUtil::callMethod(
-            $curlRequester,
-            'createOptions',
-            [$request]
-        );
-
-        $expected = [
-            \CURLOPT_HEADER => false,
-            \CURLOPT_RETURNTRANSFER => true,
-            \CURLOPT_USERAGENT => TestConstants::USER_AGENT_SUFFIX,
-            \CURLOPT_HTTPHEADER => [
-                'Accept:application/json',
-                'Content-Type:application/json',
-                'User-Agent:' . TestConstants::USER_AGENT_SUFFIX,
-            ],
-            \CURLOPT_POST => false,
-            \CURLOPT_HTTPGET => true,
-            \CURLOPT_URL => $url . '?foo=bar&crowd=sec',
-            \CURLOPT_CUSTOMREQUEST => $method,
-            \CURLOPT_TIMEOUT => TestConstants::API_TIMEOUT,
-            \CURLOPT_ENCODING => ''
-        ];
-
-        $this->assertEquals(
-            $expected,
-            $curlOptions,
-            'Curl options must be as expected for GET'
         );
     }
 
@@ -369,7 +221,7 @@ final class CurlTest extends AbstractClient
     public function testRegister()
     {
         // All tests are based on register retry attempts value
-        $this->assertEquals(Watcher::REGISTER_RETRY, 1);
+        $this->assertEquals(Constants::REGISTER_RETRY, 1);
         // 500 (successive attempts)
         $mockCurlRequest = $this->getCurlMock();
         $mockFileStorage = $this->getFileStorageMock();
@@ -667,7 +519,7 @@ final class CurlTest extends AbstractClient
 
         PHPUnitUtil::assertRegExp(
             $this,
-            '/Could not login after ' . (Watcher::LOGIN_RETRY + 1) . ' attempts/',
+            '/Could not login after ' . (Constants::LOGIN_RETRY + 1) . ' attempts/',
             $error,
             'Should throw error after multiple attempts'
         );

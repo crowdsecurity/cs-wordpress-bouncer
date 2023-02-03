@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CrowdSec\LapiClient;
 
+use CrowdSec\Common\Configuration\AbstractConfiguration;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
-use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * The LAPI client configuration.
@@ -19,7 +19,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  * @copyright Copyright (c) 2022+ CrowdSec
  * @license   MIT License
  */
-class Configuration implements ConfigurationInterface
+class Configuration extends AbstractConfiguration
 {
     /** @var array<string> The list of each configuration tree key */
     protected $keys = [
@@ -32,18 +32,8 @@ class Configuration implements ConfigurationInterface
         'tls_key_path',
         'tls_ca_cert_path',
         'tls_verify_peer',
-        'api_timeout'
+        'api_timeout',
     ];
-
-    /**
-     * Keep only necessary configs
-     * @param array $configs
-     * @return array
-     */
-    public function cleanConfigs(array $configs): array
-    {
-        return array_intersect_key($configs, array_flip($this->keys));
-    }
 
     /**
      * @throws \InvalidArgumentException

@@ -55,4 +55,9 @@ class Constants
      * @var string The timeout for CAPI request
      */
     public const API_TIMEOUT = 20;
+
+    /**
+     * @var string An IP for test
+     */
+    public const IP = '1.2.3.4';
 }

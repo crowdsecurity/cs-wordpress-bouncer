@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CrowdSecBouncer;
 
+use CrowdSec\Common\Configuration\AbstractConfiguration;
 use InvalidArgumentException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
-use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * The Library configuration. You'll find here all configuration possible. Used when instantiating the library.
@@ -20,7 +20,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  * @copyright Copyright (c) 2020+ CrowdSec
  * @license   MIT License
  */
-class Configuration implements ConfigurationInterface
+class Configuration extends AbstractConfiguration
 {
     /**
      * @var string[]
@@ -45,16 +45,6 @@ class Configuration implements ConfigurationInterface
     ];
 
     /**
-     * Keep only necessary configs
-     * @param array $configs
-     * @return array
-     */
-    public function cleanConfigs(array $configs): array
-    {
-        return array_intersect_key($configs, array_flip($this->keys));
-    }
-
-    /**
      * {@inheritdoc}
      * @throws InvalidArgumentException
      */
@@ -70,59 +60,6 @@ class Configuration implements ConfigurationInterface
         $this->addTemplateNodes($rootNode);
 
         return $treeBuilder;
-    }
-
-    private function addTemplateNodes($rootNode)
-    {
-        $defaultSubtitle = 'This page is protected against cyber attacks and your IP has been banned by our system.';
-        $rootNode->children()
-            ->arrayNode('color')->addDefaultsIfNotSet()
-                ->children()
-                    ->arrayNode('text')->addDefaultsIfNotSet()
-                        ->children()
-                            ->scalarNode('primary')->defaultValue('black')->end()
-                            ->scalarNode('secondary')->defaultValue('#AAA')->end()
-                            ->scalarNode('button')->defaultValue('white')->end()
-                            ->scalarNode('error_message')->defaultValue('#b90000')->end()
-                        ->end()
-                    ->end()
-                    ->arrayNode('background')->addDefaultsIfNotSet()
-                        ->children()
-                            ->scalarNode('page')->defaultValue('#eee')->end()
-                            ->scalarNode('container')->defaultValue('white')->end()
-                            ->scalarNode('button')->defaultValue('#626365')->end()
-                            ->scalarNode('button_hover')->defaultValue('#333')->end()
-                        ->end()
-                    ->end()
-                ->end()
-            ->end()
-            ->arrayNode('text')->addDefaultsIfNotSet()
-                ->children()
-                    ->arrayNode('captcha_wall')->addDefaultsIfNotSet()
-                        ->children()
-                            ->scalarNode('tab_title')->defaultValue('Oops..')->end()
-                            ->scalarNode('title')->defaultValue('Hmm, sorry but...')->end()
-                            ->scalarNode('subtitle')->defaultValue('Please complete the security check.')->end()
-                            ->scalarNode('refresh_image_link')->defaultValue('refresh image')->end()
-                            ->scalarNode('captcha_placeholder')->defaultValue('Type here...')->end()
-                            ->scalarNode('send_button')->defaultValue('CONTINUE')->end()
-                            ->scalarNode('error_message')->defaultValue('Please try again.')->end()
-                            ->scalarNode('footer')->defaultValue('')->end()
-                        ->end()
-                    ->end()
-                    ->arrayNode('ban_wall')->addDefaultsIfNotSet()
-                        ->children()
-                            ->scalarNode('tab_title')->defaultValue('Oops..')->end()
-                            ->scalarNode('title')->defaultValue('🤭 Oh!')->end()
-                            ->scalarNode('subtitle')->defaultValue($defaultSubtitle)->end()
-                            ->scalarNode('footer')->defaultValue('')->end()
-                        ->end()
-                    ->end()
-                ->end()
-            ->end()
-            ->booleanNode('hide_mentions')->defaultValue(false)->end()
-            ->scalarNode('custom_css')->defaultValue('')->end()
-        ->end();
     }
 
     /**
@@ -211,5 +148,58 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('log_directory_path')->end()
             ->booleanNode('display_errors')->defaultValue(false)->end()
             ->end();
+    }
+
+    private function addTemplateNodes($rootNode)
+    {
+        $defaultSubtitle = 'This page is protected against cyber attacks and your IP has been banned by our system.';
+        $rootNode->children()
+            ->arrayNode('color')->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('text')->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('primary')->defaultValue('black')->end()
+                            ->scalarNode('secondary')->defaultValue('#AAA')->end()
+                            ->scalarNode('button')->defaultValue('white')->end()
+                            ->scalarNode('error_message')->defaultValue('#b90000')->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('background')->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('page')->defaultValue('#eee')->end()
+                            ->scalarNode('container')->defaultValue('white')->end()
+                            ->scalarNode('button')->defaultValue('#626365')->end()
+                            ->scalarNode('button_hover')->defaultValue('#333')->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+            ->arrayNode('text')->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('captcha_wall')->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('tab_title')->defaultValue('Oops..')->end()
+                            ->scalarNode('title')->defaultValue('Hmm, sorry but...')->end()
+                            ->scalarNode('subtitle')->defaultValue('Please complete the security check.')->end()
+                            ->scalarNode('refresh_image_link')->defaultValue('refresh image')->end()
+                            ->scalarNode('captcha_placeholder')->defaultValue('Type here...')->end()
+                            ->scalarNode('send_button')->defaultValue('CONTINUE')->end()
+                            ->scalarNode('error_message')->defaultValue('Please try again.')->end()
+                            ->scalarNode('footer')->defaultValue('')->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('ban_wall')->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('tab_title')->defaultValue('Oops..')->end()
+                            ->scalarNode('title')->defaultValue('🤭 Oh!')->end()
+                            ->scalarNode('subtitle')->defaultValue($defaultSubtitle)->end()
+                            ->scalarNode('footer')->defaultValue('')->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+            ->booleanNode('hide_mentions')->defaultValue(false)->end()
+            ->scalarNode('custom_css')->defaultValue('')->end()
+        ->end();
     }
 }

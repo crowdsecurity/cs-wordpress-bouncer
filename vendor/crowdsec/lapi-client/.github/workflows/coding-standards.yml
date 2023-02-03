@@ -64,7 +64,7 @@ jobs:
           ddev --version
           ddev exec php -v
 
-      - name: Clone PHP lib Crowdsec files
+      - name: Clone sources
         uses: actions/checkout@v3
         with:
           path: ${{env.EXTENSION_PATH}}
@@ -73,7 +73,7 @@ jobs:
         run: | 
           ddev composer validate --strict --working-dir ./${{env.EXTENSION_PATH}}
 
-      - name: Install CrowdSec lib dependencies and Coding standards tools
+      - name: Install dependencies and Coding standards tools
         run: |
           ddev composer update --working-dir ./${{env.EXTENSION_PATH}}
           ddev composer update --working-dir ./${{env.EXTENSION_PATH}}/tools/coding-standards

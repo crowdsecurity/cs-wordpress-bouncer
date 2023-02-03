@@ -17,26 +17,18 @@ namespace CrowdSec\CapiClient\Tests\Unit;
 
 use CrowdSec\CapiClient\ClientException;
 use CrowdSec\CapiClient\Constants;
-use CrowdSec\CapiClient\HttpMessage\Response;
 use CrowdSec\CapiClient\Storage\FileStorage;
 use CrowdSec\CapiClient\Tests\MockedData;
 use CrowdSec\CapiClient\Tests\PHPUnitUtil;
 use CrowdSec\CapiClient\Watcher;
+use CrowdSec\Common\Client\ClientException as CommonClientException;
+use CrowdSec\Common\Client\HttpMessage\Response;
 
 /**
- * @uses \CrowdSec\CapiClient\HttpMessage\Response
  * @uses \CrowdSec\CapiClient\Configuration\Watcher::getConfigTreeBuilder
  * @uses \CrowdSec\CapiClient\Watcher::formatUserAgent
  * @uses \CrowdSec\CapiClient\Storage\FileStorage::__construct
- * @uses \CrowdSec\CapiClient\RequestHandler\AbstractRequestHandler::__construct
- * @uses \CrowdSec\CapiClient\Configuration\AbstractConfiguration::cleanConfigs
  *
- * @covers \CrowdSec\CapiClient\AbstractClient::__construct
- * @covers \CrowdSec\CapiClient\AbstractClient::getConfig
- * @covers \CrowdSec\CapiClient\AbstractClient::getUrl
- * @covers \CrowdSec\CapiClient\AbstractClient::getRequestHandler
- * @covers \CrowdSec\CapiClient\AbstractClient::formatResponseBody
- * @covers \CrowdSec\CapiClient\AbstractClient::getFullUrl
  * @covers \CrowdSec\CapiClient\Watcher::__construct
  * @covers \CrowdSec\CapiClient\Watcher::configure
  */
@@ -60,7 +52,7 @@ final class AbstractClientTest extends AbstractClient
 
         $requestHandler = $client->getRequestHandler();
         $this->assertEquals(
-            'CrowdSec\CapiClient\RequestHandler\Curl',
+            'CrowdSec\Common\Client\RequestHandler\Curl',
             get_class($requestHandler),
             'Request handler must be curl by default'
         );
@@ -87,7 +79,7 @@ final class AbstractClientTest extends AbstractClient
 
         PHPUnitUtil::assertRegExp(
             $this,
-            '/must .*RequestHandlerInterface/',
+            '/must .*RequestHandler/',
             $error,
             'Bad request handler should throw an error'
         );
@@ -134,7 +126,7 @@ final class AbstractClientTest extends AbstractClient
                 'formatResponseBody',
                 [$response]
             );
-        } catch (ClientException $e) {
+        } catch (CommonClientException $e) {
             $error = $e->getMessage();
         }
 
@@ -168,7 +160,7 @@ final class AbstractClientTest extends AbstractClient
                 'formatResponseBody',
                 [$response]
             );
-        } catch (ClientException $e) {
+        } catch (CommonClientException $e) {
             $error = $e->getMessage();
         }
 
@@ -214,7 +206,7 @@ final class AbstractClientTest extends AbstractClient
                 'formatResponseBody',
                 [$response]
             );
-        } catch (ClientException $e) {
+        } catch (CommonClientException $e) {
             $error = $e->getMessage();
         }
 
