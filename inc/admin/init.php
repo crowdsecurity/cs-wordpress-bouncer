@@ -46,7 +46,7 @@ if (is_admin()) {
             if (get_option('crowdsec_stream_mode')) {
                 $refresh = $bouncer->refreshBlocklistCache();
                 $result = $refresh['new']??0;
-                $message .= __(' As the stream mode is enabled, the cache has just been refreshed, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+                $message .= __(' As the stream mode is enabled, the cache has just been refreshed, '.($result > 1 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
             }
 
             AdminNotice::displaySuccess($message);

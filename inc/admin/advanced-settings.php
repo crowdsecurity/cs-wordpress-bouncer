@@ -24,7 +24,7 @@ function adminAdvancedSettings()
         $bouncer->clearCache();
         $refresh = $bouncer->refreshBlocklistCache();
         $result = $refresh['new']??0;
-        $message = __('As the stream mode is enabled, the cache has just been refreshed, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+        $message = __('As the stream mode is enabled, the cache has just been refreshed, '.($result > 1 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
         AdminNotice::displaySuccess($message);
         scheduleBlocklistRefresh();
     }, function () {
@@ -55,8 +55,10 @@ function adminAdvancedSettings()
             $bouncer->clearCache();
             $refresh = $bouncer->refreshBlocklistCache();
             $result = $refresh['new']??0;
-            $message = __('As the stream mode refresh duration changed, the cache has just been refreshed, '.($result >
-                                                                                                            0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+            $message = __('As the stream mode refresh duration changed, the cache has just been refreshed, ' .
+                          ($result > 1 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision')
+                          . ' in cache.'
+            );
             AdminNotice::displaySuccess($message);
             scheduleBlocklistRefresh();
         }
@@ -166,9 +168,10 @@ function adminAdvancedSettings()
         try {
             if (get_option('crowdsec_stream_mode') && !$error) {
                 // system
+                $bouncer->clearCache();
                 $result = $bouncer->refreshBlocklistCache();
                 $count = $result['new'];
-                $message .= __('As the stream mode is enabled, the cache has just been refreshed, '.($count > 0 ? 'there are now '.$count.' decisions' : 'there is now '.$count.' decision').' in cache.');
+                $message .= __('As the stream mode is enabled, the cache has just been refreshed, '.($count > 1 ? 'there are now '.$count.' decisions' : 'there is now '.$count.' decision').' in cache.');
                 AdminNotice::displaySuccess($message);
                 scheduleBlocklistRefresh();
             }
@@ -281,7 +284,7 @@ function adminAdvancedSettings()
             }
             $comparableIpBoundsList = convertInlineIpRangesToComparableIpBounds($input);
             update_option('crowdsec_trust_ip_forward_array', $comparableIpBoundsList);
-            AdminNotice::displaySuccess('Ips with XFF to trust successfully saved.');
+            AdminNotice::displaySuccess('IPs with X-Forwarded-For to trust successfully saved.');
         } catch (BouncerException $e) {
             update_option('crowdsec_trust_ip_forward_array', []);
             add_settings_error('Trust these CDN IPs', 'crowdsec_error', 'Trust these CDN IPs: Invalid IP List format.');
@@ -363,11 +366,11 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_debug_mode"
     addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>Should not be used in production.<br>When this mode is enabled, a debug.log file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.</p>');
+    <p>Should not be used in production.<br>When this mode is enabled, a <i>debug.log</i> file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.</p>');
 
     // Field "crowdsec_disable_prod_log"
     addFieldCheckbox('crowdsec_disable_prod_log', 'Disable prod log', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>By default, a prod.log file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.<br>You can disable this log here.</p>');
+    <p>By default, a <i>prod.log</i> file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.<br>You can disable this log here.</p>');
 
 	/*******************************
 	 ** Section "Display errors" **
@@ -379,7 +382,7 @@ function adminAdvancedSettings()
 
 	// Field "crowdsec_display_errors"
 	addFieldCheckbox('crowdsec_display_errors', 'Enable errors display', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_display_errors', function () {}, function () {}, '
-    <p>Do not use in production. When this mode is enabled, you will see every unexpected bouncing errors in the browser.</p>');
+    <p><strong>Do not use in production.</strong> When this mode is enabled, you will see every unexpected bouncing errors in the browser.</p>');
 
     /*******************************
      ** Section "Test mode" **
