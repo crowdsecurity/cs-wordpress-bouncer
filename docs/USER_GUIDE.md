@@ -266,6 +266,22 @@ we store in cache some values in order to know if he has to resolve or not the c
 
 Minimum 1 second. Default: 86400 seconds.
 
+------
+
+`Caching configuration → Redis DSN (if applicable)`
+
+Fill in this field only if you have chosen the Redis cache.
+
+Example of DSN: redis://localhost:6379.
+
+------
+
+`Caching configuration → Memcached DSN (if applicable)`
+
+Fill in this field only if you have chosen the Memcached cache.
+
+Example of DSN: memcached://localhost:11211.
+
 ***
 
 ![Remediations](images/screenshots/config-remediations.jpg)
@@ -377,6 +393,86 @@ This Ip will be used instead of the current detected browser IP.
 This Ip will be used instead of the current X-Forwarded-For Ip if any.
 
 **Must be empty in production.**
+
+
+
+#### Settings update with WP-CLI tool
+
+Here are some examples of how to set options with the `WP-CLI` tool.
+
+ **:warning:** : Some actions are triggered by a manual modification of the settings in the admin interface. Setting flagged with **:warning:** triggers some action. For example, changing the cache system triggers a cache flush of the old cache system. Modifying those values with `WP-CLI` will not trigger these actions. 
+
+
+
+| Settings                                                     | Examples                                                     |
+| :----------------------------------------------------------- | ------------------------------------------------------------ |
+| **General settings** → *Connection details*                  |                                                              |
+| `Local API URL`                                              | `wp option set crowdsec_api_url https://crowdsec:8080`       |
+| `Authentication type`                                        | - `wp option set crowdsec_auth_type api_key`<br />- `wp option set crowdsec_auth_type tls` |
+| `Bouncer API key`                                            | `wp option set crowdsec_api_key ab483bd8fa665d66c494c0c36e2fd7a0` |
+| `Path to the bouncer certificate`                            | `wp option set crowdsec_tls_cert_path bouncer.pem`           |
+| `Path to the bouncer key`                                    | `wp option set crowdsec_tls_key_path bouncer-key.pem`        |
+| `Verify peer`                                                | - `wp option set crowdsec_tls_verify_peer on`<br />- <code>echo -n "" \| wp option set crowdsec_tls_verify_peer</code> |
+| `Path to the CA certificate used to process peer verification` | `wp option set crowdsec_tls_ca_cert_path ca-chain.pem`       |
+| `Use cURL to call Local API`                                 | - <code>wp option set crowdsec_use_curl on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_use_curl</code> |
+| `Local API request timeout`                                  | - `wp option set crowdsec_api_timeout 120`<br />- `wp option set crowdsec_api_timeout -1` |
+| **General settings** → *Bouncing*                            |                                                              |
+| `Bouncing level`                                             | - `wp option set crowdsec_bouncing_level normal_bouncing`<br />- `wp option set crowdsec_bouncing_level flex_bouncing`<br />- `wp option set crowdsec_bouncing_level bouncing_disabled` |
+| `Public website only`                                        | - `wp option set crowdsec_public_website_only on`<br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_public_website_only</code> |
+| **Theme customization** → *Adapt the wording of the Captcha Wall* |                                                              |
+| `Browser tab text`                                           | `wp option set crowdsec_theme_text_captcha_wall_tab_title "Oops.."` |
+| `Title text`                                                 | <code>echo -n "Hmm, sorry but..." \| wp option set crowdsec_theme_text_captcha_wall_title</code> |
+| `Subtitle text`                                              | <code>echo -n &quot;Please complete the security check.&quot; \| wp option set crowdsec_theme_text_captcha_wall_subtitle</code> |
+| `Refresh image text`                                         | <code>echo -n &quot;refresh image&quot; \| wp option set crowdsec_theme_text_captcha_wall_refresh_image_link</code> |
+| `Input placeholder`                                          | <code>echo -n &quot;Type here...&quot; \| wp option set crowdsec_theme_text_captcha_wall_captcha_placeholder</code> |
+| `Send button text`                                           | `wp option set crowdsec_theme_text_captcha_wall_send_button CONTINUE  ` |
+| `Error message`                                              | <code>echo -n &quot;Please try again.&quot; \| wp option set crowdsec_theme_text_captcha_wall_error_message</code> |
+| `Footer custom message`                                      | <code>echo -n &quot;Thanks&quot; \| wp option set crowdsec_theme_text_captcha_wall_footer</code> |
+| **Theme customization** → *Adapt the wording of the Ban Wall* |                                                              |
+| `Browser tab text`                                           | ` <code>wp option set crowdsec_theme_text_ban_wall_tab_title &quot;Oops..&quot;</code> |
+| `Title text`                                                 | <code>echo -n &quot;🤭 Oh!&quot; \| wp option set crowdsec_theme_text_ban_wall_title</code> |
+| `Subtitle text`                                              | <code>echo -n &quot;This page is protected against cyber attack.&quot; \| wp option set crowdsec_theme_text_ban_wall_subtitle</code> |
+| `Footer custom message`                                      | ` <code>echo -n &quot;Thanks&quot; \| wp option set crowdsec_theme_text_ban_wall_footer</code> |
+| **Theme customization** → *Use your own colors*              |                                                              |
+| `Primary text color`                                         | `wp option set crowdsec_theme_color_text_primary black `     |
+| `Secondary text color`                                       | `wp option set crowdsec_theme_color_text_secondary #AAA `    |
+| `Button text color`                                          | `wp option set crowdsec_theme_color_text_button white `      |
+| `Error message text color`                                   | `wp option set crowdsec_theme_color_text_error_message #b90000  ` |
+| `Page background color`                                      | `wp option set crowdsec_theme_color_background_page #eee `   |
+| `Container background color`                                 | `wp option set crowdsec_theme_color_background_container white ` |
+| `Button background color`                                    | `wp option set crowdsec_theme_color_background_button #626365  ` |
+| `Button background color (hover)`                            | `wp option set crowdsec_theme_color_background_button_hover #333  ` |
+| **Theme customization** → *Use your own css code*            |                                                              |
+| Custom CSS code`                                             | `echo -n "body {background: rgb(2,0,36);}" | wp option set crowdsec_theme_custom_css ` |
+| **Advanced settings** → *Communication mode to the API*      |                                                              |
+| `Enable the "Stream mode"`**:warning:**                      | - <code>wp option set crowdsec_stream_mode on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_stream_mode</code> |
+| `Resync decisions each (stream mode only)`**:warning:**      | `wp option set crowdsec_stream_mode_refresh_frequency 120`   |
+| **Advanced settings** → *Cache configuration*                |                                                              |
+| `Technology`:warning:                                        | - <code>wp option set crowdsec_cache_system phpfs</code><br />- <code>wp option set crowdsec_cache_system redis</code><br />- <code>wp option set crowdsec_cache_system memcached</code> |
+| `Recheck clean IPs each (live mode only)`                    | `wp option set crowdsec_clean_ip_cache_duration 3600`        |
+| `Recheck bad IPs each (live mode only)`                      | `wp option set crowdsec_bad_ip_cache_duration 3600`          |
+| `Captcha flow cache lifetime`                                | `wp option set crowdsec_captcha_cache_duration 86400`        |
+| `Redis DSN (if applicable)`:warning:                         | <code>echo -n "redis://localhost:6379" \| wp option set crowdsec_redis_dsn</code> |
+| `Memcached DSN (if applicable)`:warning:                     | <code>echo -n &quot;memcached://localhost:11211&quot; \| wp option set crowdsec_memcached_dsn</code> |
+| **Advanced settings** → *Remediations*                       |                                                              |
+| `Fallback to`                                                | - <code>wp option set crowdsec_fallback_remediation ban</code><br />- <code>wp option set crowdsec_fallback_remediation captcha</code><br />- <code>wp option set crowdsec_fallback_remediation bypass</code> |
+| `Trust these CDN IPs (or Load Balancer, HTTP Proxy)`         | When the `crowdsec_trust_ip_forward` is set, the `crowdsec_trust_ip_forward_array` is populated with a serialized array of comparable IPs.<br />Thus, to maintain consistency between admin display and database data, you should update the 2 options: <br />`wp option set crowdsec_trust_ip_forward 1.2.3.4`<br />`wp option set crowdsec_trust_ip_forward_array --format=json '[["001.002.003.004","001.002.003.004"]]'` |
+| `Hide CrowdSec mentions`                                     | - <code>wp option set crowdsec_hide_mentions on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_hide_mentions</code> |
+| **Advanced settings** → *Geolocation*                        |                                                              |
+| `Enable geolocation feature`                                 | - <code>wp option set crowdsec_geolocation_enabled on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_geolocation_enabled</code> |
+| `Geolocation type`                                           | `wp option set crowdsec_geolocation_type maxmind`            |
+| `MaxMind database type`                                      | - <code>wp option set crowdsec_geolocation_maxmind_database_type country</code><br />- <code>wp option set crowdsec_geolocation_maxmind_database_type city</code> |
+| `Path to the MaxMind database`                               | `wp option set crowdsec_geolocation_maxmind_database_path GeoLite2-City.mmdb` |
+| `Geolocation cache lifetime`                                 | - <code>wp option set crowdsec_geolocation_cache_duration 86400</code><br />- <code>wp option set crowdsec_geolocation_cache_duration 0</code> |
+| **Advanced settings** → *Debug mode*                         |                                                              |
+| `Enable debug mode`                                          | - <code>wp option set crowdsec_debug_mode on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_debug_mode</code> |
+| `Disable prod log`                                           | - <code>wp option set crowdsec_disable_prod_log on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_disable_prod_log</code> |
+| `Enable errors display`                                      | - <code>wp option set crowdsec_display_errors on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_display_errors</code> |
+| **Advanced settings** → *Test settings*                      |                                                              |
+| `Forced test IP`                                             | `wp option set crowdsec_forced_test_ip 1.2.3.4`              |
+| `Forced test X-Forwarded-For IP`                             | <code>wp option set crowdsec_forced_test_forwarded_ip 1.2.3.4</code> |
+
+
 
 ### Auto Prepend File mode
 
