@@ -54,7 +54,7 @@ jobs:
                        echo "Version in CHANGELOG.md: KO"
                        exit 1
                     fi
-                    COMPARISON=$(grep -oP "\/compare\/\K(.*)$" CHANGELOG.md | head -1)
+                    COMPARISON=$(grep -oP "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/\K(.*)$" CHANGELOG.md | head -1)
                     LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/latest | grep -oP "\/tag\/\K(.*)$")
                     if [[ $COMPARISON == "$LAST_TAG...v${{ env.VERSION_NUMBER }})" ]]
                     then
@@ -65,10 +65,10 @@ jobs:
                       echo "$LAST_TAG...v${{ env.VERSION_NUMBER }})"
                       exit 1
                     fi
-                    CROWDSEC_VERSION=$(grep -E "Version: (.*)"  crowdsec.php | sed 's/ //g')
-                    echo $CROWDSEC_VERSION
+                    VERSION=$(grep -E "Version: (.*)"  crowdsec.php | sed 's/ //g')
+                    echo $VERSION
                     echo "*Version:${{ env.VERSION_NUMBER }}"
-                    if [[ $CROWDSEC_VERSION == "*Version:${{ env.VERSION_NUMBER }}" ]]
+                    if [[ $VERSION == "*Version:${{ env.VERSION_NUMBER }}" ]]
                     then
                        echo "Version in crowdsec.php: OK"
                     else
@@ -95,10 +95,10 @@ jobs:
                         echo "Stable tag in readme.txt: KO"
                         exit 1
                     fi
-                    CONSTANT_VERSION=$(grep -E "WordPress CrowdSec Bouncer/v(.*)"  inc/Constants.php | sed 's/[\x27(),/ ]//g')
+                    CONSTANT_VERSION=$(grep -E "VERSION = 'v(.*)"  inc/Constants.php | sed 's/[\x27(),/ ]//g')
                     echo $CONSTANT_VERSION
-                    echo "publicconstCROWDSEC_BOUNCER_USER_AGENT=WordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }};"
-                    if [[ $CONSTANT_VERSION == "publicconstCROWDSEC_BOUNCER_USER_AGENT=WordPressCrowdSecBouncerv${{ env.VERSION_NUMBER }};" ]]
+                    echo "publicconstVERSION=v${{ env.VERSION_NUMBER }};"
+                    if [[ $CONSTANT_VERSION == "publicconstVERSION=v${{ env.VERSION_NUMBER }};" ]]
                     then
                         echo "Version in inc/Constants.php: OK"
                     else

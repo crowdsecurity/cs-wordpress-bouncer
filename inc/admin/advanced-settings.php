@@ -1,8 +1,10 @@
 <?php
 
 use CrowdSecBouncer\BouncerException;
+use CrowdSec\RemediationEngine\Constants as RemConstants;
 use IPLib\Factory;
 require_once __DIR__ . '/../Constants.php';
+require_once __DIR__ . '/../options-config.php';
 
 function adminAdvancedSettings()
 {
@@ -16,10 +18,13 @@ function adminAdvancedSettings()
     // Field "crowdsec_stream_mode"
     addFieldCheckbox('crowdsec_stream_mode', 'Enable the "Stream" mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', function () {
         // Stream mode just activated.
-        $settings = getDatabaseSettings();
-        $bouncer = getBouncerInstance($settings);
-        $result = $bouncer->warmBlocklistCacheUp()['count'];
-        $message = __('As the stream mode is enabled, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+        $configs = getDatabaseConfigs();
+        $configs['crowdsec_stream_mode'] = true;
+        $bouncer = new Bouncer($configs);
+        $bouncer->clearCache();
+        $refresh = $bouncer->refreshBlocklistCache();
+        $result = $refresh['new']??0;
+        $message = __('As the stream mode is enabled, the cache has just been refreshed, '.($result > 1 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
         AdminNotice::displaySuccess($message);
         scheduleBlocklistRefresh();
     }, function () {
@@ -44,10 +49,16 @@ function adminAdvancedSettings()
 
         // Update wp-cron schedule.
         if ((bool) get_option('crowdsec_stream_mode')) {
-            $settings = getDatabaseSettings();
-            $bouncer = getBouncerInstance($settings);
-            $result = $bouncer->warmBlocklistCacheUp()['count'];
-            $message = __('As the stream mode refresh duration changed, the cache has just been warmed up, '.($result > 0 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+            $configs = getDatabaseConfigs();
+            $configs['crowdsec_stream_mode'] = true;
+            $bouncer = new Bouncer($configs);
+            $bouncer->clearCache();
+            $refresh = $bouncer->refreshBlocklistCache();
+            $result = $refresh['new']??0;
+            $message = __('As the stream mode refresh duration changed, the cache has just been refreshed, ' .
+                          ($result > 1 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision')
+                          . ' in cache.'
+            );
             AdminNotice::displaySuccess($message);
             scheduleBlocklistRefresh();
         }
@@ -74,11 +85,11 @@ function adminAdvancedSettings()
     addFieldString('crowdsec_redis_dsn', 'Redis DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         try {
             // Reload bouncer instance with the new cache system and so test if dsn is correct.
-            $settings = getDatabaseSettings();
-            $oldDsn = $settings['redis_dsn'] ?? '';
-            $settings['redis_dsn'] = $input;
-            $bouncer = getBouncerInstance($settings);
-            $bouncer->testConnection();
+            $configs = getDatabaseConfigs();
+            $oldDsn = $configs['crowdsec_redis_dsn'] ?? '';
+            $configs['crowdsec_redis_dsn'] = $input;
+            $bouncer = new Bouncer($configs);
+            $bouncer->testCacheConnection();
         } catch (Exception $e) {
             $message = __('There was an error while testing new DSN ('.$input.')');
             if(isset($oldDsn)){
@@ -95,11 +106,11 @@ function adminAdvancedSettings()
     addFieldString('crowdsec_memcached_dsn', 'Memcached DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         try {
             // Reload bouncer instance with the new cache system and so test if dsn is correct.
-            $settings = getDatabaseSettings();
-            $oldDsn = $settings['memcached_dsn'] ?? '';
-            $settings['memcached_dsn'] = $input;
-            $bouncer = getBouncerInstance($settings);
-            $bouncer->testConnection();
+            $configs = getDatabaseConfigs();
+            $oldDsn = $configs['crowdsec_memcached_dsn'] ?? '';
+            $configs['crowdsec_memcached_dsn'] = $input;
+            $bouncer = new Bouncer($configs);
+            $bouncer->testCacheConnection();
         } catch (Exception $e) {
             $message = __('There was an error while testing new DSN ('.$input.')');
             if(isset($oldDsn)){
@@ -122,17 +133,17 @@ function adminAdvancedSettings()
         $message = '';
 
         try {
-            $settings = getDatabaseSettings();
-            $oldCacheSystem = $settings['cache_system'] ?? Constants::CACHE_SYSTEM_PHPFS;
-            $bouncer = getBouncerInstance($settings);
+            $configs = getDatabaseConfigs();
+            $oldCacheSystem = $configs['crowdsec_cache_system'] ?? Constants::CACHE_SYSTEM_PHPFS;
+            $bouncer = new Bouncer($configs);
             $bouncer->clearCache();
             $message =
-                __('Cache system changed. Previous cache (' . $settings['cache_system'] . ') data has been cleared.');
+                __('Cache system changed. Previous cache (' . $oldCacheSystem . ') data has been cleared. ');
             AdminNotice::displaySuccess($message);
         } catch (Exception $e) {
-            if (isset($settings['cache_system'])) {
+            if (isset($configs['crowdsec_cache_system'])) {
                 $message = __('Cache system changed but there was an error while clearing previous cache (' .
-                              $settings['cache_system'] . ')');
+                              $configs['crowdsec_cache_system'] . '). ');
                 AdminNotice::displayWarning($message . ': ' . $e->getMessage());
             } else {
                 AdminNotice::displayError($e->getMessage());
@@ -141,10 +152,10 @@ function adminAdvancedSettings()
 
         try {
             // Reload bouncer instance with the new cache system and so test if dsn is correct.
-            $settings['cache_system'] = $input;
-            $bouncer = getBouncerInstance($settings);
-            $bouncer->testConnection();
-        } catch (BouncerException $e) {
+            $configs['crowdsec_cache_system'] = $input;
+            $bouncer = new Bouncer($configs);
+            $bouncer->testCacheConnection();
+        } catch (Exception $e) {
             $message = __('There was an error while testing new cache ('.$input.')');
             $messageSuffix = isset($oldCacheSystem) ? __('<br><br> Rollback to previous cache: '.$oldCacheSystem) : '';
             AdminNotice::displayError($message.': '.$e->getMessage().$messageSuffix);
@@ -157,9 +168,10 @@ function adminAdvancedSettings()
         try {
             if (get_option('crowdsec_stream_mode') && !$error) {
                 // system
-                $result = $bouncer->warmBlocklistCacheUp();
-                $count = $result['count'];
-                $message .= __('As the stream mode is enabled, the cache has just been warmed up, '.($count > 0 ? 'there are now '.$count.' decisions' : 'there is now '.$count.' decision').' in cache.');
+                $bouncer->clearCache();
+                $result = $bouncer->refreshBlocklistCache();
+                $count = $result['new'];
+                $message .= __('As the stream mode is enabled, the cache has just been refreshed, '.($count > 1 ? 'there are now '.$count.' decisions' : 'there is now '.$count.' decision').' in cache.');
                 AdminNotice::displaySuccess($message);
                 scheduleBlocklistRefresh();
             }
@@ -206,21 +218,8 @@ function adminAdvancedSettings()
             return Constants::CACHE_EXPIRATION_FOR_CAPTCHA;
         }
 
-        return (int) $input > 0 ? (int) $input : Constants::CACHE_EXPIRATION_FOR_CAPTCHA ;
+        return (int) $input;
     }, ' seconds. <p>The lifetime of cached captcha flow for some IP. <br>If a user has to interact with a captcha wall, we store in cache some values in order to know if he has to resolve or not the captcha again.<br>Minimum 1 second. Default: '.Constants::CACHE_EXPIRATION_FOR_CAPTCHA.'.', Constants::CACHE_EXPIRATION_FOR_CAPTCHA, 'width: 115px;', 'number');
-
-    // Field "crowdsec_geolocation_cache_duration"
-    addFieldString('crowdsec_geolocation_cache_duration', 'Geolocation cache lifetime', 'crowdsec_plugin_advanced_settings',
-        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        if ( (int) $input <= 0) {
-            add_settings_error('Geolocation cache duration', 'crowdsec_error', 'Geolocation cache duration: Minimum is 1 second.');
-
-            return Constants::CACHE_EXPIRATION_FOR_GEO;
-        }
-
-        return (int) $input > 0 ? (int) $input : Constants::CACHE_EXPIRATION_FOR_CAPTCHA ;
-    }, ' seconds. <p>The lifetime of cached country geolocation result for some IP.<br>Minimum 1 second. Default: '
-       .Constants::CACHE_EXPIRATION_FOR_GEO.'.<br>See the <i>Geolocation</i> settings below to enable geolocalized country result save.', Constants::CACHE_EXPIRATION_FOR_GEO, 'width: 115px;', 'number');
 
 
     /***************************
@@ -233,12 +232,14 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_fallback_remediation"
     $choice = [];
-    foreach (Constants::ORDERED_REMEDIATIONS as $remediation) {
+    $remediations = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BYPASS];
+    foreach ($remediations as $remediation) {
         $choice[$remediation] = $remediation;
     }
     addFieldSelect('crowdsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
     'crowdsec_admin_advanced_remediations', function ($input) {
-        if (!in_array($input, Constants::ORDERED_REMEDIATIONS)) {
+        $remediations = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BYPASS];
+        if (!in_array($input, $remediations)) {
             $input = Constants::BOUNCING_LEVEL_DISABLED;
             add_settings_error('Fallback to', 'crowdsec_error', 'Fallback to: Incorrect Fallback selected.');
         }
@@ -253,14 +254,14 @@ function adminAdvancedSettings()
         foreach ($stringRangeArray as $stringRange) {
             $stringRange = trim($stringRange);
             if (false !== strpos($stringRange, '/')) {
-                $range = Factory::rangeFromString($stringRange);
+                $range = Factory::parseRangeString($stringRange);
                 if (null === $range) {
                     throw new BouncerException('Invalid IP List format.');
                 }
                 $bounds = [$range->getComparableStartString(), $range->getComparableEndString()];
                 $comparableIpBoundsList = array_merge($comparableIpBoundsList, [$bounds]);
             } else {
-                $address = Factory::addressFromString($stringRange);
+                $address = Factory::parseAddressString($stringRange, 3);
                 if (null === $address) {
                     throw new BouncerException('Invalid IP List format.');
                 }
@@ -283,7 +284,7 @@ function adminAdvancedSettings()
             }
             $comparableIpBoundsList = convertInlineIpRangesToComparableIpBounds($input);
             update_option('crowdsec_trust_ip_forward_array', $comparableIpBoundsList);
-            AdminNotice::displaySuccess('Ips with XFF to trust successfully saved.');
+            AdminNotice::displaySuccess('IPs with X-Forwarded-For to trust successfully saved.');
         } catch (BouncerException $e) {
             update_option('crowdsec_trust_ip_forward_array', []);
             add_settings_error('Trust these CDN IPs', 'crowdsec_error', 'Trust these CDN IPs: Invalid IP List format.');
@@ -325,10 +326,10 @@ function adminAdvancedSettings()
             return $input;
         }, '<p>For now, only Maxmind database type is allowed</p>', $geolocationTypes);
 
-    $maxmindDatabaseTypes = [Constants::MAXMIND_COUNTRY => 'Country', Constants::MAXMIND_CITY => 'City'];
+    $maxmindDatabaseTypes = [Constants::MAXMIND_COUNTRY => 'Country', RemConstants::MAXMIND_CITY => 'City'];
     addFieldSelect('crowdsec_geolocation_maxmind_database_type', 'MaxMind database type', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
         'crowdsec_admin_advanced_geolocation', function ($input) {
-            if (!in_array($input, [Constants::MAXMIND_COUNTRY, Constants::MAXMIND_CITY])) {
+            if (!in_array($input, [Constants::MAXMIND_COUNTRY, RemConstants::MAXMIND_CITY])) {
                 $input = Constants::MAXMIND_COUNTRY;
                 add_settings_error('Geolocation MaxMind database type', 'crowdsec_error', 'MaxMind database type: Incorrect type selected.');
             }
@@ -340,9 +341,19 @@ function adminAdvancedSettings()
         return $input;
     }, '<p>Relative path from <i>wp-content/plugins/crowdsec/geolocation</i> folder</p>', 'GeoLite2-Country.mmdb', '');
 
-    addFieldCheckbox('crowdsec_geolocation_save_result', 'Save geolocalized country in cache', 'crowdsec_plugin_advanced_settings',
-        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function () {}, function () {}, '
-    <p>Enabling this will avoid multiple call to the geolocation system (e.g. MaxMind database)</p> If enabled, the geolocalized country associated to the IP will be saved in cache.<br>See the <i>Geolocation cache lifetime</i> setting above to set the lifetime of this result.');
+    // Field "crowdsec_geolocation_cache_duration"
+    addFieldString('crowdsec_geolocation_cache_duration', 'Geolocation cache lifetime', 'crowdsec_plugin_advanced_settings',
+        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function ($input) {
+            if ( (int) $input < 0) {
+                add_settings_error('Geolocation cache duration', 'crowdsec_error', 'Geolocation cache duration: Minimum is 0 second.');
+
+                return Constants::CACHE_EXPIRATION_FOR_GEO;
+            }
+
+            return (int) $input >= 0 ? (int) $input : Constants::CACHE_EXPIRATION_FOR_CAPTCHA ;
+        }, ' seconds. <p>The lifetime of cached country geolocation result for some IP.<br>Default: '
+           .Constants::CACHE_EXPIRATION_FOR_GEO.'.<br>Set 0 to disable caching', Constants::CACHE_EXPIRATION_FOR_GEO,
+        'width: 115px;', 'number');
 
 
     /*******************************
@@ -355,11 +366,11 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_debug_mode"
     addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>Should not be used in production.<br>When this mode is enabled, a debug.log file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.</p>');
+    <p>Should not be used in production.<br>When this mode is enabled, a <i>debug.log</i> file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.</p>');
 
     // Field "crowdsec_disable_prod_log"
     addFieldCheckbox('crowdsec_disable_prod_log', 'Disable prod log', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>By default, a prod.log file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.<br>You can disable this log here.</p>');
+    <p>By default, a <i>prod.log</i> file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.<br>You can disable this log here.</p>');
 
 	/*******************************
 	 ** Section "Display errors" **
@@ -371,7 +382,7 @@ function adminAdvancedSettings()
 
 	// Field "crowdsec_display_errors"
 	addFieldCheckbox('crowdsec_display_errors', 'Enable errors display', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_display_errors', function () {}, function () {}, '
-    <p>Do not use in production. When this mode is enabled, you will see every unexpected bouncing errors in the browser.</p>');
+    <p><strong>Do not use in production.</strong> When this mode is enabled, you will see every unexpected bouncing errors in the browser.</p>');
 
     /*******************************
      ** Section "Test mode" **

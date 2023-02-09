@@ -103,6 +103,7 @@ jobs:
       - name: Prepare for playwright test
         run: |
           cd ${{ github.workspace }}
+          cp .ddev/custom_files/crowdsec/php/cache-actions.php cache-actions.php
           cp -r .ddev/custom_files/crowdsec/cfssl/* my-own-modules/${{ env.EXTENSION_PATH }}/tls
           cd my-own-modules/${{ env.EXTENSION_PATH }}
           docker cp "tls" ddev-${{ env.WP_VERSION_CODE }}-playwright://var/www/html/wp-content/plugins/crowdsec

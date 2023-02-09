@@ -15,7 +15,7 @@ function writeStaticConfigFile($name = null, $newValue = null)
         $data[$name] = $newValue;
     }
     $json = json_encode($data);
-    file_put_contents(Constants::CROWDSEC_CONFIG_PATH, "<?php \$crowdSecJsonStandaloneConfig='$json';");
+    file_put_contents(Constants::CONFIG_PATH, "<?php \$crowdSecJsonStandaloneConfig='$json';");
 }
 
 /**

@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="5"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="../../../src" />
+        <ignoreFiles>
+            <directory name="../../../vendor" />
+            <directory name="../vendor" />
+        </ignoreFiles>
+    </projectFiles>
+    <issueHandlers>
+        <InvalidThrow>
+            <errorLevel type="suppress">
+                <referencedClass name="Psr\Cache\InvalidArgumentException"/>
+                <referencedClass name="Psr\Cache\CacheException"/>
+            </errorLevel>
+        </InvalidThrow>
+        <UndefinedDocblockClass>
+            <errorLevel type="suppress">
+                <referencedClass name="Predis\ClientInterface"/>
+            </errorLevel>
+        </UndefinedDocblockClass>
+        <UndefinedClass>
+            <errorLevel type="info">
+                <referencedClass name="Predis\ClientInterface"/>
+            </errorLevel>
+        </UndefinedClass>
+        <UndefinedInterfaceMethod>
+            <errorLevel type="info">
+                <referencedMethod name="Psr\Cache\CacheItemInterface::tag"/>
+            </errorLevel>
+        </UndefinedInterfaceMethod>
+        <PossiblyUndefinedMethod>
+            <errorLevel type="suppress">
+                <referencedMethod name="Symfony\Component\Config\Definition\Builder\NodeDefinition::arrayNode"/>
+                <referencedMethod name="Symfony\Component\Config\Definition\Builder\NodeParentInterface::end"/>
+                <referencedMethod name="Symfony\Component\Config\Definition\Builder\VariableNodeDefinition::arrayNode"/>
+            </errorLevel>
+        </PossiblyUndefinedMethod>
+    </issueHandlers>
+</psalm>

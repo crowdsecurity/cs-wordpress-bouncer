@@ -1,0 +1,103 @@
+name: Unit & integration tests
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+    inputs:
+      unit_tests:
+        type: boolean
+        description: Run Unit tests
+        default: true
+      integration_tests:
+        type: boolean
+        description: Run Integration tests
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.2','7.3','7.4','8.0','8.1', '8.2']
+
+    name: Unit and integration test
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
+    env:
+      EXTENSION_PATH: "my-own-modules/capi-client"
+
+    steps:
+      - name: Clone DDEV files
+        uses: actions/checkout@v3
+        with:
+          path: .ddev
+          repository: julienloizelet/ddev-php
+          ref: "main"
+
+      - name: Install DDEV
+        env:
+          DDEV_VERSION: v1.21.4
+        run: |
+          # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
+          sudo apt-get -qq update
+          sudo apt-get -qq -y install libnss3-tools
+          curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
+          bash install_ddev.sh ${{env.DDEV_VERSION}}
+          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+          rm install_ddev.sh
+
+      - name: Set PHP_VERSION_CODE env
+        # used in some directory path and conventional file naming
+        # Example : 7.4 => 74
+        run: |
+           echo "PHP_VERSION_CODE=$(echo php${{ matrix.php-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
+
+      - name: Start DDEV  with PHP ${{ matrix.php-version }}
+        run: |
+          cp .ddev/config_overrides/config.${{ env.PHP_VERSION_CODE }}.yaml .ddev/config.${{ env.PHP_VERSION_CODE }}.yaml
+          ddev start
+
+      - name: Some DEBUG information
+        run: |
+          ddev --version
+          ddev exec php -v
+
+      - name: Clone sources
+        uses: actions/checkout@v3
+        with:
+          path: ${{env.EXTENSION_PATH}}
+
+      - name: Validate composer.json
+        run: | 
+          ddev composer validate --strict --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Install CrowdSec lib dependencies
+        run: |
+          ddev composer update --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Run Unit tests
+        if: |
+          github.event.inputs.unit_tests == 'true' ||
+          github.event_name == 'push'
+        run:  ddev php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --debug ./${{env.EXTENSION_PATH}}/tests/Unit --testdox
+
+      - name: Prepare integration tests
+        if: |
+          github.event.inputs.integration_tests == 'true' ||
+          github.event_name == 'push'
+        run: | 
+          echo -n ${{ secrets.ENROLLMENT_KEY }} > ${{env.EXTENSION_PATH}}/tests/Integration/.enrollment_key.txt
+          echo -n "{\"machine_id\":\"${{ secrets.TEST_MACHINE_ID }}\"}" > ${{env.EXTENSION_PATH}}/src/Storage/dev-machine-id.json
+          echo -n "{\"password\":\"${{ secrets.TEST_MACHINE_PWD }}\"}" > ${{env.EXTENSION_PATH}}/src/Storage/dev-password.json
+
+      - name: Run Integration tests
+        if: |
+          github.event.inputs.integration_tests == 'true' ||
+          github.event_name == 'push'
+        run: ddev php  ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit  ./${{env.EXTENSION_PATH}}/tests/Integration --testdox

@@ -20,8 +20,17 @@ const goToAdmin = async () => {
     await page.goto(ADMIN_URL);
 };
 
-const goToPublicPage = async () => {
-    await page.goto(`${BASE_URL}`);
+const goToPublicPage = async (endpoint = "") => {
+    await page.goto(`${BASE_URL}${endpoint}`);
+};
+
+const runCacheAction = async (actionType = "refresh", otherParams = "") => {
+    await goToPublicPage(
+        `/cache-actions.php?action=${actionType}${otherParams}`,
+    );
+    await page.waitForLoadState("networkidle");
+    await expect(page).not.toMatchTitle(/404/);
+    await expect(page).toMatchTitle(`Cache action: ${actionType}`);
 };
 
 const onAdminGoToSettingsPage = async () => {
@@ -84,7 +93,7 @@ const selectByName = async (selectName, valueToSelect) => {
 };
 
 const setToggle = async (optionName, enable) => {
-    await page.waitForSelector(`[name=${optionName}]`, {state: "attached"});
+    await page.waitForSelector(`[name=${optionName}]`, { state: "attached" });
     const isEnabled = await page.$eval(
         `[name=${optionName}]`,
         (el) => el.checked,
@@ -100,6 +109,10 @@ const setToggle = async (optionName, enable) => {
 
 const fillInput = async (optionName, value) => {
     await page.fill(`[name=${optionName}]`, `${value}`);
+};
+
+const fillByName = async (name, value) => {
+    await page.fill(`[name=${name}]`, `${value}`);
 };
 
 const onAdvancedPageEnableStreamMode = async () => {
@@ -205,7 +218,6 @@ const forceCronRun = async () => {
     await wait(2000);
 };
 
-
 const setDefaultConfig = async () => {
     await onAdminGoToSettingsPage();
     await fillInput("crowdsec_api_url", LAPI_URL_FROM_WP);
@@ -270,4 +282,6 @@ module.exports = {
     setDefaultConfig,
     selectElement,
     selectByName,
+    runCacheAction,
+    fillByName,
 };

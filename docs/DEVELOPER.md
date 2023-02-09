@@ -54,8 +54,7 @@ __We will suppose here that you want to install WordPress 5.9. Please change "5.
 
 #### DDEV installation
 
-This project is fully compatible with DDEV 1.21.4, and it is recommended to use this specific version.
-For the DDEV installation, please follow the [official instructions](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/).
+This project is fully compatible with DDEV 1.21.4, and it is recommended to use this specific version. For the DDEV installation, please follow the [official instructions](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/).
 
 ### Prepare DDEV WordPress environment
 
@@ -80,23 +79,23 @@ wp-sources (choose the name you want for this folder)
 ```
 
 - Create an empty folder that will contain all necessary sources:
-```
+```shell
 mkdir wp-sources
 ```
 - Create an empty `.ddev` folder for DDEV and clone our pre-configured DDEV repo:
 
-```
+```shell
 mkdir wp-sources/.ddev && cd wp-sources/.ddev && git clone git@github.com:julienloizelet/ddev-wp.git ./
 ```
 - Copy some configurations file:
 
-```
+```shell
 cp .ddev/config_overrides/config.wp59.yaml .ddev/config.wp59.yaml
 cp .ddev/config_overrides/config.crowdsec.yaml .ddev/config.crowdsec.yaml
 ```
 - Launch DDEV
 
-```
+```shell
 cd .ddev && ddev start
 ```
 This should take some times on the first launch as this will download all necessary docker images.
@@ -124,7 +123,7 @@ ddev exec wp core install --url='https://wp59.ddev.site' --title='WordPress' --a
 
 ##### Install the module
 
-```
+```shell
 cd wp-sources
 mkdir my-own-modules &&  mkdir my-own-modules/crowdsec-bouncer && cd my-own-modules/crowdsec-bouncer
 git clone git@github.com:crowdsecurity/cs-wordpress-bouncer.git ./
@@ -136,7 +135,7 @@ ddev start
 
 Login to the admin by browsing the url `https://wp59.ddev.site/admin` (username: `admin` and password: `admin123`)
 
-Activate the CrowdSec plugin
+Activate the CrowdSec plugin.
 
 ##### End-to-end tests
 
@@ -150,10 +149,17 @@ As we use a TLS ready CrowdSec container, you have first to copy some certificat
 cd wp-sources
 cp -r .ddev/custom_files/crowdsec/cfssl/* wp-content/plugins/crowdsec/tls
 ```
+And we use also a custom PHP script to make some cache test. Thus, you should copy this PHP script too in the root folder: 
+
+```bash
+cd wp-sources
+cp  .ddev/custom_files/crowdsec/php/cache-actions.php cache-actions.php
+```
+
 
 Then, ensure that `run-tests.sh` and `test-init.sh` files are executable.
 
-```
+```shell
 cd wp-sources/my-own-module/crowdsec-bouncer/tests/e2e-ddev/__scripts__
 ```
 Run `chmod +x run-tests.sh test-init.sh` if not.
@@ -174,7 +180,7 @@ For example:
 ./run-tests.sh host "./2-live-mode-remediations.js"
 ```
 
-**N.B**
+**N.B**.:
 
 Before testing with the `docker` or `ci` parameter, you have to install all the required dependencies
 in the playwright container with this command :
@@ -192,17 +198,15 @@ yarn global add cross-env
 
 #### Update composer dependencies
 
-As WordPress plugins does not support `composer` installation, we have to add the vendor folder to sources. By doing
-that, we have to use only production ready dependencies and avoid `require-dev` parts. We have also set a config
-platform version of PHP in the `composer.json` that will force composer to install packages on this specific version.
-We are not setting the `"optimize-autoloader": true` in the `composer.json` because it implies a lot of issues during
-development phase.
+As WordPress plugins does not support `composer` installation, we have to add the vendor folder to sources. By doing that, we have to use only production ready dependencies and avoid `require-dev` parts. We have also set a `config` platform version of PHP in the `composer.json` that will force composer to install packages on this specific version.
+
+We are not setting the `"optimize-autoloader": true` in the `composer.json` because it implies a lot of issues during development phase.
 
 ##### Development phase
 
 In development phase, you could run the following command:
 
-```
+```shell
 ddev composer update --working-dir ./my-own-modules/crowdsec-bouncer
 ```
 
@@ -210,7 +214,7 @@ ddev composer update --working-dir ./my-own-modules/crowdsec-bouncer
 
 To release a new version of the plugin on the WordPress marketplace, you must run:
 
-```
+```shell
 ddev composer update --no-dev --prefer-dist --optimize-autoloader --working-dir ./my-own-modules/crowdsec-bouncer
 ```
 
@@ -278,18 +282,15 @@ ddev exec -s exec crowdsec cscli decisions add --ip <YOUR_HOST_IP> --duration 15
 
 * Unless you manage to solve the captcha, you'll not be able to access the website.
 
-> Note: when you resolve the captcha in your browser, the result is stored in cache.
-> If you remove the captcha decision with `cscli`, then you add a new captcha decision for your IP, you'll not be 
-> prompted until you clear the cache or the lifetime for captcha decision has been reached.
+> Note: when you resolve the captcha in your browser, the result is stored in cache. If you remove the captcha decision with `cscli`, then you add a new captcha decision for your IP, you'll not be prompted until you clear the cache or the lifetime for captcha decision has been reached.
 
 ### Stream mode, for the high traffic websites
 
 With live mode, as you tried it just before, each time a user arrives to the website for the first time, a call is made to Local API. If the traffic on your website is high, the bouncer will call Local API very often.
 
-To avoid this, Local API offers a "stream" mode. The decisions list is updated at a predefined frequency and kept in cache. Let's try it!
+To avoid this, Local API offers a "stream" mode. The decisions list is updated at a predefined frequency and kept in cache.
 
-> This bouncer uses the WordPress cron system. For demo purposes, we encourage you to install the WP-Control plugin, 
-> a plugin to view and control each WordPress Cron task jobs.
+> This bouncer uses the WordPress cron system. For demo purposes, we encourage you to install the WP-Control plugin, a plugin to view and control each WordPress Cron task jobs.
 
 First, clear the previous decisions:
 
@@ -341,8 +342,9 @@ In order to have an explicit commit history, we are using some commits message c
     <type>(<scope>): <subject>
 
 Allowed `type` are defined below.
-`scope` value intends to clarify which part of the code has been modified. It can be empty or `*` if the change is a
-global or difficult to assign to a specific part.
+
+`scope` value intends to clarify which part of the code has been modified. It can be empty or `*` if the change is a global or difficult to assign to a specific part.
+
 `subject` describes what has been done using the imperative, present tense.
 
 Example:
@@ -403,7 +405,3 @@ gh workflow run release.yml -f tag_name=vx.y.z
 ```
 
 Note that the GitHub action will fail if the tag `tag_name` already exits.
-
-
-
-

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CrowdSecBouncer;
 
-use RuntimeException;
+use CrowdSec\Common\Exception;
 
 /**
  * Exception interface for all exceptions thrown by CrowdSec Bouncer.
@@ -16,6 +16,6 @@ use RuntimeException;
  * @copyright Copyright (c) 2020+ CrowdSec
  * @license   MIT License
  */
-class BouncerException extends RuntimeException
+class BouncerException extends Exception
 {
 }

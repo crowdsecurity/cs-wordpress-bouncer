@@ -5,6 +5,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.0.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.0.0) - 2023-02-09
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v1.11.0...v2.0.0)
+
+### Changed
+- All source code has been refactored using new CrowdSec PHP librairies:
+  - Logs messages have been changed
+  - User Agent sent to CrowdSec LAPI has been changed to `csphplapi_WordPress/vX.Y.Z`
+
+### Removed
+
+- Remove `Geolocation save result` setting. To disable Geolocation result saving, we can set 0 in the `Geolocation 
+  cache lifetime` setting
+---
+
 ## [1.11.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v1.11.0) - 2022-12-22
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v1.10.0...v1.11.0)
 

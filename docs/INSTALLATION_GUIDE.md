@@ -26,12 +26,6 @@ Installing the CrowdSec WordPress plugin is as easy as installing any other Word
 - In the CrowdSec plugin click `Install Now`
 - Once installed click `Activate`.
 
-
-
-
-
-
-
 ### WordPress Marketplace
 
 You can find this plugin on the [WordPress Plugins Marketplace](https://wordpress.org/plugins/crowdsec/).

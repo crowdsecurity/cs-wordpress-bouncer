@@ -1,0 +1,109 @@
+name: Unit & integration tests
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+    inputs:
+      unit_tests:
+        type: boolean
+        description: Run Unit tests
+        default: true
+      integration_tests:
+        type: boolean
+        description: Run Integration tests
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.2','7.3','7.4','8.0','8.1', '8.2']
+
+    name: Unit and integration test
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
+    env:
+      EXTENSION_PATH: "my-own-modules/lapi-client"
+
+    steps:
+      - name: Clone DDEV files
+        uses: actions/checkout@v3
+        with:
+          path: .ddev
+          repository: julienloizelet/ddev-php
+          ref: "main"
+
+      - name: Install DDEV
+        env:
+          DDEV_VERSION: v1.21.4
+        run: |
+          # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
+          sudo apt-get -qq update
+          sudo apt-get -qq -y install libnss3-tools
+          curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
+          bash install_ddev.sh ${{env.DDEV_VERSION}}
+          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+          rm install_ddev.sh
+
+      - name: Set PHP_VERSION_CODE env
+        # used in some directory path and conventional file naming
+        # Example : 7.4 => 74
+        run: |
+           echo "PHP_VERSION_CODE=$(echo php${{ matrix.php-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
+
+      - name: Start DDEV  with PHP ${{ matrix.php-version }}
+        run: |
+          cp .ddev/config_overrides/config.${{ env.PHP_VERSION_CODE }}.yaml .ddev/config.${{ env.PHP_VERSION_CODE }}.yaml
+          cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
+          mkdir ${{ github.workspace }}/cfssl
+          cp -r .ddev/custom_files/crowdsec/cfssl/* ${{ github.workspace }}/cfssl
+          ddev start
+
+      - name: Some DEBUG information
+        run: |
+          ddev --version
+          ddev exec php -v
+          ddev exec -s crowdsec crowdsec -version
+
+      - name: Set BOUNCER_KEY env
+        run: |
+          echo "BOUNCER_KEY=$(ddev create-bouncer)" >> $GITHUB_ENV
+
+      - name: Clone sources
+        uses: actions/checkout@v3
+        with:
+          path: ${{env.EXTENSION_PATH}}
+
+      - name: Validate composer.json
+        run: | 
+          ddev composer validate --strict --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Install dependencies
+        run: |
+          ddev composer update --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Run Unit tests
+        if: |
+          github.event.inputs.unit_tests == 'true' ||
+          github.event_name == 'push'
+        run:  ddev php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --debug ./${{env.EXTENSION_PATH}}/tests/Unit --testdox
+
+
+      - name: Run Integration tests (without TLS)
+        if: |
+          github.event.inputs.integration_tests == 'true' ||
+          github.event_name == 'push'
+        run:  ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group ignore ./${{env.EXTENSION_PATH}}/tests/Integration
+
+      - name: Run Integration tests (with TLS)
+        if: |
+          github.event.inputs.integration_tests == 'true' ||
+          github.event_name == 'push'
+        run: ddev exec AGENT_TLS_PATH=/var/www/html/cfssl BOUNCER_TLS_PATH=/var/www/html/cfssl LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group ignore ./${{env.EXTENSION_PATH}}/tests/Integration
