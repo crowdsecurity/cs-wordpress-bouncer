@@ -15,6 +15,7 @@
     - [General settings](#general-settings)
     - [Theme customization](#theme-customization)
     - [Advanced settings](#advanced-settings)
+    - [Settings update with WP-CLI tool](#settings-update-with-wp-cli-tool)
   - [Auto Prepend File mode](#auto-prepend-file-mode)
     - [PHP](#php)
     - [Nginx](#nginx)
