@@ -42,6 +42,11 @@ class LapiRemediation extends AbstractRemediation
         parent::__construct($this->configs, $cacheStorage, $logger);
     }
 
+    public function getClient(): Bouncer
+    {
+        return $this->client;
+    }
+
     /**
      * {@inheritdoc}
      *
@@ -95,67 +100,6 @@ class LapiRemediation extends AbstractRemediation
         return $this->getRemediationFromDecisions($cachedDecisions);
     }
 
-    private function handleIpV6RangeDecisions(array $decisions): array
-    {
-        /** @var Decision $decision */
-        foreach ($decisions as $index => $decision) {
-            if (Constants::SCOPE_RANGE === $decision->getScope()) {
-                $rangeIp = preg_replace('#^(.*)/(.*)$#', '$1', $decision->getValue());
-                if (Type::T_IPv6 === $this->getIpType($rangeIp)) {
-                    $decision->setValue($rangeIp)->setScope(Constants::SCOPE_IP);
-                    $decisions[$index] = $decision;
-                }
-            }
-        }
-
-        return $decisions;
-    }
-
-    /**
-     * @throws CacheException
-     * @throws CacheStorageException
-     * @throws ClientException
-     * @throws InvalidArgumentException
-     *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
-     */
-    private function getStreamDecisions(bool $startup = false, array $filter = []): array
-    {
-        $rawDecisions = $this->client->getStreamDecisions($startup, $filter);
-        $newDecisions = $this->convertRawDecisionsToDecisions($rawDecisions[self::CS_NEW] ?? []);
-        $deletedDecisions = $this->convertRawDecisionsToDecisions($rawDecisions[self::CS_DEL] ?? []);
-        $stored = $this->storeDecisions($newDecisions);
-        $removed = $this->removeDecisions($deletedDecisions);
-
-        $result = [
-            self::CS_NEW => $stored[AbstractCache::DONE] ?? 0,
-            self::CS_DEL => $removed[AbstractCache::DONE] ?? 0,
-        ];
-
-        $this->logger->info('Retrieved stream decisions', [
-            'type' => 'LAPI_REM_STREAM_DECISIONS',
-            'startup' => $startup,
-            'filter' => $filter,
-            'result' => $result,
-        ]);
-
-        return $result;
-    }
-
-    private function getScopes(): array
-    {
-        if (null === $this->scopes) {
-            $finalScopes = [Constants::SCOPE_IP, Constants::SCOPE_RANGE];
-            $geolocConfigs = (array) $this->getConfig('geolocation');
-            if (!empty($geolocConfigs['enabled'])) {
-                $finalScopes[] = Constants::SCOPE_COUNTRY;
-            }
-            $this->scopes = $finalScopes;
-        }
-
-        return $this->scopes;
-    }
-
     /**
      * {@inheritdoc}
      *
@@ -189,6 +133,77 @@ class LapiRemediation extends AbstractRemediation
     }
 
     /**
+     * Process and validate input configurations.
+     */
+    private function configure(array $configs): void
+    {
+        $configuration = new LapiRemediationConfig();
+        $processor = new Processor();
+        $this->configs = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($configs)]);
+    }
+
+    private function getScopes(): array
+    {
+        if (null === $this->scopes) {
+            $finalScopes = [Constants::SCOPE_IP, Constants::SCOPE_RANGE];
+            $geolocConfigs = (array) $this->getConfig('geolocation');
+            if (!empty($geolocConfigs['enabled'])) {
+                $finalScopes[] = Constants::SCOPE_COUNTRY;
+            }
+            $this->scopes = $finalScopes;
+        }
+
+        return $this->scopes;
+    }
+
+    /**
+     * @throws CacheException
+     * @throws CacheStorageException
+     * @throws ClientException
+     * @throws InvalidArgumentException
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
+    private function getStreamDecisions(bool $startup = false, array $filter = []): array
+    {
+        $rawDecisions = $this->client->getStreamDecisions($startup, $filter);
+        $newDecisions = $this->convertRawDecisionsToDecisions($rawDecisions[self::CS_NEW] ?? []);
+        $deletedDecisions = $this->convertRawDecisionsToDecisions($rawDecisions[self::CS_DEL] ?? []);
+        $stored = $this->storeDecisions($newDecisions);
+        $removed = $this->removeDecisions($deletedDecisions);
+
+        $result = [
+            self::CS_NEW => $stored[AbstractCache::DONE] ?? 0,
+            self::CS_DEL => $removed[AbstractCache::DONE] ?? 0,
+        ];
+
+        $this->logger->info('Retrieved stream decisions', [
+            'type' => 'LAPI_REM_STREAM_DECISIONS',
+            'startup' => $startup,
+            'filter' => $filter,
+            'result' => $result,
+        ]);
+
+        return $result;
+    }
+
+    private function handleIpV6RangeDecisions(array $decisions): array
+    {
+        /** @var Decision $decision */
+        foreach ($decisions as $index => $decision) {
+            if (Constants::SCOPE_RANGE === $decision->getScope()) {
+                $rangeIp = preg_replace('#^(.*)/(.*)$#', '$1', $decision->getValue());
+                if (Type::T_IPv6 === $this->getIpType($rangeIp)) {
+                    $decision->setValue($rangeIp)->setScope(Constants::SCOPE_IP);
+                    $decisions[$index] = $decision;
+                }
+            }
+        }
+
+        return $decisions;
+    }
+
+    /**
      * @throws InvalidArgumentException
      */
     private function isWarm(): bool
@@ -215,15 +230,5 @@ class LapiRemediation extends AbstractRemediation
         $this->cacheStorage->updateItem(AbstractCache::CONFIG, [AbstractCache::WARMUP => true]);
 
         return $result;
-    }
-
-    /**
-     * Process and validate input configurations.
-     */
-    private function configure(array $configs): void
-    {
-        $configuration = new LapiRemediationConfig();
-        $processor = new Processor();
-        $this->configs = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($configs)]);
     }
 }

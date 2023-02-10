@@ -102,6 +102,7 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @covers \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::getDefaultOrderedRemediations
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getAllCachedDecisions
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getRemediationFromDecisions
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::getClient
  */
 final class CapiRemediationTest extends AbstractRemediation
 {
@@ -270,6 +271,7 @@ final class CapiRemediationTest extends AbstractRemediation
 
         // Test with null logger
         $remediation = new CapiRemediation($remediationConfigs, $this->watcher, $this->cacheStorage, null);
+        $this->assertEquals($this->watcher, $remediation->getClient());
         // Test is forced to stream mode
         $this->assertEquals(
             true,
