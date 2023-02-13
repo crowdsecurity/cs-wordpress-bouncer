@@ -190,24 +190,34 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_clean_ip_cache_duration"
     addFieldString('crowdsec_clean_ip_cache_duration', 'Recheck clean IPs each<br>(live mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        if (!get_option('crowdsec_stream_mode') && (int) $input <= 0) {
-            add_settings_error('Recheck clean IPs each', 'crowdsec_error', 'Recheck clean IPs each: Minimum is 1 second.');
+        if(!empty($input)){
+            if (!get_option('crowdsec_stream_mode') && (int) $input <= 0) {
+                add_settings_error('Recheck clean IPs each', 'crowdsec_error', 'Recheck clean IPs each: Minimum is 1 second.');
 
-            return '1';
+                return '1';
+            }
+
+            return (int) $input > 0 ? (int) $input : 1 ;
         }
+        $saved = (int) get_option('crowdsec_clean_ip_cache_duration');
+        return $saved > 0 ? $saved : 1;
 
-        return (int) $input > 0 ? (int) $input : 1 ;
     }, ' seconds. <p>The duration between re-asking Local API about an already checked clean IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
     // Field "crowdsec_bad_ip_cache_duration"
     addFieldString('crowdsec_bad_ip_cache_duration', 'Recheck bad IPs each<br>(live mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        if (!get_option('crowdsec_stream_mode') && (int) $input <= 0) {
-            add_settings_error('Recheck bad IPs each', 'crowdsec_error', 'Recheck bad IPs each: Minimum is 1 second.');
+        if(!empty($input)) {
+            if (!get_option('crowdsec_stream_mode') && !empty($input) && (int)$input <= 0) {
+                add_settings_error('Recheck bad IPs each', 'crowdsec_error', 'Recheck bad IPs each: Minimum is 1 second.');
 
-            return '1';
+                return '1';
+            }
+
+            return (int)$input > 0 ? (int)$input : 1;
         }
+        $saved = (int) get_option('crowdsec_bad_ip_cache_duration');
+        return $saved > 0 ? $saved : 1;
 
-        return (int) $input > 0 ? (int) $input : 1 ;
     }, ' seconds. <p>The duration between re-asking Local API about an already checked bad IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
     // Field "crowdsec_captcha_cache_duration"

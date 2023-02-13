@@ -267,6 +267,10 @@ class Bouncer extends AbstractBouncer
         if (PHP_SAPI === 'cli') {
             return false;
         }
+        // Don't bounce admin ajax request
+        if(defined('DOING_AJAX')){
+            return false;
+        }
 
         // when the "crowdsec_public_website_only" is disabled...
         if ($this->shouldNotBounceWpAdmin) {
