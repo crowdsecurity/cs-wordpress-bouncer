@@ -5,12 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [2.1.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.1.0) - 2023-02-16
-[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.0.0...v2.1.0)
-
-### Changed
-
-- Do not bounce admin AJAX request
+## [2.0.1](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.0.1) - 2023-02-16
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.0.0...v2.0.1)
 
 ### Fixed
 - Fix bad memcached dsn check
