@@ -45,8 +45,9 @@ if (is_admin()) {
             // In stream mode, immediatelly warm the cache up.
             if (get_option('crowdsec_stream_mode')) {
                 $refresh = $bouncer->refreshBlocklistCache();
-                $result = $refresh['new']??0;
-                $message .= __(' As the stream mode is enabled, the cache has just been refreshed, '.($result > 1 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+                $new = $refresh['new']??0;
+                $deleted = $refresh['deleted']??0;
+                $message .= __(' As the stream mode is enabled, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
             }
 
             AdminNotice::displaySuccess($message);
@@ -77,7 +78,10 @@ if (is_admin()) {
                 $configs = getDatabaseConfigs();
                 $bouncer = new Bouncer($configs);
                 $result = $bouncer->refreshBlocklistCache();
-                AdminNotice::displaySuccess(__(' The cache has just been refreshed ('.($result['new'] > 0 ? $result['new'].' new decisions' : $result['new'].' new decision').', '.$result['deleted'].' deleted).'));
+                $new = $result['new']??0;
+                $deleted = $result['deleted']??0;
+                $message = __('The cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
+                AdminNotice::displaySuccess($message);
             }
         } catch (BouncerException $e) {
             if(isset($bouncer) && $bouncer->getLogger()) {

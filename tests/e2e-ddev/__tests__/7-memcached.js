@@ -36,11 +36,10 @@ describe(`Use Memcached technology`, () => {
             "memcached://memcached:11211",
         );
 
-        // TODO test bad DSN format and test DSN down
         await onAdminSaveSettings();
         await expect(page).toHaveText(
             "#wpbody-content > div.wrap > div.notice.notice-success",
-            "As the stream mode is enabled, the cache has just been refreshed, there is now 0 decision in cache.",
+            "As the stream mode is enabled, the cache has just been refreshed",
         );
         await wait(2000);
         await publicHomepageShouldBeAccessible();
@@ -50,5 +49,18 @@ describe(`Use Memcached technology`, () => {
         await removeAllDecisions();
         await forceCronRun();
         await publicHomepageShouldBeAccessible();
+        // Bad dsn
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await fillInput("crowdsec_memcached_dsn", "memcached://memcached:1234");
+        await onAdminSaveSettings(false);
+        await expect(page).toHaveText(
+            "#wpbody-content > div.wrap > div.notice.notice-error",
+            "There was an error while testing new DSN",
+        );
+        await expect(page).toHaveText(
+            "#wpbody-content > div.wrap > div.notice.notice-error",
+            "Rollback to old DSN: memcached://memcached:11211",
+        );
     });
 });

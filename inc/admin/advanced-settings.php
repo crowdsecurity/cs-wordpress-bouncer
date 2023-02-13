@@ -23,8 +23,9 @@ function adminAdvancedSettings()
         $bouncer = new Bouncer($configs);
         $bouncer->clearCache();
         $refresh = $bouncer->refreshBlocklistCache();
-        $result = $refresh['new']??0;
-        $message = __('As the stream mode is enabled, the cache has just been refreshed, '.($result > 1 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+        $new = $refresh['new']??0;
+        $deleted = $refresh['deleted']??0;
+        $message = __('As the stream mode is enabled, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
         AdminNotice::displaySuccess($message);
         scheduleBlocklistRefresh();
     }, function () {
@@ -54,11 +55,9 @@ function adminAdvancedSettings()
             $bouncer = new Bouncer($configs);
             $bouncer->clearCache();
             $refresh = $bouncer->refreshBlocklistCache();
-            $result = $refresh['new']??0;
-            $message = __('As the stream mode refresh duration changed, the cache has just been refreshed, ' .
-                          ($result > 1 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision')
-                          . ' in cache.'
-            );
+            $new = $refresh['new']??0;
+            $deleted = $refresh['deleted']??0;
+            $message = __('As the stream mode refresh duration changed, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
             AdminNotice::displaySuccess($message);
             scheduleBlocklistRefresh();
         }
@@ -170,8 +169,9 @@ function adminAdvancedSettings()
                 // system
                 $bouncer->clearCache();
                 $result = $bouncer->refreshBlocklistCache();
-                $count = $result['new'];
-                $message .= __('As the stream mode is enabled, the cache has just been refreshed, '.($count > 1 ? 'there are now '.$count.' decisions' : 'there is now '.$count.' decision').' in cache.');
+                $new = $result['new']??0;
+                $deleted = $result['deleted']??0;
+                $message = __('As the stream mode is enabled, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
                 AdminNotice::displaySuccess($message);
                 scheduleBlocklistRefresh();
             }
@@ -350,7 +350,7 @@ function adminAdvancedSettings()
                 return Constants::CACHE_EXPIRATION_FOR_GEO;
             }
 
-            return (int) $input >= 0 ? (int) $input : Constants::CACHE_EXPIRATION_FOR_CAPTCHA ;
+            return (int) $input;
         }, ' seconds. <p>The lifetime of cached country geolocation result for some IP.<br>Default: '
            .Constants::CACHE_EXPIRATION_FOR_GEO.'.<br>Set 0 to disable caching', Constants::CACHE_EXPIRATION_FOR_GEO,
         'width: 115px;', 'number');

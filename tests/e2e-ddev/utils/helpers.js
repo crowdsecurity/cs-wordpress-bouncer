@@ -224,6 +224,7 @@ const setDefaultConfig = async () => {
     await selectByName("crowdsec_auth_type", "api_key");
     await fillInput("crowdsec_api_key", BOUNCER_KEY);
     await setToggle("crowdsec_use_curl", false);
+    await setToggle("crowdsec_api_timeout", 120);
     await selectByName("crowdsec_bouncing_level", "normal_bouncing");
     await onAdminSaveSettings(false);
 

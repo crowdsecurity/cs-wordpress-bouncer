@@ -26,18 +26,16 @@ describe(`Use Redis technology`, () => {
     });
 
     it('Should be able to use Redis cache"', async () => {
-        // TODO (+ bad DSN format, + DSN down)
-
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await onAdvancedPageEnableStreamMode();
         await page.selectOption("[name=crowdsec_cache_system]", "redis");
         await wait(200);
-        await fillInput("crowdsec_redis_dsn", "redis://redis:6379"); // TODO test bad DSN format and test DSN down
+        await fillInput("crowdsec_redis_dsn", "redis://redis:6379");
         await onAdminSaveSettings();
         await expect(page).toHaveText(
             "#wpbody-content > div.wrap > div.notice.notice-success",
-            "As the stream mode is enabled, the cache has just been refreshed, there is now 0 decision in cache.",
+            "As the stream mode is enabled, the cache has just been refreshed.",
         );
 
         await publicHomepageShouldBeAccessible();
@@ -47,5 +45,18 @@ describe(`Use Redis technology`, () => {
         await removeAllDecisions();
         await forceCronRun();
         await publicHomepageShouldBeAccessible();
+        // Bad dsn
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await fillInput("crowdsec_redis_dsn", "redis://redis:1234");
+        await onAdminSaveSettings(false);
+        await expect(page).toHaveText(
+            "#wpbody-content > div.wrap > div.notice.notice-error",
+            "There was an error while testing new DSN",
+        );
+        await expect(page).toHaveText(
+            "#wpbody-content > div.wrap > div.notice.notice-error",
+            "Rollback to old DSN: redis://redis:6379",
+        );
     });
 });
