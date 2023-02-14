@@ -36,6 +36,11 @@ class CapiRemediation extends AbstractRemediation
         parent::__construct($this->configs, $cacheStorage, $logger);
     }
 
+    public function getClient(): Watcher
+    {
+        return $this->client;
+    }
+
     /**
      * {@inheritdoc}
      *

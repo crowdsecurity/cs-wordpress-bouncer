@@ -23,8 +23,9 @@ function adminAdvancedSettings()
         $bouncer = new Bouncer($configs);
         $bouncer->clearCache();
         $refresh = $bouncer->refreshBlocklistCache();
-        $result = $refresh['new']??0;
-        $message = __('As the stream mode is enabled, the cache has just been refreshed, '.($result > 1 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision').' in cache.');
+        $new = $refresh['new']??0;
+        $deleted = $refresh['deleted']??0;
+        $message = __('As the stream mode is enabled, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
         AdminNotice::displaySuccess($message);
         scheduleBlocklistRefresh();
     }, function () {
@@ -54,11 +55,9 @@ function adminAdvancedSettings()
             $bouncer = new Bouncer($configs);
             $bouncer->clearCache();
             $refresh = $bouncer->refreshBlocklistCache();
-            $result = $refresh['new']??0;
-            $message = __('As the stream mode refresh duration changed, the cache has just been refreshed, ' .
-                          ($result > 1 ? 'there are now '.$result.' decisions' : 'there is now '.$result.' decision')
-                          . ' in cache.'
-            );
+            $new = $refresh['new']??0;
+            $deleted = $refresh['deleted']??0;
+            $message = __('As the stream mode refresh duration changed, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
             AdminNotice::displaySuccess($message);
             scheduleBlocklistRefresh();
         }
@@ -170,8 +169,9 @@ function adminAdvancedSettings()
                 // system
                 $bouncer->clearCache();
                 $result = $bouncer->refreshBlocklistCache();
-                $count = $result['new'];
-                $message .= __('As the stream mode is enabled, the cache has just been refreshed, '.($count > 1 ? 'there are now '.$count.' decisions' : 'there is now '.$count.' decision').' in cache.');
+                $new = $result['new']??0;
+                $deleted = $result['deleted']??0;
+                $message = __('As the stream mode is enabled, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
                 AdminNotice::displaySuccess($message);
                 scheduleBlocklistRefresh();
             }
@@ -190,24 +190,34 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_clean_ip_cache_duration"
     addFieldString('crowdsec_clean_ip_cache_duration', 'Recheck clean IPs each<br>(live mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        if (!get_option('crowdsec_stream_mode') && (int) $input <= 0) {
-            add_settings_error('Recheck clean IPs each', 'crowdsec_error', 'Recheck clean IPs each: Minimum is 1 second.');
+        if(!empty($input)){
+            if (!get_option('crowdsec_stream_mode') && (int) $input <= 0) {
+                add_settings_error('Recheck clean IPs each', 'crowdsec_error', 'Recheck clean IPs each: Minimum is 1 second.');
 
-            return '1';
+                return '1';
+            }
+
+            return (int) $input > 0 ? (int) $input : 1 ;
         }
+        $saved = (int) get_option('crowdsec_clean_ip_cache_duration');
+        return $saved > 0 ? $saved : 1;
 
-        return (int) $input > 0 ? (int) $input : 1 ;
     }, ' seconds. <p>The duration between re-asking Local API about an already checked clean IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
     // Field "crowdsec_bad_ip_cache_duration"
     addFieldString('crowdsec_bad_ip_cache_duration', 'Recheck bad IPs each<br>(live mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
-        if (!get_option('crowdsec_stream_mode') && (int) $input <= 0) {
-            add_settings_error('Recheck bad IPs each', 'crowdsec_error', 'Recheck bad IPs each: Minimum is 1 second.');
+        if(!empty($input)) {
+            if (!get_option('crowdsec_stream_mode') && !empty($input) && (int)$input <= 0) {
+                add_settings_error('Recheck bad IPs each', 'crowdsec_error', 'Recheck bad IPs each: Minimum is 1 second.');
 
-            return '1';
+                return '1';
+            }
+
+            return (int)$input > 0 ? (int)$input : 1;
         }
+        $saved = (int) get_option('crowdsec_bad_ip_cache_duration');
+        return $saved > 0 ? $saved : 1;
 
-        return (int) $input > 0 ? (int) $input : 1 ;
     }, ' seconds. <p>The duration between re-asking Local API about an already checked bad IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
 
     // Field "crowdsec_captcha_cache_duration"
@@ -350,7 +360,7 @@ function adminAdvancedSettings()
                 return Constants::CACHE_EXPIRATION_FOR_GEO;
             }
 
-            return (int) $input >= 0 ? (int) $input : Constants::CACHE_EXPIRATION_FOR_CAPTCHA ;
+            return (int) $input;
         }, ' seconds. <p>The lifetime of cached country geolocation result for some IP.<br>Default: '
            .Constants::CACHE_EXPIRATION_FOR_GEO.'.<br>Set 0 to disable caching', Constants::CACHE_EXPIRATION_FOR_GEO,
         'width: 115px;', 'number');

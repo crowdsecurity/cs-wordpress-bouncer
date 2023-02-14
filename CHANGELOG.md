@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.0.1](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.0.1) - 2023-02-14
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.0.0...v2.0.1)
+
+### Fixed
+- Fix missing `TwigTest.php` in release zip that broke captcha and ban walls 
+- Fix bad memcached dsn check
+- Fix clean and bad ip resync values when disabling stream mode
+
+
+---
+
 ## [2.0.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.0.0) - 2023-02-09
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v1.11.0...v2.0.0)
 

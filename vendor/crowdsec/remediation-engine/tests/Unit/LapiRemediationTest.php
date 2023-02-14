@@ -119,6 +119,8 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::getScopes
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::isWarm
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::warmUp
+ * @covers \CrowdSec\RemediationEngine\LapiRemediation::getClient
+
  *
  */
 final class LapiRemediationTest extends AbstractRemediation
@@ -730,6 +732,8 @@ final class LapiRemediationTest extends AbstractRemediation
         $remediationConfigs = [];
 
         $remediation = new LapiRemediation($remediationConfigs, $this->bouncer, $this->cacheStorage, $this->logger);
+
+        $this->assertEquals($this->bouncer, $remediation->getClient());
 
         // Prepare next tests
         $this->bouncer->method('getStreamDecisions')->will(

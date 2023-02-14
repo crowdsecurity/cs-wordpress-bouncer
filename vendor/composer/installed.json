@@ -81,17 +81,17 @@
         },
         {
             "name": "crowdsec/bouncer",
-            "version": "v1.0.0",
-            "version_normalized": "1.0.0.0",
+            "version": "v1.0.1",
+            "version_normalized": "1.0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "302c31b5c2d7df1eed9da71619aae6ca3024eb4f"
+                "reference": "c508c199a2f5778d878117cf52321df4c8fcbefb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/302c31b5c2d7df1eed9da71619aae6ca3024eb4f",
-                "reference": "302c31b5c2d7df1eed9da71619aae6ca3024eb4f",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/c508c199a2f5778d878117cf52321df4c8fcbefb",
+                "reference": "c508c199a2f5778d878117cf52321df4c8fcbefb",
                 "shasum": ""
             },
             "require": {
@@ -109,7 +109,7 @@
                 "mikey179/vfsstream": "^1.6.11",
                 "phpunit/phpunit": "^8.5.30 || ^9.3"
             },
-            "time": "2023-02-03T05:17:32+00:00",
+            "time": "2023-02-10T08:18:52+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -148,7 +148,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v1.0.0"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v1.0.1"
             },
             "install-path": "../crowdsec/bouncer"
         },
@@ -362,17 +362,17 @@
         },
         {
             "name": "crowdsec/remediation-engine",
-            "version": "v2.0.0",
-            "version_normalized": "2.0.0.0",
+            "version": "v2.1.0",
+            "version_normalized": "2.1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-remediation-engine.git",
-                "reference": "990048c7597f3ec0154be36c272b365f668c5baa"
+                "reference": "053a39bce65a39e4b8856ad780fc5610a6156643"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/990048c7597f3ec0154be36c272b365f668c5baa",
-                "reference": "990048c7597f3ec0154be36c272b365f668c5baa",
+                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/053a39bce65a39e4b8856ad780fc5610a6156643",
+                "reference": "053a39bce65a39e4b8856ad780fc5610a6156643",
                 "shasum": ""
             },
             "require": {
@@ -398,7 +398,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2023-02-02T09:20:18+00:00",
+            "time": "2023-02-10T00:28:56+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -439,7 +439,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-remediation-engine/issues",
-                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v2.0.0"
+                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v2.1.0"
             },
             "install-path": "../crowdsec/remediation-engine"
         },
@@ -758,17 +758,17 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "2.8.0",
-            "version_normalized": "2.8.0.0",
+            "version": "2.9.1",
+            "version_normalized": "2.9.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "720488632c590286b88b80e62aa3d3d551ad4a50"
+                "reference": "f259e2b15fb95494c83f52d3caad003bbf5ffaa1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/720488632c590286b88b80e62aa3d3d551ad4a50",
-                "reference": "720488632c590286b88b80e62aa3d3d551ad4a50",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/f259e2b15fb95494c83f52d3caad003bbf5ffaa1",
+                "reference": "f259e2b15fb95494c83f52d3caad003bbf5ffaa1",
                 "shasum": ""
             },
             "require": {
@@ -783,7 +783,7 @@
                 "doctrine/couchdb": "~1.0@dev",
                 "elasticsearch/elasticsearch": "^7 || ^8",
                 "ext-json": "*",
-                "graylog2/gelf-php": "^1.4.2",
+                "graylog2/gelf-php": "^1.4.2 || ^2@dev",
                 "guzzlehttp/guzzle": "^7.4",
                 "guzzlehttp/psr7": "^2.2",
                 "mongodb/mongodb": "^1.8",
@@ -814,7 +814,7 @@
                 "rollbar/rollbar": "Allow sending log messages to Rollbar",
                 "ruflin/elastica": "Allow sending log messages to an Elastic Search server"
             },
-            "time": "2022-07-24T11:55:47+00:00",
+            "time": "2023-02-06T13:44:46+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -847,7 +847,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/monolog/issues",
-                "source": "https://github.com/Seldaek/monolog/tree/2.8.0"
+                "source": "https://github.com/Seldaek/monolog/tree/2.9.1"
             },
             "funding": [
                 {
@@ -2065,17 +2065,17 @@
         },
         {
             "name": "twig/twig",
-            "version": "v3.5.0",
-            "version_normalized": "3.5.0.0",
+            "version": "v3.5.1",
+            "version_normalized": "3.5.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "3ffcf4b7d890770466da3b2666f82ac054e7ec72"
+                "reference": "a6e0510cc793912b451fd40ab983a1d28f611c15"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/3ffcf4b7d890770466da3b2666f82ac054e7ec72",
-                "reference": "3ffcf4b7d890770466da3b2666f82ac054e7ec72",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/a6e0510cc793912b451fd40ab983a1d28f611c15",
+                "reference": "a6e0510cc793912b451fd40ab983a1d28f611c15",
                 "shasum": ""
             },
             "require": {
@@ -2087,7 +2087,7 @@
                 "psr/container": "^1.0",
                 "symfony/phpunit-bridge": "^4.4.9|^5.0.9|^6.0"
             },
-            "time": "2022-12-27T12:28:18+00:00",
+            "time": "2023-02-08T07:49:20+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -2128,7 +2128,7 @@
             ],
             "support": {
                 "issues": "https://github.com/twigphp/Twig/issues",
-                "source": "https://github.com/twigphp/Twig/tree/v3.5.0"
+                "source": "https://github.com/twigphp/Twig/tree/v3.5.1"
             },
             "funding": [
                 {

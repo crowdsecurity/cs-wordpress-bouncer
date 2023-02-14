@@ -13,6 +13,16 @@ The public API of this library consists of all public or protected methods, prop
 
 ---
 
+## [2.1.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v2.1.0) - 2023-02-10
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v2.0.0...v2.1.0)
+
+### Added
+
+- Add public method `getClient` for `LapiRemediation` and `CapiRemediation` classes
+
+
+---
+
 ## [2.0.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v2.0.0) - 2023-02-02
 [_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v1.0.1...v2.0.0)
 
