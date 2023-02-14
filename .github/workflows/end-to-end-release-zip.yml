@@ -112,14 +112,14 @@ jobs:
           path: my-own-modules/${{ env.EXTENSION_PATH }}
 
       - name: Copy only expected zipped files from HEAD
-        if: github.event.inputs.check_head_zip == 'true'
+        if: github.event_name == 'push' || github.event.inputs.check_head_zip == 'true'
         run : |
           mkdir wp-content/plugins/crowdsec
           rsync -rc --exclude-from="my-own-modules/${{ env.EXTENSION_PATH }}/.distignore" "my-own-modules/${{ env.EXTENSION_PATH }}/" wp-content/plugins/crowdsec/ --delete --delete-excluded
           ls -al wp-content/plugins/crowdsec
 
       - name: Retrieve last stable release zip
-        if: github.event.inputs.check_head_zip != 'true'
+        if: github.event_name != 'push' && github.event.inputs.check_head_zip != 'true'
         run : |
           LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} ${{ env.ORIGIN }}/releases/latest | grep -oP "\/tag\/v\K(.*)$")
           curl -fL https://downloads.wordpress.org/plugin/crowdsec.$LAST_TAG.zip -o crowdsec.$LAST_TAG.zip
