@@ -1,4 +1,4 @@
-name: End-to-end release ZIP test
+name: End-to-end release test
 on:
   push:
     branches:
