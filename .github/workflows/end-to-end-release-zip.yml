@@ -22,7 +22,7 @@ jobs:
       matrix:
         wp-version: [ "4.9", "5.0", "5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "6.0", "6.1" ]
         php-version: [ "7.2", "7.4", "8.0" ]
-        zip_version: ["stable"]
+        zip_version: ["stable", "HEAD"]
         exclude:
           - { php-version: "7.4", wp-version: "4.9" }
           - { php-version: "7.4", wp-version: "5.0" }
@@ -101,18 +101,24 @@ jobs:
         run: |
           ddev exec wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'
 
-
       - name: Clone ${{ env.EXTENSION_NAME }} files for test
         uses: actions/checkout@v3
         with:
           path: my-own-modules/${{ env.EXTENSION_PATH }}
 
+      - name: Copy only expected zipped files
+        if: matrix.zip_version == 'HEAD'
+        run : |
+          mkdir wp-content/plugins/crowdsec
+          rsync -rc --exclude-from="my-own-modules/${{ env.EXTENSION_PATH }}/.distignore" "my-own-modules/${{ env.EXTENSION_PATH }}/" wp-content/plugins/crowdsec/ --delete --delete-excluded
+          ls -al wp-content/plugins/crowdsec
+
       - name: Retrieve last stable release zip
         if: matrix.zip_version == 'stable'
         run : |
           LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} ${{ env.ORIGIN }}/releases/latest | grep -oP "\/tag\/v\K(.*)$")
-          curl -fL https://downloads.wordpress.org/plugin/crowdsec.$LAST_TAG.zip -o crowdsec.zip
-          unzip crowdsec.zip -d ${{ github.workspace }}/wp-content/plugins
+          curl -fL https://downloads.wordpress.org/plugin/crowdsec.$LAST_TAG.zip -o crowdsec.$LAST_TAG.zip
+          unzip crowdsec.$LAST_TAG.zip -d ${{ github.workspace }}/wp-content/plugins
 
       - name: Prepare for playwright test
         run: |
