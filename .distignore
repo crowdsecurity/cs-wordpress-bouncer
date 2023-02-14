@@ -21,7 +21,6 @@
 /vendor/crowdsec/bouncer/phpstan.neon
 /vendor/crowdsec/bouncer/.github
 /vendor/crowdsec/.bouncer-key
-.gitignore
 .composer.json
 .composer.lock
 *.sh
@@ -31,6 +30,5 @@ CHANGELOG.md
 composer.json
 composer.lock
 /logs/**
-**/*Test.php
 .distignore
 .gitignore
