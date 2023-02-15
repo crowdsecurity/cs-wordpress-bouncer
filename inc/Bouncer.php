@@ -62,14 +62,14 @@ class Bouncer extends AbstractBouncer
     {
         return [
             // LAPI connection
-            'api_key' => $this->escape($rawConfigs['crowdsec_api_key'] ?? ''),
+            'api_key' => $this->escape((string)$rawConfigs['crowdsec_api_key'] ?? ''),
             'auth_type' => (string)($rawConfigs['crowdsec_auth_type'] ?? Constants::AUTH_KEY),
-            'tls_cert_path' => Constants::TLS_DIR . '/' . ltrim($rawConfigs['crowdsec_tls_cert_path'] ?? '', '/'),
-            'tls_key_path' => Constants::TLS_DIR . '/' . ltrim($rawConfigs['crowdsec_tls_key_path'] ?? '', '/'),
+            'tls_cert_path' => Constants::TLS_DIR . '/' . ltrim((string)$rawConfigs['crowdsec_tls_cert_path'] ?? '', '/'),
+            'tls_key_path' => Constants::TLS_DIR . '/' . ltrim((string)$rawConfigs['crowdsec_tls_key_path'] ?? '', '/'),
             'tls_verify_peer' => (bool)($rawConfigs['crowdsec_tls_verify_peer'] ?? false),
             'tls_ca_cert_path' => Constants::TLS_DIR . '/' .
-                                  ltrim($rawConfigs['crowdsec_tls_ca_cert_path'], '/'),
-            'api_url' => $this->escape($rawConfigs['crowdsec_api_url'] ?? ''),
+                                  ltrim((string)$rawConfigs['crowdsec_tls_ca_cert_path'], '/'),
+            'api_url' => $this->escape((string)$rawConfigs['crowdsec_api_url'] ?? ''),
             'use_curl' => (bool)($rawConfigs['crowdsec_use_curl'] ?? false),
             'api_timeout' => (int)($rawConfigs['crowdsec_api_timeout'] ?? Constants::API_TIMEOUT),
             // Debug
@@ -86,10 +86,10 @@ class Bouncer extends AbstractBouncer
                                                Constants::REMEDIATION_BYPASS),
             // Cache settings
             'stream_mode' => (bool)($rawConfigs['crowdsec_stream_mode'] ?? false),
-            'cache_system' => $this->escape($rawConfigs['crowdsec_cache_system'] ?? Constants::CACHE_SYSTEM_PHPFS),
+            'cache_system' => $this->escape((string)$rawConfigs['crowdsec_cache_system'] ?? Constants::CACHE_SYSTEM_PHPFS),
             'fs_cache_path' => Constants::CACHE_PATH,
-            'redis_dsn' => $this->escape($rawConfigs['crowdsec_redis_dsn'] ?? ''),
-            'memcached_dsn' => $this->escape($rawConfigs['crowdsec_memcached_dsn'] ?? ''),
+            'redis_dsn' => $this->escape((string)$rawConfigs['crowdsec_redis_dsn'] ?? ''),
+            'memcached_dsn' => $this->escape((string)$rawConfigs['crowdsec_memcached_dsn'] ?? ''),
             'clean_ip_cache_duration' => (int)($rawConfigs['crowdsec_clean_ip_cache_duration'] ??
                                                Constants::CACHE_EXPIRATION_FOR_CLEAN_IP),
             'bad_ip_cache_duration' => (int)($rawConfigs['crowdsec_bad_ip_cache_duration'] ??
