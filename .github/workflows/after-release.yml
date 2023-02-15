@@ -1,12 +1,7 @@
-name: End-to-end release test
+name: After release test
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
-  schedule:
-    - cron: '25 08 * * *'
+  release:
+    types: [ published ]
   workflow_dispatch:
     inputs:
       debug_enabled:
@@ -48,7 +43,6 @@ jobs:
     env:
       EXTENSION_NAME: "CrowdSec_Bouncer"
       EXTENSION_PATH: "crowdsec-bouncer"
-      ORIGIN: "https://github.com/crowdsecurity/cs-wordpress-bouncer"
 
     steps:
 
@@ -112,16 +106,16 @@ jobs:
           path: my-own-modules/${{ env.EXTENSION_PATH }}
 
       - name: Copy only expected zipped files from HEAD
-        if: github.event_name == 'push' || github.event.inputs.check_head_zip == 'true'
+        if: github.event.inputs.check_head_zip == 'true'
         run : |
           mkdir wp-content/plugins/crowdsec
           rsync -rc --exclude-from="my-own-modules/${{ env.EXTENSION_PATH }}/.distignore" "my-own-modules/${{ env.EXTENSION_PATH }}/" wp-content/plugins/crowdsec/ --delete --delete-excluded
           ls -al wp-content/plugins/crowdsec
 
       - name: Retrieve last stable release zip
-        if: github.event_name != 'push' && github.event.inputs.check_head_zip != 'true'
+        if: github.event.inputs.check_head_zip != 'true'
         run : |
-          LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} ${{ env.ORIGIN }}/releases/latest | grep -oP "\/tag\/v\K(.*)$")
+          LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/latest | grep -oP "\/tag\/v\K(.*)$")
           curl -fL https://downloads.wordpress.org/plugin/crowdsec.$LAST_TAG.zip -o crowdsec.$LAST_TAG.zip
           unzip crowdsec.$LAST_TAG.zip -d ${{ github.workspace }}/wp-content/plugins
 

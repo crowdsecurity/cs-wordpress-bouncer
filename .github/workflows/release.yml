@@ -141,6 +141,7 @@ jobs:
                 if: github.event.inputs.deploy_to_wordpress == 'true'
                 uses: softprops/action-gh-release@v1
                 with:
+                    token: ${{ secrets.CS_RELEASE_TOKEN }}
                     files: crowdsec.zip
                     body_path: CHANGELOG.txt
                     name: ${{ env.VERSION_NUMBER }}
