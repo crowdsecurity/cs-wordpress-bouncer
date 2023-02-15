@@ -1,7 +1,5 @@
-name: After release test
+name: Release test
 on:
-  release:
-    types: [ published ]
   workflow_dispatch:
     inputs:
       debug_enabled:
@@ -36,9 +34,8 @@ jobs:
           - { php-version: "8.0", wp-version: "5.4" }
           - { php-version: "8.0", wp-version: "5.5" }
 
-    name: End-to-end test suite
+    name: End-to-end release test suite
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
 
     env:
       EXTENSION_NAME: "CrowdSec_Bouncer"
