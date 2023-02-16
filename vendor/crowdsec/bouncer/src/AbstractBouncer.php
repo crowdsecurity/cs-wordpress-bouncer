@@ -84,6 +84,9 @@ abstract class AbstractBouncer
         $forcedTestIp = $this->getConfig('forced_test_ip');
         $ip = $forcedTestIp ?: $this->getRemoteIp();
         $ip = $this->handleForwardedFor($ip, $this->configs);
+        $this->logger->info('Bouncing current IP', [
+            'ip' => $ip,
+        ]);
         $remediation = $this->getRemediationForIp($ip);
         $this->handleRemediation($remediation, $ip);
     }
@@ -359,6 +362,9 @@ abstract class AbstractBouncer
                 $this->handleCaptchaRemediation($ip);
                 break;
             case Constants::REMEDIATION_BAN:
+                $this->logger->debug('Will display a ban wall', [
+                    'ip' => $ip,
+                ]);
                 $this->handleBanRemediation();
                 break;
             case Constants::REMEDIATION_BYPASS:
@@ -454,11 +460,19 @@ abstract class AbstractBouncer
             $maxRemediationLevel,
             $orderedRemediations
         );
+        $finalRemediation = $remediation;
         if ($currentIndex < $maxIndex) {
-            return $orderedRemediations[$maxIndex];
+            $finalRemediation = $orderedRemediations[$maxIndex];
+            $this->logger->debug('Original remediation has been capped', [
+                'origin' => $remediation,
+                'final' => $finalRemediation
+            ]);
         }
+        $this->logger->info('Final remediation', [
+            'remediation' => $finalRemediation,
+        ]);
 
-        return $remediation;
+        return $finalRemediation;
     }
 
     /**
@@ -614,13 +628,22 @@ abstract class AbstractBouncer
         if (null === $cachedCaptchaVariables['has_to_be_resolved']) {
             // Set up the first captcha remediation.
             $mustResolve = true;
+            $this->logger->debug('First captcha resolution', [
+                'ip' => $ip,
+            ]);
             $this->initCaptchaResolution($ip);
         }
 
         // Display captcha page if this is required.
         if ($cachedCaptchaVariables['has_to_be_resolved'] || $mustResolve) {
+            $this->logger->debug('Will display a captcha wall', [
+                'ip' => $ip,
+            ]);
             $this->displayCaptchaWall($ip);
         }
+        $this->logger->info('Captcha wall is not required (already solved)', [
+            'ip' => $ip,
+        ]);
     }
 
     /**

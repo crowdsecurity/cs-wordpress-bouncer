@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.0.3](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.0.3) - 2023-02-16
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.0.2...v2.0.3)
+
+### Fixed
+- If `display_errors` setting is `true`, error is thrown only if bouncer has been successfully instantiated
+
+---
+
 ## [2.0.2](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.0.2) - 2023-02-16
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.0.1...v2.0.2)
 
