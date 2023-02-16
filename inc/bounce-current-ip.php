@@ -29,8 +29,9 @@ function safelyBounceCurrentIp()
                               ' in file:' . $e->getFile() .
                               '(line ' . $e->getLine() . ')', true
             ));
+            return;
         }
-        $displayErrors =  (bool)($crowdSecConfigs['crowdsec_display_errors'] ?? false);
+        $displayErrors =  $bouncer->getConfig('display_errors');
         if (true === $displayErrors) {
             throw new BouncerException($e->getMessage(), $e->getCode(), $e);
         }

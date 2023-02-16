@@ -81,17 +81,17 @@
         },
         {
             "name": "crowdsec/bouncer",
-            "version": "v1.0.1",
-            "version_normalized": "1.0.1.0",
+            "version": "v1.1.1",
+            "version_normalized": "1.1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "c508c199a2f5778d878117cf52321df4c8fcbefb"
+                "reference": "f132937b62fbae5efb72c6666afe74de168b16f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/c508c199a2f5778d878117cf52321df4c8fcbefb",
-                "reference": "c508c199a2f5778d878117cf52321df4c8fcbefb",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/f132937b62fbae5efb72c6666afe74de168b16f6",
+                "reference": "f132937b62fbae5efb72c6666afe74de168b16f6",
                 "shasum": ""
             },
             "require": {
@@ -109,7 +109,7 @@
                 "mikey179/vfsstream": "^1.6.11",
                 "phpunit/phpunit": "^8.5.30 || ^9.3"
             },
-            "time": "2023-02-10T08:18:52+00:00",
+            "time": "2023-02-16T05:36:26+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -148,7 +148,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v1.0.1"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v1.1.1"
             },
             "install-path": "../crowdsec/bouncer"
         },
