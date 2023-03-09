@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- If a database option is empty, we add the default value to avoid configuration PHP error
+- If a database option is empty, we add the default value to avoid configuration PHP error ([#133](https://github.com/crowdsecurity/cs-wordpress-bouncer/issues/133))
 
 ---
 
