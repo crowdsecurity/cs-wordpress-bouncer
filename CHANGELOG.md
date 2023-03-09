@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.0.4](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.0.4) - 2023-03-09
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.0.3...v2.0.4)
+
+### Fixed
+
+- If a database option is empty, we add the default value to avoid configuration PHP error
+
+---
+
+
 ## [2.0.3](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.0.3) - 2023-02-16
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.0.2...v2.0.3)
 
