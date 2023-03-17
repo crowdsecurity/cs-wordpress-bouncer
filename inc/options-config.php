@@ -50,6 +50,7 @@ function getCrowdSecOptionsConfig(): array
         ['name' => 'crowdsec_theme_custom_css', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_debug_mode', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_disable_prod_log', 'default' => '', 'autoInit' => true],
+        ['name' => 'crowdsec_custom_user_agent', 'default' => '', 'autoInit' => true],
 		['name' => 'crowdsec_display_errors', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_forced_test_ip', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_forced_test_forwarded_ip', 'default' => '', 'autoInit' => true],

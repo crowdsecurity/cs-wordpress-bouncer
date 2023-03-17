@@ -10,8 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-
-### Changed
+- Add a `custom_user_agent` setting for debug ([#95](https://github.com/crowdsecurity/cs-wordpress-bouncer/issues/95))
 
 
 ### Fixed
