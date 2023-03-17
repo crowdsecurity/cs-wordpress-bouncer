@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 require_once __DIR__ . '/Bouncer.php';
+require_once __DIR__ . '/Constants.php';
 require_once __DIR__ . '/options-config.php';
 
 use CrowdSecBouncer\BouncerException;
@@ -20,6 +21,11 @@ function safelyBounceCurrentIp()
     // If there is any technical problem while bouncing, don't block the user.
     try {
         $crowdSecConfigs = getDatabaseConfigs();
+        if(isset($crowdSecConfigs['crowdsec_bouncing_level'])){
+            if(Constants::BOUNCING_LEVEL_DISABLED === $crowdSecConfigs['crowdsec_bouncing_level']){
+                return;
+            }
+        }
         $bouncer = new Bouncer($crowdSecConfigs);
         $bouncer->run();
     } catch (\Throwable $e) {
