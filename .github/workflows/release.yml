@@ -17,6 +17,10 @@ on:
 permissions:
     contents: write
 
+env:
+    # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+    DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
     deploy-create-release:
         name: Deploy and create release

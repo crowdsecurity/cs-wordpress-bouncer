@@ -9,5 +9,5 @@ if ! ddev --version >/dev/null 2>&1; then
     exit 1
 fi
 
-ddev exec -s playwright yarn --cwd ./var/www/html/my-own-modules/crowdsec-bouncer/tests/e2e-ddev --force && \
+ddev exec -s playwright yarn --cwd ./var/www/html/wp-content/plugins/crowdsec/tests/e2e-ddev --force && \
 ddev exec -s playwright yarn global add cross-env

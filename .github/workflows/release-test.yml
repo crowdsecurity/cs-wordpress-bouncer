@@ -14,6 +14,11 @@ on:
 permissions:
   contents: read
 
+env:
+  # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+  DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
 jobs:
   end-to-end-release-zip-test:
     strategy:
@@ -39,27 +44,21 @@ jobs:
 
     env:
       EXTENSION_NAME: "CrowdSec_Bouncer"
-      EXTENSION_PATH: "crowdsec-bouncer"
+      EXTENSION_PATH: "wp-content/plugins/crowdsec"
+      GITHUB_ORIGIN: "crowdsecurity/cs-wordpress-bouncer"
 
     steps:
 
-      - name: Clone DDEV files
-        uses: actions/checkout@v3
-        with:
-          path: .ddev
-          repository: julienloizelet/ddev-wp
-
       - name: Install DDEV
-        env:
-          DDEV_VERSION: v1.21.4
+        # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
         run: |
-          # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
-          sudo apt-get -qq update
-          sudo apt-get -qq -y install libnss3-tools
-          curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
-          bash install_ddev.sh ${{ env.DDEV_VERSION }}
+          curl -fsSL https://apt.fury.io/drud/gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ddev.gpg > /dev/null
+          echo "deb [signed-by=/etc/apt/trusted.gpg.d/ddev.gpg] https://apt.fury.io/drud/ * *" | sudo tee /etc/apt/sources.list.d/ddev.list
+          sudo apt-get -q update
+          sudo apt-get -q -y install libnss3-tools ddev
+          mkcert -install
           ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
-          rm install_ddev.sh
+
 
       - name: Set WP_VERSION_CODE env
         # used in some directory path and conventional file naming
@@ -67,17 +66,85 @@ jobs:
         run: |
           echo "WP_VERSION_CODE=$(echo wp${{ matrix.wp-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
 
-      - name: Start DDEV for ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
+      - name: Create empty WordPress DDEV project
+        run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }}
+
+      - name: Handle PHP version
         run: |
-          cp .ddev/config_overrides/config.${{ env.WP_VERSION_CODE }}.yaml .ddev/config.${{ env.WP_VERSION_CODE }}.yaml
-          cp .ddev/additional_docker_compose/docker-compose.crowdsec-without-plugin.yaml .ddev/docker-compose.crowdsec.yaml
-          cp .ddev/additional_docker_compose/docker-compose.playwright.yaml .ddev/docker-compose.playwright.yaml
-          sed -i -e 's/^php_version:.*/php_version: ${{ matrix.php-version }}/g' .ddev/config.${{ env.WP_VERSION_CODE }}.yaml
-          mkdir -p wp-content/plugins
-          mkdir -p my-own-modules/${{ env.EXTENSION_PATH }}
-          ddev start
-          sudo chmod -R 777 ${{ github.workspace }}/wp-content
-          sudo chmod -R 777 ${{ github.workspace }}/my-own-modules
+          sed -i -e 's/^php_version:.*/php_version: "${{ matrix.php-version }}"/g' .ddev/config.yaml  
+
+      - name: Add Redis, Memcached, Crowdsec and Playwright
+        run: |
+          ddev get ddev/ddev-redis
+          ddev get ddev/ddev-memcached
+          ddev get julienloizelet/ddev-playwright
+          # override redis.conf
+          ddev get julienloizelet/ddev-tools
+          ddev get julienloizelet/ddev-crowdsec-php
+
+      - name: Start DDEV
+        run: ddev start
+
+      - name: Download WordPress
+        run: ddev wp core download --version=${{ matrix.wp-version }}
+
+      - name: Setup WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
+        run: |
+          ddev exec wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com' 
+
+      - name: Set LAST_TAG env
+        run: |
+          echo "LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/${{ env.GITHUB_ORIGIN }}/releases/latest | grep -oP "\/tag\/v\K(.*)$")" >> $GITHUB_ENV
+
+      - name: Clone files from last release
+        if: github.event.inputs.check_head_zip != 'true'
+        uses: actions/checkout@v3
+        with:
+          path: raw_sources
+          ref: "v${{ env.LAST_TAG }}"
+          repository: "${{ env.GITHUB_ORIGIN }}"
+
+      - name: Clone files from HEAD
+        if: github.event.inputs.check_head_zip == 'true'
+        uses: actions/checkout@v3
+        with:
+          path: raw_sources
+
+      - name: Copy only expected zipped files from HEAD
+        if: github.event.inputs.check_head_zip == 'true'
+        run : |
+          mkdir wp-content/plugins/crowdsec
+          rsync -rc --exclude-from="raw_sources/.distignore" "raw_sources/" wp-content/plugins/crowdsec/ --delete --delete-excluded
+          cp -r raw_sources/tests/* wp-content/plugins/crowdsec/tests
+          ls -al wp-content/plugins/crowdsec
+
+      - name: Retrieve last stable release zip
+        if: github.event.inputs.check_head_zip != 'true'
+        run : |
+          curl -fL https://downloads.wordpress.org/plugin/crowdsec.${{ env.LAST_TAG }}.zip -o crowdsec.$LAST_TAG.zip
+          unzip crowdsec.${{ env.LAST_TAG }}.zip -d ${{ github.workspace }}/wp-content/plugins
+
+      - name: Copy needed tests files
+        run : |
+          cp -r raw_sources/tests wp-content/plugins/crowdsec
+          ls -al wp-content/plugins/crowdsec/tests/
+
+      - name: Prepare for playwright test
+        run: |
+          cp .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-from-plugin-folder.php cache-actions.php
+          cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* ${{ env.EXTENSION_PATH }}/tls
+          ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/${{ env.EXTENSION_PATH }}/geolocation
+          ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/${{ env.EXTENSION_PATH }}/geolocation
+          cd ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/geolocation
+          sha256sum -c GeoLite2-Country.tar.gz.sha256.txt
+          sha256sum -c GeoLite2-City.tar.gz.sha256.txt
+          tar -xf GeoLite2-Country.tar.gz
+          tar -xf GeoLite2-City.tar.gz
+          rm GeoLite2-Country.tar.gz GeoLite2-Country.tar.gz.sha256.txt GeoLite2-City.tar.gz GeoLite2-City.tar.gz.sha256.txt
+          cd ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
+          chmod +x test-init.sh
+          ./test-init.sh
+          chmod +x run-tests.sh   
 
       - name: Some DEBUG information
         run: |
@@ -85,61 +152,10 @@ jobs:
           ddev exec php -v
           ddev exec -s crowdsec crowdsec -version
 
-      - name: Install WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
-        run: |
-          wget https://wordpress.org/wordpress-${{ matrix.wp-version }}.tar.gz
-          tar -xf wordpress-${{ matrix.wp-version }}.tar.gz wordpress
-          cp -r wordpress/. ${{ github.workspace }}
-          rm -rf wordpress
-          rm wordpress-${{ matrix.wp-version }}.tar.gz
-
-      - name: Setup WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
-        run: |
-          ddev exec wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'
-
-      - name: Clone ${{ env.EXTENSION_NAME }} files
-        uses: actions/checkout@v3
-        with:
-          path: my-own-modules/${{ env.EXTENSION_PATH }}
-
-      - name: Copy only expected zipped files from HEAD
-        if: github.event.inputs.check_head_zip == 'true'
-        run : |
-          mkdir wp-content/plugins/crowdsec
-          rsync -rc --exclude-from="my-own-modules/${{ env.EXTENSION_PATH }}/.distignore" "my-own-modules/${{ env.EXTENSION_PATH }}/" wp-content/plugins/crowdsec/ --delete --delete-excluded
-          ls -al wp-content/plugins/crowdsec
-
-      - name: Retrieve last stable release zip
-        if: github.event.inputs.check_head_zip != 'true'
-        run : |
-          LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/latest | grep -oP "\/tag\/v\K(.*)$")
-          curl -fL https://downloads.wordpress.org/plugin/crowdsec.$LAST_TAG.zip -o crowdsec.$LAST_TAG.zip
-          unzip crowdsec.$LAST_TAG.zip -d ${{ github.workspace }}/wp-content/plugins
-
-      - name: Prepare for playwright test
-        run: |
-          cd ${{ github.workspace }}
-          cp .ddev/custom_files/crowdsec/php/cache-actions-from-plugin-folder.php cache-actions.php
-          cp -r .ddev/custom_files/crowdsec/cfssl/* wp-content/plugins/crowdsec/tls
-          cd wp-content/plugins/crowdsec
-          docker cp "tls" ddev-${{ env.WP_VERSION_CODE }}-playwright://var/www/html/wp-content/plugins/crowdsec
-          ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/wp-content/plugins/crowdsec/geolocation
-          ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/wp-content/plugins/crowdsec/geolocation
-          cd ${{ github.workspace }}/wp-content/plugins/crowdsec/geolocation
-          sha256sum -c GeoLite2-Country.tar.gz.sha256.txt
-          sha256sum -c GeoLite2-City.tar.gz.sha256.txt
-          tar -xf GeoLite2-Country.tar.gz
-          tar -xf GeoLite2-City.tar.gz
-          rm GeoLite2-Country.tar.gz GeoLite2-Country.tar.gz.sha256.txt GeoLite2-City.tar.gz GeoLite2-City.tar.gz.sha256.txt
-          cd ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
-          chmod +x test-init.sh
-          ./test-init.sh
-          chmod +x run-tests.sh
-
       - name: Run Plugin activation tests
-        uses: ./my-own-modules/crowdsec-bouncer/.github/workflows/end-to-end/run-single-test
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
-          test_path: ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 1-activate-plugin.js
 
       - name: Configure CrowdSec and Wordpress bouncer plugin
@@ -147,21 +163,21 @@ jobs:
           ddev crowdsec-config
 
       - name: Run Live mode remediation tests
-        uses: ./my-own-modules/crowdsec-bouncer/.github/workflows/end-to-end/run-single-test
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
-          test_path: ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 2-live-mode-remediations.js
 
       - name: Run more Live mode remediation tests
-        uses: ./my-own-modules/crowdsec-bouncer/.github/workflows/end-to-end/run-single-test
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
-          test_path: ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 3-live-mode-more.js
 
       - name: Run Live mode cache tests
-        uses: ./my-own-modules/crowdsec-bouncer/.github/workflows/end-to-end/run-single-test
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
-          test_path: ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 4-live-mode-cache.js
 
       - name: Prepare cron usage
@@ -169,27 +185,27 @@ jobs:
           sed -i  's/fastcgi_finish_request/\/\/fastcgi_finish_request/g' wp-cron.php
 
       - name: Run Stream mode tests
-        uses: ./my-own-modules/crowdsec-bouncer/.github/workflows/end-to-end/run-single-test
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
-          test_path: ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 5-stream-mode.js
 
       - name: Run Redis tests
-        uses: ./my-own-modules/crowdsec-bouncer/.github/workflows/end-to-end/run-single-test
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
-          test_path: ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 6-redis.js
 
       - name: Run Memcached tests
-        uses: ./my-own-modules/crowdsec-bouncer/.github/workflows/end-to-end/run-single-test
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
-          test_path: ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 7-memcached.js
 
       - name: Run Geolocation tests
-        uses: ./my-own-modules/crowdsec-bouncer/.github/workflows/end-to-end/run-single-test
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
-          test_path: ${{ github.workspace }}/my-own-modules/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 8-geolocation.js
 
       - name: tmate debugging session
