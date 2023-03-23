@@ -382,6 +382,18 @@ function adminAdvancedSettings()
     addFieldCheckbox('crowdsec_disable_prod_log', 'Disable prod log', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
     <p>By default, a <i>prod.log</i> file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.<br>You can disable this log here.</p>');
 
+    // Field "Custom User Agent"
+    addFieldString('crowdsec_custom_user_agent', 'Custom User-Agent', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function ($input) {
+        if ( 1 !== preg_match('#^[A-Za-z0-9]{0,5}$#', $input)) {
+            add_settings_error('Custom User-Agent', 'crowdsec_error', 'Custom User-Agent: Only alphanumeric characters ([A-Za-z0-9]) are allowed with a maximum of 5 characters.');
+
+            return '';
+        }
+
+        return $input;
+    }, '<p>By default, User-Agent used to call LAPI has the following format: <i>csphplapi_WordPress</i>.<br>You can use this field to add a custom suffix: <i>csphplapi_WordPress<b>[custom-suffix]</b></i>.<br>Only alphanumeric characters ([A-Za-z0-9]) are allowed with a maximum of 5 characters.</p>',
+        'Site1', 'max-width:100px;');
+
 	/*******************************
 	 ** Section "Display errors" **
 	 ******************************/

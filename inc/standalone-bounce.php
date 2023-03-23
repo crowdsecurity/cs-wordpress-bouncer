@@ -5,6 +5,7 @@ define('CROWDSEC_STANDALONE_RUNNING_CONTEXT', true);
 require_once __DIR__.'/../vendor/autoload.php';
 
 require_once __DIR__.'/Bouncer.php';
+require_once __DIR__.'/Constants.php';
 
 require_once __DIR__.'/standalone-settings.php';
 
@@ -15,6 +16,11 @@ use CrowdSecBouncer\BouncerException;
 try {
     /** @var $crowdSecJsonStandaloneConfig */
     $crowdSecConfigs = json_decode($crowdSecJsonStandaloneConfig, true);
+    if(isset($crowdSecConfigs['crowdsec_bouncing_level'])){
+        if(Constants::BOUNCING_LEVEL_DISABLED === $crowdSecConfigs['crowdsec_bouncing_level']){
+            return;
+        }
+    }
     $bouncer = new Bouncer($crowdSecConfigs);
     $bouncer->run();
 } catch (\Throwable $e) {

@@ -5,6 +5,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.1.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.1.0) - 2023-??-??
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.0.4...v2.1.0)
+
+### Added
+
+- Add a `custom_user_agent` setting for debug ([#95](https://github.com/crowdsecurity/cs-wordpress-bouncer/issues/95))
+
+
+### Fixed
+
+- Fix error on fresh install because Api key is required even if bouncing is disabled
+
+
+---
+
+
 ## [2.0.4](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.0.4) - 2023-03-09
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.0.3...v2.0.4)
 

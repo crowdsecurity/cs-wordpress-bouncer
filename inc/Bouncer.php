@@ -35,7 +35,6 @@ class Bouncer extends AbstractBouncer
         $configs = $this->handleRawConfigs($configs);
         $this->logger = $logger ?: new FileLog($configs, 'wordpress_bouncer');
         $configs['user_agent_version'] = Constants::VERSION;
-        $configs['user_agent_suffix'] = 'WordPress';
         $client = $this->handleClient($configs, $this->logger);
         $cache = $this->handleCache($configs, $this->logger);
         $remediation = new LapiRemediation($configs, $client, $cache, $this->logger);
@@ -97,6 +96,7 @@ class Bouncer extends AbstractBouncer
                 'crowdsec_api_timeout',
                 Constants::API_TIMEOUT
             )),
+            'user_agent_suffix' => 'WordPress' . $this->handleRawConfig($rawConfigs, 'crowdsec_custom_user_agent', ''),
             // Debug
             'debug_mode' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_debug_mode', false)),
             'disable_prod_log' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_disable_prod_log', false)),

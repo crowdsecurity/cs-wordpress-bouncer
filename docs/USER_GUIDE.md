@@ -366,6 +366,21 @@ By default, a `prod.log` file will be written in `wp-content/plugins/crowdsec/lo
 You can disable this log here.
 
 
+
+`Debug mode → Custom User-Agent`
+
+By default, User-Agent used to call LAPI has the following format: `csphplapi_WordPress`.
+
+You can use this field to add a custom suffix: `csphplapi_WordPress[custom-suffix]`.
+
+This can be useful to debug crowdsec logs when using multiple WordPress sites with multiple bouncer plugins.
+
+Only alphanumeric characters (`[A-Za-z0-9]`) are allowed with a maximum of 5 characters.
+
+
+***
+
+
 ***
 
 `Display errors → Enable errors display`
