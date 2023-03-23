@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [2.1.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.1.0) - 2023-??-??
+## [2.1.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.1.0) - 2023-03-23
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.0.4...v2.1.0)
 
 ### Added
