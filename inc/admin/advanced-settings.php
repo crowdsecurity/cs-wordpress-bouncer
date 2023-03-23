@@ -391,7 +391,7 @@ function adminAdvancedSettings()
         }
 
         return $input;
-    }, '<p>By default, User-Agent used to call LAPI has the following format: <i>csphplapi_WordPress</i><br>You can use this field to add a custom suffix: <i>csphplapi_WordPress<b>[custom-suffix]</b></i><br>This can be usefull to debug crowdsec logs when using mutliple WordPress sites with multiple bouncer plugins.<br>Only alphanumeric characters ([A-Za-z0-9]) are allowed with a maximum of 5 characters.</p>',
+    }, '<p>By default, User-Agent used to call LAPI has the following format: <i>csphplapi_WordPress</i>.<br>You can use this field to add a custom suffix: <i>csphplapi_WordPress<b>[custom-suffix]</b></i>.<br>Only alphanumeric characters ([A-Za-z0-9]) are allowed with a maximum of 5 characters.</p>',
         'Site1', 'max-width:100px;');
 
 	/*******************************

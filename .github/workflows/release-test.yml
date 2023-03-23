@@ -127,7 +127,7 @@ jobs:
       - name: Copy needed tests files
         run : |
           cp -r raw_sources/tests wp-content/plugins/crowdsec
-          ls -al wp-content/plugins/crowdsec/tests/
+          cp -r raw_sources/.github wp-content/plugins/crowdsec
 
       - name: Prepare for playwright test
         run: |
