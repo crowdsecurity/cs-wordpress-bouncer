@@ -147,13 +147,13 @@ As we use a TLS ready CrowdSec container, you have first to copy some certificat
 
 ```bash
 cd wp-sources
-cp -r .ddev/custom_files/crowdsec/cfssl/* wp-content/plugins/crowdsec/tls
+cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* wp-content/plugins/crowdsec/tls
 ```
 And we use also a custom PHP script to make some cache test. Thus, you should copy this PHP script too in the root folder: 
 
 ```bash
 cd wp-sources
-cp  .ddev/custom_files/crowdsec/php/cache-actions.php cache-actions.php
+cp  .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-from-plugin-folder.php cache-actions.php 
 ```
 
 
