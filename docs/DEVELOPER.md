@@ -65,14 +65,14 @@ wp-sources (choose the name you want for this folder)
 │
 │ (WordPress sources)
 │
-└───.ddev (do not change this folder name)
+└───.ddev
 │   │
-│   │ (Cloned sources of a specific WordPress ddev repo)
+│   │ (DDEV files)
 │
-└───my-own-modules (do not change this folder name)
+└───wp-content/plugins
     │
     │
-    └───crowdsec-bouncer (do not change this folder name)
+    └───crowdsec (do not change this folder name)
        │
        │ (Sources of a this module)
 
@@ -80,23 +80,23 @@ wp-sources (choose the name you want for this folder)
 
 - Create an empty folder that will contain all necessary sources:
 ```shell
-mkdir wp-sources
+mkdir wp-sources && cd wp-sources
 ```
-- Create an empty `.ddev` folder for DDEV and clone our pre-configured DDEV repo:
+- Create a DDEV WordPress project with some DDEV add-ons
 
 ```shell
-mkdir wp-sources/.ddev && cd wp-sources/.ddev && git clone git@github.com:julienloizelet/ddev-wp.git ./
+ddev config --project-type=wordpress --project-name=your-project-name
+ddev get ddev/ddev-redis
+ddev get ddev/ddev-memcached
+ddev get julienloizelet/ddev-tools
+ddev get julienloizelet/ddev-playwright
+ddev start
 ```
-- Copy some configurations file:
 
-```shell
-cp .ddev/config_overrides/config.wp59.yaml .ddev/config.wp59.yaml
-cp .ddev/config_overrides/config.crowdsec.yaml .ddev/config.crowdsec.yaml
-```
 - Launch DDEV
 
 ```shell
-cd .ddev && ddev start
+ddev start
 ```
 This should take some times on the first launch as this will download all necessary docker images.
 
@@ -104,14 +104,9 @@ This should take some times on the first launch as this will download all necess
 ### WordPress installation
 
 ```
-cd wp-sources
-wget https://wordpress.org/wordpress-5.9.tar.gz
-tar -xf wordpress-5.9.tar.gz wordpress
-cp -r wordpress/. ./
-rm -rf wordpress
-rm wordpress-5.9.tar.gz
-ddev start
-ddev exec wp core install --url='https://wp59.ddev.site' --title='WordPress' --admin_user='admin'
+ddev wp core download
+
+ddev exec wp core install --url='https://your-project-name.ddev.site' --title='WordPress' --admin_user='admin' 
 --admin_password='admin123' --admin_email='admin@admin.com'
 
 ```
@@ -124,18 +119,21 @@ ddev exec wp core install --url='https://wp59.ddev.site' --title='WordPress' --a
 ##### Install the module
 
 ```shell
-cd wp-sources
-mkdir my-own-modules &&  mkdir my-own-modules/crowdsec-bouncer && cd my-own-modules/crowdsec-bouncer
+mkdir -p wp-content/plugins/crowdsec && cd wp-content/plugins/crowdsec
+
 git clone git@github.com:crowdsecurity/cs-wordpress-bouncer.git ./
-cd wp-sources
-cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
-cp .ddev/additional_docker_compose/docker-compose.playwright.yaml .ddev/docker-compose.playwright.yaml
-ddev start
 ```
 
-Login to the admin by browsing the url `https://wp59.ddev.site/admin` (username: `admin` and password: `admin123`)
+Login to the admin by browsing the url `https://your-project-name.ddev.site/admin` (username: `admin` and password: `admin123`)
 
 Activate the CrowdSec plugin.
+
+Add some Crowdsec tools and restart:
+
+```
+ddev get julienloizelet/ddev-crowdsec-php
+ddev restart
+```
 
 ##### End-to-end tests
 
@@ -160,7 +158,7 @@ cp  .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-from-p
 Then, ensure that `run-tests.sh` and `test-init.sh` files are executable.
 
 ```shell
-cd wp-sources/my-own-module/crowdsec-bouncer/tests/e2e-ddev/__scripts__
+cd wp-sources/wp-content/plugins/crowdsec/tests/e2e-ddev/__scripts__
 ```
 Run `chmod +x run-tests.sh test-init.sh` if not.
 
