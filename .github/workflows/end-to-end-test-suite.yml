@@ -62,11 +62,7 @@ jobs:
           echo "WP_VERSION_CODE=$(echo wp${{ matrix.wp-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
 
       - name: Create empty WordPress DDEV project
-        run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }}
-
-      - name: Handle PHP version
-        run: |
-          sed -i -e 's/^php_version:.*/php_version: "${{ matrix.php-version }}"/g' .ddev/config.yaml  
+        run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }} --php-version=${{ matrix.php-version }}
 
       - name: Add Redis, Memcached, Crowdsec and Playwright
         run: |
