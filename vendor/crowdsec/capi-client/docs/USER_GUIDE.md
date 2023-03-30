@@ -24,8 +24,11 @@
   - [User Agent version](#user-agent-version)
   - [Scenarios](#scenarios)
   - [CAPI timeout](#capi-timeout)
+  - [Metrics](#metrics)
+    - [Bouncer metrics](#bouncer-metrics)
+    - [Machine metrics](#machine-metrics)
 - [Storage implementation](#storage-implementation)
-- [Override the curl request handler](#override-the-curl-request-handler)
+- [Override the curl list handler](#override-the-curl-list-handler)
   - [Custom implementation](#custom-implementation)
   - [Ready to use `file_get_contents` implementation](#ready-to-use-file_get_contents-implementation)
 - [Example scripts](#example-scripts)
@@ -80,7 +83,8 @@ To instantiate a watcher, you have to:
   use a basic `FileStorage` implementation, but we advise you to develop a more secured class as we are storing sensitive data.
 
 
-- Optionally, you can pass an implementation of the `AbstractRequestHandler` (from the `crowdsec/common` dependency package) as a third parameter. By default, a `Curl` request handler will be used.
+- Optionally, you can pass an implementation of the `CapiHandlerInterface` as a third parameter. By default, a 
+  `Curl` list handler will be used.
 
 
 - Optionally, to log some information, you can pass an implementation of the `Psr\Log\LoggerInterface` as a fourth
@@ -364,7 +368,56 @@ This setting is not required.
 This is the maximum number of seconds allowed to execute a CAPI request.
 
 It must be an integer. If you don't set any value, default value is 120. If you set a negative value, timeout is 
-unlimited. 
+unlimited.
+
+### Metrics
+
+```php
+$configs = [
+        ... 
+        'metrics' => [
+            'bouncer' => [
+                'custom_name' => 'DrupalCrowdSec',
+                'version' => 'v1.0.0',
+                'last_pull' => '2023-02-21T14:39:59Z',
+            ],
+            'machine' => [
+                'name' => 'Drupal',
+                'version' => 'v10.0.0',
+                'last_update' => '2023-01-01T14:35:36Z',
+                'last_push' => '2023-02-21T14:35:36Z',        
+            ]
+        ]
+        ...
+];
+```
+
+This setting is not required.
+
+Metrics will give information about the system sending the signals. 
+
+Metrics data will be displayed in the console when the user enroll his instance.
+
+Via the Metrics you can pass information about the version of your security module and the platform hosting your module (As for the example above).
+
+Each time the watcher has to log in, it will send metrics to CAPI using the [POST metrics](https://crowdsecurity.github.io/api_doc/index.html?urls.primaryName=CAPI#/watchers/post_metrics) endpoint.
+
+You can pass a `metrics` array as configuration to customize those metrics.
+
+#### Bouncer metrics
+
+- `metrics[bouncer][custom_name]`: Bouncer name. Default to the first part of User Agent. Must match with `#^[A-Za-z0-9]{1,32}$#` regular expression.
+- `metrics[bouncer][version]`: Bouncer version. Default to the User Agent version. Must match with `#^v\d{1,4}(\.\d{1,4}
+  ){2}$#` regular expression.
+- `metrics[bouncer][last_pull]` : Last bouncer pull date. Current date if not set. Must respect ISO8601 format `Y-m-dTH:i:sZ`.
+
+#### Machine metrics
+
+- `metrics[machine][name]`: Agent name. Default to the first part of User Agent. Must match with `#^[A-Za-z0-9]{1,32}$#` regular expression.
+- `metrics[machine][version]`: Agent version. Default to the User Agent version. Must match with `#^v\d{1,4}(\.\d{1,4}
+  ){2}$#` regular expression.
+- `metrics[machine][last_update]` : Last agent update date. Current date if not set. Must respect ISO8601 format `Y-m-dTH:i:sZ`.
+- `metrics[machine][last_push]` : Last agent signals push date. Current date if not set. Must respect ISO8601 format `Y-m-dTH:i:sZ`.
 
 
 ## Storage implementation
@@ -397,25 +450,26 @@ Beware that this example is not secure enough as we are talking here about sensi
 and `machine_id`.
 
 
-## Override the curl request handler
+## Override the curl list handler
 
 ### Custom implementation
 
 By default, the `Watcher` object will do curl requests to call the CAPI. If for some reason, you don't want to 
-use curl then you can create your own request handler class and pass it as a second parameter of the `Watcher` 
+use curl then you can create your own handler class and pass it as a third parameter of the `Watcher` 
 constructor. 
 
-Your custom request handler class must extend the `AbstractRequestHandler` class of the `crowdsec/common` dependency,
-and you will have to explicitly write an `handle` method:
+Your custom list handler class must implement the `CapiHandlerInterface` interface, and you will have to explicitly 
+write 
+an `handle` and a `getListDecisions` methods:
 
 ```php
 <?php
 
 use CrowdSec\Common\Client\HttpMessage\Request;
 use CrowdSec\Common\Client\HttpMessage\Response;
-use CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler;
+use CrowdSec\CapiClient\Client\CapiHandler\CapiHandlerInterface;
 
-class CustomRequestHandler extends AbstractRequestHandler
+class CustomCapiHandler extends CapiHandlerInterface
 {
     /**
      * Performs an HTTP request and returns a response.
@@ -423,7 +477,7 @@ class CustomRequestHandler extends AbstractRequestHandler
      * @param Request $request
      * @return Response
      */
-    public function handle(Request $request)
+    public function handle(Request $request): Response
     {
         /**
         * Make your own implementation of an HTTP request process.
@@ -431,18 +485,30 @@ class CustomRequestHandler extends AbstractRequestHandler
         * Response object contains a json body, a status code and headers (optional).
         */
     }
+    
+    /**
+     * @param string $url
+     * @param array $headers
+     * @return string
+     */
+    public function getListDecisions(string $url, array $headers = []): string
+    {
+        /**
+        * Make your own implementation that retrieves decisions list from a block list url
+        */
+    }
 }
 ```
 
-Once you have your custom request handler, you can instantiate the watcher that will use it:
+Once you have your custom handler, you can instantiate the watcher that will use it:
 
 ```php
 use CrowdSec\CapiClient\Watcher;
-use CustomRequestHandler;
+use CustomCapiHandler;
 
-$requestHandler = new CustomRequestHandler();
+$capiHandler = new CustomCapiHandler();
 
-$client = new Watcher($configs, $storage, $requestHandler);
+$client = new Watcher($configs, $storage, $capiHandler);
 ```
 
 Then, you can make any of the CAPI calls that we have seen above.
@@ -455,24 +521,22 @@ handler. To use it, you should instantiate it and pass the created object as a p
 
 ```php
 use CrowdSec\CapiClient\Watcher;
-use CrowdSec\Common\Client\RequestHandler\FileGetContents;
+use CrowdSec\CapiClient\Client\CapiHandler\FileGetContents;
 
-$requestHandler = new FileGetContents($configs);
+$capiHandler = new FileGetContents($configs);
 
-$client = new Watcher($configs, $storage, $requestHandler);
+$client = new Watcher($configs, $storage, $capiHandler);
 ```
 
-**N.B.**: Please note that you should pass a `$configs` param if you want to use some configuration value as 
-`api_timeout`. 
+**N.B.**: Please note that you should pass a `$configs` param if you want to use some configuration value as `api_timeout`. 
 
 
 ## Example scripts
 
 
-You will find some ready-to-use php scripts in the `tests/scripts` folder. These scripts could be useful to better 
-understand what you can do with this client. 
+You will find some ready-to-use PHP scripts in the `tests/scripts` folder. These scripts could be useful to better understand what you can do with this client. 
 
-As Watcher methods need at least an array as parameter, we use a json format in command line.
+As Watcher methods need at least an array as parameter, we use a JSON format in command line.
 
 
 ### Get decisions stream

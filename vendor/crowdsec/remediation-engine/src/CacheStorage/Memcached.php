@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CrowdSec\RemediationEngine\CacheStorage;
 
 use CrowdSec\RemediationEngine\Configuration\Cache\Memcached as MemcachedCacheConfig;
+use Psr\Cache\CacheItemInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
 use Symfony\Component\Config\Definition\Processor;
@@ -28,11 +29,8 @@ class Memcached extends AbstractCache
             $adapter = new MemcachedAdapter(MemcachedAdapter::createConnection($this->configs['memcached_dsn']));
             // @codeCoverageIgnoreStart
         } catch (\Exception $e) {
-            throw new CacheStorageException(
-                'Error when creating Memcached cache adapter:' . $e->getMessage(),
-                (int)$e->getCode(),
-                $e
-            );
+            $message = 'Error when creating Memcached cache adapter:' . $e->getMessage();
+            throw new CacheStorageException($message, (int) $e->getCode(), $e);
             // @codeCoverageIgnoreEnd
         } finally {
             $this->unsetCustomErrorHandler();
@@ -75,6 +73,33 @@ class Memcached extends AbstractCache
     }
 
     /**
+     * Process and validate input configurations.
+     */
+    private function configure(array $configs): void
+    {
+        $configuration = new MemcachedCacheConfig();
+        $processor = new Processor();
+        $this->configs = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($configs)]);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws CacheStorageException
+     */
+    public function getItem(string $cacheKey): CacheItemInterface
+    {
+        $this->setCustomErrorHandler();
+        try {
+            $item = parent::getItem($cacheKey);
+        } finally {
+            $this->unsetCustomErrorHandler();
+        }
+
+        return $item;
+    }
+
+    /**
      * When Memcached connection fail, it throws an unhandled warning.
      * To catch this warning as a clean exception we have to temporarily change the error handler.
      *
@@ -98,15 +123,5 @@ class Memcached extends AbstractCache
     private function unsetCustomErrorHandler(): void
     {
         restore_error_handler();
-    }
-
-    /**
-     * Process and validate input configurations.
-     */
-    private function configure(array $configs): void
-    {
-        $configuration = new MemcachedCacheConfig();
-        $processor = new Processor();
-        $this->configs = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($configs)]);
     }
 }

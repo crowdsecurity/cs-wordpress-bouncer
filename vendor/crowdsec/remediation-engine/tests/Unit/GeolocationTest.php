@@ -15,9 +15,9 @@ namespace CrowdSec\RemediationEngine\Tests\Unit;
  * @license   MIT License
  */
 
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\CacheStorage\AbstractCache;
 use CrowdSec\RemediationEngine\Geolocation;
-use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\RemediationException;
 use CrowdSec\RemediationEngine\Tests\Constants as TestConstants;
 use CrowdSec\RemediationEngine\Tests\PHPUnitUtil;
@@ -32,9 +32,10 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @uses \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::__construct
  * @uses \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::configure
  * @uses \CrowdSec\RemediationEngine\Configuration\Cache\PhpFiles::getConfigTreeBuilder
+ * @uses \CrowdSec\RemediationEngine\Configuration\AbstractCache::addCommonNodes
  *
  * @covers \CrowdSec\RemediationEngine\Geolocation::__construct()
- * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::saveCacheItem
+ * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::saveItemWithDuration
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::setIpVariables
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getIpCachedVariables
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getIpVariables

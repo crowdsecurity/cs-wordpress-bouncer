@@ -59,7 +59,7 @@ class Geolocation
             $variables,
             $ip,
             $cacheDuration,
-            AbstractCache::GEOLOCATION
+            [AbstractCache::GEOLOCATION]
         );
     }
 
@@ -105,7 +105,7 @@ class Geolocation
                     ['crowdsec_geolocation_country' => $result['country']],
                     $ip,
                     $cacheDuration,
-                    AbstractCache::GEOLOCATION
+                    [AbstractCache::GEOLOCATION]
                 );
             } elseif (!empty($result['not_found'])) {
                 $this->cacheStorage->setIpVariables(
@@ -113,7 +113,7 @@ class Geolocation
                     ['crowdsec_geolocation_not_found' => $result['not_found']],
                     $ip,
                     $cacheDuration,
-                    AbstractCache::GEOLOCATION
+                    [AbstractCache::GEOLOCATION]
                 );
             }
         }

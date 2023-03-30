@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CrowdSec\Common\Client\RequestHandler;
 
+use CrowdSec\Common\Client\ClientException;
 use CrowdSec\Common\Client\HttpMessage\Request;
 use CrowdSec\Common\Client\HttpMessage\Response;
 
@@ -21,6 +22,8 @@ interface RequestHandlerInterface
 {
     /**
      * Performs an HTTP request and returns a response.
+     *
+     * @throws ClientException
      */
     public function handle(Request $request): Response;
 }

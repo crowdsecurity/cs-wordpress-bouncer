@@ -37,6 +37,7 @@
   - [Remediation priorities](#remediation-priorities)
   - [Remediation fallback](#remediation-fallback)
   - [Geolocation](#geolocation)
+  - [Refresh frequency indicator](#refresh-frequency-indicator)
 - [LAPI remediation engine configurations](#lapi-remediation-engine-configurations)
   - [Stream mode](#stream-mode)
   - [Clean IP cache duration](#clean-ip-cache-duration)
@@ -45,6 +46,7 @@
   - [PhpFiles cache files directory](#phpfiles-cache-files-directory)
   - [Redis cache DSN](#redis-cache-dsn)
   - [Memcached cache DSN](#memcached-cache-dsn)
+  - [Cache tags](#cache-tags)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -66,12 +68,12 @@ This kind of action is called a remediation and can be:
     - Handle IP scoped decisions for Ipv4 and IPv6
     - Handle Range scoped decisions for IPv4
     - Handle Country scoped decisions using [MaxMind](https://www.maxmind.com) database
+    - Handle List decisions
   - Determine remediation for a given IP
     - Use the cached decisions for CAPI and for LAPI in stream mode
     - For LAPI in live mode, call LAPI if there is no cached decision
     - Use customizable remediation priorities
   
-
 - Overridable cache handler (built-in support for `Redis`, `Memcached` and `PhpFiles` caches)
 
 
@@ -114,6 +116,7 @@ To instantiate a `CapiRemediation` object, you have to:
     parameter. You will find an example of such implementation with the provided `CrowdSec\CommonLogger\FileLog` class.
 
 
+
 ```php
 use CrowdSec\CapiClient\Storage\FileStorage;
 use CrowdSec\CapiClient\Watcher;
@@ -153,8 +156,7 @@ This method will use the CrowdSec CAPI client (`$capiClient`) to retrieve arrays
 from CAPI. Then, new decisions will be cached using the `CacheStorage` implementation (`$phpFileCache` here) and 
 deleted ones will be removed if necessary.
 
-Practically, you should use some cron task to refresh decisions on a daily basis (you could increase frequency but 
-there should be at least two hours between each refresh). 
+Practically, you should use some cron job to refresh decisions every 2 to 12 hours, 4h recommended.
 
 
 ##### Get remediation for an IP
@@ -493,6 +495,18 @@ This setting is not required.
 
 - `geolocation[maxmind][database_path]`: Absolute path to the MaxMind database (e.g. mmdb file)
 
+### Refresh frequency indicator
+
+When your CAPI watcher client is subscribed to a blocklist, it retrieves decisions from a certain block list url 
+during the decisions refresh call. We will use this `refresh_frequency_indicator`setting to optimize how to pull such 
+list decisions.
+
+You must use a number that represents the frequency (in seconds) of your cron job. For example, if you pull 
+decisions every 2 hours, you would set `7200`.
+
+
+This setting is not required. If you don't set any value, `14400` (4h) will be used by default.
+
 
 ## LAPI remediation engine configurations
 
@@ -564,7 +578,6 @@ In seconds. Must be greater or equal than 1. Default to 120 seconds if not set.
 
 If you use one of our provided cache storage handler (`PhpFiles`,  `Memcached` or 
 `Redis`), you will need to pass a `$cacheConfigs` array as first parameter:
-
 ### PhpFiles cache files directory
 
 ```php
@@ -600,3 +613,28 @@ $cacheConfigs = [
 ```
 
 This setting is required and cannot be empty.
+
+### Cache tags
+
+If you are using the provided PhpFiles or Redis cache, you may want to use the [Symfony cache tags invalidation 
+feature](https://symfony.com/doc/current/components/cache/cache_invalidation.html#using-cache-tags). In order to instantiate a tag aware adapter, you need to pass the value `true` for the setting `use_cache_tags`.
+
+Example:
+
+```php
+$cacheConfigs = [
+        ... 
+        'fs_cache_path' => __DIR__ . '/.cache',
+        'use_cache_tags' => true
+        ...
+];
+```
+
+This setting is not required and is `false` by default.
+
+Beware that there is a caveat with Symfony tagged caching and Redis: it doesn't support the max memory policy set to `allkeys-lru`. You need to change this to `noeviction` or `volatile-*` instead; otherwise the caching won't work at all.
+
+Cache tags is not supported for the provided Memcached cache.
+
+
+

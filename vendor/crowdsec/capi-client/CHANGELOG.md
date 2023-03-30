@@ -4,14 +4,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Public API
+## SemVer public API
 
-The purpose of this section is to declare the public API of this library as required by  [item 1 of semantic versioning specification](https://semver.org/spec/v2.0.0.html#spec-item-1).
-
-The public API of this library consists of all public or protected methods, properties and constants belonging to the `src` folder.
+The [public API](https://semver.org/spec/v2.0.0.html#spec-item-1) of this library consists of all public or protected methods, properties and constants belonging to the `src` folder.
 
 ---
 
+## [3.0.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v3.0.0) - 2023-03-09
+[_Compare with previous release_](https://github.com/crowdsecurity/php-capi-client/compare/v2.1.0...v3.0.0)
+
+### Changed
+
+- *Breaking change*: Use `crowdsec/common` `^2.0.0` dependency instead of `^1.2.0` 
+- *Breaking change*: Use CAPI V3 endpoints instead of V2
+- *Breaking change*: If not null, the third param of the `Watcher::__contruct` method must implement 
+  `CapiHandlerInterface`
+
+### Added
+
+- Add `symfony/uid` dependency to handle UUID in signals data
+
+---
+
+
+
+## [2.1.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v2.1.0) - 2023-02-24
+[_Compare with previous release_](https://github.com/crowdsecurity/php-capi-client/compare/v2.0.0...v2.1.0)
+
+### Added
+
+- Add `metrics` in signals
+
+
+---
 
 ## [2.0.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v2.0.0) - 2023-02-02
 [_Compare with previous release_](https://github.com/crowdsecurity/php-capi-client/compare/v1.0.1...v2.0.0)

@@ -13,6 +13,8 @@ namespace CrowdSec\CapiClient\Tests\Integration;
  * @license   MIT License
  */
 
+use CrowdSec\CapiClient\Client\CapiHandler\Curl;
+use CrowdSec\CapiClient\Client\CapiHandler\FileGetContents;
 use CrowdSec\CapiClient\ClientException;
 use CrowdSec\CapiClient\Constants;
 use CrowdSec\CapiClient\Storage\FileStorage;
@@ -20,13 +22,62 @@ use CrowdSec\CapiClient\Tests\Constants as TestConstants;
 use CrowdSec\CapiClient\Tests\PHPUnitUtil;
 use CrowdSec\CapiClient\Watcher;
 use CrowdSec\Common\Client\AbstractClient;
-use CrowdSec\Common\Client\RequestHandler\Curl;
-use CrowdSec\Common\Client\RequestHandler\FileGetContents;
+use CrowdSec\Common\Logger\FileLog;
+use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Util\Exception;
 
 /**
- * @coversNothing
+ * @covers \CrowdSec\CapiClient\Watcher::getStreamDecisions
+ * @covers \CrowdSec\CapiClient\Watcher::enroll
+ * @covers \CrowdSec\CapiClient\Storage\FileStorage::storeScenarios
+ *
+ * @uses \CrowdSec\CapiClient\Storage\FileStorage::storeToken
+ * @uses \CrowdSec\CapiClient\Storage\FileStorage::writeFile
+ * @uses \CrowdSec\CapiClient\Watcher::buildSimpleMetrics
+ * @uses \CrowdSec\CapiClient\Watcher::handleLogin
+ * @uses \CrowdSec\CapiClient\Watcher::login
+ *
+ * @covers \CrowdSec\CapiClient\Watcher::pushMetrics
+ *
+ * @uses \CrowdSec\CapiClient\Watcher::normalizeTags
+ * @uses \CrowdSec\CapiClient\Watcher::shouldLogin
+ * @uses \CrowdSec\CapiClient\Configuration\Signal::getConfigTreeBuilder
+ * @uses \CrowdSec\CapiClient\Configuration\Signal\Decisions::cleanConfigs
+ * @uses \CrowdSec\CapiClient\Configuration\Signal\Decisions::getConfigTreeBuilder
+ * @uses \CrowdSec\CapiClient\Configuration\Signal\Source::getConfigTreeBuilder
+ * @uses \CrowdSec\CapiClient\Configuration\Watcher::addMetricsNodes
+ * @uses \CrowdSec\CapiClient\Configuration\Watcher::getConfigTreeBuilder
+ * @uses \CrowdSec\CapiClient\Signal::__construct
+ * @uses \CrowdSec\CapiClient\Signal::configureDecisions
+ * @uses \CrowdSec\CapiClient\Signal::configureProperties
+ * @uses \CrowdSec\CapiClient\Signal::configureSource
+ * @uses \CrowdSec\CapiClient\Signal::toArray
+ * @uses \CrowdSec\CapiClient\Storage\FileStorage::__construct
+ * @uses \CrowdSec\CapiClient\Storage\FileStorage::getBasePath
+ * @uses \CrowdSec\CapiClient\Storage\FileStorage::readFile
+ * @uses \CrowdSec\CapiClient\Storage\FileStorage::retrieveMachineId
+ * @uses \CrowdSec\CapiClient\Storage\FileStorage::retrievePassword
+ * @uses \CrowdSec\CapiClient\Storage\FileStorage::retrieveScenarios
+ * @uses \CrowdSec\CapiClient\Storage\FileStorage::retrieveToken
+ * @uses \CrowdSec\CapiClient\Watcher::__construct
+ * @uses \CrowdSec\CapiClient\Watcher::areEquals
+ * @uses \CrowdSec\CapiClient\Watcher::buildSignal
+ * @uses \CrowdSec\CapiClient\Watcher::buildSimpleSignalForIp
+ * @uses \CrowdSec\CapiClient\Watcher::configure
+ * @uses \CrowdSec\CapiClient\Watcher::convertSecondsToDuration
+ * @uses \CrowdSec\CapiClient\Watcher::ensureAuth
+ * @uses \CrowdSec\CapiClient\Watcher::ensureRegister
+ * @uses \CrowdSec\CapiClient\Watcher::formatDate
+ * @uses \CrowdSec\CapiClient\Watcher::formatDecisions
+ * @uses \CrowdSec\CapiClient\Watcher::formatUserAgent
+ * @uses \CrowdSec\CapiClient\Watcher::handleTokenHeader
+ * @uses \CrowdSec\CapiClient\Watcher::manageRequest
+ * @uses \CrowdSec\CapiClient\Watcher::pushSignals
+ * @uses \CrowdSec\CapiClient\Watcher::shouldRefreshCredentials
+ * @uses \CrowdSec\CapiClient\Watcher::validateDateInput
+ * @uses \CrowdSec\CapiClient\Client\AbstractClient::__construct
  */
 final class WatcherTest extends TestCase
 {
@@ -35,6 +86,35 @@ final class WatcherTest extends TestCase
         'user_agent_suffix' => TestConstants::USER_AGENT_SUFFIX,
         'scenarios' => ['crowdsecurity/http-backdoors-attempts', 'crowdsecurity/http-bad-user-agent'],
     ];
+
+    /**
+     * @var string
+     */
+    private $debugFile;
+    /**
+     * @var FileLog
+     */
+    private $logger;
+    /**
+     * @var string
+     */
+    private $prodFile;
+    /**
+     * @var vfsStreamDirectory
+     */
+    private $root;
+
+    /**
+     * set up test environment.
+     */
+    public function setUp(): void
+    {
+        $this->root = vfsStream::setup('/tmp');
+        $currentDate = date('Y-m-d');
+        $this->debugFile = 'debug-' . $currentDate . '.log';
+        $this->prodFile = 'prod-' . $currentDate . '.log';
+        $this->logger = new FileLog(['log_directory_path' => $this->root->url(), 'debug_mode' => true]);
+    }
 
     public function requestHandlerProvider(): array
     {
@@ -49,12 +129,24 @@ final class WatcherTest extends TestCase
      */
     public function testDecisionsStream($requestHandler)
     {
-        $client = new Watcher($this->configs, new FileStorage(), $requestHandler);
+        if (file_exists(__DIR__ . '/../../src/Storage/dev-token.json')) {
+            // Remove token to force login flow
+            file_put_contents(__DIR__ . '/../../src/Storage/dev-token.json', '');
+        }
+        $client = new Watcher($this->configs, new FileStorage(), $requestHandler, $this->logger);
         $this->checkRequestHandler($client, $requestHandler);
         $response = $client->getStreamDecisions();
 
         $this->assertArrayHasKey('new', $response, 'Response should have a "new" key');
         $this->assertArrayHasKey('deleted', $response, 'Response should have a "deleted" key');
+        $this->assertArrayHasKey('links', $response, 'Response should have a "links" key');
+        $this->assertArrayHasKey('blocklists', $response['links'], 'Response links should have a "blocklists" key');
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*100.*"type":"WATCHER_CLIENT_PUSH_METRICS_RESULT.*metrics updated successfully"/',
+            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            'Debug log content should be correct'
+        );
     }
 
     /**
@@ -74,7 +166,8 @@ final class WatcherTest extends TestCase
             'Signals should be pushed'
         );
 
-        unset($signals[0]['source']);
+        // With CAPI v3, there is no error even if signal is incomplete
+        /*unset($signals[0]['source']);
         $error = '';
         $code = 0;
         try {
@@ -90,7 +183,7 @@ final class WatcherTest extends TestCase
             '/missing required properties/',
             $error,
             'Should throw an error for bad formatted signal'
-        );
+        );*/
 
         // Build Simple Signal
         $signal = $client->buildSimpleSignalForIp(TestConstants::IP, $this->configs['scenarios'][0], null);

@@ -15,6 +15,7 @@ namespace CrowdSec\CapiClient\Tests\Unit;
  * @license   MIT License
  */
 
+use CrowdSec\CapiClient\Client\CapiHandler\Curl;
 use CrowdSec\CapiClient\ClientException;
 use CrowdSec\CapiClient\Constants;
 use CrowdSec\CapiClient\Storage\FileStorage;
@@ -23,7 +24,6 @@ use CrowdSec\CapiClient\Tests\MockedData;
 use CrowdSec\CapiClient\Tests\PHPUnitUtil;
 use CrowdSec\CapiClient\Watcher;
 use CrowdSec\Common\Client\HttpMessage\Request;
-use CrowdSec\Common\Client\RequestHandler\Curl;
 
 /**
  * @uses \CrowdSec\CapiClient\Configuration\Watcher::getConfigTreeBuilder
@@ -39,6 +39,11 @@ use CrowdSec\Common\Client\RequestHandler\Curl;
  * @uses \CrowdSec\CapiClient\Watcher::refreshCredentials
  * @uses \CrowdSec\CapiClient\Watcher::areEquals
  * @uses \CrowdSec\CapiClient\Storage\FileStorage::__construct
+ * @uses \CrowdSec\CapiClient\Configuration\Watcher::addMetricsNodes
+ * @uses \CrowdSec\CapiClient\Watcher::buildSimpleMetrics
+ * @uses \CrowdSec\CapiClient\Watcher::formatDate
+ * @uses \CrowdSec\CapiClient\Watcher::pushMetrics
+ * @uses \CrowdSec\CapiClient\Client\AbstractClient::__construct
  *
  * @covers \CrowdSec\CapiClient\Watcher::login
  * @covers \CrowdSec\CapiClient\Watcher::handleTokenHeader

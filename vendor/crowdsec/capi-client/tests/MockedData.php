@@ -26,6 +26,10 @@ class MockedData
 {"code": 200, "token": "this-is-a-token", "expire": "YYYY-MM-ddThh:mm:ssZ"}
 EOT;
 
+    public const METRICS_SUCCESS = <<<EOT
+{"code": 200, "message": "metrics updated successfully"}
+EOT;
+
     public const LOGIN_BAD_CREDENTIALS = <<<EOT
 {
   "message": "The machine_id or password is incorrect"

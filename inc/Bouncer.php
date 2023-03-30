@@ -33,7 +33,8 @@ class Bouncer extends AbstractBouncer
     {
         $this->shouldNotBounceWpAdmin = (bool)($configs['crowdsec_public_website_only'] ?? true);
         $configs = $this->handleRawConfigs($configs);
-        $this->logger = $logger ?: new FileLog($configs, 'wordpress_bouncer');
+        $logConfigs = array_merge($configs, ['no_rotation' => true]);
+        $this->logger = $logger ?: new FileLog($logConfigs, 'wordpress_bouncer');
         $configs['user_agent_version'] = Constants::VERSION;
         $client = $this->handleClient($configs, $this->logger);
         $cache = $this->handleCache($configs, $this->logger);

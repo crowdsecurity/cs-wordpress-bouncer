@@ -15,7 +15,6 @@
   - [DDEV Usage](#ddev-usage)
     - [Use composer to update or install the lib](#use-composer-to-update-or-install-the-lib)
     - [Unit test](#unit-test)
-    - [Integration test](#integration-test)
     - [Coding standards](#coding-standards)
       - [PHPCS Fixer](#phpcs-fixer)
       - [PHPSTAN](#phpstan)
@@ -47,7 +46,6 @@ For a quick start, follow the below steps.
 
 #### DDEV installation
 
-This project is fully compatible with DDEV 1.21.4, and it is recommended to use this specific version.
 For the DDEV installation, please follow the [official instructions](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/).
 
 
@@ -59,14 +57,14 @@ The final structure of the project will look like below.
 crowdsec-common-dev-project (choose the name you want for this folder)
 │       
 │
-└───.ddev (do not change this folder name)
+└───.ddev
 │   │   
-│   │ (Cloned sources of a PHP specific ddev repo)
+│   │ (DDEV files)
 │   
-└───my-own-modules (do not change this folder name)
+└───my-code (do not change this folder name)
     │   
     │
-    └───php-common (do not change this folder name)
+    └───common (do not change this folder name)
        │   
        │ (Clone of this repo)
          
@@ -77,35 +75,32 @@ crowdsec-common-dev-project (choose the name you want for this folder)
 mkdir crowdsec-common-dev-project
 ```
 
-- Create a `php-common` folder with sources of this repo:
+- Create a DDEV php project:
 
 ```bash
 cd crowdsec-common-dev-project
-mkdir -p my-own-modules/php-common
-cd my-own-modules/php-common && git clone git@github.com:crowdsecurity/php-common.git ./
+ddev config --project-type=php --php-version=8.2 --project-name=crowdsec-php-common
 ```
 
-- Create an empty `.ddev` folder for DDEV and clone our pre-configured DDEV repo:
+- Add some DDEV add-ons:
 
 ```bash
-cd crowdsec-common-dev-project
-mkdir .ddev && cd .ddev && git clone git@github.com:julienloizelet/ddev-php.git ./
+ddev get julienloizelet/ddev-tools
 ```
 
-By default, ddev will launch a PHP 7.2 container. If you want to work with another PHP version, copy the
-corresponding config file. For example:
+- Clone this repo sources in a `my-code/common` folder:
 
 ```bash
-cd crowdsec-common-dev-project
-cp .ddev/config_overrides/config.php74.yaml .ddev/config.php74.yaml
+mkdir -p my-code/common
+cd my-code/common && git clone git@github.com:crowdsecurity/php-common.git ./
 ```
+
 - Launch DDEV
 
 ```bash
 cd .ddev && ddev start
 ```
 This should take some times on the first launch as this will download all necessary docker images.
-
 
 ### DDEV Usage
 
@@ -115,13 +110,13 @@ This should take some times on the first launch as this will download all necess
 Run:
 
 ```bash
-ddev composer update --working-dir ./my-own-modules/php-common
+ddev composer update --working-dir ./my-code/common
 ```
 
 #### Unit test
 
 ```bash
-ddev php ./my-own-modules/php-common/vendor/bin/phpunit  ./my-own-modules/php-common/tests/Unit --testdox
+ddev php ./my-code/common/vendor/bin/phpunit  ./my-code/common/tests/Unit --testdox
 ```
 
 
@@ -131,7 +126,7 @@ We set up some coding standards tools that you will find in the `tools/coding-st
 In order to use these, you will need to work with a PHP version >= 7.4 and run first:
 
 ```bash
-ddev composer update --working-dir=./my-own-modules/php-common/tools/coding-standards
+ddev composer update --working-dir=./my-code/common/tools/coding-standards
 ```
 
 ##### PHPCS Fixer
@@ -142,7 +137,7 @@ With ddev, you can do the following:
 
 
 ```bash
-ddev phpcsfixer my-own-modules/php-common/tools/coding-standards/php-cs-fixer ../
+ddev phpcsfixer my-code/common/tools/coding-standards/php-cs-fixer ../
 
 ```
 
@@ -152,7 +147,7 @@ To use the [PHPSTAN](https://github.com/phpstan/phpstan) tool, you can run:
 
 
 ```bash
-ddev phpstan /var/www/html/my-own-modules/php-common/tools/coding-standards phpstan/phpstan.neon /var/www/html/my-own-modules/php-common/src
+ddev phpstan /var/www/html/my-code/common/tools/coding-standards phpstan/phpstan.neon /var/www/html/my-code/common/src
 
 ```
 
@@ -162,7 +157,7 @@ ddev phpstan /var/www/html/my-own-modules/php-common/tools/coding-standards phps
 To use the [PHPMD](https://github.com/phpmd/phpmd) tool, you can run:
 
 ```bash
-ddev phpmd ./my-own-modules/php-common/tools/coding-standards phpmd/rulesets.xml ../../src
+ddev phpmd ./my-code/common/tools/coding-standards phpmd/rulesets.xml ../../src
 
 ```
 
@@ -171,13 +166,13 @@ ddev phpmd ./my-own-modules/php-common/tools/coding-standards phpmd/rulesets.xml
 To use [PHP Code Sniffer](https://github.com/squizlabs/PHP_CodeSniffer) tools, you can run:
 
 ```bash
-ddev phpcs ./my-own-modules/php-common/tools/coding-standards my-own-modules/php-common/src PSR12
+ddev phpcs ./my-code/common/tools/coding-standards my-code/common/src PSR12
 ```
 
 and:
 
 ```bash
-ddev phpcbf  ./my-own-modules/php-common/tools/coding-standards my-own-modules/php-common/src PSR12
+ddev phpcbf  ./my-code/common/tools/coding-standards my-code/common/src PSR12
 ```
 
 
@@ -186,7 +181,7 @@ ddev phpcbf  ./my-own-modules/php-common/tools/coding-standards my-own-modules/p
 To use [PSALM](https://github.com/vimeo/psalm) tools, you can run:
 
 ```bash
-ddev psalm ./my-own-modules/php-common/tools/coding-standards ./my-own-modules/php-common/tools/coding-standards/psalm
+ddev psalm ./my-code/common/tools/coding-standards ./my-code/common/tools/coding-standards/psalm
 ```
 
 ##### PHP Unit Code coverage
@@ -201,7 +196,7 @@ ddev xdebug
 
 To generate a html report, you can run:
 ```bash
-ddev php -dxdebug.mode=coverage ./my-own-modules/php-common/tools/coding-standards/vendor/bin/phpunit --configuration ./my-own-modules/php-common/tools/coding-standards/phpunit/phpunit.xml
+ddev php -dxdebug.mode=coverage ./my-code/common/tools/coding-standards/vendor/bin/phpunit --configuration ./my-code/common/tools/coding-standards/phpunit/phpunit.xml
 ```
 
 You should find the main report file `dashboard.html` in `tools/coding-standards/phpunit/code-coverage` folder.
@@ -210,7 +205,7 @@ You should find the main report file `dashboard.html` in `tools/coding-standards
 If you want to generate a text report in the same folder:
 
 ```bash
-ddev php -dxdebug.mode=coverage ./my-own-modules/php-common/tools/coding-standards/vendor/bin/phpunit --configuration ./my-own-modules/php-common/tools/coding-standards/phpunit/phpunit.xml --coverage-text=./my-own-modules/php-common/tools/coding-standards/phpunit/code-coverage/report.txt
+ddev php -dxdebug.mode=coverage ./my-code/common/tools/coding-standards/vendor/bin/phpunit --configuration ./my-code/common/tools/coding-standards/phpunit/phpunit.xml --coverage-text=./my-code/common/tools/coding-standards/phpunit/code-coverage/report.txt
 ```
 
 ## Commit message

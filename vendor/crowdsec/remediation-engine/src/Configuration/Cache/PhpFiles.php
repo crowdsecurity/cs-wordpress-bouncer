@@ -25,6 +25,7 @@ class PhpFiles extends AbstractCache
      */
     protected $keys = [
         'fs_cache_path',
+        'use_cache_tags',
     ];
 
     public function getConfigTreeBuilder(): TreeBuilder
@@ -35,6 +36,7 @@ class PhpFiles extends AbstractCache
         $rootNode->children()
             ->scalarNode('fs_cache_path')->isRequired()->cannotBeEmpty()->end()
         ->end();
+        $this->addCommonNodes($rootNode);
 
         return $treeBuilder;
     }

@@ -223,4 +223,257 @@ class MockedData
             'deleted' => [],
         ],
     ];
+
+    public const DECISIONS_CAPI_V3 = [
+        'new_ip_v4' => [
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'ip',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4_2,
+                        ],
+                    ],
+                ],
+            ],
+            'deleted' => [],
+        ],
+        'new_ip_v4_with_0_duration' => [
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'ip',
+                    'decisions' => [
+                        [
+                            'duration' => '0h',
+                            'value' => Constants::IP_V4_2,
+                        ],
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4,
+                        ],
+                    ],
+                ],
+            ],
+            'deleted' => [],
+        ],
+        'new_ip_v4_and_list' => [
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'ip',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4_2,
+                        ],
+                    ],
+                ],
+            ],
+            'deleted' => [],
+            'links' => [
+                'blocklists' => [
+                    [
+                        'name' => 'tor-exit-nodes',
+                        'url' => 'some-url',
+                        'remediation' => 'captcha',
+                        'scope' => 'ip',
+                        'duration' => '24h',
+                    ],
+                ],
+            ],
+        ],
+        'new_ip_v4_other' => [
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'ip',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4,
+                        ],
+                    ],
+                ],
+            ],
+            'deleted' => [],
+        ],
+        'new_ip_v4_double' => [
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'ip',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4_2,
+                        ],
+                    ],
+                ],
+                [
+                    'scenario' => 'crowdsecurity/http-sensitive',
+                    'scope' => 'ip',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4_3,
+                        ],
+                    ],
+                ],
+            ],
+            'deleted' => [],
+        ],
+        'deleted_ip_v4' => [
+            'deleted' => [
+                [
+                    'scope' => 'ip',
+                    'decisions' => [
+                        Constants::IP_V4_2,
+                    ],
+                ],
+            ],
+            'new' => [],
+        ],
+        'new_ip_v4_range' => [
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'range',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4 . '/' . Constants::IP_RANGE,
+                        ],
+                    ],
+                ],
+            ],
+            'deleted' => [],
+        ],
+        'new_ip_v6_range' => [
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'range',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V6 . '/' . Constants::IP_RANGE,
+                        ],
+                    ],
+                ],
+            ],
+            'deleted' => [],
+        ],
+        'delete_ip_v4_range' => [
+            'deleted' => [
+                [
+                    'scope' => 'range',
+                    'decisions' => [
+                            Constants::IP_V4 . '/' . Constants::IP_RANGE,
+                        ],
+                ],
+            ],
+            'new' => [],
+        ],
+        'ip_v4_multiple' => [
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'ip',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4_2,
+                        ],
+                    ],
+                ],
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'range',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4 . '/' . Constants::IP_RANGE,
+                        ],
+                    ],
+                ],
+                [
+                    'scenario' => 'crowdsecurity/http-sensitive',
+                    'scope' => 'ip',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4,
+                        ],
+                    ],
+                ],
+            ],
+            'deleted' => [],
+        ],
+        'ip_v4_multiple_bis' => [
+            'deleted' => [
+                [
+                    'scope' => 'ip',
+                    'decisions' => [
+                            Constants::IP_V4,
+                        ],
+                ],
+            ],
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'ip',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4_3,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'ip_v4_remove_unknown' => [
+            'deleted' => [
+                [
+                    'scope' => 'do-not-know-delete',
+                    'decisions' => [
+                            Constants::IP_V4,
+                        ],
+                ],
+            ],
+            'new' => [],
+        ],
+        'ip_v4_store_unknown' => [
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'do-not-know-store',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => Constants::IP_V4,
+                        ],
+                    ],
+                ],
+            ],
+            'deleted' => [],
+        ],
+        'country_ban' => [
+            'new' => [
+                [
+                    'scenario' => 'crowdsecurity/http-backdoors-attempts',
+                    'scope' => 'Country',
+                    'decisions' => [
+                        [
+                            'duration' => '147h',
+                            'value' => 'FR',
+                        ],
+                    ],
+                ],
+            ],
+            'deleted' => [],
+        ],
+    ];
 }

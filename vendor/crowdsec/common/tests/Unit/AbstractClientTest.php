@@ -51,6 +51,8 @@ use PHPUnit\TextUI\XmlConfiguration\File;
  *
  * @uses \CrowdSec\Common\Client\HttpMessage\Request::__construct
  * @uses \CrowdSec\Common\Logger\AbstractLog::__construct
+ * @uses \CrowdSec\Common\Logger\FileLog::buildFileHandler
+
  */
 final class AbstractClientTest extends TestAbstractClient
 {

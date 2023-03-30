@@ -16,6 +16,8 @@ namespace CrowdSec\RemediationEngine\Tests\Unit;
  */
 
 use CrowdSec\CapiClient\Watcher;
+use CrowdSec\Common\Exception;
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\AbstractRemediation as LibAbstractRemediation;
 use CrowdSec\RemediationEngine\CacheStorage\AbstractCache;
 use CrowdSec\RemediationEngine\CacheStorage\Memcached;
@@ -23,7 +25,6 @@ use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
 use CrowdSec\RemediationEngine\CapiRemediation;
 use CrowdSec\RemediationEngine\Constants;
-use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\Tests\Constants as TestConstants;
 use CrowdSec\RemediationEngine\Tests\MockedData;
 use CrowdSec\RemediationEngine\Tests\PHPUnitUtil;
@@ -31,33 +32,45 @@ use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 
 /**
- * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::__construct
- * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::cleanCachedValues
- * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getAdapter
- * @uses \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getMaxExpiration
- * @uses \CrowdSec\RemediationEngine\CacheStorage\Memcached::__construct
- * @uses \CrowdSec\RemediationEngine\CacheStorage\Memcached::clear
- * @uses \CrowdSec\RemediationEngine\CacheStorage\Memcached::commit
- * @uses \CrowdSec\RemediationEngine\CacheStorage\Memcached::configure
- * @uses \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::__construct
- * @uses \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::configure
- * @uses \CrowdSec\RemediationEngine\CacheStorage\Redis::__construct
- * @uses \CrowdSec\RemediationEngine\CacheStorage\Redis::configure
- * @uses \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::addCommonNodes
- * @uses \CrowdSec\RemediationEngine\Configuration\Cache\Memcached::getConfigTreeBuilder
- * @uses \CrowdSec\RemediationEngine\Configuration\Cache\PhpFiles::getConfigTreeBuilder
- * @uses \CrowdSec\RemediationEngine\Configuration\Cache\Redis::getConfigTreeBuilder
- * @uses \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::validateCommon
- * @uses \CrowdSec\RemediationEngine\Decision::getOrigin
- * @uses \CrowdSec\RemediationEngine\Decision::toArray
- * @uses \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::addGeolocationNodes
- * @uses \CrowdSec\RemediationEngine\AbstractRemediation::getCountryForIp
- * @uses \CrowdSec\RemediationEngine\AbstractRemediation::getCacheStorage
- * @uses \CrowdSec\RemediationEngine\AbstractRemediation::getIpType
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::__construct
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::cleanCachedValues
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getAdapter
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getMaxExpiration
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\Memcached::__construct
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\Memcached::clear
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\Memcached::commit
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\Memcached::configure
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::__construct
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\PhpFiles::configure
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\Redis::__construct
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\Redis::configure
+ * @uses   \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::addCommonNodes
+ * @uses   \CrowdSec\RemediationEngine\Configuration\Cache\Memcached::getConfigTreeBuilder
+ * @uses   \CrowdSec\RemediationEngine\Configuration\Cache\PhpFiles::getConfigTreeBuilder
+ * @uses   \CrowdSec\RemediationEngine\Configuration\Cache\Redis::getConfigTreeBuilder
+ * @uses   \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::validateCommon
+ * @uses   \CrowdSec\RemediationEngine\Decision::getOrigin
+ * @uses   \CrowdSec\RemediationEngine\Decision::toArray
+ * @uses   \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::addGeolocationNodes
+ * @uses   \CrowdSec\RemediationEngine\AbstractRemediation::getCountryForIp
+ * @uses \CrowdSec\RemediationEngine\Configuration\AbstractCache::addCommonNodes
  *
+ * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getCacheStorage
+ *
+ * @uses   \CrowdSec\RemediationEngine\AbstractRemediation::getIpType
+ * @uses   \CrowdSec\RemediationEngine\CacheStorage\Memcached::getItem
+ *
+ * @covers   \CrowdSec\RemediationEngine\CapiRemediation::convertRawCapiDecisionsToDecisions
+ * @covers   \CrowdSec\RemediationEngine\CapiRemediation::handleListDecisions
+ *
+ * @uses \CrowdSec\RemediationEngine\Configuration\Capi::addCapiNodes
+ *
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::formatIfModifiedSinceHeader
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::handleListPullHeaders
+ * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::upsertItem
  * @covers \CrowdSec\RemediationEngine\Decision::getExpiresAt
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::__construct
- * @covers \CrowdSec\RemediationEngine\AbstractRemediation::handleDecisionScope
+ * @covers \CrowdSec\RemediationEngine\AbstractRemediation::normalize
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::handleDecisionIdentifier
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::parseDurationToSeconds
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::handleDecisionExpiresAt
@@ -81,7 +94,7 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::removeDecision
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::store
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::storeDecision
- * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::updateCacheItem
+ * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::updateDecisionItem
  * @covers \CrowdSec\RemediationEngine\Decision::__construct
  * @covers \CrowdSec\RemediationEngine\Decision::getIdentifier
  * @covers \CrowdSec\RemediationEngine\Decision::getScope
@@ -103,6 +116,9 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getAllCachedDecisions
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getRemediationFromDecisions
  * @covers \CrowdSec\RemediationEngine\CapiRemediation::getClient
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::validateBlocklist
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::shouldAddModifiedSince
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::handleListResponse
  */
 final class CapiRemediationTest extends AbstractRemediation
 {
@@ -127,6 +143,10 @@ final class CapiRemediationTest extends AbstractRemediation
      */
     private $phpFileStorage;
     /**
+     * @var PhpFiles
+     */
+    private $phpFileStorageWithTags;
+    /**
      * @var string
      */
     private $prodFile;
@@ -134,6 +154,10 @@ final class CapiRemediationTest extends AbstractRemediation
      * @var Redis
      */
     private $redisStorage;
+    /**
+     * @var Redis
+     */
+    private $redisStorageWithTags;
     /**
      * @var vfsStreamDirectory
      */
@@ -149,6 +173,8 @@ final class CapiRemediationTest extends AbstractRemediation
             'PhpFilesAdapter' => ['PhpFilesAdapter'],
             'RedisAdapter' => ['RedisAdapter'],
             'MemcachedAdapter' => ['MemcachedAdapter'],
+            'PhpFilesAdapterWithTags' => ['PhpFilesAdapterWithTags'],
+            'RedisAdapterWithTags' => ['RedisAdapterWithTags'],
         ];
     }
 
@@ -166,15 +192,24 @@ final class CapiRemediationTest extends AbstractRemediation
 
         $cachePhpfilesConfigs = ['fs_cache_path' => $this->root->url()];
         $mockedMethods = ['retrieveDecisionsForIp'];
-        $this->phpFileStorage = $this->getCacheMock('PhpFilesAdapter', $cachePhpfilesConfigs, $this->logger, $mockedMethods);
+        $this->phpFileStorage =
+            $this->getCacheMock('PhpFilesAdapter', $cachePhpfilesConfigs, $this->logger, $mockedMethods);
+        $this->phpFileStorageWithTags =
+            $this->getCacheMock('PhpFilesAdapter', array_merge($cachePhpfilesConfigs, ['use_cache_tags' => true]),
+                $this->logger, $mockedMethods);
         $cacheMemcachedConfigs = [
             'memcached_dsn' => getenv('memcached_dsn') ?: 'memcached://memcached:11211',
         ];
-        $this->memcachedStorage = $this->getCacheMock('MemcachedAdapter', $cacheMemcachedConfigs, $this->logger, $mockedMethods);
+        $this->memcachedStorage =
+            $this->getCacheMock('MemcachedAdapter', $cacheMemcachedConfigs, $this->logger, $mockedMethods);
         $cacheRedisConfigs = [
             'redis_dsn' => getenv('redis_dsn') ?: 'redis://redis:6379',
         ];
         $this->redisStorage = $this->getCacheMock('RedisAdapter', $cacheRedisConfigs, $this->logger, $mockedMethods);
+        $this->redisStorageWithTags = $this->getCacheMock('RedisAdapter', array_merge($cacheRedisConfigs,
+            ['use_cache_tags' => true]),
+            $this->logger,
+            $mockedMethods);
     }
 
     /**
@@ -185,6 +220,10 @@ final class CapiRemediationTest extends AbstractRemediation
         $this->setCache($cacheType);
         $remediationConfigs = [];
         $remediation = new CapiRemediation($remediationConfigs, $this->watcher, $this->cacheStorage, null);
+        $this->assertEquals(
+            $this->cacheStorage,
+            $remediation->getCacheStorage()
+        );
         $result = $remediation->clearCache();
         $this->assertEquals(
             true,
@@ -207,14 +246,15 @@ final class CapiRemediationTest extends AbstractRemediation
         // Test failed deferred
         $this->watcher->method('getStreamDecisions')->will(
             $this->onConsecutiveCalls(
-                MockedData::DECISIONS['new_ip_v4_double'], // Test 1 : new IP decision (ban) (save ok)
-                MockedData::DECISIONS['new_ip_v4_other'],  // Test 2 : new IP decision (ban) (failed deferred)
-                MockedData::DECISIONS['deleted_ip_v4'] // Test 3 : deleted IP decision (failed deferred)
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4_double'], // Test 1 : new IP decision (ban) (save ok)
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4_other'],  // Test 2 : new IP decision (ban) (failed deferred)
+                MockedData::DECISIONS_CAPI_V3['deleted_ip_v4'] // Test 3 : deleted IP decision (failed deferred)
             )
         );
         $cachePhpfilesConfigs = ['fs_cache_path' => $this->root->url()];
         $mockedMethods = [];
-        $this->cacheStorage = $this->getCacheMock('PhpFilesAdapter', $cachePhpfilesConfigs, $this->logger, $mockedMethods);
+        $this->cacheStorage =
+            $this->getCacheMock('PhpFilesAdapter', $cachePhpfilesConfigs, $this->logger, $mockedMethods);
         $remediationConfigs = [];
         $remediation = new CapiRemediation($remediationConfigs, $this->watcher, $this->cacheStorage, $this->logger);
 
@@ -227,7 +267,8 @@ final class CapiRemediationTest extends AbstractRemediation
 
         // Test 2
         $mockedMethods = ['saveDeferred'];
-        $this->cacheStorage = $this->getCacheMock('PhpFilesAdapter', $cachePhpfilesConfigs, $this->logger, $mockedMethods);
+        $this->cacheStorage =
+            $this->getCacheMock('PhpFilesAdapter', $cachePhpfilesConfigs, $this->logger, $mockedMethods);
         $remediationConfigs = [];
         $remediation = new CapiRemediation($remediationConfigs, $this->watcher, $this->cacheStorage, $this->logger);
 
@@ -244,7 +285,8 @@ final class CapiRemediationTest extends AbstractRemediation
         );
         // Test 3
         $mockedMethods = ['saveDeferred'];
-        $this->cacheStorage = $this->getCacheMock('PhpFilesAdapter', $cachePhpfilesConfigs, $this->logger, $mockedMethods);
+        $this->cacheStorage =
+            $this->getCacheMock('PhpFilesAdapter', $cachePhpfilesConfigs, $this->logger, $mockedMethods);
         $remediationConfigs = [];
         $remediation = new CapiRemediation($remediationConfigs, $this->watcher, $this->cacheStorage, $this->logger);
         $this->cacheStorage->method('saveDeferred')->will(
@@ -254,9 +296,9 @@ final class CapiRemediationTest extends AbstractRemediation
         );
         $result = $remediation->refreshDecisions();
         $this->assertEquals(
-            ['new' => 0, 'deleted' => 0],
+            ['new' => 0, 'deleted' => 1],
             $result,
-            'Refresh count should be correct for failed deferred remove'
+            'Failed deferred is not call as there is only one decision cached : decision is deleted directly without deferring'
         );
     }
 
@@ -361,30 +403,33 @@ final class CapiRemediationTest extends AbstractRemediation
     {
         $cachePhpfilesConfigs = ['fs_cache_path' => $this->root->url()];
         $mockedMethods = [];
-        $this->cacheStorage = $this->getCacheMock('PhpFilesAdapter', $cachePhpfilesConfigs, $this->logger, $mockedMethods);
+        $this->cacheStorage =
+            $this->getCacheMock('PhpFilesAdapter', $cachePhpfilesConfigs, $this->logger, $mockedMethods);
         $remediationConfigs = [];
         $remediation = new CapiRemediation($remediationConfigs, $this->watcher, $this->cacheStorage, $this->logger);
-        // convertRawDecisionsToDecisions
-        // Test 1 : ok
+        // convertRawCapiDecisionsToDecisions
+        // test 1 : single added decision
         $rawDecisions = [
             [
-                'scope' => 'IP',
-                'value' => '1.2.3.4',
-                'type' => 'ban',
-                'origin' => 'unit',
-                'duration' => '147h',
+                'scope' => 'ip',
+                'decisions' => [
+                        [
+                            'value' => '1.2.3.4',
+                            'duration' => '147h',
+                        ],
+                    ],
             ],
         ];
         $result = PHPUnitUtil::callMethod(
             $remediation,
-            'convertRawDecisionsToDecisions',
+            'convertRawCapiDecisionsToDecisions',
             [$rawDecisions]
         );
 
         $this->assertCount(
             1,
             $result,
-            'Should return array'
+            'Should return array of single decision'
         );
 
         $decision = $result[0];
@@ -398,59 +443,88 @@ final class CapiRemediationTest extends AbstractRemediation
             $decision->getScope(),
             'Should have created a normalized scope'
         );
-        // Test 2: bad raw decision
+        $this->assertEquals(
+            'capi',
+            $decision->getOrigin(),
+            'Should have created a normalized origin'
+        );
+
+        // Test 2 : deleted decisions
         $rawDecisions = [
             [
-                'value' => '1.2.3.4',
-                'origin' => 'unit',
-                'duration' => '147h',
+                'scope' => 'range',
+                'decisions' => [
+                        '1.2.3.4/24', '5.6.7.8/24',
+                    ],
             ],
         ];
         $result = PHPUnitUtil::callMethod(
             $remediation,
-            'convertRawDecisionsToDecisions',
-            [$rawDecisions]
-        );
-        $this->assertCount(
-            0,
-            $result,
-            'Should return empty array'
-        );
-
-        PHPUnitUtil::assertRegExp(
-            $this,
-            '/.*400.*"type":"REM_RAW_DECISION_NOT_AS_EXPECTED"/',
-            file_get_contents($this->root->url() . '/' . $this->prodFile),
-            'Prod log content should be correct'
-        );
-        // Test 3 : with id
-        $rawDecisions = [
-            [
-                'scope' => 'IP',
-                'value' => '1.2.3.4',
-                'type' => 'ban',
-                'origin' => 'unit',
-                'duration' => '147h',
-                'id' => 42,
-            ],
-        ];
-        $result = PHPUnitUtil::callMethod(
-            $remediation,
-            'convertRawDecisionsToDecisions',
+            'convertRawCapiDecisionsToDecisions',
             [$rawDecisions]
         );
 
         $this->assertCount(
-            1,
+            2,
             $result,
-            'Should return array'
+            'Should return array of two decision'
         );
 
         $decision = $result[0];
         $this->assertEquals(
-            'unit-ban-ip-1.2.3.4',
+            'ban',
+            $decision->getType(),
+            'Should have created a correct decision'
+        );
+        $this->assertEquals(
+            'range',
+            $decision->getScope(),
+            'Should have created a normalized scope'
+        );
+        $this->assertEquals(
+            'capi',
+            $decision->getOrigin(),
+            'Should have created a normalized origin'
+        );
+        $this->assertEquals(
+            'capi-ban-range-1.2.3.4/24',
             $decision->getIdentifier(),
-            'Should have created a correct decision even with id'
+            'Should have created a normalized identifier'
+        );
+
+        // validateBlocklist
+        $blocklist = [
+            'name' => 'tor-exit-node',
+            'url' => 'https://',
+            'remediation' => 'captcha',
+            'scope' => 'ip',
+            'duration' => '24h',
+        ];
+
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'validateBlocklist',
+            [$blocklist]
+        );
+
+        $this->assertEquals(
+            true,
+            $result
+        );
+        $blocklist = [
+            'name' => 'tor-exit-node',
+            'scope' => 'ip',
+            'duration' => '24h',
+        ];
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'validateBlocklist',
+            [$blocklist]
+        );
+
+        $this->assertEquals(
+            false,
+            $result
         );
 
         // comparePriorities
@@ -684,6 +758,189 @@ final class CapiRemediationTest extends AbstractRemediation
             (time() + 15) === $result,
             'Should return current time + decision duration'
         );
+
+        // parseDurationToSeconds
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'parseDurationToSeconds',
+            ['1h']
+        );
+        $this->assertEquals(
+            3600,
+            $result,
+            'Should convert in seconds'
+        );
+
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'parseDurationToSeconds',
+            ['147h']
+        );
+        $this->assertEquals(
+            3600 * 147,
+            $result,
+            'Should convert in seconds'
+        );
+
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'parseDurationToSeconds',
+            ['147h23m43s']
+        );
+        $this->assertEquals(
+            3600 * 147 + 23 * 60 + 43,
+            $result,
+            'Should convert in seconds'
+        );
+
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'parseDurationToSeconds',
+            ['147h23m43000.5665ms']
+        );
+        $this->assertEquals(
+            3600 * 147 + 23 * 60 + 43,
+            $result,
+            'Should convert in seconds'
+        );
+
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'parseDurationToSeconds',
+            ['23m43s']
+        );
+        $this->assertEquals(
+            23 * 60 + 43,
+            $result,
+            'Should convert in seconds'
+        );
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'parseDurationToSeconds',
+            ['-23m43s']
+        );
+        $this->assertEquals(
+            -23 * 60 - 43,
+            $result,
+            'Should convert in seconds'
+        );
+
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'parseDurationToSeconds',
+            ['abc']
+        );
+        $this->assertEquals(
+            0,
+            $result,
+            'Should return 0 on bad format'
+        );
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*400.*"type":"REM_DECISION_DURATION_PARSE_ERROR"/',
+            file_get_contents($this->root->url() . '/' . $this->prodFile),
+            'Prod log content should be correct'
+        );
+
+        // formatIfModifiedSinceHeader
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'formatIfModifiedSinceHeader',
+            [1677821719]
+        );
+        $this->assertEquals(
+            'Fri, 03 Mar 2023 05:35:19 GMT',
+            $result,
+            'Should good date and format'
+        );
+
+        // shouldAddModifiedSince
+        // test 1 : cron running at 23h ; list expires at 24h, frequency 2h => should pull even if not modified
+        // pull time: 1677884400 : Fri, 03 Mar 2023 23:00:00 GMT
+        // list expiration time: 1677888000 : Sat, 04 Mar 2023 00:00:00 GMT
+        // frequency 7200
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'shouldAddModifiedSince',
+            [1677884400, 1677888000, 7200]
+        );
+        $this->assertEquals(
+            false,
+            $result
+        );
+
+        // test 2 : cron running at 21h ; list expires at 24h, frequency 2h => should NOT pull even if not modified
+        // pull time: 1677877200 : Fri, 03 Mar 2023 21:00:00 GMT
+        // list expiration time: 1677888000 : Sat, 04 Mar 2023 00:00:00 GMT
+        // frequency 7200
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'shouldAddModifiedSince',
+            [1677877200, 1677888000, 7200]
+        );
+        $this->assertEquals(
+            true,
+            $result
+        );
+
+        // test 3 (edge case) : cron running at 22h ; list expires at 24h, frequency 2h => should pull even if not
+        // modified
+        // pull time: 1677880800 : Fri, 03 Mar 2023 22:00:00 GMT
+        // list expiration time: 1677888000 : Sat, 04 Mar 2023 00:00:00 GMT
+        // frequency 7200
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'shouldAddModifiedSince',
+            [1677880800, 1677888000, 7200]
+        );
+        $this->assertEquals(
+            false,
+            $result
+        );
+
+        // handleListPullHeaders
+        // test 1 : cron running at 23h ; list expires at 24h (last pull at 00h), frequency 4h
+        // => SHOULD pull even if not modified
+        // Last pull: 1677801600 : Fri, 03 Mar 2023 00:00:00 GMT
+        // pull time: 1677884400 : Fri, 03 Mar 2023 23:00:00 GMT
+        // list expiration time: 1677888000 : Sat, 04 Mar 2023 00:00:00 GMT
+        // frequency 14400
+        $headers = [];
+        $lastPullContent = [
+            AbstractCache::INDEX_EXP => 1677888000,
+            AbstractCache::LAST_PULL => 1677801600];
+        $pullTime = 1677884400;
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'handleListPullHeaders',
+            [$headers, $lastPullContent, $pullTime]
+        );
+
+        $this->assertEquals(
+            [],
+            $result
+        );
+        // test 2 : cron running at 16h ; list expires at 24h (last pull at 00h), frequency 4h
+        // => SHOULD NOT pull even if not modified
+        // Last pull: 1677801600 : Fri, 03 Mar 2023 00:00:00 GMT
+        // pull time: 1677859200 : Fri, 03 Mar 2023 16:00:00 GMT
+        // list expiration time: 1677888000 : Sat, 04 Mar 2023 00:00:00 GMT
+        // frequency 14400
+        $headers = [];
+        $lastPullContent = [
+            AbstractCache::INDEX_EXP => 1677888000,
+            AbstractCache::LAST_PULL => 1677801600];
+        $pullTime = 1677859200;
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'handleListPullHeaders',
+            [$headers, $lastPullContent, $pullTime]
+        );
+
+        $this->assertEquals(
+            ['If-Modified-Since' => 'Fri, 03 Mar 2023 00:00:00 GMT'],
+            $result
+        );
     }
 
     /**
@@ -695,23 +952,46 @@ final class CapiRemediationTest extends AbstractRemediation
 
         $remediationConfigs = [];
 
+        $capiHandlerMock = $this->getMockBuilder('CrowdSec\CapiClient\Client\CapiHandler\Curl')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getListDecisions'])
+            ->getMock();
+
         $remediation = new CapiRemediation($remediationConfigs, $this->watcher, $this->cacheStorage, $this->logger);
 
         // Prepare next tests
         $this->watcher->method('getStreamDecisions')->will(
             $this->onConsecutiveCalls(
-                MockedData::DECISIONS['new_ip_v4'],          // Test 1 : new IP decision (ban)
-                MockedData::DECISIONS['new_ip_v4'],          // Test 2 : same IP decision (ban)
-                MockedData::DECISIONS['deleted_ip_v4'],      // Test 3 : deleted IP decision (existing one and not)
-                MockedData::DECISIONS['new_ip_v4_range'],    // Test 4 : new RANGE decision (ban)
-                MockedData::DECISIONS['delete_ip_v4_range'], // Test 5 : deleted RANGE decision
-                MockedData::DECISIONS['ip_v4_multiple'],     // Test 6 : retrieve multiple RANGE and IP decision
-                MockedData::DECISIONS['ip_v4_multiple_bis'],  // Test 7 : retrieve multiple new and delete
-                MockedData::DECISIONS['ip_v4_remove_unknown'], // Test 8 : delete unknown scope
-                MockedData::DECISIONS['ip_v4_store_unknown'], // Test 9 : store unknown scope
-                MockedData::DECISIONS['new_ip_v6_range'] // Test 10 : store IP V6 range
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4'],          // Test 1 : new IP decision (ban)
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4'],          // Test 2 : same IP decision (ban)
+                MockedData::DECISIONS_CAPI_V3['deleted_ip_v4'],      // Test 3 : deleted IP decision (existing one and not)
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4_range'],    // Test 4 : new RANGE decision (ban)
+                MockedData::DECISIONS_CAPI_V3['delete_ip_v4_range'], // Test 5 : deleted RANGE decision
+                MockedData::DECISIONS_CAPI_V3['ip_v4_multiple'],     // Test 6 : retrieve multiple RANGE and IP decision
+                MockedData::DECISIONS_CAPI_V3['ip_v4_multiple_bis'],  // Test 7 : retrieve multiple new and delete
+                MockedData::DECISIONS_CAPI_V3['ip_v4_remove_unknown'], // Test 8 : delete unknown scope
+                MockedData::DECISIONS_CAPI_V3['ip_v4_store_unknown'], // Test 9 : store unknown scope
+                MockedData::DECISIONS_CAPI_V3['new_ip_v6_range'], // Test 10 : store IP V6 range
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4_and_list'], // Test 11: IPv4 and list
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4_and_list'], // Test 12: IPv4 and list
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4_and_list'], // Test 13: IPv4 and list but error is thrown
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4_with_0_duration'] // Test 14: IPv4 and 0h duration
             )
         );
+        $this->watcher->method('getCapiHandler')->will(
+            $this->returnValue(
+                $capiHandlerMock
+            )
+        );
+
+        $capiHandlerMock->method('getListDecisions')->will(
+            $this->onConsecutiveCalls(
+                TestConstants::IP_V4_2, // Test 11 : new IP v4 + list
+                '', // Test 12 : new IP v4 + list again (not modified)
+                $this->throwException(new Exception('UNIT TEST EXCEPTION')) // Test 13 : will throw an error
+            )
+        );
+
         // Test 1
         $result = $remediation->refreshDecisions();
         $this->assertEquals(
@@ -810,16 +1090,16 @@ final class CapiRemediationTest extends AbstractRemediation
         // Test 6
         $result = $remediation->refreshDecisions();
         $this->assertEquals(
-            ['new' => 5, 'deleted' => 0],
+            ['new' => 3, 'deleted' => 0],
             $result,
             'Refresh count should be correct'
         );
         $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_CACHE_KEY));
         $cachedValue = $item->get();
         $this->assertEquals(
-            2,
+            1,
             count($cachedValue),
-            'Should have cached 2 remediations'
+            'Should have cached 1 remediation'
         );
         $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_2_CACHE_KEY));
         $cachedValue = $item->get();
@@ -835,7 +1115,7 @@ final class CapiRemediationTest extends AbstractRemediation
             $result,
             'Refresh count should be correct'
         );
-        $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_CACHE_KEY));
+        $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_3_CACHE_KEY));
         $cachedValue = $item->get();
         $this->assertEquals(
             1,
@@ -845,9 +1125,9 @@ final class CapiRemediationTest extends AbstractRemediation
         $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_2_CACHE_KEY));
         $cachedValue = $item->get();
         $this->assertEquals(
-            2,
+            1,
             count($cachedValue),
-            'Should now have 2 cached remediation'
+            'Should now have 1 cached remediation'
         );
 
         // Test 8
@@ -870,7 +1150,7 @@ final class CapiRemediationTest extends AbstractRemediation
 
         PHPUnitUtil::assertRegExp(
             $this,
-            '/.*300.*"type":"REM_CACHE_REMOVE_NON_IMPLEMENTED_SCOPE.*CAPI-ban-do-not-know-delete-1.2.3.4"/',
+            '/.*300.*"type":"REM_CACHE_REMOVE_NON_IMPLEMENTED_SCOPE.*capi-ban-do-not-know-delete-1.2.3.4"/',
             file_get_contents($this->root->url() . '/' . $this->prodFile),
             'Prod log content should be correct'
         );
@@ -884,11 +1164,12 @@ final class CapiRemediationTest extends AbstractRemediation
 
         PHPUnitUtil::assertRegExp(
             $this,
-            '/.*300.*"type":"REM_CACHE_STORE_NON_IMPLEMENTED_SCOPE.*CAPI-ban-do-not-know-store-1.2.3.4"/',
+            '/.*300.*"type":"REM_CACHE_STORE_NON_IMPLEMENTED_SCOPE.*capi-ban-do-not-know-store-1.2.3.4"/',
             file_get_contents($this->root->url() . '/' . $this->prodFile),
             'Prod log content should be correct'
         );
         // Test 10
+        $remediation->clearCache();
         $result = $remediation->refreshDecisions();
         $this->assertEquals(
             ['new' => 0, 'deleted' => 0],
@@ -902,87 +1183,111 @@ final class CapiRemediationTest extends AbstractRemediation
             file_get_contents($this->root->url() . '/' . $this->prodFile),
             'Prod log content should be correct'
         );
-        // parseDurationToSeconds
-        $result = PHPUnitUtil::callMethod(
-            $remediation,
-            'parseDurationToSeconds',
-            ['1h']
-        );
+
+        // Test 11 : new + list
+        $result = $remediation->refreshDecisions();
         $this->assertEquals(
-            3600,
+            ['new' => 2, 'deleted' => 0],
             $result,
-            'Should convert in seconds'
+            'Refresh count should be correct'
         );
 
-        $result = PHPUnitUtil::callMethod(
-            $remediation,
-            'parseDurationToSeconds',
-            ['147h']
-        );
-        $this->assertEquals(
-            3600 * 147,
-            $result,
-            'Should convert in seconds'
+        $lastPullCacheKey = $remediation->getCacheStorage()->getCacheKey(
+            AbstractCache::LIST,
+            'tor-exit-nodes'
         );
 
-        $result = PHPUnitUtil::callMethod(
-            $remediation,
-            'parseDurationToSeconds',
-            ['147h23m43s']
-        );
+        $lastPullItem = $remediation->getCacheStorage()->getItem($lastPullCacheKey);
         $this->assertEquals(
-            3600 * 147 + 23 * 60 + 43,
-            $result,
-            'Should convert in seconds'
+            true,
+            $lastPullItem->isHit()
         );
 
-        $result = PHPUnitUtil::callMethod(
-            $remediation,
-            'parseDurationToSeconds',
-            ['147h23m43000.5665ms']
-        );
+        $time = time();
+        $listExpiration = $time + 24 * 60 * 60;
         $this->assertEquals(
-            3600 * 147 + 23 * 60 + 43,
-            $result,
-            'Should convert in seconds'
+            [AbstractCache::INDEX_EXP => $listExpiration, AbstractCache::LAST_PULL => $time],
+            $lastPullItem->get()
         );
 
-        $result = PHPUnitUtil::callMethod(
-            $remediation,
-            'parseDurationToSeconds',
-            ['23m43s']
-        );
+        $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_2_CACHE_KEY));
+        $cachedValue = $item->get();
         $this->assertEquals(
-            23 * 60 + 43,
-            $result,
-            'Should convert in seconds'
-        );
-        $result = PHPUnitUtil::callMethod(
-            $remediation,
-            'parseDurationToSeconds',
-            ['-23m43s']
-        );
-        $this->assertEquals(
-            -23 * 60 - 43,
-            $result,
-            'Should convert in seconds'
+            2,
+            count($cachedValue),
+            'Should now have 2 cached remediation'
         );
 
-        $result = PHPUnitUtil::callMethod(
-            $remediation,
-            'parseDurationToSeconds',
-            ['abc']
+        $this->assertEquals(
+            'ban',
+            $cachedValue[0][0]
         );
         $this->assertEquals(
-            0,
-            $result,
-            'Should return 0 on bad format'
+            'captcha',
+            $cachedValue[1][0]
         );
+        // Test 12 : new + list again
+        // We wait to test that expiration and pull date won't change
+        sleep(1);
+        $result = $remediation->refreshDecisions();
+        $this->assertEquals(
+            ['new' => 0, 'deleted' => 0],
+            $result,
+            'Refresh count should be correct'
+        );
+        $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_2_CACHE_KEY));
+        $cachedValue = $item->get();
+        $this->assertEquals(
+            2,
+            count($cachedValue),
+            'Should now have 2 cached remediation'
+        );
+
+        $this->assertEquals(
+            'ban',
+            $cachedValue[0][0]
+        );
+        $this->assertEquals(
+            'captcha',
+            $cachedValue[1][0]
+        );
+        $lastPullItem = $remediation->getCacheStorage()->getItem($lastPullCacheKey);
+
+        $this->assertEquals(
+            [AbstractCache::INDEX_EXP => $listExpiration, AbstractCache::LAST_PULL => $time],
+            $lastPullItem->get(),
+            'Expiration and pull date should not have change'
+        );
+        // Test 13 : new + list again
+        // We wait to test that expiration and pull date won't change
+        $result = $remediation->refreshDecisions();
         PHPUnitUtil::assertRegExp(
             $this,
-            '/.*400.*"type":"REM_DECISION_DURATION_PARSE_ERROR"/',
+            '/.*200.*"type":"CAPI_REM_HANDLE_LIST_DECISIONS.*UNIT TEST EXCEPTION"/',
             file_get_contents($this->root->url() . '/' . $this->prodFile),
             'Prod log content should be correct'
+        );
+
+        // Test 14 : new + 1 new with 0h duration
+        $remediation->clearCache();
+        $result = $remediation->refreshDecisions();
+        $this->assertEquals(
+            ['new' => 1, 'deleted' => 0],
+            $result,
+            'Refresh count should be correct'
+        );
+        $adapter = $this->cacheStorage->getAdapter();
+        $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_2_CACHE_KEY));
+        $this->assertEquals(
+            false,
+            $item->isHit(),
+            'Remediation should have been cached'
+        );
+        $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_CACHE_KEY));
+        $this->assertEquals(
+            true,
+            $item->isHit(),
+            'Remediation should have been cached'
         );
     }
 
@@ -996,6 +1301,12 @@ final class CapiRemediationTest extends AbstractRemediation
         switch ($type) {
             case 'PhpFilesAdapter':
                 $this->cacheStorage = $this->phpFileStorage;
+                break;
+            case 'PhpFilesAdapterWithTags':
+                $this->cacheStorage = $this->phpFileStorageWithTags;
+                break;
+            case 'RedisAdapterWithTags':
+                $this->cacheStorage = $this->redisStorageWithTags;
                 break;
             case 'RedisAdapter':
                 $this->cacheStorage = $this->redisStorage;

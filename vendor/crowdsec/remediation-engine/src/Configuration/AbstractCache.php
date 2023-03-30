@@ -18,4 +18,22 @@ use CrowdSec\Common\Configuration\AbstractConfiguration;
  */
 abstract class AbstractCache extends AbstractConfiguration
 {
+    /**
+     * @var string[]
+     */
+    protected $keys = [
+        'use_cache_tags',
+    ];
+
+    /**
+     * Common cache settings.
+     *
+     * @return void
+     */
+    protected function addCommonNodes($rootNode)
+    {
+        $rootNode->children()
+            ->booleanNode('use_cache_tags')->defaultFalse()->end()
+        ->end();
+    }
 }

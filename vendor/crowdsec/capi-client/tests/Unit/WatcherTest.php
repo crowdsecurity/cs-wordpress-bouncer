@@ -30,7 +30,9 @@ use PHPUnit\Util\Test;
 /**
  * @uses \CrowdSec\CapiClient\Storage\FileStorage
  * @uses \CrowdSec\CapiClient\Watcher::shouldLogin
+ * @uses \CrowdSec\CapiClient\Client\AbstractClient::__construct
  *
+ * @covers \CrowdSec\CapiClient\Configuration\Watcher::addMetricsNodes
  * @covers \CrowdSec\CapiClient\Configuration\Signal\Decisions::cleanConfigs
  * @covers \CrowdSec\CapiClient\Watcher::__construct
  * @covers \CrowdSec\CapiClient\Watcher::configure
@@ -67,6 +69,7 @@ use PHPUnit\Util\Test;
  * @covers \CrowdSec\CapiClient\Watcher::formatDecisions
  * @covers \CrowdSec\CapiClient\Watcher::validateDateInput
  * @covers \CrowdSec\CapiClient\Watcher::areEquals
+ * @covers \CrowdSec\CapiClient\Watcher::buildSimpleMetrics
  */
 final class WatcherTest extends AbstractClient
 {
@@ -295,7 +298,7 @@ final class WatcherTest extends AbstractClient
             ->setConstructorArgs([
                 'configs' => $this->configs,
                 'storage' => $mockFileStorage,
-                'requestHandler' => $mockCurl,
+                'capiHandler' => $mockCurl,
             ])
             ->onlyMethods(['sendRequest'])
             ->getMock();
@@ -373,6 +376,8 @@ final class WatcherTest extends AbstractClient
             'Api timeout should be configured'
         );
 
+        $this->assertEquals(null, $client->getConfig('metrics'), 'Metrics should not be configured by default');
+
         $client = new Watcher(['scenarios' => [TestConstants::SCENARIOS[0], TestConstants::SCENARIOS[0]]],
             new FileStorage()
         );
@@ -381,6 +386,160 @@ final class WatcherTest extends AbstractClient
             TestConstants::SCENARIOS,
             $client->getConfig('scenarios'),
             'Scenarios should be array unique'
+        );
+
+        // Test metrics
+        $client = new Watcher(array_merge($this->configs,
+            [
+                'metrics' => [
+                        'bouncer' => ['custom_name' => 'test'],
+                        'machine' => ['version' => 'v0.0.0'],
+                    ],
+            ]),
+            new FileStorage()
+        );
+        $this->assertEquals(
+            [
+                'bouncer' => ['custom_name' => 'test'],
+                'machine' => ['version' => 'v0.0.0'],
+            ],
+            $client->getConfig('metrics'), 'Metrics should be configured if set'
+        );
+        $error = '';
+        try {
+            new Watcher(array_merge($this->configs,
+                [
+                    'metrics' => [
+                            'bouncer' => ['last_pull' => '2021-06-03'],
+                        ],
+                ]), new FileStorage());
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/Invalid metrics_bouncer_last_pull. Must match with/',
+            $error
+        );
+        $error = '';
+        try {
+            new Watcher(array_merge($this->configs,
+                [
+                    'metrics' => [
+                            'bouncer' => ['custom_name' => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+                        ],
+                ]), new FileStorage());
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/Invalid bouncer custom name. Length must be <= 32. Allowed chars are A-Za-z0-9/',
+            $error
+        );
+        $error = '';
+        try {
+            new Watcher(array_merge($this->configs,
+                [
+                    'metrics' => [
+                            'bouncer' => ['version' => 'test'],
+                        ],
+                ]), new FileStorage());
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/Invalid bouncer version. Must match vX.Y.Z format/',
+            $error
+        );
+        $error = '';
+        try {
+            new Watcher(array_merge($this->configs,
+                [
+                    'metrics' => [
+                            'machine' => ['version' => 'test'],
+                        ],
+                ]), new FileStorage());
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/Invalid machine version. Must match vX.Y.Z format/',
+            $error
+        );
+        $error = '';
+        try {
+            new Watcher(array_merge($this->configs,
+                [
+                    'metrics' => [
+                            'machine' => ['last_update' => 'test'],
+                        ],
+                ]), new FileStorage());
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/Invalid metrics_machine_last_update. Must match with/',
+            $error
+        );
+        $error = '';
+        try {
+            new Watcher(array_merge($this->configs,
+                [
+                    'metrics' => [
+                            'machine' => ['last_push' => 'test'],
+                        ],
+                ]), new FileStorage());
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/Invalid metrics_machine_last_push. Must match with/',
+            $error
+        );
+        $error = '';
+        try {
+            new Watcher(array_merge($this->configs,
+                [
+                    'metrics' => [
+                            'machine' => ['name' => 'test**'],
+                        ],
+                ]), new FileStorage());
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/Invalid machine name. Length must be <= 32. Allowed chars are A-Za-z0-9/',
+            $error
+        );
+        $error = '';
+        try {
+            new Watcher(array_merge($this->configs,
+                [
+                    'metrics' => [
+                            'machine' => ['name' => ''],
+                        ],
+                ]), new FileStorage());
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/cannot contain an empty value/',
+            $error
         );
 
         // Test unexpected config
@@ -1080,11 +1239,59 @@ final class WatcherTest extends AbstractClient
             $result,
             '90s Should be 0h1m30s'
         );
+
+        // Test buildSimpleMetrics
+        $root = vfsStream::setup('/tmp');
+        $storage = new FileStorage($root->url());
+        $client = new Watcher(array_merge($this->configs,
+            [
+                'metrics' => [
+                        'bouncer' => [
+                            'last_pull' => '2023-02-20T00:00:01Z',
+                            'version' => 'v0.0.0',
+                            'custom_name' => 'testBouncer',
+                            ],
+                        'machine' => [
+                            'last_push' => '2023-02-20T00:00:01Z',
+                            'last_update' => '2023-02-20T00:00:01Z',
+                            'name' => 'testMachine',
+                            'version' => 'v0.0.0',
+                        ],
+                    ],
+            ]), $storage);
+
+        $metrics = PHPUnitUtil::callMethod(
+            $client,
+            'buildSimpleMetrics',
+            []
+        );
+
+        $this->assertEquals(
+            [
+                'bouncers' => [
+                    [
+                        'last_pull' => '2023-02-20T00:00:01Z',
+                        'version' => 'v0.0.0',
+                        'custom_name' => 'testBouncer',
+                        'name' => 'php',
+                    ],
+                ],
+                'machines' => [
+                    [
+                        'last_push' => '2023-02-20T00:00:01Z',
+                        'last_update' => '2023-02-20T00:00:01Z',
+                        'name' => 'testMachine',
+                        'version' => 'v0.0.0',
+                    ],
+                ],
+            ],
+            $metrics
+        );
     }
 
     private function getTestSignal(string $machineId): string
     {
-        return '{"scenario":"' . TestConstants::SCENARIOS[0] . '","scenario_hash":"","scenario_version":"","created_at":"XXX","machine_id":"' . $machineId . '","message":"","start_at":"XXX","stop_at":"XXX","scenario_trust":"manual","decisions":[{"id":0,"duration":"24h0m0s","scenario":"' . TestConstants::SCENARIOS[0] . '","origin":"' . Constants::ORIGIN . '","scope":"' . Constants::SCOPE_IP . '","value":"1.2.3.4","type":"' . Constants::REMEDIATION_BAN . '","simulated":false}],"source":{"scope":"' . Constants::SCOPE_IP . '","value":"1.2.3.4"}}
+        return '{"scenario":"' . TestConstants::SCENARIOS[0] . '","scenario_hash":"","scenario_version":"","created_at":"XXX","machine_id":"' . $machineId . '","message":"","start_at":"XXX","stop_at":"XXX","uuid":"XXX","scenario_trust":"manual","decisions":[{"id":0,"uuid":"XXX","duration":"24h0m0s","scenario":"' . TestConstants::SCENARIOS[0] . '","origin":"' . Constants::ORIGIN . '","scope":"' . Constants::SCOPE_IP . '","value":"1.2.3.4","type":"' . Constants::REMEDIATION_BAN . '","simulated":false}],"source":{"scope":"' . Constants::SCOPE_IP . '","value":"1.2.3.4"}}
 ';
     }
 
@@ -1144,6 +1351,9 @@ final class WatcherTest extends AbstractClient
         $signal['created_at'] = 'XXX';
         $signal['start_at'] = 'XXX';
         $signal['stop_at'] = 'XXX';
+        // Do not test uuid value too
+        $signal['uuid'] = 'XXX';
+        $signal['decisions'][0]['uuid'] = 'XXX';
 
         $this->assertEquals(
             $signal,
@@ -1195,6 +1405,9 @@ final class WatcherTest extends AbstractClient
         $signal['created_at'] = 'XXX';
         $signal['start_at'] = 'XXX';
         $signal['stop_at'] = 'XXX';
+        // Do not test uuid value too
+        $signal['uuid'] = 'XXX';
+        $signal['decisions'][0]['uuid'] = 'XXX';
 
         $this->assertEquals(
             $signal,
@@ -1230,6 +1443,9 @@ final class WatcherTest extends AbstractClient
         $signal['created_at'] = 'XXX';
         $signal['start_at'] = 'XXX';
         $signal['stop_at'] = 'XXX';
+        // Do not test uuid value too
+        $signal['uuid'] = 'XXX';
+        $signal['decisions'][0]['uuid'] = 'XXX';
         $this->assertEquals(
             $signal,
             json_decode($this->getTestSignal($machineId . 'test3'), true),
@@ -1303,7 +1519,10 @@ final class WatcherTest extends AbstractClient
         ];
 
         $signal = $client->buildSignal($properties, $source, $decisions);
-        $expected = json_decode('{"scenario":"test\/scenario","scenario_hash":"azertyuiop","scenario_version":"v1.2.0","scenario_trust":"certified","created_at":"2023-01-13T01:34:56.778054Z","machine_id":"capiclienttesttest-machine-idtest1","message":"This is a test message","start_at":"2023-01-12T23:48:45.123456Z","stop_at":"2022-01-13T01:34:55.432150Z","decisions":[{"id":1979,"duration":"1h0m0s","scenario":"test\/scenario","origin":"crowdsec-unit-test","scope":"ip","value":"' . TestConstants::IP . '","type":"custom","simulated":true}],"source":{"scope":"ip","value":"' . TestConstants::IP . '"}}', true);
+        // Do not test uuid value
+        $signal['uuid'] = 'XXX';
+        $signal['decisions'][0]['uuid'] = 'XXX';
+        $expected = json_decode('{"scenario":"test\/scenario","scenario_hash":"azertyuiop","scenario_version":"v1.2.0","scenario_trust":"certified","created_at":"2023-01-13T01:34:56.778054Z","machine_id":"capiclienttesttest-machine-idtest1","message":"This is a test message","start_at":"2023-01-12T23:48:45.123456Z","stop_at":"2022-01-13T01:34:55.432150Z","uuid":"XXX","decisions":[{"id":1979,"uuid":"XXX","duration":"1h0m0s","scenario":"test\/scenario","origin":"crowdsec-unit-test","scope":"ip","value":"' . TestConstants::IP . '","type":"custom","simulated":true}],"source":{"scope":"ip","value":"' . TestConstants::IP . '"}}', true);
 
         $this->assertEquals(
             $expected, $signal,
@@ -1528,7 +1747,10 @@ final class WatcherTest extends AbstractClient
         ];
 
         $signal = $client->buildSignal($properties, $source, $decisions);
-        $expected = json_decode('{"scenario":"test\/scenario","scenario_hash":"azertyuiop","scenario_version":"v1.2.0","scenario_trust":"certified","created_at":"2023-01-13T01:34:56.778054Z","machine_id":"capiclienttesttest-machine-idtest7","message":"This is a test message","start_at":"2023-01-13T01:34:56.778054Z","stop_at":"2023-01-13T01:34:56.778054Z","decisions":[{"id":1979,"duration":"1h0m0s","scenario":"test\/scenario","origin":"crowdsec-unit-test","scope":"ip","value":"1.2.3.4","type":"custom","simulated":true}],"source":{"scope":"ip","value":"1.2.3.4"}}', true);
+        // Do not test uuid value
+        $signal['uuid'] = 'XXX';
+        $signal['decisions'][0]['uuid'] = 'XXX';
+        $expected = json_decode('{"scenario":"test\/scenario","scenario_hash":"azertyuiop","scenario_version":"v1.2.0","scenario_trust":"certified","created_at":"2023-01-13T01:34:56.778054Z","machine_id":"capiclienttesttest-machine-idtest7","message":"This is a test message","start_at":"2023-01-13T01:34:56.778054Z","stop_at":"2023-01-13T01:34:56.778054Z","uuid":"XXX","decisions":[{"id":1979,"uuid":"XXX","duration":"1h0m0s","scenario":"test\/scenario","origin":"crowdsec-unit-test","scope":"ip","value":"1.2.3.4","type":"custom","simulated":true}],"source":{"scope":"ip","value":"1.2.3.4"}}', true);
 
         $this->assertEquals(
             $expected, $signal,

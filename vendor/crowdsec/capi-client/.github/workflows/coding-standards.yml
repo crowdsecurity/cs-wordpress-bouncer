@@ -90,6 +90,13 @@ jobs:
       - name: Run PSALM
         run: ddev psalm ./${{env.EXTENSION_PATH}}/tools/coding-standards /var/www/html/${{env.EXTENSION_PATH}}/tools/coding-standards/psalm
 
+      - name: Prepare integration tests
+        if: github.event.inputs.coverage_report == 'true'
+        run: |
+          echo -n ${{ secrets.ENROLLMENT_KEY }} > ${{env.EXTENSION_PATH}}/tests/Integration/.enrollment_key.txt
+          echo -n "{\"machine_id\":\"${{ secrets.TEST_MACHINE_ID }}\"}" > ${{env.EXTENSION_PATH}}/src/Storage/dev-machine-id.json
+          echo -n "{\"password\":\"${{ secrets.TEST_MACHINE_PWD }}\"}" > ${{env.EXTENSION_PATH}}/src/Storage/dev-password.json
+
       - name: Run PHPUNIT Code Coverage
         if: github.event.inputs.coverage_report == 'true'
         run: |

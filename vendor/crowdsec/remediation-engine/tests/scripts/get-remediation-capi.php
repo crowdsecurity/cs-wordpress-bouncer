@@ -4,11 +4,11 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 use CrowdSec\CapiClient\Storage\FileStorage;
 use CrowdSec\CapiClient\Watcher;
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\CacheStorage\Memcached;
 use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
 use CrowdSec\RemediationEngine\CapiRemediation;
-use CrowdSec\Common\Logger\FileLog;
 
 $ip = $argv[1] ?? null;
 

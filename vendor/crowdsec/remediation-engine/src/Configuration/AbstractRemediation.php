@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CrowdSec\RemediationEngine\Configuration;
 
+use CrowdSec\Common\Configuration\AbstractConfiguration;
 use CrowdSec\RemediationEngine\CapiRemediation;
 use CrowdSec\RemediationEngine\Constants;
 use CrowdSec\RemediationEngine\LapiRemediation;
-use CrowdSec\Common\Configuration\AbstractConfiguration;
 
 /**
  * The remediation common configuration.

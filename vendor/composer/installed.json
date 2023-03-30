@@ -81,22 +81,22 @@
         },
         {
             "name": "crowdsec/bouncer",
-            "version": "v1.1.1",
-            "version_normalized": "1.1.1.0",
+            "version": "v1.4.0",
+            "version_normalized": "1.4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "f132937b62fbae5efb72c6666afe74de168b16f6"
+                "reference": "c0f5c1f5571cd8c6fa0c674c189dd3901e0c8c3f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/f132937b62fbae5efb72c6666afe74de168b16f6",
-                "reference": "f132937b62fbae5efb72c6666afe74de168b16f6",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/c0f5c1f5571cd8c6fa0c674c189dd3901e0c8c3f",
+                "reference": "c0f5c1f5571cd8c6fa0c674c189dd3901e0c8c3f",
                 "shasum": ""
             },
             "require": {
-                "crowdsec/common": "^1.2.0",
-                "crowdsec/remediation-engine": "^2.0.0",
+                "crowdsec/common": "^2.1.0",
+                "crowdsec/remediation-engine": "^3.1.1",
                 "ext-gd": "*",
                 "ext-json": "*",
                 "gregwar/captcha": "^1.1",
@@ -109,7 +109,7 @@
                 "mikey179/vfsstream": "^1.6.11",
                 "phpunit/phpunit": "^8.5.30 || ^9.3"
             },
-            "time": "2023-02-16T05:36:26+00:00",
+            "time": "2023-03-30T01:04:08+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -148,31 +148,32 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v1.1.1"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v1.4.0"
             },
             "install-path": "../crowdsec/bouncer"
         },
         {
             "name": "crowdsec/capi-client",
-            "version": "v2.0.0",
-            "version_normalized": "2.0.0.0",
+            "version": "v3.0.0",
+            "version_normalized": "3.0.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-capi-client.git",
-                "reference": "a1ba782c7e4d6ae249608e440e7962a58b4ade69"
+                "reference": "b9bd83e4c3515ee01dbbdfb3e0a974481caa9e3a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-capi-client/zipball/a1ba782c7e4d6ae249608e440e7962a58b4ade69",
-                "reference": "a1ba782c7e4d6ae249608e440e7962a58b4ade69",
+                "url": "https://api.github.com/repos/crowdsecurity/php-capi-client/zipball/b9bd83e4c3515ee01dbbdfb3e0a974481caa9e3a",
+                "reference": "b9bd83e4c3515ee01dbbdfb3e0a974481caa9e3a",
                 "shasum": ""
             },
             "require": {
-                "crowdsec/common": "^1.2.0",
+                "crowdsec/common": "^2.0.0",
                 "ext-json": "*",
                 "monolog/monolog": "^1.17 || ^2.1",
                 "php": "^7.2.5 || ^8.0",
-                "symfony/config": "^4.4.44 || ^5.4.11 || ^6.0.11"
+                "symfony/config": "^4.4.44 || ^5.4.11 || ^6.0.11",
+                "symfony/uid": "^5.4.19 || ^6.2.5"
             },
             "require-dev": {
                 "ext-curl": "*",
@@ -182,7 +183,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2023-02-02T04:41:56+00:00",
+            "time": "2023-03-09T01:43:09+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -217,23 +218,23 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-capi-client/issues",
-                "source": "https://github.com/crowdsecurity/php-capi-client/tree/v2.0.0"
+                "source": "https://github.com/crowdsecurity/php-capi-client/tree/v3.0.0"
             },
             "install-path": "../crowdsec/capi-client"
         },
         {
             "name": "crowdsec/common",
-            "version": "v1.2.0",
-            "version_normalized": "1.2.0.0",
+            "version": "v2.1.0",
+            "version_normalized": "2.1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-common.git",
-                "reference": "e33b37680934b485c199a7ce3c5d5e7cb8c94c83"
+                "reference": "71f10d1b43a98726eff345bd86e7a7d0f75c2263"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-common/zipball/e33b37680934b485c199a7ce3c5d5e7cb8c94c83",
-                "reference": "e33b37680934b485c199a7ce3c5d5e7cb8c94c83",
+                "url": "https://api.github.com/repos/crowdsecurity/php-common/zipball/71f10d1b43a98726eff345bd86e7a7d0f75c2263",
+                "reference": "71f10d1b43a98726eff345bd86e7a7d0f75c2263",
                 "shasum": ""
             },
             "require": {
@@ -250,7 +251,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2023-02-02T02:23:27+00:00",
+            "time": "2023-03-30T00:53:45+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -287,27 +288,27 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-common/issues",
-                "source": "https://github.com/crowdsecurity/php-common/tree/v1.2.0"
+                "source": "https://github.com/crowdsecurity/php-common/tree/v2.1.0"
             },
             "install-path": "../crowdsec/common"
         },
         {
             "name": "crowdsec/lapi-client",
-            "version": "v2.0.0",
-            "version_normalized": "2.0.0.0",
+            "version": "v3.0.0",
+            "version_normalized": "3.0.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-lapi-client.git",
-                "reference": "ecf9afef4ab0ed07bb1eb57aaea48923ea670899"
+                "reference": "86e85c2bd8fbc34b6442d812d4b42552843874b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-lapi-client/zipball/ecf9afef4ab0ed07bb1eb57aaea48923ea670899",
-                "reference": "ecf9afef4ab0ed07bb1eb57aaea48923ea670899",
+                "url": "https://api.github.com/repos/crowdsecurity/php-lapi-client/zipball/86e85c2bd8fbc34b6442d812d4b42552843874b5",
+                "reference": "86e85c2bd8fbc34b6442d812d4b42552843874b5",
                 "shasum": ""
             },
             "require": {
-                "crowdsec/common": "^1.2.0",
+                "crowdsec/common": "^2.0.0",
                 "ext-json": "*",
                 "monolog/monolog": "^1.17 || ^2.1",
                 "php": "^7.2.5 || ^8.0",
@@ -321,7 +322,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2023-02-02T04:20:27+00:00",
+            "time": "2023-03-09T01:23:24+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -356,29 +357,29 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-lapi-client/issues",
-                "source": "https://github.com/crowdsecurity/php-lapi-client/tree/v2.0.0"
+                "source": "https://github.com/crowdsecurity/php-lapi-client/tree/v3.0.0"
             },
             "install-path": "../crowdsec/lapi-client"
         },
         {
             "name": "crowdsec/remediation-engine",
-            "version": "v2.1.0",
-            "version_normalized": "2.1.0.0",
+            "version": "v3.1.1",
+            "version_normalized": "3.1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-remediation-engine.git",
-                "reference": "053a39bce65a39e4b8856ad780fc5610a6156643"
+                "reference": "83ff8ca767b907233c8c82bdd5449317082c24ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/053a39bce65a39e4b8856ad780fc5610a6156643",
-                "reference": "053a39bce65a39e4b8856ad780fc5610a6156643",
+                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/83ff8ca767b907233c8c82bdd5449317082c24ac",
+                "reference": "83ff8ca767b907233c8c82bdd5449317082c24ac",
                 "shasum": ""
             },
             "require": {
-                "crowdsec/capi-client": "^2.0.0",
-                "crowdsec/common": "^1.2.0",
-                "crowdsec/lapi-client": "^2.0.0",
+                "crowdsec/capi-client": "^3.0.0",
+                "crowdsec/common": "^2.0.0",
+                "crowdsec/lapi-client": "^3.0.0",
                 "ext-json": "*",
                 "geoip2/geoip2": "^2.13.0",
                 "mlocati/ip-lib": "^1.18",
@@ -398,7 +399,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2023-02-10T00:28:56+00:00",
+            "time": "2023-03-24T05:06:58+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -439,7 +440,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-remediation-engine/issues",
-                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v2.1.0"
+                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v3.1.1"
             },
             "install-path": "../crowdsec/remediation-engine"
         },
@@ -502,17 +503,17 @@
         },
         {
             "name": "gregwar/captcha",
-            "version": "v1.1.9",
-            "version_normalized": "1.1.9.0",
+            "version": "v1.2.0",
+            "version_normalized": "1.2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Gregwar/Captcha.git",
-                "reference": "4bb668e6b40e3205a020ca5ee4ca8cff8b8780c5"
+                "reference": "6e5b61b66ac89885b505153f4ef9a74ffa5b3074"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Gregwar/Captcha/zipball/4bb668e6b40e3205a020ca5ee4ca8cff8b8780c5",
-                "reference": "4bb668e6b40e3205a020ca5ee4ca8cff8b8780c5",
+                "url": "https://api.github.com/repos/Gregwar/Captcha/zipball/6e5b61b66ac89885b505153f4ef9a74ffa5b3074",
+                "reference": "6e5b61b66ac89885b505153f4ef9a74ffa5b3074",
                 "shasum": ""
             },
             "require": {
@@ -524,8 +525,8 @@
             "require-dev": {
                 "phpunit/phpunit": "^6.4"
             },
-            "time": "2020-03-24T14:39:05+00:00",
-            "type": "captcha",
+            "time": "2023-03-24T22:12:41+00:00",
+            "type": "library",
             "installation-source": "dist",
             "autoload": {
                 "psr-4": {
@@ -556,7 +557,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Gregwar/Captcha/issues",
-                "source": "https://github.com/Gregwar/Captcha/tree/master"
+                "source": "https://github.com/Gregwar/Captcha/tree/v1.2.0"
             },
             "install-path": "../gregwar/captcha"
         },
@@ -1019,17 +1020,17 @@
         },
         {
             "name": "symfony/cache",
-            "version": "v5.4.19",
-            "version_normalized": "5.4.19.0",
+            "version": "v5.4.21",
+            "version_normalized": "5.4.21.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/cache.git",
-                "reference": "e9147c89fdfdc5d5ef798bb7193f23726ad609f5"
+                "reference": "32cab695bf99c63aff7d27ac67919944c00530ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/cache/zipball/e9147c89fdfdc5d5ef798bb7193f23726ad609f5",
-                "reference": "e9147c89fdfdc5d5ef798bb7193f23726ad609f5",
+                "url": "https://api.github.com/repos/symfony/cache/zipball/32cab695bf99c63aff7d27ac67919944c00530ed",
+                "reference": "32cab695bf99c63aff7d27ac67919944c00530ed",
                 "shasum": ""
             },
             "require": {
@@ -1067,7 +1068,7 @@
                 "symfony/messenger": "^4.4|^5.0|^6.0",
                 "symfony/var-dumper": "^4.4|^5.0|^6.0"
             },
-            "time": "2023-01-19T09:49:58+00:00",
+            "time": "2023-02-21T12:11:13+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -1099,7 +1100,7 @@
                 "psr6"
             ],
             "support": {
-                "source": "https://github.com/symfony/cache/tree/v5.4.19"
+                "source": "https://github.com/symfony/cache/tree/v5.4.21"
             },
             "funding": [
                 {
@@ -1201,17 +1202,17 @@
         },
         {
             "name": "symfony/config",
-            "version": "v5.4.19",
-            "version_normalized": "5.4.19.0",
+            "version": "v5.4.21",
+            "version_normalized": "5.4.21.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/config.git",
-                "reference": "9bd60843443cda9638efdca7c41eb82ed0026179"
+                "reference": "2a6b1111d038adfa15d52c0871e540f3b352d1e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/config/zipball/9bd60843443cda9638efdca7c41eb82ed0026179",
-                "reference": "9bd60843443cda9638efdca7c41eb82ed0026179",
+                "url": "https://api.github.com/repos/symfony/config/zipball/2a6b1111d038adfa15d52c0871e540f3b352d1e4",
+                "reference": "2a6b1111d038adfa15d52c0871e540f3b352d1e4",
                 "shasum": ""
             },
             "require": {
@@ -1235,7 +1236,7 @@
             "suggest": {
                 "symfony/yaml": "To use the yaml reference dumper"
             },
-            "time": "2023-01-08T13:23:55+00:00",
+            "time": "2023-02-14T08:03:56+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -1263,7 +1264,7 @@
             "description": "Helps you find, load, combine, autofill and validate configuration values of any kind",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/config/tree/v5.4.19"
+                "source": "https://github.com/symfony/config/tree/v5.4.21"
             },
             "funding": [
                 {
@@ -1353,17 +1354,17 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v5.4.19",
-            "version_normalized": "5.4.19.0",
+            "version": "v5.4.21",
+            "version_normalized": "5.4.21.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "648bfaca6a494f3e22378123bcee2894045dc9d8"
+                "reference": "e75960b1bbfd2b8c9e483e0d74811d555ca3de9f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/648bfaca6a494f3e22378123bcee2894045dc9d8",
-                "reference": "648bfaca6a494f3e22378123bcee2894045dc9d8",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/e75960b1bbfd2b8c9e483e0d74811d555ca3de9f",
+                "reference": "e75960b1bbfd2b8c9e483e0d74811d555ca3de9f",
                 "shasum": ""
             },
             "require": {
@@ -1372,7 +1373,7 @@
                 "symfony/polyfill-mbstring": "~1.8",
                 "symfony/polyfill-php80": "^1.16"
             },
-            "time": "2023-01-14T19:14:44+00:00",
+            "time": "2023-02-14T08:03:56+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -1400,7 +1401,7 @@
             "description": "Provides basic utilities for the filesystem",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v5.4.19"
+                "source": "https://github.com/symfony/filesystem/tree/v5.4.21"
             },
             "funding": [
                 {
@@ -1420,17 +1421,17 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v5.4.19",
-            "version_normalized": "5.4.19.0",
+            "version": "v5.4.21",
+            "version_normalized": "5.4.21.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
-                "reference": "6071aebf810ad13fe8200c224f36103abb37cf1f"
+                "reference": "078e9a5e1871fcfe6a5ce421b539344c21afef19"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/6071aebf810ad13fe8200c224f36103abb37cf1f",
-                "reference": "6071aebf810ad13fe8200c224f36103abb37cf1f",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/078e9a5e1871fcfe6a5ce421b539344c21afef19",
+                "reference": "078e9a5e1871fcfe6a5ce421b539344c21afef19",
                 "shasum": ""
             },
             "require": {
@@ -1438,7 +1439,7 @@
                 "symfony/deprecation-contracts": "^2.1|^3",
                 "symfony/polyfill-php80": "^1.16"
             },
-            "time": "2023-01-14T19:14:44+00:00",
+            "time": "2023-02-16T09:33:00+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -1466,7 +1467,7 @@
             "description": "Finds files and directories via an intuitive fluent interface",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/finder/tree/v5.4.19"
+                "source": "https://github.com/symfony/finder/tree/v5.4.21"
             },
             "funding": [
                 {
@@ -1571,30 +1572,33 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.20.0",
-            "version_normalized": "1.20.0.0",
+            "version": "v1.27.0",
+            "version_normalized": "1.27.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "39d483bdf39be819deabf04ec872eb0b2410b531"
+                "reference": "8ad114f6b39e2c98a8b0e3bd907732c207c2b534"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/39d483bdf39be819deabf04ec872eb0b2410b531",
-                "reference": "39d483bdf39be819deabf04ec872eb0b2410b531",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/8ad114f6b39e2c98a8b0e3bd907732c207c2b534",
+                "reference": "8ad114f6b39e2c98a8b0e3bd907732c207c2b534",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.1"
             },
+            "provide": {
+                "ext-mbstring": "*"
+            },
             "suggest": {
                 "ext-mbstring": "For best performance"
             },
-            "time": "2020-10-23T14:02:19+00:00",
+            "time": "2022-11-03T14:55:06+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.20-dev"
+                    "dev-main": "1.27-dev"
                 },
                 "thanks": {
                     "name": "symfony/polyfill",
@@ -1634,7 +1638,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.20.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.27.0"
             },
             "funding": [
                 {
@@ -1903,23 +1907,109 @@
             "install-path": "../symfony/polyfill-php81"
         },
         {
-            "name": "symfony/service-contracts",
-            "version": "v2.4.1",
-            "version_normalized": "2.4.1.0",
+            "name": "symfony/polyfill-uuid",
+            "version": "v1.27.0",
+            "version_normalized": "1.27.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/service-contracts.git",
-                "reference": "d664541b99d6fb0247ec5ff32e87238582236204"
+                "url": "https://github.com/symfony/polyfill-uuid.git",
+                "reference": "f3cf1a645c2734236ed1e2e671e273eeb3586166"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/d664541b99d6fb0247ec5ff32e87238582236204",
-                "reference": "d664541b99d6fb0247ec5ff32e87238582236204",
+                "url": "https://api.github.com/repos/symfony/polyfill-uuid/zipball/f3cf1a645c2734236ed1e2e671e273eeb3586166",
+                "reference": "f3cf1a645c2734236ed1e2e671e273eeb3586166",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "provide": {
+                "ext-uuid": "*"
+            },
+            "suggest": {
+                "ext-uuid": "For best performance"
+            },
+            "time": "2022-11-03T14:55:06+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.27-dev"
+                },
+                "thanks": {
+                    "name": "symfony/polyfill",
+                    "url": "https://github.com/symfony/polyfill"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Uuid\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Grégoire Pineau",
+                    "email": "lyrixx@lyrixx.info"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for uuid functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "uuid"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-uuid/tree/v1.27.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "install-path": "../symfony/polyfill-uuid"
+        },
+        {
+            "name": "symfony/service-contracts",
+            "version": "v2.5.2",
+            "version_normalized": "2.5.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/service-contracts.git",
+                "reference": "4b426aac47d6427cc1a1d0f7e2ac724627f5966c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/4b426aac47d6427cc1a1d0f7e2ac724627f5966c",
+                "reference": "4b426aac47d6427cc1a1d0f7e2ac724627f5966c",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.2.5",
-                "psr/container": "^1.1"
+                "psr/container": "^1.1",
+                "symfony/deprecation-contracts": "^2.1|^3"
             },
             "conflict": {
                 "ext-psr": "<1.1|>=2"
@@ -1927,11 +2017,11 @@
             "suggest": {
                 "symfony/service-implementation": ""
             },
-            "time": "2021-11-04T16:37:19+00:00",
+            "time": "2022-05-30T19:17:29+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "2.4-dev"
+                    "dev-main": "2.5-dev"
                 },
                 "thanks": {
                     "name": "symfony/contracts",
@@ -1969,7 +2059,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/service-contracts/tree/v2.4.1"
+                "source": "https://github.com/symfony/service-contracts/tree/v2.5.2"
             },
             "funding": [
                 {
@@ -1988,18 +2078,95 @@
             "install-path": "../symfony/service-contracts"
         },
         {
-            "name": "symfony/var-exporter",
-            "version": "v5.4.19",
-            "version_normalized": "5.4.19.0",
+            "name": "symfony/uid",
+            "version": "v5.4.21",
+            "version_normalized": "5.4.21.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/var-exporter.git",
-                "reference": "2a1d06fcf2b30829d6c01dae8e6e188424d1f8f6"
+                "url": "https://github.com/symfony/uid.git",
+                "reference": "a30744506976aafc807ccb0d4f95865c0a690d02"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/var-exporter/zipball/2a1d06fcf2b30829d6c01dae8e6e188424d1f8f6",
-                "reference": "2a1d06fcf2b30829d6c01dae8e6e188424d1f8f6",
+                "url": "https://api.github.com/repos/symfony/uid/zipball/a30744506976aafc807ccb0d4f95865c0a690d02",
+                "reference": "a30744506976aafc807ccb0d4f95865c0a690d02",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.5",
+                "symfony/polyfill-uuid": "^1.15"
+            },
+            "require-dev": {
+                "symfony/console": "^4.4|^5.0|^6.0"
+            },
+            "time": "2023-02-14T08:03:56+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Uid\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Grégoire Pineau",
+                    "email": "lyrixx@lyrixx.info"
+                },
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides an object-oriented API to generate and represent UIDs",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "UID",
+                "ulid",
+                "uuid"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/uid/tree/v5.4.21"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "install-path": "../symfony/uid"
+        },
+        {
+            "name": "symfony/var-exporter",
+            "version": "v5.4.21",
+            "version_normalized": "5.4.21.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/var-exporter.git",
+                "reference": "be74908a6942fdd331554b3cec27ff41b45ccad4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/var-exporter/zipball/be74908a6942fdd331554b3cec27ff41b45ccad4",
+                "reference": "be74908a6942fdd331554b3cec27ff41b45ccad4",
                 "shasum": ""
             },
             "require": {
@@ -2009,7 +2176,7 @@
             "require-dev": {
                 "symfony/var-dumper": "^4.4.9|^5.0.9|^6.0"
             },
-            "time": "2023-01-12T16:39:29+00:00",
+            "time": "2023-02-21T19:46:44+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -2045,7 +2212,7 @@
                 "serialize"
             ],
             "support": {
-                "source": "https://github.com/symfony/var-exporter/tree/v5.4.19"
+                "source": "https://github.com/symfony/var-exporter/tree/v5.4.21"
             },
             "funding": [
                 {
@@ -2143,6 +2310,6 @@
             "install-path": "../twig/twig"
         }
     ],
-    "dev": false,
+    "dev": true,
     "dev-package-names": []
 }

@@ -19,11 +19,11 @@ use CrowdSec\Common\Constants as CommonConstants;
 class Constants extends CommonConstants
 {
     /**
-     * @var int The default duration we keep a bad IP in cache
+     * @var int The default duration we keep a bad IP in cache (in seconds)
      */
     public const CACHE_EXPIRATION_FOR_BAD_IP = 120;
     /**
-     * @var int The default duration we keep a clean IP in cache
+     * @var int The default duration we keep a clean IP in cache (in seconds)
      */
     public const CACHE_EXPIRATION_FOR_CLEAN_IP = 60;
     /**
@@ -43,7 +43,11 @@ class Constants extends CommonConstants
      */
     public const MAXMIND_COUNTRY = 'country';
     /**
+     * @var int The default refresh frequency (in seconds)
+     */
+    public const REFRESH_FREQUENCY = 14400;
+    /**
      * @var string The current version of this library
      */
-    public const VERSION = 'v2.1.0';
+    public const VERSION = 'v3.1.1';
 }

@@ -227,7 +227,12 @@ class LapiRemediation extends AbstractRemediation
         $result = $this->getStreamDecisions(true, $filter);
         // Store the fact that the cache has been warmed up.
         $this->logger->info('Flag cache warmup', ['type' => 'LAPI_REM_CACHE_WARMUP']);
-        $this->cacheStorage->updateItem(AbstractCache::CONFIG, [AbstractCache::WARMUP => true]);
+        $this->cacheStorage->upsertItem(
+            AbstractCache::CONFIG,
+            [AbstractCache::WARMUP => true],
+            0,
+            [AbstractCache::CONFIG]
+        );
 
         return $result;
     }

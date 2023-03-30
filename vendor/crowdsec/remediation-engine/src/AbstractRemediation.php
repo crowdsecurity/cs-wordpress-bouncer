@@ -16,8 +16,12 @@ use Psr\Log\LoggerInterface;
 
 abstract class AbstractRemediation
 {
+    /** @var string The CrowdSec name for blocklist */
+    public const CS_BLOCK = 'blocklists';
     /** @var string The CrowdSec name for deleted decisions */
     public const CS_DEL = 'deleted';
+    /** @var string The CrowdSec name for links */
+    public const CS_LINK = 'links';
     /** @var string The CrowdSec name for new decisions */
     public const CS_NEW = 'new';
     /** @var string Priority index */
@@ -56,7 +60,7 @@ abstract class AbstractRemediation
      */
     public function clearCache(): bool
     {
-        return $this->getCacheStorage()->clear();
+        return $this->cacheStorage->clear();
     }
 
     public function getCacheStorage(): AbstractCache
@@ -86,7 +90,7 @@ abstract class AbstractRemediation
      */
     public function pruneCache(): bool
     {
-        return $this->getCacheStorage()->prune();
+        return $this->cacheStorage->prune();
     }
 
     /**
@@ -119,7 +123,7 @@ abstract class AbstractRemediation
     {
         $geolocConfigs = $this->getConfig('geolocation');
         if (!empty($geolocConfigs['enabled'])) {
-            $geolocation = new Geolocation($geolocConfigs, $this->getCacheStorage(), $this->logger);
+            $geolocation = new Geolocation($geolocConfigs, $this->cacheStorage, $this->logger);
             $countryResult = $geolocation->handleCountryResultForIp($ip);
 
             return !empty($countryResult['country']) ? $countryResult['country'] : '';
@@ -141,14 +145,14 @@ abstract class AbstractRemediation
     protected function getAllCachedDecisions(string $ip, string $country): array
     {
         // Ask cache for Ip scoped decision
-        $ipDecisions = $this->getCacheStorage()->retrieveDecisionsForIp(Constants::SCOPE_IP, $ip);
+        $ipDecisions = $this->cacheStorage->retrieveDecisionsForIp(Constants::SCOPE_IP, $ip);
         // Ask cache for Range scoped decision
         $rangeDecisions = Type::T_IPv4 === $this->getIpType($ip)
-            ? $this->getCacheStorage()->retrieveDecisionsForIp(Constants::SCOPE_RANGE, $ip)
+            ? $this->cacheStorage->retrieveDecisionsForIp(Constants::SCOPE_RANGE, $ip)
             : []
         ;
         // Ask cache for Country scoped decision
-        $countryDecisions = $country ? $this->getCacheStorage()->retrieveDecisionsForCountry($country) : [];
+        $countryDecisions = $country ? $this->cacheStorage->retrieveDecisionsForCountry($country) : [];
 
         return array_merge(
             !empty($ipDecisions[AbstractCache::STORED]) ? $ipDecisions[AbstractCache::STORED] : [],
@@ -159,7 +163,7 @@ abstract class AbstractRemediation
 
     protected function getRemediationFromDecisions(array $decisions): string
     {
-        $cleanDecisions = $this->getCacheStorage()->cleanCachedValues($decisions);
+        $cleanDecisions = $this->cacheStorage->cleanCachedValues($decisions);
 
         $sortedDecisions = $this->sortDecisionsByRemediationPriority($cleanDecisions);
         $this->logger->debug('Decisions have been sorted by priority', [
@@ -187,7 +191,7 @@ abstract class AbstractRemediation
         $doneCount = 0;
         $removed = [];
         foreach ($decisions as $decision) {
-            $removeResult = $this->getCacheStorage()->removeDecision($decision);
+            $removeResult = $this->cacheStorage->removeDecision($decision);
             $deferCount += $removeResult[AbstractCache::DEFER];
             $doneCount += $removeResult[AbstractCache::DONE];
             if (!empty($removeResult[AbstractCache::REMOVED])) {
@@ -196,7 +200,7 @@ abstract class AbstractRemediation
         }
 
         return [
-            AbstractCache::DONE => $doneCount + ($this->getCacheStorage()->commit() ? $deferCount : 0),
+            AbstractCache::DONE => $doneCount + ($this->cacheStorage->commit() ? $deferCount : 0),
             AbstractCache::REMOVED => $removed,
         ];
     }
@@ -247,7 +251,7 @@ abstract class AbstractRemediation
         $doneCount = 0;
         $stored = [];
         foreach ($decisions as $decision) {
-            $storeResult = $this->getCacheStorage()->storeDecision($decision);
+            $storeResult = $this->cacheStorage->storeDecision($decision);
             $deferCount += $storeResult[AbstractCache::DEFER];
             $doneCount += $storeResult[AbstractCache::DONE];
             if (!empty($storeResult[AbstractCache::STORED])) {
@@ -256,7 +260,7 @@ abstract class AbstractRemediation
         }
 
         return [
-            AbstractCache::DONE => $doneCount + ($this->getCacheStorage()->commit() ? $deferCount : 0),
+            AbstractCache::DONE => $doneCount + ($this->cacheStorage->commit() ? $deferCount : 0),
             AbstractCache::STORED => $stored,
         ];
     }
@@ -279,17 +283,17 @@ abstract class AbstractRemediation
         return ($a < $b) ? -1 : 1;
     }
 
-    private function convertRawDecision(array $rawDecision): ?Decision
+    protected function convertRawDecision(array $rawDecision): ?Decision
     {
         if (!$this->validateRawDecision($rawDecision)) {
             return null;
         }
         // The existence of the following indexes must be guaranteed by the validateRawDecision method
         $value = $rawDecision['value'];
-        $type = $rawDecision['type'];
-        $origin = $rawDecision['origin'];
+        $type = $this->normalize($rawDecision['type']);
+        $origin = $this->normalize($rawDecision['origin']);
         $duration = $rawDecision['duration'];
-        $scope = $this->handleDecisionScope($rawDecision['scope']);
+        $scope = $this->normalize($rawDecision['scope']);
 
         return new Decision(
             $this->handleDecisionIdentifier($origin, $type, $scope, $value),
@@ -320,16 +324,16 @@ abstract class AbstractRemediation
         return
             $origin . Decision::ID_SEP .
             $type . Decision::ID_SEP .
-            $this->handleDecisionScope($scope) . Decision::ID_SEP .
+            $scope . Decision::ID_SEP .
             $value;
     }
 
-    private function handleDecisionScope(string $scope): string
+    private function normalize(string $value): string
     {
-        return strtolower($scope);
+        return strtolower($value);
     }
 
-    private function parseDurationToSeconds(string $duration): int
+    protected function parseDurationToSeconds(string $duration): int
     {
         /**
          * 3h24m59.5565s or 3h24m5957ms or 149h, etc.
@@ -369,13 +373,11 @@ abstract class AbstractRemediation
     private function validateRawDecision(array $rawDecision): bool
     {
         if (
-            isset(
-                $rawDecision['scope'],
-                $rawDecision['value'],
-                $rawDecision['type'],
-                $rawDecision['origin'],
-                $rawDecision['duration']
-            )
+            !empty($rawDecision['scope']) &&
+            !empty($rawDecision['value']) &&
+            !empty($rawDecision['type']) &&
+            !empty($rawDecision['origin']) &&
+            !empty($rawDecision['duration'])
         ) {
             return true;
         }

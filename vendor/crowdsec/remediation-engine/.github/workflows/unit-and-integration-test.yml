@@ -6,9 +6,22 @@ on:
     paths-ignore:
       - '**.md'
   workflow_dispatch:
+    inputs:
+      unit_tests:
+        type: boolean
+        description: Run Unit tests
+        default: true
+      integration_tests:
+        type: boolean
+        description: Run Integration tests
+        default: true
 
 permissions:
   contents: read
+
+env:
+  # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+  DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   test-suite:
@@ -21,37 +34,32 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
     env:
-      EXTENSION_PATH: "my-own-modules/remediation-engine"
+      EXTENSION_PATH: "my-code/remediation-engine"
 
     steps:
-      - name: Clone DDEV files
-        uses: actions/checkout@v3
-        with:
-          path: .ddev
-          repository: julienloizelet/ddev-php
-          ref: "main"
-
       - name: Install DDEV
-        env:
-          DDEV_VERSION: v1.21.4
+        # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
         run: |
-          # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
-          sudo apt-get -qq update
-          sudo apt-get -qq -y install libnss3-tools
-          curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
-          bash install_ddev.sh ${{env.DDEV_VERSION}}
+          curl -fsSL https://apt.fury.io/drud/gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ddev.gpg > /dev/null
+          echo "deb [signed-by=/etc/apt/trusted.gpg.d/ddev.gpg] https://apt.fury.io/drud/ * *" | sudo tee /etc/apt/sources.list.d/ddev.list
+          sudo apt-get -q update
+          sudo apt-get -q -y install libnss3-tools ddev
+          mkcert -install
           ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
-          rm install_ddev.sh
 
-      - name: Set PHP_VERSION_CODE env
-        # used in some directory path and conventional file naming
-        # Example : 7.4 => 74
-        run: |
-           echo "PHP_VERSION_CODE=$(echo php${{ matrix.php-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
+      - name: Create empty PHP DDEV project
+        run: ddev config --project-type=php --project-name=remediation-engine  --php-version=${{ matrix.php-version }}
 
-      - name: Start DDEV  with PHP ${{ matrix.php-version }}
+      - name: Add Redis, Memcached and Crowdsec
         run: |
-          cp .ddev/config_overrides/config.${{ env.PHP_VERSION_CODE }}.yaml .ddev/config.${{ env.PHP_VERSION_CODE }}.yaml
+          ddev get ddev/ddev-redis
+          ddev get ddev/ddev-memcached
+          # override redis.conf
+          ddev get julienloizelet/ddev-tools
+          ddev get julienloizelet/ddev-crowdsec-php  
+
+      - name: Start DDEV
+        run: |
           ddev start
 
       - name: Some DEBUG information
@@ -73,6 +81,9 @@ jobs:
           ddev composer update --working-dir ./${{env.EXTENSION_PATH}}
 
       - name: Prepare PHP UNIT tests
+        if: |
+          github.event.inputs.unit_tests == 'true' ||
+          github.event_name == 'push'
         run: |
           ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/${{env.EXTENSION_PATH}}/tests/geolocation
           ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/${{env.EXTENSION_PATH}}/tests/geolocation
@@ -84,4 +95,21 @@ jobs:
           rm GeoLite2-Country.tar.gz GeoLite2-Country.tar.gz.sha256.txt GeoLite2-City.tar.gz GeoLite2-City.tar.gz.sha256.txt
 
       - name: Run Unit tests
+        if: |
+          github.event.inputs.unit_tests == 'true' ||
+          github.event_name == 'push'
         run:  ddev php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --debug ./${{env.EXTENSION_PATH}}/tests/Unit --testdox
+
+      - name: Prepare integration tests
+        if: |
+          github.event.inputs.integration_tests == 'true' ||
+          github.event_name == 'push'
+        run: |
+          echo -n "{\"machine_id\":\"${{ secrets.TEST_MACHINE_ID }}\"}" > ${{env.EXTENSION_PATH}}/tests/Integration/dev-machine-id.json
+          echo -n "{\"password\":\"${{ secrets.TEST_MACHINE_PWD }}\"}" > ${{env.EXTENSION_PATH}}/tests/Integration/dev-password.json
+
+      - name: Run Integration tests
+        if: |
+          github.event.inputs.integration_tests == 'true' ||
+          github.event_name == 'push'
+        run: ddev php  ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit  ./${{env.EXTENSION_PATH}}/tests/Integration --testdox

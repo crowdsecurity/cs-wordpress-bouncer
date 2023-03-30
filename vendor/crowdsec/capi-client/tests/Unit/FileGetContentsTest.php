@@ -17,6 +17,7 @@ namespace CrowdSec\CapiClient\Tests\Unit;
  * @license   MIT License
  */
 
+use CrowdSec\CapiClient\Client\CapiHandler\FileGetContents;
 use CrowdSec\CapiClient\ClientException;
 use CrowdSec\CapiClient\Constants;
 use CrowdSec\CapiClient\Storage\FileStorage;
@@ -26,7 +27,6 @@ use CrowdSec\CapiClient\Tests\PHPUnitUtil;
 use CrowdSec\CapiClient\Watcher;
 use CrowdSec\Common\Client\ClientException as CommonClientException;
 use CrowdSec\Common\Client\HttpMessage\Request;
-use CrowdSec\Common\Client\RequestHandler\FileGetContents;
 
 /**
  * @uses \CrowdSec\CapiClient\Configuration\Watcher::getConfigTreeBuilder
@@ -43,6 +43,11 @@ use CrowdSec\Common\Client\RequestHandler\FileGetContents;
  * @uses \CrowdSec\CapiClient\Watcher::refreshCredentials
  * @uses \CrowdSec\CapiClient\Watcher::areEquals
  * @uses \CrowdSec\CapiClient\Storage\FileStorage::__construct
+ * @uses \CrowdSec\CapiClient\Configuration\Watcher::addMetricsNodes
+ * @uses \CrowdSec\CapiClient\Watcher::buildSimpleMetrics
+ * @uses \CrowdSec\CapiClient\Watcher::formatDate
+ * @uses \CrowdSec\CapiClient\Watcher::pushMetrics
+ * @uses \CrowdSec\CapiClient\Client\AbstractClient::__construct
  *
  * @covers \CrowdSec\CapiClient\Watcher::login
  * @covers \CrowdSec\CapiClient\Watcher::handleTokenHeader
@@ -175,7 +180,8 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
         $mockFileStorage = $this->getFileStorageMock();
         $mockFGCRequest->method('exec')->will(
             $this->onConsecutiveCalls(
-                ['response' => MockedData::LOGIN_SUCCESS, 'header' => ['HTTP/1.1 ' . MockedData::HTTP_200]]
+                ['response' => MockedData::LOGIN_SUCCESS, 'header' => ['HTTP/1.1 ' . MockedData::HTTP_200]],
+                ['response' => MockedData::METRICS_SUCCESS, 'header' => ['HTTP/1.1 ' . MockedData::HTTP_200]]
             )
         );
         $mockFileStorage->method('retrievePassword')->willReturn(
@@ -201,6 +207,29 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
             $tokenHeader['Authorization'],
             'Header should be populated with token'
         );
+        // Test refresh with good credential but push metrics failed
+        $mockFGCRequest = $this->getFGCMock();
+        $mockFileStorage = $this->getFileStorageMock();
+        $mockFGCRequest->method('exec')->will(
+            $this->onConsecutiveCalls(
+                ['response' => MockedData::LOGIN_SUCCESS, 'header' => ['HTTP/1.1 ' . MockedData::HTTP_200]],
+                ['response' => MockedData::BAD_REQUEST, 'header' => ['HTTP/1.1 ' . MockedData::HTTP_500]]
+            )
+        );
+        $mockFileStorage->method('retrievePassword')->willReturn(
+            TestConstants::PASSWORD
+        );
+        $mockFileStorage->method('retrieveMachineId')->willReturn(TestConstants::MACHINE_ID_PREFIX . TestConstants::MACHINE_ID);
+        $mockFileStorage->method('retrieveToken')->willReturn(null);
+
+        $client = new Watcher($this->configs, $mockFileStorage, $mockFGCRequest);
+        // Should NOT throw error even if failed to push metrics
+        PHPUnitUtil::callMethod(
+            $client,
+            'ensureAuth',
+            []
+        );
+
         // Test refresh with bad credential
         $mockFGCRequest = $this->getFGCMock();
         $mockFileStorage = $this->getFileStorageMock();

@@ -28,6 +28,7 @@
         <UndefinedClass>
             <errorLevel type="info">
                 <referencedClass name="Predis\ClientInterface"/>
+                <referencedClass name="Relay\Relay"/>
             </errorLevel>
         </UndefinedClass>
         <UndefinedInterfaceMethod>
