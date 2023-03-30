@@ -311,17 +311,17 @@ By default, the `Bouncer` object will do curl requests to call the LAPI. If for 
 use curl then you can create your own request handler class and pass it as a second parameter of the `Bouncer` 
 constructor. 
 
-Your custom request handler class must extend the `AbstractRequestHandler` class of the `crowdsec/common` dependency, 
-and you will have to explicitly write an `handle` method:
+Your custom request handler class must implement the `RequestHandlerInterface` interface of the `crowdsec/common` 
+dependency, and you will have to explicitly write an `handle` method:
 
 ```php
 <?php
 
 use CrowdSec\Common\Client\HttpMessage\Request;
 use CrowdSec\Common\Client\HttpMessage\Response;
-use CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler;
+use CrowdSec\Common\Client\RequestHandler\RequestHandlerInterface;
 
-class CustomRequestHandler extends AbstractRequestHandler
+class CustomRequestHandler implements RequestHandlerInterface
 {
     /**
      * Performs an HTTP request and returns a response.

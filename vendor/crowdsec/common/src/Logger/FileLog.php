@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CrowdSec\Common\Logger;
 
 use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\RotatingFileHandler;
+use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
 /**
@@ -17,6 +19,10 @@ use Monolog\Logger;
  *
  * @copyright Copyright (c) 2022+ CrowdSec
  * @license   MIT License
+ */
+
+/**
+ * @todo in 3.0.0, log rotation should be default to false
  */
 class FileLog extends AbstractLog
 {
@@ -38,17 +44,24 @@ class FileLog extends AbstractLog
         parent::__construct($configs, $name);
         $logDir = $configs['log_directory_path'] ?? __DIR__ . '/.logs';
         if (empty($configs['disable_prod_log'])) {
-            $logPath = $logDir . '/' . self::PROD_FILE;
-            $fileHandler = new RotatingFileHandler($logPath, 0, Logger::INFO);
-            $fileHandler->setFormatter(new LineFormatter($this->format));
+            $prodLogPath = $logDir . '/' . self::PROD_FILE;
+            $fileHandler = $this->buildFileHandler($prodLogPath, Logger::INFO, $configs);
             $this->pushHandler($fileHandler);
         }
 
         if (!empty($configs['debug_mode'])) {
             $debugLogPath = $logDir . '/' . self::DEBUG_FILE;
-            $debugFileHandler = new RotatingFileHandler($debugLogPath, 0, Logger::DEBUG);
-            $debugFileHandler->setFormatter(new LineFormatter($this->format));
+            $debugFileHandler = $this->buildFileHandler($debugLogPath, Logger::DEBUG, $configs);
             $this->pushHandler($debugFileHandler);
         }
+    }
+
+    private function buildFileHandler(string $logFilePath, int $logLevel, array $configs = []): HandlerInterface
+    {
+        $fileHandler = empty($configs['no_rotation']) ?
+            new RotatingFileHandler($logFilePath, 0, $logLevel) :
+            new StreamHandler($logFilePath, $logLevel);
+
+        return $fileHandler->setFormatter(new LineFormatter($this->format));
     }
 }

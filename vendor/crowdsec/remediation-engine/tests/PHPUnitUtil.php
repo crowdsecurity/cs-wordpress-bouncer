@@ -27,6 +27,15 @@ class PHPUnitUtil
         }
     }
 
+    public static function assertDoesNotMatchRegExp($testCase, $pattern, $string, $message = '')
+    {
+        if (version_compare(self::getPHPUnitVersion(), '9.0', '>=')) {
+            $testCase->assertDoesNotMatchRegularExpression($pattern, $string, $message);
+        } else {
+            $testCase->assertNotRegExp($pattern, $string, $message);
+        }
+    }
+
     public static function callMethod($obj, $name, array $args)
     {
         $class = new \ReflectionClass($obj);

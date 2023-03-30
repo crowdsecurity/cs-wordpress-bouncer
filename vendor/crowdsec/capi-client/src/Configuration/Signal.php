@@ -35,6 +35,7 @@ class Signal extends AbstractConfiguration
         'message',
         'start_at',
         'stop_at',
+        'uuid',
     ];
 
     /**
@@ -61,6 +62,7 @@ class Signal extends AbstractConfiguration
                 ->end()
             ->end()
             ->integerNode('alert_id')->min(0)->end()
+            ->scalarNode('uuid')->cannotBeEmpty()->end()
             ->scalarNode('created_at')
                 ->cannotBeEmpty()
                 ->validate()

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace CrowdSec\CapiClient;
 
+use CrowdSec\CapiClient\Client\AbstractClient;
+use CrowdSec\CapiClient\Client\CapiHandler\CapiHandlerInterface;
 use CrowdSec\CapiClient\Configuration\Watcher as WatcherConfig;
 use CrowdSec\CapiClient\Storage\StorageInterface;
-use CrowdSec\Common\Client\AbstractClient;
 use CrowdSec\Common\Client\ClientException as CommonClientException;
-use CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Processor;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * The Watcher Client.
@@ -24,6 +25,10 @@ use Symfony\Component\Config\Definition\Processor;
  */
 class Watcher extends AbstractClient
 {
+    /**
+     * @var string The bouncer name for metrics
+     */
+    private const BOUNCER_NAME = 'php';
     /**
      * @var string The list of available digits
      */
@@ -64,7 +69,7 @@ class Watcher extends AbstractClient
     public function __construct(
         array $configs,
         StorageInterface $storage,
-        AbstractRequestHandler $requestHandler = null,
+        CapiHandlerInterface $capiHandler = null,
         LoggerInterface $logger = null
     ) {
         $this->configure($configs);
@@ -72,7 +77,7 @@ class Watcher extends AbstractClient
         $this->storage = $storage;
         $this->configs['api_url'] =
             Constants::ENV_PROD === $this->getConfig('env') ? Constants::URL_PROD : Constants::URL_DEV;
-        parent::__construct($this->configs, $requestHandler, $logger);
+        parent::__construct($this->configs, $capiHandler, $logger);
     }
 
     /**
@@ -129,6 +134,7 @@ class Watcher extends AbstractClient
         $scenarioHash = $properties['scenario_hash'] ?? '';
         $scenarioVersion = $properties['scenario_version'] ?? '';
         $message = $properties['message'] ?? '';
+        $uuid = $properties['uuid'] ?? Uuid::v4()->toRfc4122();
 
         $properties = [
             'scenario' => $scenario,
@@ -140,6 +146,7 @@ class Watcher extends AbstractClient
             'message' => $message,
             'start_at' => $startAt,
             'stop_at' => $stopAt,
+            'uuid' => $uuid,
         ];
 
         $sourceScope = $source['scope'] ?? Constants::SCOPE_IP;
@@ -150,7 +157,7 @@ class Watcher extends AbstractClient
             'value' => $sourceValue,
         ];
 
-        $decisions = $this->formatDecisions($decisions, $scenario, $sourceScope, $sourceValue);
+        $decisions = $this->formatDecisions($decisions, $scenario, $sourceScope, $sourceValue, $uuid);
 
         try {
             $signal = new Signal($properties, $source, $decisions);
@@ -247,6 +254,38 @@ class Watcher extends AbstractClient
     }
 
     /**
+     * Create a simple metrics array.
+     *
+     * @return array[]
+     *
+     * @throws ClientException
+     */
+    private function buildSimpleMetrics(): array
+    {
+        $userAgentPart = explode('/', $this->headers['User-Agent'], 2);
+        $metrics = $this->getConfig('metrics');
+
+        return [
+            'bouncers' => [
+                [
+                    'last_pull' => $metrics['bouncer']['last_pull'] ?? $this->formatDate(null),
+                    'custom_name' => $metrics['bouncer']['custom_name'] ?? $userAgentPart[0],
+                    'name' => self::BOUNCER_NAME,
+                    'version' => $metrics['bouncer']['version'] ?? $userAgentPart[1],
+                ],
+            ],
+            'machines' => [
+                [
+                    'last_update' => $metrics['machine']['last_update'] ?? $this->formatDate(null),
+                    'name' => $metrics['machine']['name'] ?? $userAgentPart[0],
+                    'last_push' => $metrics['machine']['last_push'] ?? $this->formatDate(null),
+                    'version' => $metrics['machine']['version'] ?? $userAgentPart[1],
+                ],
+            ],
+        ];
+    }
+
+    /**
      * Process and validate input configurations.
      */
     private function configure(array $configs): void
@@ -312,8 +351,13 @@ class Watcher extends AbstractClient
     /**
      * @throws ClientException
      */
-    private function formatDecisions(array $decisions, string $scenario, string $scope, string $value): array
-    {
+    private function formatDecisions(
+        array $decisions,
+        string $scenario,
+        string $scope,
+        string $value,
+        string $uuid
+    ): array {
         $result = [];
         foreach ($decisions as $decision) {
             if (!\is_array($decision)) {
@@ -334,6 +378,7 @@ class Watcher extends AbstractClient
 
             $result[] = [
                 'id' => $decision['id'] ?? 0,
+                'uuid' => $decision['uuid'] ?? $uuid,
                 'duration' => $this->convertSecondsToDuration($duration),
                 'scenario' => $decision['scenario'] ?? $scenario,
                 'origin' => $decision['origin'] ?? Constants::ORIGIN,
@@ -428,6 +473,17 @@ class Watcher extends AbstractClient
         $this->storage->storeToken($this->token);
         $configScenarios = $this->getConfig('scenarios');
         $this->storage->storeScenarios($configScenarios ?: []);
+        try {
+            $this->pushMetrics();
+        } catch (\Exception $e) {
+            $this->logger->info(
+                'Push metrics failed. Will try again on next login.',
+                [
+                    'type' => 'WATCHER_CLIENT_PUSH_METRICS_FAILED',
+                    'error' => $e->getMessage(),
+                ]
+            );
+        }
     }
 
     /**
@@ -554,6 +610,29 @@ class Watcher extends AbstractClient
         }
 
         return array_values(array_unique($tags));
+    }
+
+    /**
+     * Push metrics about enrolled machines and bouncers.
+     *
+     * @see https://crowdsecurity.github.io/api_doc/index.html?urls.primaryName=CAPI#/watchers/post_metrics
+     *
+     * @throws ClientException
+     * @throws CommonClientException
+     */
+    private function pushMetrics(): void
+    {
+        $metrics = $this->buildSimpleMetrics();
+        $headers = array_merge($this->headers, $this->handleTokenHeader());
+        $result = $this->request('POST', Constants::METRICS_ENDPOINT, $metrics, $headers);
+
+        $this->logger->debug(
+            'Push metrics result.',
+            [
+                'type' => 'WATCHER_CLIENT_PUSH_METRICS_RESULT',
+                'result' => $result,
+            ]
+        );
     }
 
     /**

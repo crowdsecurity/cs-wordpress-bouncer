@@ -23,8 +23,6 @@ class Curl extends AbstractRequestHandler
 {
     /**
      * {@inheritdoc}
-     *
-     * @throws ClientException
      */
     public function handle(Request $request): Response
     {

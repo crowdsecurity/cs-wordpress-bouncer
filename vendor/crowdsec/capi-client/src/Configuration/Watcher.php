@@ -7,6 +7,7 @@ namespace CrowdSec\CapiClient\Configuration;
 use CrowdSec\CapiClient\Constants;
 use CrowdSec\Common\Configuration\AbstractConfiguration;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 /**
@@ -31,6 +32,7 @@ class Watcher extends AbstractConfiguration
         'user_agent_version',
         'scenarios',
         'api_timeout',
+        'metrics',
     ];
 
     /**
@@ -72,7 +74,7 @@ class Watcher extends AbstractConfiguration
                 ->validate()
                 ->ifTrue(function (string $value) {
                     if (!empty($value)) {
-                        return 1 !== preg_match('#^v\d{1,4}(\.\d{1,4}){2}$#', $value);
+                        return 1 !== preg_match(Constants::VERSION_REGEX, $value);
                     }
 
                     return true;
@@ -105,7 +107,102 @@ class Watcher extends AbstractConfiguration
             ->integerNode('api_timeout')->defaultValue(Constants::API_TIMEOUT)->end()
         ->end()
         ;
+        $this->addMetricsNodes($rootNode);
 
         return $treeBuilder;
+    }
+
+    /**
+     * Metrics settings.
+     *
+     * @param NodeDefinition|ArrayNodeDefinition $rootNode
+     *
+     * @return void
+     *
+     * @throws \InvalidArgumentException|\RuntimeException
+     */
+    private function addMetricsNodes($rootNode)
+    {
+        $rootNode->children()
+            ->arrayNode('metrics')
+                ->children()
+                    ->arrayNode('bouncer')
+                        ->children()
+                            ->scalarNode('last_pull')
+                                ->cannotBeEmpty()
+                                ->validate()
+                                ->ifTrue(function (string $value) {
+                                    return 1 !== preg_match(Constants::ISO8601_REGEX, $value);
+                                })
+                                ->thenInvalid(
+                                    'Invalid metrics_bouncer_last_pull. Must match with ' . Constants::ISO8601_REGEX
+                                )
+                                ->end()
+                            ->end()
+                            ->scalarNode('custom_name')->cannotBeEmpty()
+                                ->validate()
+                                ->ifTrue(function (string $value) {
+                                    return 1 !== preg_match('#^[A-Za-z0-9]{1,32}$#', $value);
+                                })
+                                ->thenInvalid(
+                                    'Invalid bouncer custom name. Length must be <= 32. Allowed chars are A-Za-z0-9'
+                                )
+                                ->end()
+                            ->end()
+                            ->scalarNode('version')->cannotBeEmpty()
+                                ->validate()
+                                ->ifTrue(function (string $value) {
+                                    return 1 !== preg_match(Constants::VERSION_REGEX, $value);
+                                })
+                                ->thenInvalid('Invalid bouncer version. Must match vX.Y.Z format')
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('machine')
+                        ->children()
+                            ->scalarNode('last_update')
+                                ->cannotBeEmpty()
+                                ->validate()
+                                ->ifTrue(function (string $value) {
+                                    return 1 !== preg_match(Constants::ISO8601_REGEX, $value);
+                                })
+                                ->thenInvalid(
+                                    'Invalid metrics_machine_last_update. Must match with ' . Constants::ISO8601_REGEX
+                                )
+                                ->end()
+                            ->end()
+                            ->scalarNode('name')->cannotBeEmpty()
+                                ->validate()
+                                ->ifTrue(function (string $value) {
+                                    return 1 !== preg_match('#^[A-Za-z0-9]{1,32}$#', $value);
+                                })
+                                ->thenInvalid('Invalid machine name. Length must be <= 32. Allowed chars are A-Za-z0-9')
+                                ->end()
+                            ->end()
+                            ->scalarNode('last_push')
+                                ->cannotBeEmpty()
+                                ->validate()
+                                ->ifTrue(function (string $value) {
+                                    return 1 !== preg_match(Constants::ISO8601_REGEX, $value);
+                                })
+                                ->thenInvalid(
+                                    'Invalid metrics_machine_last_push. Must match with ' . Constants::ISO8601_REGEX
+                                )
+                                ->end()
+                            ->end()
+                            ->scalarNode('version')->cannotBeEmpty()
+                                ->validate()
+                                ->ifTrue(function (string $value) {
+                                    return 1 !== preg_match(Constants::VERSION_REGEX, $value);
+                                })
+                                ->thenInvalid('Invalid machine version. Must match vX.Y.Z format')
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
     }
 }

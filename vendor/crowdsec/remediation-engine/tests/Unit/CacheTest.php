@@ -15,26 +15,29 @@ namespace CrowdSec\RemediationEngine\Tests\Unit;
  * @license   MIT License
  */
 
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\CacheStorage\AbstractCache;
 use CrowdSec\RemediationEngine\CacheStorage\CacheStorageException;
 use CrowdSec\RemediationEngine\CacheStorage\Memcached;
 use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
 use CrowdSec\RemediationEngine\Constants;
-use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\RemediationEngine\Tests\Constants as TestConstants;
 use CrowdSec\RemediationEngine\Tests\PHPUnitUtil;
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 use PHPUnit\Framework\TestCase;
+use Psr\Cache\CacheItemInterface;
 
 /**
  * @uses \CrowdSec\RemediationEngine\Configuration\Cache\Memcached::getConfigTreeBuilder
  * @uses \CrowdSec\RemediationEngine\Configuration\Cache\PhpFiles::getConfigTreeBuilder
  * @uses \CrowdSec\RemediationEngine\Configuration\Cache\Redis::getConfigTreeBuilder
  *
+ * @covers \CrowdSec\RemediationEngine\Configuration\AbstractCache::addCommonNodes
  * @covers \CrowdSec\RemediationEngine\CacheStorage\Memcached::clear
  * @covers \CrowdSec\RemediationEngine\CacheStorage\Memcached::commit
+ * @covers \CrowdSec\RemediationEngine\CacheStorage\Memcached::getItem
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::__construct
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::clear
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::commit
@@ -59,14 +62,14 @@ use PHPUnit\Framework\TestCase;
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::saveDeferred
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::store
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::storeDecision
- * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::updateCacheItem
+ * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::updateDecisionItem
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::remove
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::removeDecision
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getRangeIntForIp
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::handleRangeScoped
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getIpCachedVariables
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::getIpVariables
- * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::saveCacheItem
+ * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::saveItemWithDuration
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::setIpVariables
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::retrieveDecisionsForCountry
  */
@@ -93,6 +96,10 @@ final class CacheTest extends TestCase
      */
     private $phpFileStorage;
     /**
+     * @var PhpFiles
+     */
+    private $phpFileStorageWithTags;
+    /**
      * @var string
      */
     private $prodFile;
@@ -100,6 +107,10 @@ final class CacheTest extends TestCase
      * @var Redis
      */
     private $redisStorage;
+    /**
+     * @var Redis
+     */
+    private $redisStorageWithTags;
     /**
      * @var vfsStreamDirectory
      */
@@ -111,6 +122,8 @@ final class CacheTest extends TestCase
             'PhpFilesAdapter' => ['PhpFilesAdapter'],
             'RedisAdapter' => ['RedisAdapter'],
             'MemcachedAdapter' => ['MemcachedAdapter'],
+            'PhpFilesAdapterWithTags' => ['PhpFilesAdapterWithTags'],
+            'RedisAdapterWithTags' => ['RedisAdapterWithTags'],
         ];
     }
 
@@ -124,6 +137,7 @@ final class CacheTest extends TestCase
 
         $cachePhpfilesConfigs = ['fs_cache_path' => $this->root->url()];
         $this->phpFileStorage = new PhpFiles($cachePhpfilesConfigs, $this->logger);
+        $this->phpFileStorageWithTags = new PhpFiles(array_merge($cachePhpfilesConfigs, ['use_cache_tags' => true]), $this->logger);
         $cacheMemcachedConfigs = [
             'memcached_dsn' => getenv('memcached_dsn') ?: 'memcached://memcached:11211',
         ];
@@ -132,6 +146,8 @@ final class CacheTest extends TestCase
             'redis_dsn' => getenv('redis_dsn') ?: 'redis://redis:6379',
         ];
         $this->redisStorage = new Redis($cacheRedisConfigs, $this->logger);
+        $this->redisStorageWithTags = new Redis(array_merge($cacheRedisConfigs, ['use_cache_tags' => true]),
+            $this->logger);
     }
 
     /**
@@ -142,7 +158,7 @@ final class CacheTest extends TestCase
         $this->setCache($cacheType);
 
         switch ($cacheType) {
-            case 'PhpFilesAdapter':
+            case 'PhpFilesAdapterWithTags':
                 $this->assertEquals(
                     'Symfony\Component\Cache\Adapter\TagAwareAdapter',
                     get_class($this->cacheStorage->getAdapter()),
@@ -161,8 +177,34 @@ final class CacheTest extends TestCase
                     $this->cacheStorage->getConfig('memcached_dsn'),
                     'Should get null config'
                 );
+                $this->assertTrue(
+                    $this->cacheStorage->getConfig('use_cache_tags')
+                );
                 break;
-            case 'RedisAdapter':
+            case 'PhpFilesAdapter':
+                $this->assertEquals(
+                    'Symfony\Component\Cache\Adapter\PhpFilesAdapter',
+                    get_class($this->cacheStorage->getAdapter()),
+                    'Adapter should be as expected'
+                );
+                $this->assertEquals(
+                    $this->root->url(),
+                    $this->cacheStorage->getConfig('fs_cache_path'),
+                    'Should get config'
+                );
+                $this->assertNull(
+                    $this->cacheStorage->getConfig('redis_dsn'),
+                    'Should get null config'
+                );
+                $this->assertNull(
+                    $this->cacheStorage->getConfig('memcached_dsn'),
+                    'Should get null config'
+                );
+                $this->assertFalse(
+                    $this->cacheStorage->getConfig('use_cache_tags')
+                );
+                break;
+            case 'RedisAdapterWithTags':
                 $this->assertEquals(
                     'Symfony\Component\Cache\Adapter\RedisTagAwareAdapter',
                     get_class($this->cacheStorage->getAdapter()),
@@ -179,6 +221,31 @@ final class CacheTest extends TestCase
                 $this->assertNotEmpty(
                     $this->cacheStorage->getConfig('redis_dsn'),
                     'Should get config'
+                );
+                $this->assertTrue(
+                    $this->cacheStorage->getConfig('use_cache_tags')
+                );
+                break;
+            case 'RedisAdapter':
+                $this->assertEquals(
+                    'Symfony\Component\Cache\Adapter\RedisAdapter',
+                    get_class($this->cacheStorage->getAdapter()),
+                    'Adapter should be as expected'
+                );
+                $this->assertNull(
+                    $this->cacheStorage->getConfig('fs_cache_path'),
+                    'Should get null config'
+                );
+                $this->assertNull(
+                    $this->cacheStorage->getConfig('memcached_dsn'),
+                    'Should get null config'
+                );
+                $this->assertNotEmpty(
+                    $this->cacheStorage->getConfig('redis_dsn'),
+                    'Should get config'
+                );
+                $this->assertFalse(
+                    $this->cacheStorage->getConfig('use_cache_tags')
                 );
                 break;
             case 'MemcachedAdapter':
@@ -199,6 +266,9 @@ final class CacheTest extends TestCase
                     $this->cacheStorage->getConfig('memcached_dsn'),
                     'Should get config'
                 );
+                $this->assertNull(
+                    $this->cacheStorage->getConfig('use_cache_tags')
+                );
                 break;
             default:
                 throw new \Exception('Unknown $type:' . $cacheType);
@@ -218,13 +288,18 @@ final class CacheTest extends TestCase
             'Cache should be clearable'
         );
 
+        $result = $this->cacheStorage->getItem(AbstractCache::CONFIG);
+        $this->assertTrue(
+            $result instanceof CacheItemInterface
+        );
+
         $error = '';
         try {
             $this->cacheStorage->prune();
         } catch (CacheStorageException $e) {
             $error = $e->getMessage();
         }
-        if ('PhpFilesAdapter' === $cacheType) {
+        if (in_array($cacheType, ['PhpFilesAdapter', 'PhpFilesAdapterWithTags'])) {
             $this->assertEquals(
                 '',
                 $error,
@@ -412,14 +487,17 @@ final class CacheTest extends TestCase
         );
     }
 
-    public function testIpVariableSetterAndGetter()
+    /**
+     * @dataProvider cacheTypeProvider
+     */
+    public function testIpVariableSetterAndGetter($cacheType)
     {
-        $this->setCache('PhpFilesAdapter');
+        $this->setCache($cacheType);
         $this->cacheStorage->setIpVariables(AbstractCache::GEOLOCATION,
             ['crowdsec_geolocation_country' => 'FR'],
             TestConstants::IP_FRANCE,
             TestConstants::CACHE_DURATION,
-            AbstractCache::GEOLOCATION
+            [AbstractCache::GEOLOCATION]
         );
 
         $adapter = $this->cacheStorage->getAdapter();
@@ -427,7 +505,7 @@ final class CacheTest extends TestCase
         $this->assertEquals(
             true,
             $item->isHit(),
-            'IP variable for geolocation should have not been cached'
+            'IP variable for geolocation should have been cached'
         );
         $this->assertEquals(
             ['crowdsec_geolocation_country' => 'FR'],
@@ -629,6 +707,12 @@ final class CacheTest extends TestCase
         switch ($type) {
             case 'PhpFilesAdapter':
                 $this->cacheStorage = $this->phpFileStorage;
+                break;
+            case 'PhpFilesAdapterWithTags':
+                $this->cacheStorage = $this->phpFileStorageWithTags;
+                break;
+            case 'RedisAdapterWithTags':
+                $this->cacheStorage = $this->redisStorageWithTags;
                 break;
             case 'RedisAdapter':
                 $this->cacheStorage = $this->redisStorage;

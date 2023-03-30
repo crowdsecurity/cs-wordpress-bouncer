@@ -23,8 +23,6 @@ class FileGetContents extends AbstractRequestHandler
 {
     /**
      * {@inheritdoc}
-     *
-     * @throws ClientException
      */
     public function handle(Request $request): Response
     {
@@ -80,7 +78,7 @@ class FileGetContents extends AbstractRequestHandler
     /**
      * Convert a key-value array of headers to the official HTTP header string.
      */
-    private function convertHeadersToString(array $headers): string
+    protected function convertHeadersToString(array $headers): string
     {
         $builtHeaderString = '';
         foreach ($headers as $key => $value) {

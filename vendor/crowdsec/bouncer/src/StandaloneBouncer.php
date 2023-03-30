@@ -28,7 +28,8 @@ class StandaloneBouncer extends AbstractBouncer
      */
     public function __construct(array $configs, LoggerInterface $logger = null)
     {
-        $this->logger = $logger ?: new FileLog($configs, 'php_standalone_bouncer');
+        $logConfigs = array_merge($configs, ['no_rotation' => true]);
+        $this->logger = $logger ?: new FileLog($logConfigs, 'php_standalone_bouncer');
         $configs = $this->handleTrustedIpsConfig($configs);
         $configs['user_agent_version'] = Constants::VERSION;
         $configs['user_agent_suffix'] = 'Standalone';

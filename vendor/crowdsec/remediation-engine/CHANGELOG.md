@@ -5,11 +5,57 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## Public API
+## SemVer public API
 
-The purpose of this section is to declare the public API of this library as required by  [item 1 of semantic versioning specification](https://semver.org/spec/v2.0.0.html#spec-item-1).
 
-The public API of this library consists of all public or protected methods, properties and constants belonging to the `src` folder.
+The [public API](https://semver.org/spec/v2.0.0.html#spec-item-1)  of this library consists of all public or protected methods, properties and constants belonging to the `src` folder.
+
+---
+
+## [3.1.1](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.1.1) - 2023-03-24
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.1.0...v3.1.1)
+
+### Fixed
+
+- Do not set logger in Memcached cache to avoid silent error
+
+
+---
+
+
+## [3.1.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.1.0) - 2023-03-24
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.0.0...v3.1.0)
+
+### Changed
+
+- Instantiate provided Redis and PhpFiles caches without cache tags by default
+- Do not cache CAPI decision with `0h` duration
+- Set logger in cache adapter to log Symfony cache messages
+
+### Added
+
+- Add a boolean `use_cache_tags` setting for Redis and PhpFiles caches. Default to `false`.
+
+
+---
+
+## [3.0.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.0.0) - 2023-03-09
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v2.1.0...v3.0.0)
+
+### Changed
+
+- *Breaking change*: Update `crowdsec/capi-client` dependency to `v3.0.0` (CAPI V3 endpoints)
+- *Breaking change*: Update `crowdsec/lapi-client` dependency to `v3.0.0`
+- *Breaking change*: Update `crowdsec/common` dependency to `v2.0.0`
+- *Breaking change*: Use custom error handler for `Memcached::getItem` method
+- *Breaking change*: Rename `AbstractCache::updateItem` method to `upsertItem`
+- *Breaking change*: The `cacheTag` string parameter of cache methods become a `tags` array
+- Change visibility of `AbstractRemediation::parseDurationToSeconds` method from private to protected
+
+### Added
+
+- Handle blocklist decisions when pulling CAPI decisions
+
 
 ---
 

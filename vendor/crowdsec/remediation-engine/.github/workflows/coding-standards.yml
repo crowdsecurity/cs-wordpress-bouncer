@@ -15,6 +15,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+  DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   test-suite:
     strategy:
@@ -26,39 +30,32 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
     env:
-      EXTENSION_PATH: "my-own-modules/remediation-engine"
+      EXTENSION_PATH: "my-code/remediation-engine"
 
     steps:
-      - name: Clone DDEV files
-        uses: actions/checkout@v3
-        with:
-          path: .ddev
-          repository: julienloizelet/ddev-php
-          ref: "main"
-
       - name: Install DDEV
-        env:
-          DDEV_VERSION: v1.21.4
+        # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
         run: |
-          # @see https://github.com/actions/runner-images/issues/675#issuecomment-610483420
-          sudo sed -i 's/azure\.//' /etc/apt/sources.list
-          # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
-          sudo apt-get -qq update
-          sudo apt-get -qq -y install libnss3-tools
-          curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
-          bash install_ddev.sh ${{env.DDEV_VERSION}}
+          curl -fsSL https://apt.fury.io/drud/gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ddev.gpg > /dev/null
+          echo "deb [signed-by=/etc/apt/trusted.gpg.d/ddev.gpg] https://apt.fury.io/drud/ * *" | sudo tee /etc/apt/sources.list.d/ddev.list
+          sudo apt-get -q update
+          sudo apt-get -q -y install libnss3-tools ddev
+          mkcert -install
           ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
-          rm install_ddev.sh
 
-      - name: Set PHP_VERSION_CODE env
-        # used in some directory path and conventional file naming
-        # Example : 7.4 => php74
-        run: |
-           echo "PHP_VERSION_CODE=$(echo php${{ matrix.php-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
+      - name: Create empty PHP DDEV project
+        run: ddev config --project-type=php --project-name=remediation-engine  --php-version=${{ matrix.php-version }}
 
-      - name: Start DDEV  with PHP ${{ matrix.php-version }}
+      - name: Add Redis, Memcached and Crowdsec
         run: |
-          cp .ddev/config_overrides/config.${{ env.PHP_VERSION_CODE }}.yaml .ddev/config.${{ env.PHP_VERSION_CODE }}.yaml
+          ddev get ddev/ddev-redis
+          ddev get ddev/ddev-memcached
+          # override redis.conf
+          ddev get julienloizelet/ddev-tools
+          ddev get julienloizelet/ddev-crowdsec-php  
+
+      - name: Start DDEV
+        run: |
           ddev start
 
       - name: Some DEBUG information

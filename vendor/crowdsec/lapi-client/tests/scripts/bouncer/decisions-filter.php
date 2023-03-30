@@ -2,8 +2,8 @@
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
 
-use CrowdSec\LapiClient\Bouncer;
 use CrowdSec\Common\Logger\ConsoleLog;
+use CrowdSec\LapiClient\Bouncer;
 
 $filter = isset($argv[1]) ? json_decode($argv[1], true) : [];
 $bouncerKey = $argv[2] ?? false;

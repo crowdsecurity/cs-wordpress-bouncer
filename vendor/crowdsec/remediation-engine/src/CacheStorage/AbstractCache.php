@@ -28,6 +28,8 @@ abstract class AbstractCache
     public const DEFER = 'deferred';
     /** @var string Internal name for effective saved cache item (not deferred) */
     public const DONE = 'done';
+    /** @var string The cache key prefix or tag for a geolocation */
+    public const GEOLOCATION = 'geolocation';
     /** @var int Cache item content array expiration index */
     public const INDEX_EXP = 1;
     /** @var int Cache item content array identifier index */
@@ -36,8 +38,10 @@ abstract class AbstractCache
     public const INDEX_MAIN = 0;
     /** @var string The cache key prefix for a IPV4 range bucket */
     public const IPV4_BUCKET_KEY = 'range_bucket_ipv4';
-    /** @var string The cache key prefix or tag for a geolocation */
-    public const GEOLOCATION = 'geolocation';
+    /** @var string Internal name for last pull */
+    public const LAST_PULL = 'last_pull';
+    /** @var string Internal name for list */
+    public const LIST = 'list';
     /** @var string Internal name for removed item index */
     public const REMOVED = 'removed';
     /** @var string Cache symbol */
@@ -154,24 +158,31 @@ abstract class AbstractCache
     }
 
     /**
+     * Retrieved prepared cached variables associated to an Ip
+     * Set null if not already in cache.
+     *
      * @throws InvalidArgumentException
      */
-    public function getItem(string $cacheKey): CacheItemInterface
+    public function getIpVariables(string $prefix, array $names, string $ip): array
     {
-        return $this->adapter->getItem(base64_encode($cacheKey));
+        $cachedVariables = $this->getIpCachedVariables($prefix, $ip);
+        $variables = [];
+        foreach ($names as $name) {
+            $variables[$name] = null;
+            if (isset($cachedVariables[$name])) {
+                $variables[$name] = $cachedVariables[$name];
+            }
+        }
+
+        return $variables;
     }
 
     /**
      * @throws InvalidArgumentException
      */
-    public function updateItem(string $cacheKey, array $content): bool
+    public function getItem(string $cacheKey): CacheItemInterface
     {
-        $cacheItem = $this->getItem($cacheKey);
-        $itemContent = $cacheItem->isHit() ? $cacheItem->get() : [];
-        $content = array_replace_recursive($itemContent, $content);
-        $cacheItem->set($content);
-
-        return $this->adapter->save($cacheItem);
+        return $this->adapter->getItem(base64_encode($cacheKey));
     }
 
     /**
@@ -276,9 +287,23 @@ abstract class AbstractCache
         return $cachedDecisions;
     }
 
-    protected function saveDeferred(CacheItemInterface $item): bool
+    /**
+     * Store variables in cache for some IP.
+     *
+     * @return void
+     *
+     * @throws CacheException
+     * @throws InvalidArgumentException
+     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
+     */
+    public function setIpVariables(string $cacheScope, array $pairs, string $ip, int $duration, array $tags = [])
     {
-        return $this->adapter->saveDeferred($item);
+        $cacheKey = $this->getCacheKey($cacheScope, $ip);
+        $cachedVariables = $this->getIpCachedVariables($cacheScope, $ip);
+        foreach ($pairs as $name => $value) {
+            $cachedVariables[$name] = $value;
+        }
+        $this->saveItemWithDuration($cacheKey, $cachedVariables, $duration, $tags);
     }
 
     /**
@@ -308,45 +333,6 @@ abstract class AbstractCache
     }
 
     /**
-     * Retrieved prepared cached variables associated to an Ip
-     * Set null if not already in cache.
-     *
-     * @throws InvalidArgumentException
-     */
-    public function getIpVariables(string $prefix, array $names, string $ip): array
-    {
-        $cachedVariables = $this->getIpCachedVariables($prefix, $ip);
-        $variables = [];
-        foreach ($names as $name) {
-            $variables[$name] = null;
-            if (isset($cachedVariables[$name])) {
-                $variables[$name] = $cachedVariables[$name];
-            }
-        }
-
-        return $variables;
-    }
-
-    /**
-     * Store variables in cache for some IP.
-     *
-     * @return void
-     *
-     * @throws CacheException
-     * @throws InvalidArgumentException
-     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
-     */
-    public function setIpVariables(string $cacheScope, array $pairs, string $ip, int $duration, string $cacheTag = '')
-    {
-        $cacheKey = $this->getCacheKey($cacheScope, $ip);
-        $cachedVariables = $this->getIpCachedVariables($cacheScope, $ip);
-        foreach ($pairs as $name => $value) {
-            $cachedVariables[$name] = $value;
-        }
-        $this->saveCacheItem($cacheKey, $cachedVariables, $duration, $cacheTag);
-    }
-
-    /**
      * Unset variables in cache for some IP.
      *
      * @return void
@@ -354,56 +340,43 @@ abstract class AbstractCache
      * @throws CacheException
      * @throws InvalidArgumentException
      * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
-     *
      */
-    public function unsetIpVariables(string $cacheScope, array $names, string $ip, int $duration, string $cacheTag = '')
+    public function unsetIpVariables(string $cacheScope, array $names, string $ip, int $duration, array $tags = [])
     {
         $cacheKey = $this->getCacheKey($cacheScope, $ip);
         $cachedVariables = $this->getIpCachedVariables($cacheScope, $ip);
         foreach ($names as $name) {
             unset($cachedVariables[$name]);
         }
-        $this->saveCacheItem($cacheKey, $cachedVariables, $duration, $cacheTag);
+        $this->saveItemWithDuration($cacheKey, $cachedVariables, $duration, $tags);
     }
 
     /**
-     * @throws CacheException
-     * @throws InvalidArgumentException
-     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException|CacheException
      */
-    private function saveCacheItem(
+    public function upsertItem(
         string $cacheKey,
-        array $cachedVariables,
-        int $duration,
-        string $cacheTag = ''
-    ): array {
-        $item = $this->adapter->getItem(base64_encode($cacheKey));
-        $item->set($cachedVariables);
-        $item->expiresAt(new \DateTime("+$duration seconds"));
-        if (!empty($cacheTag) && $this->adapter instanceof TagAwareAdapterInterface) {
-            $item->tag($cacheTag);
+        array $content,
+        int $duration = 0,
+        array $tags = []
+    ): bool {
+        $cacheItem = $this->getItem($cacheKey);
+        $itemContent = $cacheItem->isHit() ? $cacheItem->get() : [];
+        $content = array_replace_recursive($itemContent, $content);
+        $cacheItem->set($content);
+        if ($duration > 0) {
+            $cacheItem->expiresAt(new \DateTime("+$duration seconds"));
         }
-        $this->adapter->save($item);
+        if ($tags && $this->adapter instanceof TagAwareAdapterInterface) {
+            $cacheItem->tag($tags);
+        }
 
-        return $cachedVariables;
+        return $this->adapter->save($cacheItem);
     }
 
-    /**
-     * Retrieve raw cache item for some IP and cache scope.
-     *
-     * @return array|mixed
-     *
-     * @throws InvalidArgumentException
-     */
-    private function getIpCachedVariables(string $prefix, string $ip): array
+    protected function saveDeferred(CacheItemInterface $item): bool
     {
-        $cacheKey = $this->getCacheKey($prefix, $ip);
-        $cachedVariables = [];
-        if ($this->adapter->hasItem(base64_encode($cacheKey))) {
-            $cachedVariables = $this->adapter->getItem(base64_encode($cacheKey))->get();
-        }
-
-        return $cachedVariables;
+        return $this->adapter->saveDeferred($item);
     }
 
     /**
@@ -428,6 +401,24 @@ abstract class AbstractCache
         $result = array_search($identifier, array_column($cachedValues, self::INDEX_ID), true);
 
         return false === $result ? null : $result;
+    }
+
+    /**
+     * Retrieve raw cache item for some IP and cache scope.
+     *
+     * @return array|mixed
+     *
+     * @throws InvalidArgumentException
+     */
+    private function getIpCachedVariables(string $prefix, string $ip): array
+    {
+        $cacheKey = $this->getCacheKey($prefix, $ip);
+        $cachedVariables = [];
+        if ($this->adapter->hasItem(base64_encode($cacheKey))) {
+            $cachedVariables = $this->adapter->getItem(base64_encode($cacheKey))->get();
+        }
+
+        return $cachedVariables;
     }
 
     private function getMaxExpiration(array $itemsToCache): int
@@ -517,9 +508,6 @@ abstract class AbstractCache
     }
 
     /**
-     * @noinspection PhpSameParameterValueInspection
-     */
-    /**
      * @throws InvalidArgumentException
      * @throws CacheException
      */
@@ -547,7 +535,7 @@ abstract class AbstractCache
                 return $result;
             }
             $tags = $this->getTags($decision, $bucketInt);
-            $item = $this->updateCacheItem($item, $cachedValues, $tags);
+            $item = $this->updateDecisionItem($item, $cachedValues, $tags);
             $result[self::DEFER] = 1;
             $result[self::REMOVED] = $removed;
             if (!$this->saveDeferred($item)) {
@@ -567,6 +555,33 @@ abstract class AbstractCache
     /**
      * @noinspection PhpSameParameterValueInspection
      */
+
+    /**
+     * @throws CacheException
+     * @throws InvalidArgumentException
+     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
+     */
+    private function saveItemWithDuration(
+        string $cacheKey,
+        array $cachedVariables,
+        int $duration,
+        array $tags = []
+    ): array {
+        $item = $this->adapter->getItem(base64_encode($cacheKey));
+        $item->set($cachedVariables);
+        $item->expiresAt(new \DateTime("+$duration seconds"));
+        if ($tags && $this->adapter instanceof TagAwareAdapterInterface) {
+            $item->tag($tags);
+        }
+        $this->adapter->save($item);
+
+        return $cachedVariables;
+    }
+
+    /**
+     * @noinspection PhpSameParameterValueInspection
+     */
+
     /**
      * @throws InvalidArgumentException
      * @throws CacheException
@@ -588,7 +603,7 @@ abstract class AbstractCache
         $currentValue = $this->format($decision, $bucketInt);
         $decisionsToCache = array_merge($cachedValues, [$currentValue]);
         // Rebuild cache item
-        $item = $this->updateCacheItem($item, $decisionsToCache, $this->getTags($decision, $bucketInt));
+        $item = $this->updateDecisionItem($item, $decisionsToCache, $this->getTags($decision, $bucketInt));
 
         $result = [self::DONE => 0, self::DEFER => 1, self::STORED => $currentValue];
         if (!$this->saveDeferred($item)) {
@@ -607,14 +622,16 @@ abstract class AbstractCache
     /**
      * @throws InvalidArgumentException
      * @throws \Exception|CacheException
-     *
      */
-    private function updateCacheItem(CacheItemInterface $item, array $valuesToCache, array $tags): CacheItemInterface
-    {
+    private function updateDecisionItem(
+        CacheItemInterface $item,
+        array $valuesToCache,
+        array $tags = []
+    ): CacheItemInterface {
         $maxExpiration = $this->getMaxExpiration($valuesToCache);
         $item->set($valuesToCache);
         $item->expiresAt(new \DateTime('@' . $maxExpiration));
-        if ($this->adapter instanceof TagAwareAdapterInterface) {
+        if ($tags && $this->adapter instanceof TagAwareAdapterInterface) {
             $item->tag($tags);
         }
 

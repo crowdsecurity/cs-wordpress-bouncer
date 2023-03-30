@@ -24,7 +24,7 @@ $configs = [
     'machine_id_prefix' => 'capiclienttest',
     'user_agent_suffix' => 'CapiClientTest',
     'scenarios' => $scenarios,
-    ];
+];
 $client = new Watcher($configs, new FileStorage(), null, new ConsoleLog());
 echo 'Watcher instantiated' . \PHP_EOL;
 

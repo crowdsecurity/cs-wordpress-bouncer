@@ -16,6 +16,7 @@ return $config
         'combine_nested_dirname' => true,
         'phpdoc_to_comment' => false,
         'concat_space' => ['spacing'=> 'one'],
+        'types_spaces' => [ 'space_multiple_catch' => 'single']
     ])
     ->setRiskyAllowed(true)
     ->setFinder(

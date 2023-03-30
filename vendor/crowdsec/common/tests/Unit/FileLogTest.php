@@ -24,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @covers \CrowdSec\Common\Logger\FileLog::__construct
  * @covers \CrowdSec\Common\Logger\AbstractLog::__construct
+ * @covers \CrowdSec\Common\Logger\FileLog::buildFileHandler
  */
 final class FileLogTest extends TestCase
 {
@@ -33,6 +34,14 @@ final class FileLogTest extends TestCase
      */
     private $root;
 
+    /**
+     * @var string
+     */
+    private $debugRotateFile;
+    /**
+     * @var string
+     */
+    private $prodRotateFile;
     /**
      * @var string
      */
@@ -49,8 +58,10 @@ final class FileLogTest extends TestCase
     {
         $this->root = vfsStream::setup(self::TMP_DIR);
         $currentDate = date('Y-m-d');
-        $this->debugFile = 'debug-' . $currentDate . '.log';
-        $this->prodFile = 'prod-' . $currentDate . '.log';
+        $this->debugFile = 'debug.log';
+        $this->prodFile = 'prod.log';
+        $this->debugRotateFile = 'debug-' . $currentDate . '.log';
+        $this->prodRotateFile = 'prod-' . $currentDate . '.log';
     }
 
     public function testProdLog()
@@ -67,7 +78,7 @@ final class FileLogTest extends TestCase
             'Prod File should not exist'
         );
 
-        $logger = new FileLog(['log_directory_path' => $this->root->url()]);
+        $logger = new FileLog(['log_directory_path' => $this->root->url(), 'no_rotation' => true]);
 
         $handlers = $logger->getHandlers();
         $this->assertCount(1, $handlers, 'Should have one handler');
@@ -97,11 +108,56 @@ final class FileLogTest extends TestCase
         );
     }
 
+    public function testProdLogRotate()
+    {
+        $this->assertEquals(
+            false,
+            file_exists($this->root->url() . '/' . $this->debugRotateFile),
+            'Debug File should not exist'
+        );
+
+        $this->assertEquals(
+            false,
+            file_exists($this->root->url() . '/' . $this->prodRotateFile),
+            'Prod File should not exist'
+        );
+
+        $logger = new FileLog(['log_directory_path' => $this->root->url()]);
+
+        $handlers = $logger->getHandlers();
+        $this->assertCount(1, $handlers, 'Should have one handler');
+
+        // Test prod log
+        $logger->info('', [
+            'type' => 'TEST1',
+        ]);
+
+        $this->assertEquals(
+            true,
+            file_exists($this->root->url() . '/' . $this->prodRotateFile),
+            'Prod File should exist'
+        );
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*200.*"type":"TEST1"/',
+            file_get_contents($this->root->url() . '/' . $this->prodRotateFile),
+            'Log content should be correct'
+        );
+
+        $this->assertEquals(
+            false,
+            file_exists($this->root->url() . '/' . $this->debugRotateFile),
+            'Debug File should not exist'
+        );
+    }
+
     public function testDebugLog()
     {
         $logger = new FileLog([
             'log_directory_path' => $this->root->url(),
             'debug_mode' => true,
+            'no_rotation' => true,
         ]);
 
         $handlers = $logger->getHandlers();
@@ -138,6 +194,47 @@ final class FileLogTest extends TestCase
         );
     }
 
+    public function testDebugLogRotate()
+    {
+        $logger = new FileLog([
+            'log_directory_path' => $this->root->url(),
+            'debug_mode' => true,
+        ]);
+
+        $handlers = $logger->getHandlers();
+        $this->assertCount(2, $handlers, 'Should have 2 handlers');
+
+        $logger->info('', [
+            'type' => 'TEST2',
+        ]);
+
+        $this->assertEquals(
+            true,
+            file_exists($this->root->url() . '/' . $this->prodRotateFile),
+            'Prod File should exist'
+        );
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*200.*"type":"TEST2"/',
+            file_get_contents($this->root->url() . '/' . $this->prodRotateFile),
+            'Prod log content should be correct'
+        );
+
+        $this->assertEquals(
+            true,
+            file_exists($this->root->url() . '/' . $this->debugRotateFile),
+            'Debug File should  exist'
+        );
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*200.*"type":"TEST2"/',
+            file_get_contents($this->root->url() . '/' . $this->debugRotateFile),
+            'Debug log content should be correct'
+        );
+    }
+
     public function testDisableProdLog()
     {
         $logger = new FileLog([
@@ -151,20 +248,20 @@ final class FileLogTest extends TestCase
 
         $this->assertEquals(
             false,
-            file_exists($this->root->url() . '/' . $this->prodFile),
+            file_exists($this->root->url() . '/' . $this->prodRotateFile),
             'Prod File should not exist'
         );
 
         $this->assertEquals(
             true,
-            file_exists($this->root->url() . '/' . $this->debugFile),
+            file_exists($this->root->url() . '/' . $this->debugRotateFile),
             'Debug File should  exist'
         );
 
         PHPUnitUtil::assertRegExp(
             $this,
             '/.*200.*"type":"TEST3"/',
-            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            file_get_contents($this->root->url() . '/' . $this->debugRotateFile),
             'Debug log content should be correct'
         );
     }
@@ -176,7 +273,7 @@ final class FileLogTest extends TestCase
         ]);
         $this->assertEquals(
             false,
-            file_exists($this->root->url() . '/' . $this->prodFile),
+            file_exists($this->root->url() . '/' . $this->prodRotateFile),
             'Prod File should not exist'
         );
         $logger->error('error-message', [
@@ -185,19 +282,19 @@ final class FileLogTest extends TestCase
 
         $this->assertEquals(
             true,
-            file_exists($this->root->url() . '/' . $this->prodFile),
+            file_exists($this->root->url() . '/' . $this->prodRotateFile),
             'Prod File should  exist'
         );
 
         PHPUnitUtil::assertRegExp(
             $this,
             '/.*|400|error-message|.*"type":"TEST3"/',
-            file_get_contents($this->root->url() . '/' . $this->prodFile),
+            file_get_contents($this->root->url() . '/' . $this->prodRotateFile),
             'Prod log content should formatted with default format'
         );
 
-        file_put_contents($this->root->url() . '/' . $this->prodFile, '');
-        $this->assertEmpty(file_get_contents($this->root->url() . '/' . $this->prodFile),
+        file_put_contents($this->root->url() . '/' . $this->prodRotateFile, '');
+        $this->assertEmpty(file_get_contents($this->root->url() . '/' . $this->prodRotateFile),
             'Prod log content should be empty');
 
         $logger = new FileLog([
@@ -208,20 +305,20 @@ final class FileLogTest extends TestCase
             'type' => 'TEST3',
         ]);
         $this->assertEquals('error-message|400|error-message|400', file_get_contents($this->root->url() . '/' .
-                                                                                      $this->prodFile),
+                                                                                      $this->prodRotateFile),
             'Prod log content should be well formatted');
 
-        file_put_contents($this->root->url() . '/' . $this->prodFile, '');
-        $this->assertEmpty(file_get_contents($this->root->url() . '/' . $this->prodFile),
+        file_put_contents($this->root->url() . '/' . $this->prodRotateFile, '');
+        $this->assertEmpty(file_get_contents($this->root->url() . '/' . $this->prodRotateFile),
             'Prod log content should be empty');
 
         $error = '';
         try {
-            $logger = new FileLog([
+            new FileLog([
                 'log_directory_path' => $this->root->url(),
-                'format' => array('bad-config' => true),
+                'format' => ['bad-config' => true],
             ]);
-        } catch (\TypeError $e){
+        } catch (\TypeError $e) {
             $error = $e->getMessage();
         }
 

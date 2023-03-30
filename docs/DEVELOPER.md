@@ -205,7 +205,7 @@ We are not setting the `"optimize-autoloader": true` in the `composer.json` beca
 In development phase, you could run the following command:
 
 ```shell
-ddev composer update --working-dir ./my-own-modules/crowdsec-bouncer
+ddev composer update --working-dir ./wp-content/plugins/crowdsec
 ```
 
 ##### Production release
@@ -213,7 +213,7 @@ ddev composer update --working-dir ./my-own-modules/crowdsec-bouncer
 To release a new version of the plugin on the WordPress marketplace, you must run:
 
 ```shell
-ddev composer update --no-dev --prefer-dist --optimize-autoloader --working-dir ./my-own-modules/crowdsec-bouncer
+ddev composer update --no-dev --prefer-dist --optimize-autoloader --working-dir ./wp-content/plugins/crowdsec
 ```
 
 ## Quick start guide

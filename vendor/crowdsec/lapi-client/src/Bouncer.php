@@ -6,7 +6,7 @@ namespace CrowdSec\LapiClient;
 
 use CrowdSec\Common\Client\AbstractClient;
 use CrowdSec\Common\Client\ClientException as CommonClientException;
-use CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler;
+use CrowdSec\Common\Client\RequestHandler\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Processor;
 
@@ -33,7 +33,7 @@ class Bouncer extends AbstractClient
 
     public function __construct(
         array $configs,
-        AbstractRequestHandler $requestHandler = null,
+        RequestHandlerInterface $requestHandler = null,
         LoggerInterface $logger = null
     ) {
         $this->configure($configs);

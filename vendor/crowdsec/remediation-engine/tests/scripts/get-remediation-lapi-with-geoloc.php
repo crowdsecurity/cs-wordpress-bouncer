@@ -2,13 +2,13 @@
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+use CrowdSec\Common\Logger\FileLog;
 use CrowdSec\LapiClient\Bouncer;
 use CrowdSec\RemediationEngine\CacheStorage\Memcached;
 use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
 use CrowdSec\RemediationEngine\Constants;
 use CrowdSec\RemediationEngine\LapiRemediation;
-use CrowdSec\Common\Logger\FileLog;
 
 $ip = $argv[1] ?? null;
 

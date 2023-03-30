@@ -33,6 +33,7 @@ class Decisions extends AbstractConfiguration
         'id',
         'type',
         'value',
+        'uuid',
     ];
 
     /**
@@ -82,9 +83,10 @@ class Decisions extends AbstractConfiguration
                     ->booleanNode('simulated')
                         ->defaultFalse()
                     ->end()
-                    ->integerNode('id')
+                    ->integerNode('id')->isRequired()
                         ->min(0)
                     ->end()
+                    ->scalarNode('uuid')->cannotBeEmpty()->end()
                     ->scalarNode('type')
                         ->isRequired()->cannotBeEmpty()
                     ->end()

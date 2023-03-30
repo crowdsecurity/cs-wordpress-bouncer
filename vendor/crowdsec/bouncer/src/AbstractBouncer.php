@@ -284,18 +284,11 @@ abstract class AbstractBouncer
      * @return void
      * @throws BouncerException
      * @throws InvalidArgumentException
-     * @todo custom error handler should be in RemediationEngine (v3.0.0)
      */
     public function testCacheConnection(): void
     {
         try {
             $cache = $this->getRemediationEngine()->getCacheStorage();
-            if ($cache instanceof Memcached) {
-                set_error_handler(function ($errno, $errstr) {
-                    $message = "Memcached error. (Error level: $errno) Original error was: $errstr";
-                    throw new CacheStorageException($message);
-                });
-            }
             $cache->getItem(AbstractCache::CONFIG);
         } catch (\Exception $e) {
             throw new BouncerException(
@@ -303,10 +296,6 @@ abstract class AbstractBouncer
                 (int)$e->getCode(),
                 $e
             );
-        } finally {
-            if (isset($cache) && $cache instanceof Memcached) {
-                restore_error_handler();
-            }
         }
     }
 
@@ -690,7 +679,7 @@ abstract class AbstractBouncer
                     ['has_to_be_resolved' => false],
                     $ip,
                     $duration,
-                    Constants::CACHE_TAG_CAPTCHA
+                    [Constants::CACHE_TAG_CAPTCHA]
                 );
                 $unsetVariables = [
                     'phrase_to_guess',
@@ -703,7 +692,7 @@ abstract class AbstractBouncer
                     $unsetVariables,
                     $ip,
                     $duration,
-                    Constants::CACHE_TAG_CAPTCHA
+                    [Constants::CACHE_TAG_CAPTCHA]
                 );
                 $redirect = $cachedCaptchaVariables['resolution_redirect'] ?? '/';
                 $this->redirectResponse($redirect);
@@ -714,7 +703,7 @@ abstract class AbstractBouncer
                     ['resolution_failed' => true],
                     $ip,
                     $duration,
-                    Constants::CACHE_TAG_CAPTCHA
+                    [Constants::CACHE_TAG_CAPTCHA]
                 );
             }
         }
@@ -796,7 +785,7 @@ abstract class AbstractBouncer
             $captchaVariables,
             $ip,
             $duration,
-            Constants::CACHE_TAG_CAPTCHA
+            [Constants::CACHE_TAG_CAPTCHA]
         );
     }
 
@@ -822,7 +811,7 @@ abstract class AbstractBouncer
                 $captchaVariables,
                 $ip,
                 $duration,
-                Constants::CACHE_TAG_CAPTCHA
+                [Constants::CACHE_TAG_CAPTCHA]
             );
 
             return true;

@@ -19,16 +19,15 @@ class PhpFiles extends AbstractCache
     {
         $this->configure($configs);
         try {
-            $adapter = new TagAwareAdapter(
-                new PhpFilesAdapter('', 0, $this->configs['fs_cache_path'])
-            );
+            $fileAdapter = new PhpFilesAdapter('', 0, $this->configs['fs_cache_path']);
+            $adapter = !empty($this->configs['use_cache_tags']) ? new TagAwareAdapter($fileAdapter) : $fileAdapter;
+            if ($logger) {
+                $adapter->setLogger($logger);
+            }
             // @codeCoverageIgnoreStart
         } catch (\Exception $e) {
-            throw new CacheStorageException(
-                'Error when creating to PhpFiles cache adapter:' . $e->getMessage(),
-                (int)$e->getCode(),
-                $e
-            );
+            $message = 'Error when creating to PhpFiles cache adapter:' . $e->getMessage();
+            throw new CacheStorageException($message, (int) $e->getCode(), $e);
             // @codeCoverageIgnoreEnd
         }
         parent::__construct($this->configs, $adapter, $logger);

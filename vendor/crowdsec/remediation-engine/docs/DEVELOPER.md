@@ -15,6 +15,7 @@
   - [DDEV Usage](#ddev-usage)
     - [Use composer to update or install the lib](#use-composer-to-update-or-install-the-lib)
     - [Unit test](#unit-test)
+    - [Integration test](#integration-test)
     - [Coding standards](#coding-standards)
       - [PHPCS Fixer](#phpcs-fixer)
       - [PHPSTAN](#phpstan)
@@ -58,11 +59,11 @@ The final structure of the project will look like below.
 crowdsec-remediation-engine-dev-project (choose the name you want for this folder)
 │       
 │
-└───.ddev (do not change this folder name)
+└───.ddev
 │   │   
-│   │ (Cloned sources of a PHP specific ddev repo)
+│   │ (DDEV files)
 │   
-└───my-own-modules (do not change this folder name)
+└───my-code (do not change this folder name)
     │   
     │
     └───remediation-engine (do not change this folder name)
@@ -76,28 +77,29 @@ crowdsec-remediation-engine-dev-project (choose the name you want for this folde
 mkdir crowdsec-remediation-engine-dev-project
 ```
 
-- Create a `remediation-engine` folder with sources of this repo:
+- Create a DDEV php rpoject:
 
 ```bash
 cd crowdsec-remediation-engine-dev-project
-mkdir -p my-own-modules/remediation-engine
-cd my-own-modules/remediation-engine && git clone git@github.com:crowdsecurity/php-remediation-engine.git ./
+ddev config --project-type=php --php-version=8.2 --project-name=remediation-engine
 ```
 
-- Create an empty `.ddev` folder for DDEV and clone our pre-configured DDEV repo:
+- Add some DDEV add-ons: 
 
 ```bash
-cd crowdsec-remediation-engine-dev-project
-mkdir .ddev && cd .ddev && git clone git@github.com:julienloizelet/ddev-php.git ./
+ddev get ddev/ddev-redis
+ddev get ddev/ddev-memcached
+ddev get julienloizelet/ddev-tools
+ddev get julienloizelet/ddev-crowdsec-php
 ```
 
-By default, ddev will launch a PHP 7.2 container. If you want to work with another PHP version, copy the
-corresponding config file. For example:
+- Clone this repo sources in a `my-code/remediation-engine` folder:
 
 ```bash
-cd crowdsec-remediation-engine-dev-project
-cp .ddev/config_overrides/config.php74.yaml .ddev/config.php74.yaml
+mkdir -p my-code/remediation-engine
+cd my-code/remediation-engine && git clone git@github.com:crowdsecurity/php-remediation-engine.git ./
 ```
+
 - Launch DDEV
 
 ```bash
@@ -114,18 +116,25 @@ This should take some times on the first launch as this will download all necess
 Run:
 
 ```bash
-ddev composer update --working-dir ./my-own-modules/remediation-engine
+ddev composer update --working-dir ./my-code/remediation-engine
 ```
 
 #### Unit test
 
 ```bash
-ddev php ./my-own-modules/remediation-engine/vendor/bin/phpunit  ./my-own-modules/remediation-engine/tests/Unit --testdox
+ddev php ./my-code/remediation-engine/vendor/bin/phpunit  ./my-code/remediation-engine/tests/Unit --testdox
 ```
 
 **N.B.**: Some geolocation tests require to have 2 Maxmind databases (`GeoLite2-Country.mmdb` and `GeoLite2-City.
 mmdb`) in the `tests/geolocation` folder. These databases are downloadable from the [MaxMind](https://www.maxmind.com) 
 website.
+
+
+#### Integration test
+
+```bash
+ddev php ./my-code/remediation-engine/vendor/bin/phpunit  ./my-code/remediation-engine/tests/Integration --testdox
+```
 
 #### Coding standards
 
@@ -133,7 +142,7 @@ We set up some coding standards tools that you will find in the `tools/coding-st
 In order to use these, you will need to work with a PHP version >= 7.4 and run first:
 
 ```bash
-ddev composer update --working-dir=./my-own-modules/remediation-engine/tools/coding-standards
+ddev composer update --working-dir=./my-code/remediation-engine/tools/coding-standards
 ```
 
 ##### PHPCS Fixer
@@ -144,7 +153,7 @@ With ddev, you can do the following:
 
 
 ```bash
-ddev phpcsfixer my-own-modules/remediation-engine/tools/coding-standards/php-cs-fixer ../
+ddev phpcsfixer my-code/remediation-engine/tools/coding-standards/php-cs-fixer ../
 
 ```
 
@@ -154,7 +163,7 @@ To use the [PHPSTAN](https://github.com/phpstan/phpstan) tool, you can run:
 
 
 ```bash
-ddev phpstan /var/www/html/my-own-modules/remediation-engine/tools/coding-standards phpstan/phpstan.neon /var/www/html/my-own-modules/remediation-engine/src
+ddev phpstan /var/www/html/my-code/remediation-engine/tools/coding-standards phpstan/phpstan.neon /var/www/html/my-code/remediation-engine/src
 
 ```
 
@@ -164,7 +173,7 @@ ddev phpstan /var/www/html/my-own-modules/remediation-engine/tools/coding-standa
 To use the [PHPMD](https://github.com/phpmd/phpmd) tool, you can run:
 
 ```bash
-ddev phpmd ./my-own-modules/remediation-engine/tools/coding-standards phpmd/rulesets.xml ../../src
+ddev phpmd ./my-code/remediation-engine/tools/coding-standards phpmd/rulesets.xml ../../src
 
 ```
 
@@ -173,13 +182,13 @@ ddev phpmd ./my-own-modules/remediation-engine/tools/coding-standards phpmd/rule
 To use [PHP Code Sniffer](https://github.com/squizlabs/PHP_CodeSniffer) tools, you can run:
 
 ```bash
-ddev phpcs ./my-own-modules/remediation-engine/tools/coding-standards my-own-modules/remediation-engine/src PSR12
+ddev phpcs ./my-code/remediation-engine/tools/coding-standards my-code/remediation-engine/src PSR12
 ```
 
 and:
 
 ```bash
-ddev phpcbf  ./my-own-modules/remediation-engine/tools/coding-standards my-own-modules/remediation-engine/src PSR12
+ddev phpcbf  ./my-code/remediation-engine/tools/coding-standards my-code/remediation-engine/src PSR12
 ```
 
 
@@ -188,7 +197,7 @@ ddev phpcbf  ./my-own-modules/remediation-engine/tools/coding-standards my-own-m
 To use [PSALM](https://github.com/vimeo/psalm) tools, you can run:
 
 ```bash
-ddev psalm ./my-own-modules/remediation-engine/tools/coding-standards ./my-own-modules/remediation-engine/tools/coding-standards/psalm
+ddev psalm ./my-code/remediation-engine/tools/coding-standards ./my-code/remediation-engine/tools/coding-standards/psalm
 ```
 
 ##### PHP Unit Code coverage
@@ -203,7 +212,7 @@ ddev xdebug
 
 To generate a html report, you can run:
 ```bash
-ddev php -dxdebug.mode=coverage ./my-own-modules/remediation-engine/tools/coding-standards/vendor/bin/phpunit --configuration ./my-own-modules/remediation-engine/tools/coding-standards/phpunit/phpunit.xml
+ddev php -dxdebug.mode=coverage ./my-code/remediation-engine/tools/coding-standards/vendor/bin/phpunit --configuration ./my-code/remediation-engine/tools/coding-standards/phpunit/phpunit.xml
 ```
 
 You should find the main report file `dashboard.html` in `tools/coding-standards/phpunit/code-coverage` folder.
@@ -212,7 +221,7 @@ You should find the main report file `dashboard.html` in `tools/coding-standards
 If you want to generate a text report in the same folder:
 
 ```bash
-ddev php -dxdebug.mode=coverage ./my-own-modules/remediation-engine/tools/coding-standards/vendor/bin/phpunit --configuration ./my-own-modules/remediation-engine/tools/coding-standards/phpunit/phpunit.xml --coverage-text=./my-own-modules/remediation-engine/tools/coding-standards/phpunit/code-coverage/report.txt
+ddev php -dxdebug.mode=coverage ./my-code/remediation-engine/tools/coding-standards/vendor/bin/phpunit --configuration ./my-code/remediation-engine/tools/coding-standards/phpunit/phpunit.xml --coverage-text=./my-code/remediation-engine/tools/coding-standards/phpunit/code-coverage/report.txt
 ```
 
 **N.B.**: Some geolocation tests require to have 2 Maxmind databases (`GeoLite2-Country.mmdb` and `GeoLite2-City.
