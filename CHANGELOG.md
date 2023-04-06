@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- Add `.htaccess` to deny direct access of plugin folders
+- Add `.htaccess` files to deny direct access of plugin sensitive folders
 
 
 ---
