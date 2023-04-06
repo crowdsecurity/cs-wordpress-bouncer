@@ -1,4 +1,3 @@
-/.cache
 /.git
 /.github
 /.githooks
@@ -25,10 +24,7 @@
 .composer.lock
 *.sh
 *.log
-README.md
-CHANGELOG.md
 composer.json
 composer.lock
-/logs/**
 .distignore
 .gitignore
