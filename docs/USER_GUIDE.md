@@ -16,10 +16,13 @@
     - [Theme customization](#theme-customization)
     - [Advanced settings](#advanced-settings)
     - [Settings update with WP-CLI tool](#settings-update-with-wp-cli-tool)
-  - [Auto Prepend File mode](#auto-prepend-file-mode)
-    - [PHP](#php)
+  - [Security](#security)
     - [Nginx](#nginx)
     - [Apache](#apache)
+  - [Auto Prepend File mode](#auto-prepend-file-mode)
+    - [PHP](#php)
+    - [Nginx](#nginx-1)
+    - [Apache](#apache-1)
 - [Resources](#resources)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
