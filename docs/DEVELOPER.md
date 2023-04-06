@@ -90,7 +90,6 @@ ddev get ddev/ddev-redis
 ddev get ddev/ddev-memcached
 ddev get julienloizelet/ddev-tools
 ddev get julienloizelet/ddev-playwright
-ddev start
 ```
 
 - Launch DDEV
@@ -106,8 +105,7 @@ This should take some times on the first launch as this will download all necess
 ```
 ddev wp core download
 
-ddev exec wp core install --url='https://your-project-name.ddev.site' --title='WordPress' --admin_user='admin' 
---admin_password='admin123' --admin_email='admin@admin.com'
+ddev exec wp core install --url='https://your-project-name.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'
 
 ```
 

@@ -16,8 +16,11 @@ crowdsec-wp*
 
 # App
 .bouncer-key
-.cache/
 *.log
+/.cache/*
+!/.cache/.htaccess
+/logs/*
+!/logs/.htaccess
 .vagrant
 .env
 inc/standalone-settings.php

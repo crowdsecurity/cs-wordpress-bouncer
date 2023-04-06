@@ -182,7 +182,8 @@ function adminAdvancedSettings()
         return $input;
     }, ((Constants::CACHE_SYSTEM_PHPFS === get_option('crowdsec_cache_system')) ?
         '<input style="margin-right:10px" type="button" id="crowdsec_prune_cache" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_action_prune_cache\').submit();">' : '').
-        '<p>The File system cache is faster than calling Local API. Redis or Memcached is faster than the File System cache.</p>', [
+        '<p>The File system cache is faster than calling Local API. Redis or Memcached is faster than the File System cache.<br>
+If you are using File system cache, please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to the cache folder.</a></p>', [
         Constants::CACHE_SYSTEM_PHPFS => 'File system',
         Constants::CACHE_SYSTEM_REDIS => 'Redis',
         Constants::CACHE_SYSTEM_MEMCACHED => 'Memcached',
@@ -371,7 +372,7 @@ function adminAdvancedSettings()
      ******************************/
 
     add_settings_section('crowdsec_admin_advanced_debug', 'Debug mode', function () {
-        echo 'Configure the debug mode.';
+        echo 'Configure the debug mode.<br>Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to the log folder.</a>';
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_debug_mode"

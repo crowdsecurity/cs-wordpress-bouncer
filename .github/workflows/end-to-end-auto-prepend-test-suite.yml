@@ -57,8 +57,8 @@ jobs:
         run: |
           echo "WP_VERSION_CODE=$(echo wp${{ matrix.wp-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
 
-      - name: Create empty WordPress DDEV project
-        run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }}
+      - name: Create empty WordPress DDEV project (with Nginx)
+        run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }} --webserver-type=nginx-fpm
 
       - name: Handle PHP version
         run: |
