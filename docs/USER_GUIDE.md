@@ -530,16 +530,13 @@ server {
 
 #### Apache
 
-If you are using Apache, these folders already contain the required `.htaccess` file: 
+If you are using Apache, the plugin root folder already contain the required `.htaccess` file: 
 
 ```
-<IfVersion < 2.4>
-    order allow,deny
-    deny from all
-</IfVersion>
-<IfVersion >= 2.4>
-    Require all denied
-</IfVersion>
+Redirectmatch 403 wp-content/plugins/crowdsec/logs/
+Redirectmatch 403 wp-content/plugins/crowdsec/.cache/
+Redirectmatch 403 wp-content/plugins/crowdsec/tls/
+Redirectmatch 403 wp-content/plugins/crowdsec/geolocation/
 ```
 
 So you don't have to do anything more.
