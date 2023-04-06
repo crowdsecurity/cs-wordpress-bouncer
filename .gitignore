@@ -4,23 +4,10 @@ vendor/crowdsec/bouncer/*
 !vendor/crowdsec/bouncer/LICENSE
 
 
-# Systems
-.DS_Store
-
 #Tools
 node_modules/
 .test-results*
-tests/e2e/screenshots
-.cookies.json
-crowdsec-wp*
 
 # App
-.bouncer-key
 *.log
-/.cache/*
-!/.cache/.htaccess
-/logs/*
-!/logs/.htaccess
-.vagrant
-.env
 inc/standalone-settings.php

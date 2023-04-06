@@ -183,7 +183,8 @@ function adminAdvancedSettings()
     }, ((Constants::CACHE_SYSTEM_PHPFS === get_option('crowdsec_cache_system')) ?
         '<input style="margin-right:10px" type="button" id="crowdsec_prune_cache" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_action_prune_cache\').submit();">' : '').
         '<p>The File system cache is faster than calling Local API. Redis or Memcached is faster than the File System cache.<br>
-If you are using File system cache, please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to the cache folder.</a></p>', [
+<b>Important note: </b> If you use the File system cache, make sure the <i>wp-content/plugins/crowdsec/.cache</i> path is not publicly accessible.<br>
+Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a></p>', [
         Constants::CACHE_SYSTEM_PHPFS => 'File system',
         Constants::CACHE_SYSTEM_REDIS => 'Redis',
         Constants::CACHE_SYSTEM_MEMCACHED => 'Memcached',
@@ -318,7 +319,9 @@ If you are using File system cache, please refer to <a target="_blank" href="htt
      **************************/
 
     add_settings_section('crowdsec_admin_advanced_geolocation', 'Geolocation', function () {
-        echo 'Configure some details about geolocation.';
+        echo 'Configure some details about geolocation.<br>
+<b>Important note: </b> If you use this feature, make sure the <i>wp-content/plugins/crowdsec/geolocation</i> path is not publicly accessible.<br>
+Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a>';
     }, 'crowdsec_advanced_settings');
 
     // Field "Geolocation enabled"
@@ -372,7 +375,9 @@ If you are using File system cache, please refer to <a target="_blank" href="htt
      ******************************/
 
     add_settings_section('crowdsec_admin_advanced_debug', 'Debug mode', function () {
-        echo 'Configure the debug mode.<br>Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to the log folder.</a>';
+        echo 'Configure the debug mode.<br>
+<b>Important note: </b> Make sure the <i>wp-content/plugins/crowdsec/logs</i> path is not publicly accessible.<br>
+Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a>';
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_debug_mode"

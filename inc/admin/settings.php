@@ -28,7 +28,8 @@ function adminSettings()
         }
 
         return $input;
-    }, '', [
+    }, '<p class="crowdsec-tls"><b>Important note: </b> If you are using TLS authentication, make sure the <i>wp-content/plugins/crowdsec/tls</i> path is not publicly accessible.<br>
+Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a></p>', [
         Constants::AUTH_KEY => 'Bouncer API key',
         Constants::AUTH_TLS => 'TLS certificates',
     ]);
