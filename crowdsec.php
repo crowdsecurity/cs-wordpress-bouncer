@@ -31,3 +31,4 @@ require_once __DIR__.'/inc/admin/init.php';
 require_once __DIR__.'/inc/bounce-current-ip.php';
 
 add_action('plugins_loaded', 'safelyBounceCurrentIp');
+add_action( 'upgrader_process_complete', 'crowdsec_update_completed', 10, 2 );

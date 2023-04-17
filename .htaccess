@@ -1,2 +1,3 @@
 Redirectmatch 403 wp-content/plugins/crowdsec/logs/
 Redirectmatch 403 wp-content/plugins/crowdsec/.cache/
+Redirectmatch 403 wp-content/plugins/crowdsec/inc/standalone-settings

@@ -18,6 +18,19 @@ function writeStaticConfigFile($name = null, $newValue = null)
     file_put_contents(Constants::CONFIG_PATH, "<?php return '$json';");
 }
 
+function crowdsec_update_completed( $upgrader_object, $options ) {
+
+    // If an update has taken place and the updated type is plugins and the plugins element exists
+    if ( $options['action'] == 'update' && $options['type'] == 'plugin' && isset( $options['plugins'] ) ) {
+        foreach( $options['plugins'] as $plugin ) {
+            // Check to ensure it is the CrowdSec Plugin
+            if( $plugin == plugin_basename(dirname( dirname(__FILE__) ). '/crowdsec.php')) {
+                writeStaticConfigFile();
+            }
+        }
+    }
+}
+
 /**
  * The code that runs during plugin activation.
  */
