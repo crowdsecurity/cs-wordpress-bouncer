@@ -206,6 +206,16 @@ yarn global add cross-env
 ```
 
 
+##### Auto_prepend_file mode
+
+To enable the `auto_prepend_file` mode, you can use this command:
+
+```bash
+cd wp-sources/.ddev
+ddev nginx-config okaeli-add-on/wordpress/custom_files/crowdsec/crowdsec-prepend-nginx-site.conf
+```
+
+
 
 #### Update composer dependencies
 
