@@ -28,7 +28,7 @@ function adminSettings()
         }
 
         return $input;
-    }, '<p class="crowdsec-tls"><b>Important note: </b> If you are using TLS authentication, make sure the <i>wp-content/plugins/crowdsec/tls</i> path is not publicly accessible.<br>
+    }, '<p class="crowdsec-tls"><b>Important note: </b> If you are using TLS authentication, make sure files are not publicly accessible.<br>
 Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a></p>', [
         Constants::AUTH_KEY => 'Bouncer API key',
         Constants::AUTH_TLS => 'TLS certificates',
@@ -42,14 +42,15 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     // Field "crowdsec_tls_cert_path"
     addFieldString('crowdsec_tls_cert_path', 'Path to the bouncer certificate', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
         return $input;
-    }, '<p>Relative path from <i>wp-content/plugins/crowdsec/tls</i> folder</p>', 'bouncer.pem', 'width: 180px;',
+    }, '<p>Absolute path</p>', '/var/crowdsec/tls/bouncer.pem', 'width: 280px;',
         'text');
 
     // Field "crowdsec_tls_key_path"
     addFieldString('crowdsec_tls_key_path', 'Path to the bouncer key', 'crowdsec_plugin_settings', 'crowdsec_settings',
         'crowdsec_admin_connection', function ($input) {
         return $input;
-    }, '<p>Relative path from <i>wp-content/plugins/crowdsec/tls</i> folder</p>', 'bouncer-key.pem', 'width: 180px;',
+    }, '<p>Absolute path</p>', '/var/crowdsec/tls/bouncer-key.pem',
+        'width: 280px;',
         'text');
 
     // Field "TLS verify peer"
@@ -60,7 +61,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     addFieldString('crowdsec_tls_ca_cert_path', 'Path to the CA used to process peer verification', 'crowdsec_plugin_settings', 'crowdsec_settings',
         'crowdsec_admin_connection', function ($input) {
             return $input;
-        }, '<p>Relative path from <i>wp-content/plugins/crowdsec/tls</i> folder</p>', 'ca-chain.pem', 'width: 180px;',
+        }, '<p>Absolute path</p>', '/var/crowdsec/tls/ca-chain.pem', 'width: 280px;',
         'text');
 
     // Field "Use cURL"

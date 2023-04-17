@@ -27,7 +27,7 @@ const {
     BOUNCER_KEY_FILE,
     BOUNCER_CERT_FILE,
     AGENT_CERT_FILE,
-    CA_CERT_FILE,
+    CA_CERT_FILE
 } = require("../utils/constants");
 
 describe(`Run in Live mode`, () => {
@@ -158,9 +158,9 @@ describe(`Test TLS auth in Live mode`, () => {
         await setToggle("crowdsec_use_curl", true);
         await selectByName("crowdsec_auth_type", "tls");
 
-        await fillInput("crowdsec_tls_key_path", `${BOUNCER_KEY_FILE}`);
+        await fillInput("crowdsec_tls_key_path", `/var/www/html/${BOUNCER_KEY_FILE}`);
         await setToggle("crowdsec_tls_verify_peer", true);
-        await fillInput("crowdsec_tls_ca_cert_path", `${CA_CERT_FILE}`);
+        await fillInput("crowdsec_tls_ca_cert_path", `/var/www/html/${CA_CERT_FILE}`);
         // Bad path
         await fillInput("crowdsec_tls_cert_path", "bad-path");
         await onAdminSaveSettings();
@@ -172,7 +172,7 @@ describe(`Test TLS auth in Live mode`, () => {
             /Technical error.*could not load PEM client certificate/,
         );
         // Bad cert
-        await fillInput("crowdsec_tls_cert_path", `${AGENT_CERT_FILE}`);
+        await fillInput("crowdsec_tls_cert_path", `/var/www/html/${AGENT_CERT_FILE}`);
         await onAdminSaveSettings();
         await page.click("#crowdsec_action_test_connection #submit");
         await wait(2000);
@@ -182,8 +182,8 @@ describe(`Test TLS auth in Live mode`, () => {
         );
 
         // Bad CA with verify peer
-        await fillInput("crowdsec_tls_cert_path", `${BOUNCER_CERT_FILE}`);
-        await fillInput("crowdsec_tls_ca_cert_path", `${AGENT_CERT_FILE}`);
+        await fillInput("crowdsec_tls_cert_path", `/var/www/html/${BOUNCER_CERT_FILE}`);
+        await fillInput("crowdsec_tls_ca_cert_path", `/var/www/html/${AGENT_CERT_FILE}`);
         await onAdminSaveSettings();
         await page.click("#crowdsec_action_test_connection #submit");
         await wait(2000);
@@ -205,8 +205,8 @@ describe(`Test TLS auth in Live mode`, () => {
         // Good settings with curl
         await setToggle("crowdsec_tls_verify_peer", true);
 
-        await fillInput("crowdsec_tls_ca_cert_path", `${CA_CERT_FILE}`);
-        await fillInput("crowdsec_tls_cert_path", `${BOUNCER_CERT_FILE}`);
+        await fillInput("crowdsec_tls_ca_cert_path", `/var/www/html/${CA_CERT_FILE}`);
+        await fillInput("crowdsec_tls_cert_path", `/var/www/html/${BOUNCER_CERT_FILE}`);
 
         await onAdminSaveSettings();
         await page.click("#crowdsec_action_test_connection #submit");
@@ -225,7 +225,7 @@ describe(`Test TLS auth in Live mode`, () => {
             ".notice.notice-success",
             /Bouncing has been successfully tested/,
         );
-    });
+    }, 120000);
 
     it("Should display the homepage with no remediation", async () => {
         await removeAllDecisions();

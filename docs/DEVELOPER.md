@@ -143,8 +143,23 @@ As we use a TLS ready CrowdSec container, you have first to copy some certificat
 
 ```bash
 cd wp-sources
-cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* wp-content/plugins/crowdsec/tls
+mkdir -p crowdsec/tls
+cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* crowdsec/tls
 ```
+
+For geolocation test, you have to put city and country MaxMind databases in a specific folder
+
+```
+mkdir -p crowdsec/geolocation
+ddev maxmind-download DEFAULT GeoLite2-City crowdsec/geolocation
+ddev maxmind-download DEFAULT GeoLite2-Country crowdsec/geolocation
+cd crowdsec/geolocation
+sha256sum -c GeoLite2-Country.tar.gz.sha256.txt
+sha256sum -c GeoLite2-City.tar.gz.sha256.txt
+tar -xf GeoLite2-Country.tar.gz
+tar -xf GeoLite2-City.tar.gz
+```
+
 And we use also a custom PHP script to make some cache test. Thus, you should copy this PHP script too in the root folder: 
 
 ```bash

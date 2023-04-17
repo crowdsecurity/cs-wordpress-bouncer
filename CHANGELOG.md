@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.4.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.4.0) - 2023-04-??
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.3.1...v2.4.0)
+
+### Changed
+
+- Use absolute path for TLS files
+- Use absolute path for geolocation files
+
+
+---
+
+
 ## [2.3.1](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.3.1) - 2023-04-06
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.3.0...v2.3.1)
 

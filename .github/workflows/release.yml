@@ -248,11 +248,13 @@ jobs:
 
             - name: Prepare for playwright test
               run: |
+                  mkdir -p crowdsec/tls
+                  mkdir -p crowdsec/geolocation
                   cp .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-from-plugin-folder.php cache-actions.php
-                  cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* ${{ env.EXTENSION_PATH }}/tls
-                  ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/${{ env.EXTENSION_PATH }}/geolocation
-                  ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/${{ env.EXTENSION_PATH }}/geolocation
-                  cd ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/geolocation
+                  cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* crowdsec/tls
+                  ddev maxmind-download DEFAULT GeoLite2-City crowdsec/geolocation
+                  ddev maxmind-download DEFAULT GeoLite2-Country crowdsec/geolocation
+                  cd crowdsec/geolocation
                   sha256sum -c GeoLite2-Country.tar.gz.sha256.txt
                   sha256sum -c GeoLite2-City.tar.gz.sha256.txt
                   tar -xf GeoLite2-Country.tar.gz
@@ -261,7 +263,7 @@ jobs:
                   cd ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev/__scripts__
                   chmod +x test-init.sh
                   ./test-init.sh
-                  chmod +x run-tests.sh   
+                  chmod +x run-tests.sh
 
             - name: Some DEBUG information
               run: |

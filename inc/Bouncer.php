@@ -68,28 +68,10 @@ class Bouncer extends AbstractBouncer
                 'crowdsec_auth_type',
                 Constants::AUTH_KEY
             )),
-            'tls_cert_path' => Constants::TLS_DIR . '/' .
-                               ltrim(
-                                   (string)($this->handleRawConfig(
-                                       $rawConfigs, 'crowdsec_tls_cert_path', '')
-                                   ),
-                                   '/'
-                               ),
-            'tls_key_path' => Constants::TLS_DIR . '/' .
-                              ltrim(
-                                  (string)($this->handleRawConfig(
-                                      $rawConfigs, 'crowdsec_tls_key_path', '')
-                                  ),
-                                  '/'
-                              ),
+            'tls_cert_path' => (string)($this->handleRawConfig($rawConfigs, 'crowdsec_tls_cert_path', '/')),
+            'tls_key_path' => (string)($this->handleRawConfig($rawConfigs, 'crowdsec_tls_key_path', '/')),
             'tls_verify_peer' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_tls_verify_peer', false)),
-            'tls_ca_cert_path' => Constants::TLS_DIR . '/' .
-                                  ltrim(
-                                      (string)($this->handleRawConfig(
-                                          $rawConfigs, 'crowdsec_tls_ca_cert_path', '')
-                                      ),
-                                      '/'
-                                  ),
+            'tls_ca_cert_path' => (string)($this->handleRawConfig($rawConfigs, 'crowdsec_tls_ca_cert_path', '/')),
             'api_url' => $this->escape((string)$rawConfigs['crowdsec_api_url'] ?? ''),
             'use_curl' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_use_curl', false)),
             'api_timeout' => (int)($this->handleRawConfig(
@@ -161,13 +143,9 @@ class Bouncer extends AbstractBouncer
                         'crowdsec_geolocation_maxmind_database_type',
                         Constants::MAXMIND_COUNTRY)
                     ),
-                    'database_path' => Constants::GEOLOCATION_DIR . '/' .
-                                       ltrim(
-                                           (string)($this->handleRawConfig(
-                                               $rawConfigs, 'crowdsec_geolocation_maxmind_database_path', '')
-                                           ),
-                                           '/'
-                                       ),
+                    'database_path' => (string)($this->handleRawConfig(
+                        $rawConfigs, 'crowdsec_geolocation_maxmind_database_path', '/')
+                    ),
                 ]
             ],
             // Ban and Captcha walls

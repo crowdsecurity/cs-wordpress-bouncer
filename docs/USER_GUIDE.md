@@ -499,20 +499,20 @@ Some files used or created by this plugin must be protected from direct access a
 
 - Log files are created in the `wp-content/plugins/crowdsec/logs` folder
 - Cache files of the File system cache are created in the `wp-content/plugins/crowdsec/.cache` folder
-- TLS authentication files are located in the `wp-content/plugins/crowdsec/tls` folder
-- Geolocation database files are located in the `wp-content/plugins/crowdsec/geolocation` folder
+- TLS authentication files
+- Geolocation database files
 
 **N.B.:**
-- There is no need to protect the `.cache` folder if you are using Redis or Memcached cache systems.
-- There is no need to protect the `logs` folder if you disable debug and prod logging.
-- There is no need to protect the `tls` folder if you use Bouncer API key authentication type.
-- There is no need to protect the `geolocation` folder if you don't use the geolocation feature.
+- There is no need to protect cache files if you are using Redis or Memcached cache systems.
+- There is no need to protect log files if you disable debug and prod logging.
+- There is no need to protect TLS files if you use Bouncer API key authentication type.
+- There is no need to protect geolocation files if you don't use the geolocation feature.
 
 #### Nginx
 
 If you are using Nginx, you should add a directive in your website configuration file to deny access to these folders.
 
-This could be done with the following snippet:
+For log and cache files, this could be done with the following snippet:
 
 ```
 server {
@@ -520,7 +520,7 @@ server {
    ...
    ...
    # Deny all attempts to access some folders of the crowdsec plugin
-   location ~ /crowdsec/(.cache|logs|tls|geolocation) {
+   location ~ /crowdsec/(.cache|logs) {
            deny all;
    }
    ...
@@ -530,16 +530,14 @@ server {
 
 #### Apache
 
-If you are using Apache, the plugin root folder already contain the required `.htaccess` file: 
+If you are using Apache, the plugin root folder already contain the required `.htaccess` file to protect log and 
+cache files: 
 
 ```
 Redirectmatch 403 wp-content/plugins/crowdsec/logs/
 Redirectmatch 403 wp-content/plugins/crowdsec/.cache/
-Redirectmatch 403 wp-content/plugins/crowdsec/tls/
-Redirectmatch 403 wp-content/plugins/crowdsec/geolocation/
 ```
 
-So you don't have to do anything more.
 
 
 ### Auto Prepend File mode

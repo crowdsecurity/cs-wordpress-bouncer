@@ -9,15 +9,14 @@ const {
     AGENT_CERT_FILE,
     AGENT_KEY_FILE,
     CA_CERT_FILE,
-    TLS_PATH,
-    PLUGIN_PATH,
+    VARHTML_PATH
 } = require("./constants");
 
 const httpsAgent = new https.Agent({
     rejectUnauthorized: true,
-    cert: fs.readFileSync(`${PLUGIN_PATH}/${TLS_PATH}/${AGENT_CERT_FILE}`),
-    key: fs.readFileSync(`${PLUGIN_PATH}/${TLS_PATH}/${AGENT_KEY_FILE}`),
-    ca: fs.readFileSync(`${PLUGIN_PATH}/${TLS_PATH}/${CA_CERT_FILE}`),
+    cert: fs.readFileSync(`${VARHTML_PATH}${AGENT_CERT_FILE}`),
+    key: fs.readFileSync(`${VARHTML_PATH}${AGENT_KEY_FILE}`),
+    ca: fs.readFileSync(`${VARHTML_PATH}${CA_CERT_FILE}`),
 });
 
 const httpClient = axios.create({

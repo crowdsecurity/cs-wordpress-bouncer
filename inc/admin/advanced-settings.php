@@ -320,7 +320,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
     add_settings_section('crowdsec_admin_advanced_geolocation', 'Geolocation', function () {
         echo 'Configure some details about geolocation.<br>
-<b>Important note: </b> If you use this feature, make sure the <i>wp-content/plugins/crowdsec/geolocation</i> path is not publicly accessible.<br>
+<b>Important note: </b> If you use this feature, make sure the geolocation database is not publicly accessible.<br>
 Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a>';
     }, 'crowdsec_advanced_settings');
 
@@ -353,7 +353,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
     addFieldString('crowdsec_geolocation_maxmind_database_path', 'Path to the MaxMind database', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function ($input) {
         return $input;
-    }, '<p>Relative path from <i>wp-content/plugins/crowdsec/geolocation</i> folder</p>', 'GeoLite2-Country.mmdb', '');
+    }, '<p>Absolute path</p>', '/var/crowdsec/geolocation/GeoLite2-Country.mmdb', '');
 
     // Field "crowdsec_geolocation_cache_duration"
     addFieldString('crowdsec_geolocation_cache_duration', 'Geolocation cache lifetime', 'crowdsec_plugin_advanced_settings',
