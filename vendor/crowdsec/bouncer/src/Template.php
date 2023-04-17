@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CrowdSecBouncer;
 
+use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Twig\Loader\FilesystemLoader;
-use Twig\Environment;
 use Twig\TemplateWrapper;
 
 /**
@@ -27,9 +27,6 @@ class Template
     private $template;
 
     /**
-     * @param string $path
-     * @param string $templatesDir
-     * @param array $options
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError

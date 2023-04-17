@@ -3,11 +3,11 @@
         'name' => 'crowdsec/wordpress-bouncer',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '300a9e086296b9bb6482a6b3ecf4c696ce0e11b8',
+        'reference' => '9e961c53d37623c2818cf3b255f5f72b18e704ca',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'dev' => true,
+        'dev' => false,
     ),
     'versions' => array(
         'composer/ca-bundle' => array(
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'crowdsec/bouncer' => array(
-            'pretty_version' => 'v1.4.0',
-            'version' => '1.4.0.0',
-            'reference' => 'c0f5c1f5571cd8c6fa0c674c189dd3901e0c8c3f',
+            'pretty_version' => 'v2.0.0',
+            'version' => '2.0.0.0',
+            'reference' => '4faf574a3125000d50423a56c69872fa89b555ae',
             'type' => 'library',
             'install_path' => __DIR__ . '/../crowdsec/bouncer',
             'aliases' => array(),
@@ -67,7 +67,7 @@
         'crowdsec/wordpress-bouncer' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '300a9e086296b9bb6482a6b3ecf4c696ce0e11b8',
+            'reference' => '9e961c53d37623c2818cf3b255f5f72b18e704ca',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -173,9 +173,9 @@
             ),
         ),
         'symfony/cache' => array(
-            'pretty_version' => 'v5.4.21',
-            'version' => '5.4.21.0',
-            'reference' => '32cab695bf99c63aff7d27ac67919944c00530ed',
+            'pretty_version' => 'v5.4.22',
+            'version' => '5.4.22.0',
+            'reference' => '5ed986c4ef65f0dea5e9753630b5cb1f07f847d6',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/cache',
             'aliases' => array(),

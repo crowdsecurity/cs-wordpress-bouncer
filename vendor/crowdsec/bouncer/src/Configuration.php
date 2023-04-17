@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CrowdSecBouncer;
 
 use CrowdSec\Common\Configuration\AbstractConfiguration;
-use InvalidArgumentException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -46,7 +45,8 @@ class Configuration extends AbstractConfiguration
 
     /**
      * {@inheritdoc}
-     * @throws InvalidArgumentException
+     *
+     * @throws \InvalidArgumentException
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
@@ -63,11 +63,13 @@ class Configuration extends AbstractConfiguration
     }
 
     /**
-     * Bouncer settings
+     * Bouncer settings.
      *
      * @param NodeDefinition|ArrayNodeDefinition $rootNode
+     *
      * @return void
-     * @throws InvalidArgumentException
+     *
+     * @throws \InvalidArgumentException
      */
     private function addBouncerNodes($rootNode)
     {
@@ -77,7 +79,7 @@ class Configuration extends AbstractConfiguration
                     [
                         Constants::BOUNCING_LEVEL_DISABLED,
                         Constants::BOUNCING_LEVEL_NORMAL,
-                        Constants::BOUNCING_LEVEL_FLEX
+                        Constants::BOUNCING_LEVEL_FLEX,
                     ]
                 )
                 ->defaultValue(Constants::BOUNCING_LEVEL_NORMAL)
@@ -94,11 +96,13 @@ class Configuration extends AbstractConfiguration
     }
 
     /**
-     * Cache settings
+     * Cache settings.
      *
      * @param NodeDefinition|ArrayNodeDefinition $rootNode
+     *
      * @return void
-     * @throws InvalidArgumentException
+     *
+     * @throws \InvalidArgumentException
      */
     private function addCacheNodes($rootNode)
     {
@@ -108,7 +112,7 @@ class Configuration extends AbstractConfiguration
                     [
                         Constants::CACHE_SYSTEM_PHPFS,
                         Constants::CACHE_SYSTEM_REDIS,
-                        Constants::CACHE_SYSTEM_MEMCACHED
+                        Constants::CACHE_SYSTEM_MEMCACHED,
                     ]
                 )
                 ->defaultValue(Constants::CACHE_SYSTEM_PHPFS)
@@ -120,9 +124,10 @@ class Configuration extends AbstractConfiguration
     }
 
     /**
-     * LAPI connection settings
+     * LAPI connection settings.
      *
      * @param NodeDefinition|ArrayNodeDefinition $rootNode
+     *
      * @return void
      */
     private function addConnectionNodes($rootNode)
@@ -133,9 +138,10 @@ class Configuration extends AbstractConfiguration
     }
 
     /**
-     * Debug settings
+     * Debug settings.
      *
      * @param NodeDefinition|ArrayNodeDefinition $rootNode
+     *
      * @return void
      */
     private function addDebugNodes($rootNode)
@@ -150,6 +156,10 @@ class Configuration extends AbstractConfiguration
             ->end();
     }
 
+    /**
+     * @param $rootNode
+     * @return void
+     */
     private function addTemplateNodes($rootNode)
     {
         $defaultSubtitle = 'This page is protected against cyber attacks and your IP has been banned by our system.';
