@@ -18,6 +18,14 @@ function writeStaticConfigFile($name = null, $newValue = null)
     file_put_contents(Constants::CONFIG_PATH, "<?php return '$json';");
 }
 
+/**
+ * Function that will be run after an update.
+ * Beware that this code will be run with the old version of the plugin, and NOT the new one
+ *
+ * @param $upgrader_object
+ * @param $options
+ * @return void
+ */
 function crowdsec_update_completed( $upgrader_object, $options ) {
 
     // If an update has taken place and the updated type is plugins and the plugins element exists

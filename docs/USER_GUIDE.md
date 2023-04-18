@@ -104,8 +104,7 @@ Only if you chose `Bouncer API key` as authentication type.
 
 `Connection details → Path to the bouncer certificate` 
 
-Absolute path.
-**Make sure this file is not publicly accessible.** [See security note below](#security).
+Absolute path. **Make sure this file is not publicly accessible.** [See security note below](#security).
 
 Example: `/var/crowdsec/tls/bouncer.pem`.
 
@@ -115,8 +114,7 @@ Only if you chose `TLS certificates` as authentication type.
 
 `Connection details → Path to the bouncer key`
 
-Absolute path.
-**Make sure this file is not publicly accessible.** [See security note below](#security).
+Absolute path. **Make sure this file is not publicly accessible.** [See security note below](#security).
 
 Example: `/var/crowdsec/tls/bouncer-key.pem`.
 
@@ -136,8 +134,7 @@ When negotiating a TLS or SSL connection, the server sends a certificate indicat
 
 `Connection details → Path to the CA certificate used to process peer verification`
 
-Absolute path.
-**Make sure this file is not publicly accessible.** [See security note below](#security).
+Absolute path. **Make sure this file is not publicly accessible.** [See security note below](#security).
 
 Example: `/var/crowdsec/tls/ca-chain.pem`.
 
@@ -340,8 +337,7 @@ Choose between `Country` and `City`.
 
 `Geolocation → Path to the MaxMind database`
 
-Absolute path.
-**Make sure this file is not publicly accessible.** [See security note below](#security).
+Absolute path. **Make sure this file is not publicly accessible.** [See security note below](#security).
 
 Example: `/var/crowdsec/geolocation/Geoloc-country.mmdb` folder.
 
@@ -504,13 +500,14 @@ Here are some examples of how to set options with the `WP-CLI` tool.
 
 Some files used or created by this plugin must be protected from direct access attempts:
 
-- The `standalone-settings.php` file created in the `inc` folder for the [Auto Prepend File](#auto-prepend-file-mode) mode
+- The `standalone-settings.php` file created in the `wp-content/plugins/crowdsec/inc` folder for the [Auto Prepend File](#auto-prepend-file-mode) mode
 - Log files are created in the `wp-content/plugins/crowdsec/logs` folder
 - Cache files of the File system cache are created in the `wp-content/plugins/crowdsec/.cache` folder
-- TLS authentication files
-- Geolocation database files
+- TLS authentication files are located in a user defined path
+- Geolocation database files are located in a user defined path
 
 **N.B.:**
+
 - There is no need to protect cache files if you are using Redis or Memcached cache systems.
 - There is no need to protect log files if you disable debug and prod logging.
 - There is no need to protect TLS files if you use Bouncer API key authentication type.
@@ -520,7 +517,7 @@ Some files used or created by this plugin must be protected from direct access a
 
 If you are using Nginx, you should add a directive in your website configuration file to deny access to these folders.
 
-For log and cache files, this could be done with the following snippet:
+For log, cache and standalone setting files, this could be done with the following snippet:
 
 ```
 server {
@@ -538,16 +535,14 @@ server {
 
 #### Apache
 
-If you are using Apache, the plugin root folder already contain the required `.htaccess` file to protect log and 
-cache files: 
+If you are using Apache, the plugin root folder already contain the required `.htaccess` file to protect log,  
+cache and standalone setting files: 
 
-```
+```htaccess
 Redirectmatch 403 wp-content/plugins/crowdsec/logs/
 Redirectmatch 403 wp-content/plugins/crowdsec/.cache/
 Redirectmatch 403 wp-content/plugins/crowdsec/inc/standalone-settings
 ```
-
-
 
 ### Auto Prepend File mode
 
