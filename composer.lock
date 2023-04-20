@@ -354,21 +354,21 @@
         },
         {
             "name": "crowdsec/remediation-engine",
-            "version": "v3.1.1",
+            "version": "v3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-remediation-engine.git",
-                "reference": "83ff8ca767b907233c8c82bdd5449317082c24ac"
+                "reference": "a177b47695d018ba41b75c08687ed9730245db74"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/83ff8ca767b907233c8c82bdd5449317082c24ac",
-                "reference": "83ff8ca767b907233c8c82bdd5449317082c24ac",
+                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/a177b47695d018ba41b75c08687ed9730245db74",
+                "reference": "a177b47695d018ba41b75c08687ed9730245db74",
                 "shasum": ""
             },
             "require": {
                 "crowdsec/capi-client": "^3.0.0",
-                "crowdsec/common": "^2.0.0",
+                "crowdsec/common": "^2.1.0",
                 "crowdsec/lapi-client": "^3.0.0",
                 "ext-json": "*",
                 "geoip2/geoip2": "^2.13.0",
@@ -428,9 +428,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-remediation-engine/issues",
-                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v3.1.1"
+                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v3.2.0"
             },
-            "time": "2023-03-24T05:06:58+00:00"
+            "time": "2023-04-20T04:52:21+00:00"
         },
         {
             "name": "geoip2/geoip2",

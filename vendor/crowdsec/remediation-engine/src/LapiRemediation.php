@@ -20,8 +20,6 @@ class LapiRemediation extends AbstractRemediation
     /** @var array The list of each known LAPI remediation, sorted by priority */
     public const ORDERED_REMEDIATIONS = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA];
 
-    private const SELF_ORIGIN = 'lapi-remediation-engine';
-
     /**
      * @var Bouncer
      */
@@ -67,6 +65,8 @@ class LapiRemediation extends AbstractRemediation
         if (!$cachedDecisions) {
             // In stream_mode, we do not store this bypass, and we do not call LAPI directly
             if ($this->getConfig('stream_mode')) {
+                $this->updateRemediationOriginCount(AbstractCache::CLEAN);
+
                 return Constants::REMEDIATION_BYPASS;
             }
             // In live mode, ask LAPI (Retrieve Ip AND Range scoped decisions)
@@ -89,7 +89,7 @@ class LapiRemediation extends AbstractRemediation
                     'scope' => Constants::SCOPE_IP,
                     'value' => $ip,
                     'type' => Constants::REMEDIATION_BYPASS,
-                    'origin' => self::SELF_ORIGIN,
+                    'origin' => AbstractCache::CLEAN,
                     'duration' => sprintf('%ss', (int) $this->getConfig('clean_ip_cache_duration')),
                 ]]);
             // Store decision(s) even if bypass
@@ -97,7 +97,12 @@ class LapiRemediation extends AbstractRemediation
             $cachedDecisions = !empty($stored[AbstractCache::STORED]) ? $stored[AbstractCache::STORED] : [];
         }
 
-        return $this->getRemediationFromDecisions($cachedDecisions);
+        $remediationData = $this->handleRemediationFromDecisions($cachedDecisions);
+        if (!empty($remediationData[self::INDEX_ORIGIN])) {
+            $this->updateRemediationOriginCount((string) $remediationData[self::INDEX_ORIGIN]);
+        }
+
+        return $remediationData[self::INDEX_REM];
     }
 
     /**

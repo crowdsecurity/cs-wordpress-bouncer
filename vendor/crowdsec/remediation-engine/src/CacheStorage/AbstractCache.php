@@ -36,12 +36,18 @@ abstract class AbstractCache
     public const INDEX_ID = 2;
     /** @var int Cache item content array main value index */
     public const INDEX_MAIN = 0;
+    /** @var int Cache item content array origin index */
+    public const INDEX_ORIGIN = 3;
     /** @var string The cache key prefix for a IPV4 range bucket */
     public const IPV4_BUCKET_KEY = 'range_bucket_ipv4';
     /** @var string Internal name for last pull */
     public const LAST_PULL = 'last_pull';
     /** @var string Internal name for list */
     public const LIST = 'list';
+    /** @var string Internal name for cache remediation origin count item */
+    public const ORIGINS_COUNT = 'origins_count';
+    /** @var string Internal name for cache clean item */
+    public const CLEAN = 'clean';
     /** @var string Internal name for removed item index */
     public const REMOVED = 'removed';
     /** @var string Cache symbol */
@@ -352,6 +358,8 @@ abstract class AbstractCache
     }
 
     /**
+     * Create or update an item; Only passed content is updated.
+     *
      * @throws InvalidArgumentException|CacheException
      */
     public function upsertItem(
@@ -390,6 +398,7 @@ abstract class AbstractCache
             self::INDEX_MAIN => $mainValue,
             self::INDEX_EXP => $decision->getExpiresAt(),
             self::INDEX_ID => $decision->getIdentifier(),
+            self::INDEX_ORIGIN => $decision->getOrigin(),
         ];
     }
 
@@ -557,25 +566,26 @@ abstract class AbstractCache
      */
 
     /**
+     * Save item; Override content if already exists.
+     *
      * @throws CacheException
      * @throws InvalidArgumentException
      * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
      */
     private function saveItemWithDuration(
         string $cacheKey,
-        array $cachedVariables,
+        array $content,
         int $duration,
         array $tags = []
-    ): array {
-        $item = $this->adapter->getItem(base64_encode($cacheKey));
-        $item->set($cachedVariables);
+    ): bool {
+        $item = $this->getItem($cacheKey);
+        $item->set($content);
         $item->expiresAt(new \DateTime("+$duration seconds"));
         if ($tags && $this->adapter instanceof TagAwareAdapterInterface) {
             $item->tag($tags);
         }
-        $this->adapter->save($item);
 
-        return $cachedVariables;
+        return $this->adapter->save($item);
     }
 
     /**

@@ -47,6 +47,8 @@
   - [Redis cache DSN](#redis-cache-dsn)
   - [Memcached cache DSN](#memcached-cache-dsn)
   - [Cache tags](#cache-tags)
+- [Helpers](#helpers)
+  - [Origins count](#origins-count)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -637,4 +639,24 @@ Beware that there is a caveat with Symfony tagged caching and Redis: it doesn't 
 Cache tags is not supported for the provided Memcached cache.
 
 
+## Helpers
 
+### Origins count
+
+In order to have some metrics, we store in cache the number of calls to the `getIpRemedation` method while 
+separating the counters by origin of the final remediation. 
+
+The `getOriginsCount` helper method returns an array whose keys are origins and values are the counter associated to 
+the origin. When the remediation is a `bypass` (i.e. no active decision for the tested IP), we set the origin as 
+`clean`.
+
+```php
+/** @var $remediation \CrowdSec\RemediationEngine\AbstractRemediation */
+$originsCount = $remediation->getOriginsCount();
+
+/*$originsCount = [
+    'clean' => 150, 
+    'capi' => 28,
+    'lists' => 16
+]*/
+```

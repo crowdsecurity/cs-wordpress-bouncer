@@ -58,11 +58,18 @@ class CapiRemediation extends AbstractRemediation
                 'ip' => $ip,
             ]);
 
+            $this->updateRemediationOriginCount(AbstractCache::CLEAN);
             // As CAPI is always in stream_mode, we do not store this bypass
             return Constants::REMEDIATION_BYPASS;
         }
 
-        return $this->getRemediationFromDecisions($cachedDecisions);
+        $remediationData = $this->handleRemediationFromDecisions($cachedDecisions);
+
+        if (!empty($remediationData[self::INDEX_ORIGIN])) {
+            $this->updateRemediationOriginCount((string) $remediationData[self::INDEX_ORIGIN]);
+        }
+
+        return $remediationData[self::INDEX_REM];
     }
 
     private function convertRawCapiDecisionsToDecisions(array $rawDecisions): array

@@ -33,7 +33,7 @@ $memcachedCache = new Memcached($cacheMemcachedConfigs, $logger);
 // Init Redis cache storage
 $cacheRedisConfigs = [
     'redis_dsn' => 'redis://redis:6379',
-    'use_cache_tags' => true,
+    'use_cache_tags' => false,
 ];
 $redisCache = new Redis($cacheRedisConfigs, $logger);
 // Init CAPI remediation

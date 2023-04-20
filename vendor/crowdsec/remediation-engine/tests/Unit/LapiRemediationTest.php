@@ -62,6 +62,12 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @uses \CrowdSec\RemediationEngine\CacheStorage\Memcached::getItem
  * @uses \CrowdSec\RemediationEngine\Configuration\AbstractCache::addCommonNodes
  *
+ * @covers \CrowdSec\RemediationEngine\AbstractRemediation::handleRemediationFromDecisions
+ * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getOriginsCount
+ *
+ * @uses \CrowdSec\RemediationEngine\AbstractRemediation::sortDecisionsByPriority
+ *
+ * @covers \CrowdSec\RemediationEngine\AbstractRemediation::updateRemediationOriginCount
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getCacheStorage
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::handleIpV6RangeDecisions
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getIpType
@@ -114,7 +120,6 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::prune
  * @covers \CrowdSec\RemediationEngine\Configuration\AbstractRemediation::getDefaultOrderedRemediations
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getAllCachedDecisions
- * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getRemediationFromDecisions
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::getCountryForIp
  * @covers \CrowdSec\RemediationEngine\CacheStorage\AbstractCache::upsertItem
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::getScopes
@@ -336,23 +341,27 @@ final class LapiRemediationTest extends AbstractRemediation
                 [AbstractCache::STORED => [[
                     'bypass',
                     999999999999,
-                    'remediation-engine-bypass-ip-1.2.3.4',
+                    'clean-bypass-ip-1.2.3.4',
+                    'clean',
                 ]]],                            // Test 2 : retrieve cached bypass
                 [AbstractCache::STORED => []],  // Test 2 : retrieve empty range
                 [AbstractCache::STORED => [[
                     'bypass',
                     999999999999,
-                    'remediation-engine-bypass-ip-1.2.3.4',
+                    'clean-bypass-ip-1.2.3.4',
+                    'clean',
                 ]]],                            // Test 3 : retrieve bypass for ip
                 [AbstractCache::STORED => [[
                     'ban',
                     999999999999,
-                    'remediation-engine-ban-ip-1.2.3.4',
+                    'capi-ban-ip-1.2.3.4',
+                    'capi',
                 ]]],                            // Test 3 : retrieve ban for range
                 [AbstractCache::STORED => [[
                     'ban',
                     311738199, //  Sunday 18 November 1979
-                    'remediation-engine-ban-ip-1.2.3.4',
+                    'capi-ban-ip-1.2.3.4',
+                    'capi',
                 ]]],                            // Test 4 : retrieve expired ban ip
                 [AbstractCache::STORED => []]   // Test 4 : retrieve empty range
             )
@@ -414,13 +423,28 @@ final class LapiRemediationTest extends AbstractRemediation
                 [AbstractCache::STORED => [[
                     'bypass',
                     $expectedCleanTime,
-                    'lapi-remediation-engine-bypass-ip-1.2.3.4',
+                    'clean-bypass-ip-1.2.3.4',
+                    'clean',
                 ]]],                            // Test 2 : retrieve cached bypass
                 [AbstractCache::STORED => []],  // Test 2 : retrieve empty range
                 [AbstractCache::STORED => []],  // Test 3 : retrieve empty IP decisions
                 [AbstractCache::STORED => []],  // Test 3 : retrieve empty range decisions
                 [AbstractCache::STORED => []],  // Test 4 : retrieve empty IP decisions
-                [AbstractCache::STORED => []]   // Test 4 : retrieve empty range decisions
+                [AbstractCache::STORED => []],  // Test 4 : retrieve empty range decisions
+                [AbstractCache::STORED => [[
+                    'bypass',
+                    $expectedCleanTime,
+                    'clean-bypass-ip-1.2.3.4',
+                    'clean',
+                ]]],                            // Test 5 : retrieve cached bypass
+                [AbstractCache::STORED => []],  // Test 5 : retrieve empty range
+                [AbstractCache::STORED => [[
+                    'bypass',
+                    $expectedCleanTime,
+                    'clean-bypass-ip-1.2.3.4',
+                    'clean',
+                ]]],                            // Test 6 : retrieve cached bypass
+                [AbstractCache::STORED => []]  // Test 6 : retrieve empty range
             )
         );
         $this->bouncer->method('getFilteredDecisions')->will(
@@ -478,6 +502,12 @@ final class LapiRemediationTest extends AbstractRemediation
         $this->bouncer->expects($this->exactly(3))->method('getFilteredDecisions');
 
         // Test 1 (No cached items and no active decision)
+        $originsCount = $remediation->getOriginsCount();
+        $this->assertEquals(
+            [],
+            $originsCount,
+            'Origins count should be empty'
+        );
         $result = $remediation->getIpRemediation(TestConstants::IP_V4);
 
         $this->assertEquals(
@@ -499,14 +529,26 @@ final class LapiRemediationTest extends AbstractRemediation
             $cachedItem[0][AbstractCache::INDEX_MAIN],
             'Bypass should have been cached'
         );
-        $this->assertEquals(
-            $expectedCleanTime, $cachedItem[0][AbstractCache::INDEX_EXP],
+        $this->assertTrue(
+            $expectedCleanTime <= $cachedItem[0][AbstractCache::INDEX_EXP] &&
+            $cachedItem[0][AbstractCache::INDEX_EXP] <= $expectedCleanTime + 1,
             'Should return current time + clean ip duration config'
         );
         $this->assertEquals(
-            'lapi-remediation-engine-bypass-ip-1.2.3.4',
+            'clean-bypass-ip-1.2.3.4',
             $cachedItem[0][AbstractCache::INDEX_ID],
-            'Should return correct indentifier'
+            'Should return correct identifier'
+        );
+        $this->assertEquals(
+            'clean',
+            $cachedItem[0][AbstractCache::INDEX_ORIGIN],
+            'Should return correct origin'
+        );
+        $originsCount = $remediation->getOriginsCount();
+        $this->assertEquals(
+            ['clean' => 1],
+            $originsCount,
+            'Origin count should be cached'
         );
         // Test 2 (cached decisions)
         $result = $remediation->getIpRemediation(TestConstants::IP_V4);
@@ -515,9 +557,27 @@ final class LapiRemediationTest extends AbstractRemediation
             $result,
             'Cached (clean) should return a bypass remediation'
         );
+        $originsCount = $remediation->getOriginsCount();
+        $this->assertEquals(
+            ['clean' => 2],
+            $originsCount,
+            'Clean count should be 2'
+        );
         // Test 3 (no cached decision and 2 actives IP decisions)
         $this->cacheStorage->clear();
+        $originsCount = $remediation->getOriginsCount();
+        $this->assertEquals(
+            [],
+            $originsCount,
+            'Origin count should not be cached'
+        );
         $result = $remediation->getIpRemediation(TestConstants::IP_V4);
+        $originsCount = $remediation->getOriginsCount();
+        $this->assertEquals(
+            ['lapi' => 1],
+            $originsCount,
+            'Origin count should be cached'
+        );
         $this->assertEquals(
             Constants::REMEDIATION_BAN,
             $result,
@@ -526,6 +586,7 @@ final class LapiRemediationTest extends AbstractRemediation
         $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_CACHE_KEY));
         $cachedItem = $item->get();
         $this->assertCount(2, $cachedItem, 'Should have cache 2 decisions for IP');
+
         // Test 4 (no cached decision and 1 active IPv6 range decision)
         $this->cacheStorage->clear();
         $result = $remediation->getIpRemediation(TestConstants::IP_V6);
@@ -538,6 +599,32 @@ final class LapiRemediationTest extends AbstractRemediation
         $cachedItem = $item->get();
         $this->assertCount(1, $cachedItem, 'Should have cache 1 decisions for IP');
         $this->assertEquals($cachedItem[0][0], 'ban', 'Should be a ban');
+        $originsCount = $remediation->getOriginsCount();
+        $this->assertEquals(
+            ['lapi' => 1],
+            $originsCount,
+            'Origin count should be cached'
+        );
+        // Test 5 : merge origins count
+        $remediation->getIpRemediation(TestConstants::IP_V4);
+        $originsCount = $remediation->getOriginsCount();
+        $this->assertEquals(
+            ['clean' => 1,
+                'lapi' => 1,
+            ],
+            $originsCount,
+            'Origin count should be updated'
+        );
+        // Test 5 : merge origins count
+        $remediation->getIpRemediation(TestConstants::IP_V4);
+        $originsCount = $remediation->getOriginsCount();
+        $this->assertEquals(
+            ['clean' => 2,
+                'lapi' => 1,
+            ],
+            $originsCount,
+            'Origin count should be updated'
+        );
     }
 
     /**
@@ -634,7 +721,8 @@ final class LapiRemediationTest extends AbstractRemediation
             'captcha should have been cached'
         );
         $this->assertTrue(
-            $expectedBadTime === $cachedItem[0][AbstractCache::INDEX_EXP],
+            $expectedBadTime <= $cachedItem[0][AbstractCache::INDEX_EXP] &&
+            $cachedItem[0][AbstractCache::INDEX_EXP] <= $expectedBadTime + 1,
             'Should return current time + bad ip duration config'
         );
         $this->assertEquals(

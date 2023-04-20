@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 use CrowdSec\CapiClient\Storage\FileStorage;
 use CrowdSec\CapiClient\Watcher;
-use CrowdSec\Common\Logger\FileLog;
+use CrowdSec\Common\Logger\ConsoleLog;
 use CrowdSec\RemediationEngine\CacheStorage\Memcached;
 use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
@@ -21,7 +21,7 @@ if (!$ip) {
 }
 
 // Init  logger
-$logger = new FileLog(['debug_mode' => true], 'remediation-engine-logger');
+$logger = new ConsoleLog([], 'remediation-engine-logger');
 // Init client
 $clientConfigs = [
     'machine_id_prefix' => 'remediationtest',
@@ -48,4 +48,5 @@ $redisCache = new Redis($cacheRedisConfigs, $logger);
 $remediationConfigs = [];
 $remediationEngine = new CapiRemediation($remediationConfigs, $capiClient, $phpFileCache, $logger);
 // Determine the remediation for the given IP
-echo $remediationEngine->getIpRemediation($ip) . \PHP_EOL;
+echo 'Remediation: ' . $remediationEngine->getIpRemediation($ip) . \PHP_EOL;
+echo 'Origins count: ' . json_encode($remediationEngine->getOriginsCount()) . \PHP_EOL;
