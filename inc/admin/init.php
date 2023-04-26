@@ -128,7 +128,7 @@ if (is_admin()) {
             $message = __("Bouncing has been successfully tested for IP: $ip. Result is: $remediation.");
 
             AdminNotice::displaySuccess($message);
-        } catch (BouncerException $e) {
+        } catch (Exception $e) {
             if(isset($bouncer) && $bouncer->getLogger()) {
                 $bouncer->getLogger()->error('', [
                     'type' => 'WP_EXCEPTION_WHILE_TESTING_CONNECTION',
