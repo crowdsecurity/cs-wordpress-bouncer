@@ -170,6 +170,20 @@ final class BouncerTest extends AbstractClient
 
         $error = '';
         try {
+            new Bouncer(['api_url' => '']);
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/cannot contain an empty value/',
+            $error,
+            'api_url must not be empty'
+        );
+
+        $error = '';
+        try {
             new Bouncer(['api_key' => TestConstants::API_KEY, 'user_agent_suffix' => 'aaaaa  a']);
         } catch (\Exception $e) {
             $error = $e->getMessage();

@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
     env:
-      EXTENSION_PATH: "my-own-modules/lapi-client"
+      EXTENSION_PATH: "my-code/lapi-client"
 
     steps:
       - name: Clone DDEV files

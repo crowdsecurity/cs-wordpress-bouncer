@@ -294,17 +294,17 @@
         },
         {
             "name": "crowdsec/lapi-client",
-            "version": "v3.0.0",
-            "version_normalized": "3.0.0.0",
+            "version": "v3.1.0",
+            "version_normalized": "3.1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-lapi-client.git",
-                "reference": "86e85c2bd8fbc34b6442d812d4b42552843874b5"
+                "reference": "ac15b0463e8063b50ac57fe5016d1ba822c640c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-lapi-client/zipball/86e85c2bd8fbc34b6442d812d4b42552843874b5",
-                "reference": "86e85c2bd8fbc34b6442d812d4b42552843874b5",
+                "url": "https://api.github.com/repos/crowdsecurity/php-lapi-client/zipball/ac15b0463e8063b50ac57fe5016d1ba822c640c1",
+                "reference": "ac15b0463e8063b50ac57fe5016d1ba822c640c1",
                 "shasum": ""
             },
             "require": {
@@ -322,7 +322,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2023-03-09T01:23:24+00:00",
+            "time": "2023-04-27T12:50:13+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -357,7 +357,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-lapi-client/issues",
-                "source": "https://github.com/crowdsecurity/php-lapi-client/tree/v3.0.0"
+                "source": "https://github.com/crowdsecurity/php-lapi-client/tree/v3.1.0"
             },
             "install-path": "../crowdsec/lapi-client"
         },

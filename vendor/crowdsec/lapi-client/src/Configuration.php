@@ -86,7 +86,7 @@ class Configuration extends AbstractConfiguration
     private function addConnectionNodes($rootNode)
     {
         $rootNode->children()
-            ->scalarNode('api_url')->defaultValue(Constants::DEFAULT_LAPI_URL)->end()
+            ->scalarNode('api_url')->cannotBeEmpty()->defaultValue(Constants::DEFAULT_LAPI_URL)->end()
             ->enumNode('auth_type')
                 ->values(
                     [
