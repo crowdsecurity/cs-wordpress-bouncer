@@ -15,7 +15,7 @@ function adminSettings()
     addFieldString('crowdsec_api_url', 'Local API URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
         return $input;
     }, '',
-        'http://localhost:8080', '');
+        'Your Local API URL (e.g. http://localhost:8080)', '');
 
     // Field "crowdsec_bouncing_level"
     addFieldSelect('crowdsec_auth_type', 'Authentication type', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
