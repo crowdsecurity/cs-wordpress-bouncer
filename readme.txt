@@ -44,7 +44,7 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 
 == Changelog ==
 
-= 2.4 (2023-04-27) =
+= 2.4 (2023-04-28) =
 
 - Use absolute path for TLS files
 - Use absolute path for geolocation files
