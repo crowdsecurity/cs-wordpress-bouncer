@@ -24,8 +24,12 @@ abstract class AbstractRemediation
     public const CS_LINK = 'links';
     /** @var string The CrowdSec name for new decisions */
     public const CS_NEW = 'new';
+    /** @var string Origin index */
+    public const INDEX_ORIGIN = 'origin';
     /** @var string Priority index */
     public const INDEX_PRIO = 'priority';
+    /** @var string Remediation index */
+    public const INDEX_REM = 'remediation';
     /**
      * @var AbstractCache
      */
@@ -84,6 +88,16 @@ abstract class AbstractRemediation
     abstract public function getIpRemediation(string $ip): string;
 
     /**
+     * @throws InvalidArgumentException
+     */
+    public function getOriginsCount(): array
+    {
+        $originsCountItem = $this->cacheStorage->getItem(AbstractCache::ORIGINS_COUNT);
+
+        return $originsCountItem->isHit() ? $originsCountItem->get() : [];
+    }
+
+    /**
      * Prune cache.
      *
      * @throws CacheStorage\CacheStorageException
@@ -99,6 +113,28 @@ abstract class AbstractRemediation
      */
     abstract public function refreshDecisions(): array;
 
+    protected function convertRawDecision(array $rawDecision): ?Decision
+    {
+        if (!$this->validateRawDecision($rawDecision)) {
+            return null;
+        }
+        // The existence of the following indexes must be guaranteed by the validateRawDecision method
+        $value = $rawDecision['value'];
+        $type = $this->normalize($rawDecision['type']);
+        $origin = $this->normalize($rawDecision['origin']);
+        $duration = $rawDecision['duration'];
+        $scope = $this->normalize($rawDecision['scope']);
+
+        return new Decision(
+            $this->handleDecisionIdentifier($origin, $type, $scope, $value),
+            $scope,
+            $value,
+            $type,
+            $origin,
+            $this->handleDecisionExpiresAt($type, $duration)
+        );
+    }
+
     protected function convertRawDecisionsToDecisions(array $rawDecisions): array
     {
         $decisions = [];
@@ -110,6 +146,28 @@ abstract class AbstractRemediation
         }
 
         return $decisions;
+    }
+
+    /**
+     * @throws InvalidArgumentException|CacheStorageException
+     */
+    protected function getAllCachedDecisions(string $ip, string $country): array
+    {
+        // Ask cache for Ip scoped decision
+        $ipDecisions = $this->cacheStorage->retrieveDecisionsForIp(Constants::SCOPE_IP, $ip);
+        // Ask cache for Range scoped decision
+        $rangeDecisions = Type::T_IPv4 === $this->getIpType($ip)
+            ? $this->cacheStorage->retrieveDecisionsForIp(Constants::SCOPE_RANGE, $ip)
+            : []
+        ;
+        // Ask cache for Country scoped decision
+        $countryDecisions = $country ? $this->cacheStorage->retrieveDecisionsForCountry($country) : [];
+
+        return array_merge(
+            !empty($ipDecisions[AbstractCache::STORED]) ? $ipDecisions[AbstractCache::STORED] : [],
+            !empty($rangeDecisions[AbstractCache::STORED]) ? $rangeDecisions[AbstractCache::STORED] : [],
+            !empty($countryDecisions[AbstractCache::STORED]) ? $countryDecisions[AbstractCache::STORED] : []
+        );
     }
 
     /**
@@ -140,32 +198,15 @@ abstract class AbstractRemediation
     }
 
     /**
-     * @throws InvalidArgumentException|CacheStorageException
+     * @deprecated since 3.2.0 . Will be removed in 4.0.0. Use handleRemediationFromDecisions instead.
+     *
+     * @codeCoverageIgnore
      */
-    protected function getAllCachedDecisions(string $ip, string $country): array
-    {
-        // Ask cache for Ip scoped decision
-        $ipDecisions = $this->cacheStorage->retrieveDecisionsForIp(Constants::SCOPE_IP, $ip);
-        // Ask cache for Range scoped decision
-        $rangeDecisions = Type::T_IPv4 === $this->getIpType($ip)
-            ? $this->cacheStorage->retrieveDecisionsForIp(Constants::SCOPE_RANGE, $ip)
-            : []
-        ;
-        // Ask cache for Country scoped decision
-        $countryDecisions = $country ? $this->cacheStorage->retrieveDecisionsForCountry($country) : [];
-
-        return array_merge(
-            !empty($ipDecisions[AbstractCache::STORED]) ? $ipDecisions[AbstractCache::STORED] : [],
-            !empty($rangeDecisions[AbstractCache::STORED]) ? $rangeDecisions[AbstractCache::STORED] : [],
-            !empty($countryDecisions[AbstractCache::STORED]) ? $countryDecisions[AbstractCache::STORED] : []
-        );
-    }
-
     protected function getRemediationFromDecisions(array $decisions): string
     {
         $cleanDecisions = $this->cacheStorage->cleanCachedValues($decisions);
 
-        $sortedDecisions = $this->sortDecisionsByRemediationPriority($cleanDecisions);
+        $sortedDecisions = $this->sortDecisionsByPriority($cleanDecisions);
         $this->logger->debug('Decisions have been sorted by priority', [
             'type' => 'REM_SORTED_DECISIONS',
             'decisions' => $sortedDecisions,
@@ -173,6 +214,60 @@ abstract class AbstractRemediation
 
         // Return only a remediation with the highest priority
         return $sortedDecisions[0][AbstractCache::INDEX_MAIN] ?? Constants::REMEDIATION_BYPASS;
+    }
+
+    protected function handleRemediationFromDecisions(array $decisions): array
+    {
+        $cleanDecisions = $this->cacheStorage->cleanCachedValues($decisions);
+
+        $sortedDecisions = $this->sortDecisionsByPriority($cleanDecisions);
+        $this->logger->debug('Decisions have been sorted by priority', [
+            'type' => 'REM_SORTED_DECISIONS',
+            'decisions' => $sortedDecisions,
+        ]);
+
+        // Return only a remediation with the highest priority
+        return [
+            self::INDEX_REM => $sortedDecisions[0][AbstractCache::INDEX_MAIN] ?? Constants::REMEDIATION_BYPASS,
+            self::INDEX_ORIGIN => $sortedDecisions[0][AbstractCache::INDEX_ORIGIN] ?? '',
+        ];
+    }
+
+    protected function parseDurationToSeconds(string $duration): int
+    {
+        /**
+         * 3h24m59.5565s or 3h24m5957ms or 149h, etc.
+         */
+        $re = '/(-?)(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)(?:\.\d+)?(m?)s)?/m';
+        preg_match($re, $duration, $matches);
+        if (empty($matches[0])) {
+            $this->logger->error('An error occurred during duration parsing', [
+                'type' => 'REM_DECISION_DURATION_PARSE_ERROR',
+                'duration' => $duration,
+            ]);
+
+            return 0;
+        }
+        $seconds = 0;
+        if (isset($matches[2])) {
+            $seconds += ((int) $matches[2]) * 3600; // hours
+        }
+        if (isset($matches[3])) {
+            $seconds += ((int) $matches[3]) * 60; // minutes
+        }
+        $secondsPart = 0;
+        if (isset($matches[4])) {
+            $secondsPart += ((int) $matches[4]); // seconds
+        }
+        if (isset($matches[5]) && 'm' === $matches[5]) { // units in milliseconds
+            $secondsPart *= 0.001;
+        }
+        $seconds += $secondsPart;
+        if ('-' === $matches[1]) { // negative
+            $seconds *= -1;
+        }
+
+        return (int) round($seconds);
     }
 
     /**
@@ -207,6 +302,8 @@ abstract class AbstractRemediation
 
     /**
      * Sort the decision array of a cache item, by remediation priorities.
+     *
+     * @deprecated since 3.2.0 . Will be removed in 4.0.0 (Replaced by private method sortDecisionsByPriority)
      */
     protected function sortDecisionsByRemediationPriority(array $decisions): array
     {
@@ -266,6 +363,28 @@ abstract class AbstractRemediation
     }
 
     /**
+     * @throws CacheException
+     * @throws InvalidArgumentException
+     */
+    protected function updateRemediationOriginCount(string $origin): int
+    {
+        $originCountItem = $this->cacheStorage->getItem(AbstractCache::ORIGINS_COUNT);
+        $cacheOriginCount = $originCountItem->isHit() ? $originCountItem->get() : [];
+        $count = isset($cacheOriginCount[$origin]) ?
+            (int) $cacheOriginCount[$origin] :
+            0;
+
+        $this->cacheStorage->upsertItem(
+            AbstractCache::ORIGINS_COUNT,
+            [$origin => ++$count],
+            0,
+            [AbstractCache::ORIGINS_COUNT]
+        );
+
+        return $count;
+    }
+
+    /**
      * Compare two priorities.
      *
      * @noinspection PhpUnusedPrivateMethodInspection
@@ -281,28 +400,6 @@ abstract class AbstractRemediation
         }
 
         return ($a < $b) ? -1 : 1;
-    }
-
-    protected function convertRawDecision(array $rawDecision): ?Decision
-    {
-        if (!$this->validateRawDecision($rawDecision)) {
-            return null;
-        }
-        // The existence of the following indexes must be guaranteed by the validateRawDecision method
-        $value = $rawDecision['value'];
-        $type = $this->normalize($rawDecision['type']);
-        $origin = $this->normalize($rawDecision['origin']);
-        $duration = $rawDecision['duration'];
-        $scope = $this->normalize($rawDecision['scope']);
-
-        return new Decision(
-            $this->handleDecisionIdentifier($origin, $type, $scope, $value),
-            $scope,
-            $value,
-            $type,
-            $origin,
-            $this->handleDecisionExpiresAt($type, $duration)
-        );
     }
 
     private function handleDecisionExpiresAt(string $type, string $duration): int
@@ -333,41 +430,38 @@ abstract class AbstractRemediation
         return strtolower($value);
     }
 
-    protected function parseDurationToSeconds(string $duration): int
+    /**
+     * Sort the decision array of a cache item, by remediation priorities.
+     */
+    private function sortDecisionsByPriority(array $decisions): array
     {
-        /**
-         * 3h24m59.5565s or 3h24m5957ms or 149h, etc.
-         */
-        $re = '/(-?)(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)(?:\.\d+)?(m?)s)?/m';
-        preg_match($re, $duration, $matches);
-        if (empty($matches[0])) {
-            $this->logger->error('An error occurred during duration parsing', [
-                'type' => 'REM_DECISION_DURATION_PARSE_ERROR',
-                'duration' => $duration,
-            ]);
+        if (!$decisions) {
+            return $decisions;
+        }
+        // Add priorities
+        $orderedRemediations = (array) $this->getConfig('ordered_remediations');
+        $fallback = $this->getConfig('fallback_remediation');
+        $decisionsWithPriority = [];
+        foreach ($decisions as $decision) {
+            $priority = array_search($decision[AbstractCache::INDEX_MAIN], $orderedRemediations);
+            // Use fallback for unknown remediation
+            if (false === $priority) {
+                $this->logger->debug('Fallback used to handle unknown remediation', [
+                    'unknown_remediation' => $decision[AbstractCache::INDEX_MAIN],
+                    'fallback' => $fallback,
+                ]);
+                $priority = array_search($fallback, $orderedRemediations);
+                $decision[AbstractCache::INDEX_MAIN] = $fallback;
+            }
+            $decision[self::INDEX_PRIO] = $priority;
+            $decisionsWithPriority[] = $decision;
+        }
+        // Sort by priorities.
+        /** @var callable $compareFunction */
+        $compareFunction = self::class . '::comparePriorities';
+        usort($decisionsWithPriority, $compareFunction);
 
-            return 0;
-        }
-        $seconds = 0;
-        if (isset($matches[2])) {
-            $seconds += ((int) $matches[2]) * 3600; // hours
-        }
-        if (isset($matches[3])) {
-            $seconds += ((int) $matches[3]) * 60; // minutes
-        }
-        $secondsPart = 0;
-        if (isset($matches[4])) {
-            $secondsPart += ((int) $matches[4]); // seconds
-        }
-        if (isset($matches[5]) && 'm' === $matches[5]) { // units in milliseconds
-            $secondsPart *= 0.001;
-        }
-        $seconds += $secondsPart;
-        if ('-' === $matches[1]) { // negative
-            $seconds *= -1;
-        }
-
-        return (int) round($seconds);
+        return $decisionsWithPriority;
     }
 
     private function validateRawDecision(array $rawDecision): bool

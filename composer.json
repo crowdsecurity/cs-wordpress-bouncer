@@ -19,7 +19,7 @@
 		}
 	},
 	"require": {
-		"crowdsec/bouncer": "^1.4.0",
+		"crowdsec/bouncer": "^2.0.0",
 		"symfony/polyfill-mbstring": "^1.27.0",
 		"symfony/service-contracts": "^2.5.2"
 	},

@@ -29,6 +29,15 @@ final class BouncerTest extends TestCase
      * @var array
      */
     protected $configs;
+    /**
+     * @var string
+     */
+    protected $useTls;
+    /**
+     * @var WatcherClient
+     */
+    protected $watcherClient;
+
 
     private function addTlsConfig(&$bouncerConfigs, $tlsPath)
     {

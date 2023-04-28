@@ -11,6 +11,17 @@ The [public API](https://semver.org/spec/v2.0.0.html#spec-item-1) of this librar
 
 ---
 
+## [3.1.0](https://github.com/crowdsecurity/php-lapi-client/releases/tag/v3.1.0) - 2023-04-27
+[_Compare with previous release_](https://github.com/crowdsecurity/php-lapi-client/compare/v3.0.0...v3.1.0)
+
+### Changed
+
+
+- `api_url` configuration must not be empty
+
+
+---
+
 ## [3.0.0](https://github.com/crowdsecurity/php-lapi-client/releases/tag/v3.0.0) - 2023-03-09
 [_Compare with previous release_](https://github.com/crowdsecurity/php-lapi-client/compare/v2.0.0...v3.0.0)
 

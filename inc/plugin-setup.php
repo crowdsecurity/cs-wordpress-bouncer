@@ -15,7 +15,28 @@ function writeStaticConfigFile($name = null, $newValue = null)
         $data[$name] = $newValue;
     }
     $json = json_encode($data);
-    file_put_contents(Constants::CONFIG_PATH, "<?php \$crowdSecJsonStandaloneConfig='$json';");
+    file_put_contents(Constants::CONFIG_PATH, "<?php return '$json';");
+}
+
+/**
+ * Function that will be run after an update.
+ * Beware that this code will be run with the old version of the plugin, and NOT the new one
+ *
+ * @param $upgrader_object
+ * @param $options
+ * @return void
+ */
+function crowdsec_update_completed( $upgrader_object, $options ) {
+
+    // If an update has taken place and the updated type is plugins and the plugins element exists
+    if ( $options['action'] == 'update' && $options['type'] == 'plugin' && isset( $options['plugins'] ) ) {
+        foreach( $options['plugins'] as $plugin ) {
+            // Check to ensure it is the CrowdSec Plugin
+            if( $plugin == plugin_basename(dirname( dirname(__FILE__) ). '/crowdsec.php')) {
+                writeStaticConfigFile();
+            }
+        }
+    }
 }
 
 /**

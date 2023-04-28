@@ -12,6 +12,26 @@ The [public API](https://semver.org/spec/v2.0.0.html#spec-item-1)  of this libra
 
 ---
 
+
+## [3.2.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.2.0) - 2023-04-20
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.1.1...v3.2.0)
+
+### Changed
+
+- Store origin of decision in cache
+
+### Added
+
+- Store origin count of `getIpRemediation` in cache and provide a `getOriginsCount` helper method
+
+### Deprecated
+
+- Deprecate `AbstractRemediation::getRemediationFromDecisions`
+- Deprecate `AbstractRemediation::sortDecisionsByRemediationPriority`
+
+
+---
+
 ## [3.1.1](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.1.1) - 2023-03-24
 [_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.1.0...v3.1.1)
 

@@ -51,7 +51,7 @@ if (is_admin()) {
             }
 
             AdminNotice::displaySuccess($message);
-        } catch (BouncerException $e) {
+        } catch (Exception $e) {
             if(isset($bouncer) && $bouncer->getLogger()){
                 $bouncer->getLogger()->error('Exception during cache clearing', [
                     'type' => 'WP_EXCEPTION_WHILE_CLEARING_CACHE',
@@ -83,7 +83,7 @@ if (is_admin()) {
                 $message = __('The cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
                 AdminNotice::displaySuccess($message);
             }
-        } catch (BouncerException $e) {
+        } catch (Exception $e) {
             if(isset($bouncer) && $bouncer->getLogger()) {
                 $bouncer->getLogger()->error('', [
                     'type' => 'WP_EXCEPTION_WHILE_REFRESHING_CACHE',
@@ -105,7 +105,7 @@ if (is_admin()) {
             $bouncer->pruneCache();
 
             AdminNotice::displaySuccess(__('CrowdSec cache has just been pruned.'));
-        } catch (BouncerException $e) {
+        } catch (Exception $e) {
             if(isset($bouncer) && $bouncer->getLogger()) {
                 $bouncer->getLogger()->error('', [
                     'type' => 'WP_EXCEPTION_WHILE_PRUNING',
@@ -128,7 +128,7 @@ if (is_admin()) {
             $message = __("Bouncing has been successfully tested for IP: $ip. Result is: $remediation.");
 
             AdminNotice::displaySuccess($message);
-        } catch (BouncerException $e) {
+        } catch (Exception $e) {
             if(isset($bouncer) && $bouncer->getLogger()) {
                 $bouncer->getLogger()->error('', [
                     'type' => 'WP_EXCEPTION_WHILE_TESTING_CONNECTION',
@@ -168,7 +168,7 @@ if (is_admin()) {
             $message = __("Geolocation has been tested for IP: $ip. <br>Result is: $countryMessage");
 
             AdminNotice::displaySuccess($message);
-        } catch (BouncerException $e) {
+        } catch (Exception $e) {
             if(isset($bouncer) && $bouncer->getLogger()) {
                 $bouncer->getLogger()->error('', [
                     'type' => 'WP_EXCEPTION_WHILE_TESTING_GEOLOCATION',

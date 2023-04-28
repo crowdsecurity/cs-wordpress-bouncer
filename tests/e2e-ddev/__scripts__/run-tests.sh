@@ -63,7 +63,7 @@ case $TYPE in
     TIMEOUT=60000
     HEADLESS=false
     SLOWMO=150
-    PLUGIN_PATH="../../"
+    VARHTML_PATH="../../../../../"
     ;;
 
   "docker")
@@ -75,7 +75,7 @@ case $TYPE in
     TIMEOUT=60000
     HEADLESS=true
     SLOWMO=0
-    PLUGIN_PATH="/var/www/html/wp-content/plugins/crowdsec"
+    VARHTML_PATH="/var/www/html/"
     ;;
 
   "ci")
@@ -87,7 +87,7 @@ case $TYPE in
     TIMEOUT=60000
     HEADLESS=true
     SLOWMO=0
-    PLUGIN_PATH="/var/www/html/wp-content/plugins/crowdsec"
+    VARHTML_PATH="/var/www/html/"
     ;;
 
   *)
@@ -113,8 +113,7 @@ TIMEOUT=$TIMEOUT \
 HEADLESS=$HEADLESS \
 FAIL_FAST=$FAIL_FAST \
 SLOWMO=$SLOWMO \
-TLS_PATH=$TLS_PATH \
-PLUGIN_PATH=$PLUGIN_PATH \
+VARHTML_PATH=$VARHTML_PATH \
 yarn --cwd $YARN_PATH test \
     $JEST_PARAMS \
     --json \

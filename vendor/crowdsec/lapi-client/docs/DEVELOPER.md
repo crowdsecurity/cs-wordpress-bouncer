@@ -50,26 +50,19 @@ For a quick start, follow the below steps.
 This project is fully compatible with DDEV 1.21.4, and it is recommended to use this specific version.
 For the DDEV installation, please follow the [official instructions](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/).
 
-
 #### Prepare DDEV PHP environment
 
 The final structure of the project will look like below.
 
 ```
-crowdsec-lapi-client-dev-project (choose the name you want for this folder)
+crowdsec-lapi-dev-project (choose the name you want for this folder)
 │       
 │
-└───.ddev (do not change this folder name)
+└───.ddev
 │   │   
-│   │ (Cloned sources of a PHP specific ddev repo)
-│    
+│   │ (DDEV files)
 │   
-└─── cfssl (do not change this folder name)
-│   │   
-│   │ (Copy of some provided files for TLS authentification)  
-│
-│   
-└───my-own-modules (do not change this folder name)
+└───my-code (do not change this folder name)
     │   
     │
     └───lapi-client (do not change this folder name)
@@ -80,50 +73,29 @@ crowdsec-lapi-client-dev-project (choose the name you want for this folder)
 
 - Create an empty folder that will contain all necessary sources:
 ```bash
-mkdir crowdsec-lapi-client-dev-project
+mkdir crowdsec-lapi-dev-project
 ```
 
-- Create a `my-own-modules/lapi-client` folder with sources of this repo:
+- Create a DDEV php project:
 
 ```bash
-cd crowdsec-lapi-client-dev-project
-mkdir -p my-own-modules/lapi-client
-cd my-own-modules/lapi-client && git clone git@github.com:crowdsecurity/php-lapi-client.git ./
+cd crowdsec-lapi-dev-project
+ddev config --project-type=php --php-version=8.2 --project-name=crowdsec-lapi-client
 ```
 
-- Create an empty `.ddev` folder for DDEV and clone our pre-configured DDEV repo:
+- Add some DDEV add-ons:
 
 ```bash
-cd crowdsec-lapi-client-dev-project
-mkdir .ddev && cd .ddev && git clone git@github.com:julienloizelet/ddev-php.git ./
+ddev get julienloizelet/ddev-tools
+ddev get julienloizelet/ddev-crowdsec-php
 ```
 
-Copy the CrowdSec related docker-compose file: 
-```bash
-cd crowdsec-lapi-client-dev-project
-cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
-```
-
-Then, as we use a TLS ready CrowdSec container, you have to copy some certificates and key in a `cfssl` folder:
+- Clone this repo sources in a `my-code/lapi-client` folder:
 
 ```bash
-mkdir cfssl
-cp -r ../.ddev/custom_files/crowdsec/cfssl/* cfssl
+mkdir -p my-code/lapi-client
+cd my-code/lapi-client && git clone git@github.com:crowdsecurity/php-lapi-client.git ./
 ```
-
-By default, ddev will launch a PHP 7.2 container. If you want to work with another PHP version, copy the
-corresponding config file. For example:
-
-```bash
-
-cp .ddev/config_overrides/config.php74.yaml .ddev/config.php74.yaml
-```
-- Launch DDEV
-
-```bash
-cd .ddev && ddev start
-```
-This should take some times on the first launch as this will download all necessary docker images.
 
 
 ### DDEV Usage
@@ -134,13 +106,13 @@ This should take some times on the first launch as this will download all necess
 Run:
 
 ```bash
-ddev composer update --working-dir ./my-own-modules/lapi-client
+ddev composer update --working-dir ./my-code/lapi-client
 ```
 
 #### Unit test
 
 ```bash
-ddev php ./my-own-modules/lapi-client/vendor/bin/phpunit  ./my-own-modules/lapi-client/tests/Unit --testdox
+ddev php ./my-code/lapi-client/vendor/bin/phpunit  ./my-code/lapi-client/tests/Unit --testdox
 ```
 
 #### Integration test
@@ -148,7 +120,7 @@ ddev php ./my-own-modules/lapi-client/vendor/bin/phpunit  ./my-own-modules/lapi-
 In order to launch integration tests, we have to set some environment variables:
 
 ```bash
-ddev exec BOUNCER_KEY=<BOUNCER_KEY> AGENT_TLS_PATH=/var/www/html/cfssl LAPI_URL=https://crowdsec:8080 php ./my-own-modules/lapi-client/vendor/bin/phpunit  ./my-own-modules/lapi-client/tests/Integration --testdox     
+ddev exec BOUNCER_KEY=<BOUNCER_KEY> AGENT_TLS_PATH=/var/www/html/cfssl LAPI_URL=https://crowdsec:8080 php ./my-code/lapi-client/vendor/bin/phpunit  ./my-code/lapi-client/tests/Integration --testdox     
 ```
 
 `<BOUNCER_KEY>` should have been created and retrieved before this test by running `ddev create-bouncer`.
@@ -156,7 +128,7 @@ ddev exec BOUNCER_KEY=<BOUNCER_KEY> AGENT_TLS_PATH=/var/www/html/cfssl LAPI_URL=
 If you need to test with a TLS authentication, you should launch:
 
 ```bash
-ddev exec BOUNCER_TLS_PATH=/var/www/html/cfssl AGENT_TLS_PATH=/var/www/html/cfssl LAPI_URL=https://crowdsec:8080 php ./my-own-modules/lapi-client/vendor/bin/phpunit  ./my-own-modules/lapi-client/tests/Integration --testdox     
+ddev exec BOUNCER_TLS_PATH=/var/www/html/cfssl AGENT_TLS_PATH=/var/www/html/cfssl LAPI_URL=https://crowdsec:8080 php ./my-code/lapi-client/vendor/bin/phpunit  ./my-code/lapi-client/tests/Integration --testdox     
 ```
 
 #### Coding standards
@@ -165,7 +137,7 @@ We set up some coding standards tools that you will find in the `tools/coding-st
 In order to use these, you will need to work with a PHP version >= 7.4 and run first:
 
 ```bash
-ddev composer update --working-dir=./my-own-modules/lapi-client/tools/coding-standards
+ddev composer update --working-dir=./my-code/lapi-client/tools/coding-standards
 ```
 
 ##### PHPCS Fixer
@@ -176,7 +148,7 @@ With ddev, you can do the following:
 
 
 ```bash
-ddev phpcsfixer my-own-modules/lapi-client/tools/coding-standards/php-cs-fixer ../
+ddev phpcsfixer my-code/lapi-client/tools/coding-standards/php-cs-fixer ../
 
 ```
 
@@ -186,7 +158,7 @@ To use the [PHPSTAN](https://github.com/phpstan/phpstan) tool, you can run:
 
 
 ```bash
-ddev phpstan /var/www/html/my-own-modules/lapi-client/tools/coding-standards phpstan/phpstan.neon /var/www/html/my-own-modules/lapi-client/src
+ddev phpstan /var/www/html/my-code/lapi-client/tools/coding-standards phpstan/phpstan.neon /var/www/html/my-code/lapi-client/src
 
 ```
 
@@ -196,7 +168,7 @@ ddev phpstan /var/www/html/my-own-modules/lapi-client/tools/coding-standards php
 To use the [PHPMD](https://github.com/phpmd/phpmd) tool, you can run:
 
 ```bash
-ddev phpmd ./my-own-modules/lapi-client/tools/coding-standards phpmd/rulesets.xml ../../src
+ddev phpmd ./my-code/lapi-client/tools/coding-standards phpmd/rulesets.xml ../../src
 
 ```
 
@@ -205,13 +177,13 @@ ddev phpmd ./my-own-modules/lapi-client/tools/coding-standards phpmd/rulesets.xm
 To use [PHP Code Sniffer](https://github.com/squizlabs/PHP_CodeSniffer) tools, you can run:
 
 ```bash
-ddev phpcs ./my-own-modules/lapi-client/tools/coding-standards my-own-modules/lapi-client/src PSR12
+ddev phpcs ./my-code/lapi-client/tools/coding-standards my-code/lapi-client/src PSR12
 ```
 
 and:
 
 ```bash
-ddev phpcbf  ./my-own-modules/lapi-client/tools/coding-standards my-own-modules/lapi-client/src PSR12
+ddev phpcbf  ./my-code/lapi-client/tools/coding-standards my-code/lapi-client/src PSR12
 ```
 
 
@@ -220,7 +192,7 @@ ddev phpcbf  ./my-own-modules/lapi-client/tools/coding-standards my-own-modules/
 To use [PSALM](https://github.com/vimeo/psalm) tools, you can run:
 
 ```bash
-ddev psalm ./my-own-modules/lapi-client/tools/coding-standards ./my-own-modules/lapi-client/tools/coding-standards/psalm
+ddev psalm ./my-code/lapi-client/tools/coding-standards ./my-code/lapi-client/tools/coding-standards/psalm
 ```
 
 ##### PHP Unit Code coverage
@@ -235,7 +207,7 @@ ddev xdebug
 
 To generate a html report, you can run:
 ```bash
-ddev php -dxdebug.mode=coverage ./my-own-modules/lapi-client/tools/coding-standards/vendor/bin/phpunit --configuration ./my-own-modules/lapi-client/tools/coding-standards/phpunit/phpunit.xml
+ddev php -dxdebug.mode=coverage ./my-code/lapi-client/tools/coding-standards/vendor/bin/phpunit --configuration ./my-code/lapi-client/tools/coding-standards/phpunit/phpunit.xml
 ```
 
 You should find the main report file `dashboard.html` in `tools/coding-standards/phpunit/code-coverage` folder.
@@ -244,7 +216,7 @@ You should find the main report file `dashboard.html` in `tools/coding-standards
 If you want to generate a text report in the same folder:
 
 ```bash
-ddev php -dxdebug.mode=coverage ./my-own-modules/lapi-client/tools/coding-standards/vendor/bin/phpunit --configuration ./my-own-modules/lapi-client/tools/coding-standards/phpunit/phpunit.xml --coverage-text=./my-own-modules/lapi-client/tools/coding-standards/phpunit/code-coverage/report.txt
+ddev php -dxdebug.mode=coverage ./my-code/lapi-client/tools/coding-standards/vendor/bin/phpunit --configuration ./my-code/lapi-client/tools/coding-standards/phpunit/phpunit.xml --coverage-text=./my-code/lapi-client/tools/coding-standards/phpunit/code-coverage/report.txt
 ```
 
 ## Commit message

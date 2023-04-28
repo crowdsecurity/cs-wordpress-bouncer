@@ -13,6 +13,7 @@ const { DEBUG } = process.env;
 const { TIMEOUT } = process.env;
 const { CURRENT_IP } = process.env;
 const { PROXY_IP } = process.env;
+const { VARHTML_PATH } = process.env;
 const OTHER_IP = "1.2.3.4";
 const WP59 = WORDPRESS_VERSION.startsWith("59");
 const WP58 = WORDPRESS_VERSION.startsWith("58");
@@ -27,12 +28,11 @@ const WP50 = WORDPRESS_VERSION.startsWith("50");
 const WP49 = WORDPRESS_VERSION.startsWith("49");
 const JAPAN_IP = "210.249.74.42";
 const FRANCE_IP = "78.119.253.85";
-const { PLUGIN_PATH, TLS_PATH } = process.env;
-const AGENT_CERT_FILE = `agent.pem`;
-const AGENT_KEY_FILE = `agent-key.pem`;
-const CA_CERT_FILE = `ca-chain.pem`;
-const BOUNCER_CERT_FILE = `bouncer.pem`;
-const BOUNCER_KEY_FILE = `bouncer-key.pem`;
+const AGENT_CERT_FILE = `crowdsec/tls/agent.pem`;
+const AGENT_KEY_FILE = `crowdsec/tls/agent-key.pem`;
+const CA_CERT_FILE = `crowdsec/tls/ca-chain.pem`;
+const BOUNCER_CERT_FILE = `crowdsec/tls/bouncer.pem`;
+const BOUNCER_KEY_FILE = `crowdsec/tls/bouncer-key.pem`;
 
 module.exports = {
     ADMIN_URL,
@@ -70,6 +70,5 @@ module.exports = {
     WATCHER_PASSWORD,
     BOUNCER_CERT_FILE,
     BOUNCER_KEY_FILE,
-    PLUGIN_PATH,
-    TLS_PATH,
+    VARHTML_PATH
 };

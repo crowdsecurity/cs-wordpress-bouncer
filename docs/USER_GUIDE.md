@@ -104,9 +104,9 @@ Only if you chose `Bouncer API key` as authentication type.
 
 `Connection details → Path to the bouncer certificate` 
 
-Relative path to the `wp-content/plugins/crowdsec/tls` folder of your WordPress instance.
+Absolute path. **Make sure this file is not publicly accessible.** [See security note below](#security).
 
-Example: `bouncer.pem`.
+Example: `/var/crowdsec/tls/bouncer.pem`.
 
 Only if you chose `TLS certificates` as authentication type.
 
@@ -114,9 +114,9 @@ Only if you chose `TLS certificates` as authentication type.
 
 `Connection details → Path to the bouncer key`
 
-Relative path to the `wp-content/plugins/crowdsec/tls` folder of your WordPress instance.
+Absolute path. **Make sure this file is not publicly accessible.** [See security note below](#security).
 
-Example: `bouncer-key.pem`.
+Example: `/var/crowdsec/tls/bouncer-key.pem`.
 
 Only if you chose `TLS certificates` as authentication type.
 
@@ -134,9 +134,9 @@ When negotiating a TLS or SSL connection, the server sends a certificate indicat
 
 `Connection details → Path to the CA certificate used to process peer verification`
 
-Relative path to the `wp-content/plugins/crowdsec/tls` folder of your WordPress instance.
+Absolute path. **Make sure this file is not publicly accessible.** [See security note below](#security).
 
-Example: `ca-chain.pem`.
+Example: `/var/crowdsec/tls/ca-chain.pem`.
 
 Only if you chose `TLS certificates` as authentication type.
 
@@ -337,7 +337,9 @@ Choose between `Country` and `City`.
 
 `Geolocation → Path to the MaxMind database`
 
-Relative path from `wp-content/plugins/crowdsec/geolocation` folder.
+Absolute path. **Make sure this file is not publicly accessible.** [See security note below](#security).
+
+Example: `/var/crowdsec/geolocation/Geoloc-country.mmdb` folder.
 
 ***
 
@@ -360,15 +362,19 @@ Enable if you want to see some debug information in a specific log file.
 
 When this mode is enabled, a `debug.log` file will be written in `wp-content/plugins/crowdsec/logs` folder.
 
+**Make sure this path is not publicly accessible.** [See security note below](#security).
+
 ***
 
 `Debug mode → Disable prod log`
 
 By default, a `prod.log` file will be written in `wp-content/plugins/crowdsec/logs` folder.
 
+**Make sure this path is not publicly accessible.** [See security note below](#security).
+
 You can disable this log here.
 
-
+***
 
 `Debug mode → Custom User-Agent`
 
@@ -379,9 +385,6 @@ You can use this field to add a custom suffix: `csphplapi_WordPress[custom-suffi
 This can be useful to debug crowdsec logs when using multiple WordPress sites with multiple bouncer plugins.
 
 Only alphanumeric characters (`[A-Za-z0-9]`) are allowed with a maximum of 5 characters.
-
-
-***
 
 
 ***
@@ -497,22 +500,24 @@ Here are some examples of how to set options with the `WP-CLI` tool.
 
 Some files used or created by this plugin must be protected from direct access attempts:
 
+- The `standalone-settings.php` file created in the `wp-content/plugins/crowdsec/inc` folder for the [Auto Prepend File](#auto-prepend-file-mode) mode
 - Log files are created in the `wp-content/plugins/crowdsec/logs` folder
 - Cache files of the File system cache are created in the `wp-content/plugins/crowdsec/.cache` folder
-- TLS authentication files are located in the `wp-content/plugins/crowdsec/tls` folder
-- Geolocation database files are located in the `wp-content/plugins/crowdsec/geolocation` folder
+- TLS authentication files are located in a user defined path
+- Geolocation database files are located in a user defined path
 
 **N.B.:**
-- There is no need to protect the `.cache` folder if you are using Redis or Memcached cache systems.
-- There is no need to protect the `logs` folder if you disable debug and prod logging.
-- There is no need to protect the `tls` folder if you use Bouncer API key authentication type.
-- There is no need to protect the `geolocation` folder if you don't use the geolocation feature.
+
+- There is no need to protect cache files if you are using Redis or Memcached cache systems.
+- There is no need to protect log files if you disable debug and prod logging.
+- There is no need to protect TLS files if you use Bouncer API key authentication type.
+- There is no need to protect geolocation files if you don't use the geolocation feature.
 
 #### Nginx
 
 If you are using Nginx, you should add a directive in your website configuration file to deny access to these folders.
 
-This could be done with the following snippet:
+For log, cache and standalone setting files, this could be done with the following snippet:
 
 ```
 server {
@@ -520,7 +525,7 @@ server {
    ...
    ...
    # Deny all attempts to access some folders of the crowdsec plugin
-   location ~ /crowdsec/(.cache|logs|tls|geolocation) {
+   location ~ /crowdsec/(.cache|logs|inc/standalone-settings) {
            deny all;
    }
    ...
@@ -530,17 +535,14 @@ server {
 
 #### Apache
 
-If you are using Apache, the plugin root folder already contain the required `.htaccess` file: 
+If you are using Apache, the plugin root folder already contain the required `.htaccess` file to protect log,  
+cache and standalone setting files: 
 
-```
+```htaccess
 Redirectmatch 403 wp-content/plugins/crowdsec/logs/
 Redirectmatch 403 wp-content/plugins/crowdsec/.cache/
-Redirectmatch 403 wp-content/plugins/crowdsec/tls/
-Redirectmatch 403 wp-content/plugins/crowdsec/geolocation/
+Redirectmatch 403 wp-content/plugins/crowdsec/inc/standalone-settings
 ```
-
-So you don't have to do anything more.
-
 
 ### Auto Prepend File mode
 
@@ -555,7 +557,9 @@ To enable the `auto prepend file` mode, you have to configure your server by add
 
 **N.B.:**
 
-- In this mode, a setting file `inc/standalone-settings.php` will be generated each time you save the CrowdSec plugin configuration from the WordPress admin.
+- In this mode, a setting file `inc/standalone-settings.php` will be generated each time you save the CrowdSec 
+  plugin configuration from the WordPress admin. **Make sure this file is not publicly accessible.** [See security note 
+  above](#security).
 
 
 Adding an `auto_prepend_file` directive can be done in different ways:
@@ -578,7 +582,7 @@ location ~ \.php$ {
     ...
     ...
     ...
-    fastcgi_param PHP_VALUE "/wordpress-root-directory/wp-content/plugins/crowdsec/inc/standalone-bounce.php";
+    fastcgi_param PHP_VALUE "auto_prepend_file=/wordpress-root-directory/wp-content/plugins/crowdsec/inc/standalone-bounce.php";
 }
 ```
 

@@ -529,7 +529,7 @@ final class CacheTest extends TestCase
 
         $decision = $this->getMockBuilder('CrowdSec\RemediationEngine\Decision')
             ->disableOriginalConstructor()
-            ->onlyMethods(['getValue', 'getType', 'getExpiresAt', 'getScope', 'getIdentifier'])
+            ->onlyMethods(['getValue', 'getType', 'getExpiresAt', 'getScope', 'getIdentifier', 'getOrigin'])
             ->getMock();
         $decision->method('getValue')->will(
             $this->returnValue(
@@ -554,6 +554,11 @@ final class CacheTest extends TestCase
         $decision->method('getIdentifier')->will(
             $this->returnValue(
                 'testip'
+            )
+        );
+        $decision->method('getOrigin')->will(
+            $this->returnValue(
+                'capi'
             )
         );
         // Test 1 : retrieve stored IP
@@ -587,7 +592,7 @@ final class CacheTest extends TestCase
 
         $decision = $this->getMockBuilder('CrowdSec\RemediationEngine\Decision')
             ->disableOriginalConstructor()
-            ->onlyMethods(['getValue', 'getType', 'getExpiresAt', 'getScope', 'getIdentifier'])
+            ->onlyMethods(['getValue', 'getType', 'getExpiresAt', 'getScope', 'getIdentifier', 'getOrigin'])
             ->getMock();
         $decision->method('getValue')->will(
             $this->returnValue(
@@ -612,6 +617,11 @@ final class CacheTest extends TestCase
         $decision->method('getIdentifier')->will(
             $this->returnValue(
                 'testrange'
+            )
+        );
+        $decision->method('getOrigin')->will(
+            $this->returnValue(
+                'capi'
             )
         );
         // Test 1 : retrieve stored Range
@@ -645,7 +655,7 @@ final class CacheTest extends TestCase
 
         $decision = $this->getMockBuilder('CrowdSec\RemediationEngine\Decision')
             ->disableOriginalConstructor()
-            ->onlyMethods(['getValue', 'getType', 'getExpiresAt', 'getScope', 'getIdentifier'])
+            ->onlyMethods(['getValue', 'getType', 'getExpiresAt', 'getScope', 'getIdentifier', 'getOrigin'])
             ->getMock();
         $decision->method('getValue')->will(
             $this->returnValue(
@@ -670,6 +680,11 @@ final class CacheTest extends TestCase
         $decision->method('getIdentifier')->will(
             $this->returnValue(
                 'test-country'
+            )
+        );
+        $decision->method('getOrigin')->will(
+            $this->returnValue(
+                'capi'
             )
         );
         // Test 1 : retrieve stored country

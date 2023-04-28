@@ -58,4 +58,5 @@ $remediationConfigs = [
 ];
 $remediationEngine = new LapiRemediation($remediationConfigs, $lapiClient, $phpFileCache, $logger);
 // Determine the remediation for the given IP
-echo $remediationEngine->getIpRemediation($ip) . \PHP_EOL;
+echo 'Remediation: ' . $remediationEngine->getIpRemediation($ip) . \PHP_EOL;
+echo 'Origins count: ' . json_encode($remediationEngine->getOriginsCount()) . \PHP_EOL;

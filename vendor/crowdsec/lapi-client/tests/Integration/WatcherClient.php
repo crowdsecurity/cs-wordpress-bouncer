@@ -20,6 +20,10 @@ class WatcherClient extends AbstractClient
 
     /** @var string */
     private $token;
+    /**
+     * @var array|string[]
+     */
+    protected $headers = [];
 
     public function __construct(array $configs)
     {

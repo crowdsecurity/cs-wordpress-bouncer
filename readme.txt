@@ -4,7 +4,7 @@ Donate link: https://crowdsec.net/
 Tags: crowdsec-bouncer, wordpress, security, firewall, captcha, ip-scanner, ip-blocker, ip-blocking, ip-address, ip-database, ip-range-check, crowdsec, ban-hosts, ban-management, anti-hacking, hacker-protection, captcha-image, captcha-generator, captcha-generation, captcha-service
 Requires at least: 4.9
 Tested up to: 6.2
-Stable tag: 2.3.1
+Stable tag: 2.4.0
 Requires PHP: 7.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
@@ -43,6 +43,12 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 10. A Ban wall page customization (text and colors)
 
 == Changelog ==
+
+= 2.4 (2023-04-28) =
+
+- Use absolute path for TLS files
+- Use absolute path for geolocation files
+- Add an action after plugin upgrade to recreate standalone settings file
 
 = 2.3 (2023-04-06) =
 
@@ -126,6 +132,10 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 [Read the full Changelog](https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/CHANGELOG.md)
 
 == Upgrade Notice ==
+
+= 2.4 =
+
+After upgrading to 2.4, you have to define an absolute path for TLS files and geolocation databases (only if you use these features)
 
 = 1.3 =
 With this release, the `standalone-settings.php` file is used only in "standalone" mode. In the standard mode, configurations will be retrieved directly from database.

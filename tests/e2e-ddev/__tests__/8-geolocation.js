@@ -42,7 +42,7 @@ describe(`Geolocation and country scoped decision`, () => {
         );
         await fillInput(
             "crowdsec_geolocation_maxmind_database_path",
-            "GeoLite2-Country.mmdb",
+            "/var/www/html/crowdsec/geolocation/GeoLite2-Country.mmdb",
         );
         await onAdminSaveSettings();
         await addDecision("FR", "ban", 15 * 60, "Country");
@@ -76,7 +76,7 @@ describe(`Geolocation and country scoped decision`, () => {
         );
         await fillInput(
             "crowdsec_geolocation_maxmind_database_path",
-            "GeoLite2-City.mmdb",
+            "/var/www/html/crowdsec/geolocation/GeoLite2-City.mmdb",
         );
         await onAdminSaveSettings();
         await addDecision("FR", "ban", 15 * 60, "Country");
@@ -109,7 +109,7 @@ describe(`Geolocation and country scoped decision`, () => {
         // Set a good path
         await fillInput(
             "crowdsec_geolocation_maxmind_database_path",
-            "GeoLite2-City.mmdb",
+            "/var/www/html/crowdsec/geolocation/GeoLite2-City.mmdb",
         );
         await onAdminSaveSettings(true);
         await onAdminGoToSettingsPage();
@@ -126,7 +126,7 @@ describe(`Geolocation and country scoped decision`, () => {
         await onAdminGoToAdvancedPage();
         await fillInput(
             "crowdsec_geolocation_maxmind_database_path",
-            "crowdsec/GeoLite2-FAKE.mmdb",
+            "/var/www/html/crowdsec/geolocation/GeoLite2-FAKE.mmdb",
         );
         await onAdminSaveSettings(true);
         await onAdminGoToSettingsPage();
@@ -145,7 +145,7 @@ describe(`Geolocation and country scoped decision`, () => {
         // Set a good path
         await fillInput(
             "crowdsec_geolocation_maxmind_database_path",
-            "GeoLite2-City.mmdb",
+            "/var/www/html/crowdsec/geolocation/GeoLite2-City.mmdb",
         );
         await onAdminSaveSettings(true);
         await onAdminGoToSettingsPage();
@@ -161,7 +161,7 @@ describe(`Geolocation and country scoped decision`, () => {
         await onAdminGoToAdvancedPage();
         await fillInput(
             "crowdsec_geolocation_maxmind_database_path",
-            "GeoLite2-FAKE.mmdb",
+            "/var/www/html/crowdsec/geolocation/GeoLite2-FAKE.mmdb",
         );
         await onAdminSaveSettings(true);
         await onAdminGoToSettingsPage();

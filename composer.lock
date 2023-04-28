@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c8c9a6cd4edae249ceb35c1384a3ad49",
+    "content-hash": "fed84f1589a330c453aecaf6b90d46da",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -84,16 +84,16 @@
         },
         {
             "name": "crowdsec/bouncer",
-            "version": "v1.4.0",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "c0f5c1f5571cd8c6fa0c674c189dd3901e0c8c3f"
+                "reference": "4faf574a3125000d50423a56c69872fa89b555ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/c0f5c1f5571cd8c6fa0c674c189dd3901e0c8c3f",
-                "reference": "c0f5c1f5571cd8c6fa0c674c189dd3901e0c8c3f",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/4faf574a3125000d50423a56c69872fa89b555ae",
+                "reference": "4faf574a3125000d50423a56c69872fa89b555ae",
                 "shasum": ""
             },
             "require": {
@@ -101,7 +101,7 @@
                 "crowdsec/remediation-engine": "^3.1.1",
                 "ext-gd": "*",
                 "ext-json": "*",
-                "gregwar/captcha": "^1.1",
+                "gregwar/captcha": "^1.2.0",
                 "mlocati/ip-lib": "^1.18",
                 "php": ">=7.2.5",
                 "symfony/config": "^4.4.27 || ^5.2 || ^6.0",
@@ -148,9 +148,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v1.4.0"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v2.0.0"
             },
-            "time": "2023-03-30T01:04:08+00:00"
+            "time": "2023-04-13T07:15:35+00:00"
         },
         {
             "name": "crowdsec/capi-client",
@@ -288,16 +288,16 @@
         },
         {
             "name": "crowdsec/lapi-client",
-            "version": "v3.0.0",
+            "version": "v3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-lapi-client.git",
-                "reference": "86e85c2bd8fbc34b6442d812d4b42552843874b5"
+                "reference": "ac15b0463e8063b50ac57fe5016d1ba822c640c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-lapi-client/zipball/86e85c2bd8fbc34b6442d812d4b42552843874b5",
-                "reference": "86e85c2bd8fbc34b6442d812d4b42552843874b5",
+                "url": "https://api.github.com/repos/crowdsecurity/php-lapi-client/zipball/ac15b0463e8063b50ac57fe5016d1ba822c640c1",
+                "reference": "ac15b0463e8063b50ac57fe5016d1ba822c640c1",
                 "shasum": ""
             },
             "require": {
@@ -348,27 +348,27 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-lapi-client/issues",
-                "source": "https://github.com/crowdsecurity/php-lapi-client/tree/v3.0.0"
+                "source": "https://github.com/crowdsecurity/php-lapi-client/tree/v3.1.0"
             },
-            "time": "2023-03-09T01:23:24+00:00"
+            "time": "2023-04-27T12:50:13+00:00"
         },
         {
             "name": "crowdsec/remediation-engine",
-            "version": "v3.1.1",
+            "version": "v3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-remediation-engine.git",
-                "reference": "83ff8ca767b907233c8c82bdd5449317082c24ac"
+                "reference": "a177b47695d018ba41b75c08687ed9730245db74"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/83ff8ca767b907233c8c82bdd5449317082c24ac",
-                "reference": "83ff8ca767b907233c8c82bdd5449317082c24ac",
+                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/a177b47695d018ba41b75c08687ed9730245db74",
+                "reference": "a177b47695d018ba41b75c08687ed9730245db74",
                 "shasum": ""
             },
             "require": {
                 "crowdsec/capi-client": "^3.0.0",
-                "crowdsec/common": "^2.0.0",
+                "crowdsec/common": "^2.1.0",
                 "crowdsec/lapi-client": "^3.0.0",
                 "ext-json": "*",
                 "geoip2/geoip2": "^2.13.0",
@@ -428,9 +428,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-remediation-engine/issues",
-                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v3.1.1"
+                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v3.2.0"
             },
-            "time": "2023-03-24T05:06:58+00:00"
+            "time": "2023-04-20T04:52:21+00:00"
         },
         {
             "name": "geoip2/geoip2",
@@ -981,16 +981,16 @@
         },
         {
             "name": "symfony/cache",
-            "version": "v5.4.21",
+            "version": "v5.4.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/cache.git",
-                "reference": "32cab695bf99c63aff7d27ac67919944c00530ed"
+                "reference": "5ed986c4ef65f0dea5e9753630b5cb1f07f847d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/cache/zipball/32cab695bf99c63aff7d27ac67919944c00530ed",
-                "reference": "32cab695bf99c63aff7d27ac67919944c00530ed",
+                "url": "https://api.github.com/repos/symfony/cache/zipball/5ed986c4ef65f0dea5e9753630b5cb1f07f847d6",
+                "reference": "5ed986c4ef65f0dea5e9753630b5cb1f07f847d6",
                 "shasum": ""
             },
             "require": {
@@ -1058,7 +1058,7 @@
                 "psr6"
             ],
             "support": {
-                "source": "https://github.com/symfony/cache/tree/v5.4.21"
+                "source": "https://github.com/symfony/cache/tree/v5.4.22"
             },
             "funding": [
                 {
@@ -1074,7 +1074,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-21T12:11:13+00:00"
+            "time": "2023-03-29T20:01:08+00:00"
         },
         {
             "name": "symfony/cache-contracts",

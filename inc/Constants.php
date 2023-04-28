@@ -20,7 +20,5 @@ class Constants extends LibConstants
     public const LOG_BASE_PATH = __DIR__ . '/../logs/';
     public const CACHE_PATH = __DIR__ . '/../.cache';
     public const CONFIG_PATH = __DIR__ . '/standalone-settings.php';
-    public const VERSION = 'v2.3.1';
-    public const GEOLOCATION_DIR = __DIR__ . '/../geolocation';
-    public const TLS_DIR = __DIR__ . '/../tls';
+    public const VERSION = 'v2.4.0';
 }

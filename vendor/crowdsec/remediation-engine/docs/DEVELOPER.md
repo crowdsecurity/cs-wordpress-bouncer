@@ -47,7 +47,6 @@ For a quick start, follow the below steps.
 
 #### DDEV installation
 
-This project is fully compatible with DDEV 1.21.4, and it is recommended to use this specific version.
 For the DDEV installation, please follow the [official instructions](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/).
 
 
@@ -77,7 +76,7 @@ crowdsec-remediation-engine-dev-project (choose the name you want for this folde
 mkdir crowdsec-remediation-engine-dev-project
 ```
 
-- Create a DDEV php rpoject:
+- Create a DDEV php project:
 
 ```bash
 cd crowdsec-remediation-engine-dev-project
