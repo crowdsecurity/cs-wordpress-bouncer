@@ -596,4 +596,4 @@ If you are using Apache, you should add this line to your `.htaccess` file:
 
 ## Resources
 
-Feel free to look at the [associated article](https://www.crowdsec.net/blog/wordpress-bouncer) for more configuration options and tweaks.
+Feel free to look at the [associated article](https://www.crowdsec.net/blog/wordpress-remediation-component) for more configuration options and tweaks.
