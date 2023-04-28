@@ -17,6 +17,7 @@
     - [Test the module](#test-the-module)
       - [Install the module](#install-the-module)
       - [End-to-end tests](#end-to-end-tests)
+      - [Auto_prepend_file mode](#auto_prepend_file-mode)
     - [Update composer dependencies](#update-composer-dependencies)
       - [Development phase](#development-phase)
       - [Production release](#production-release)
