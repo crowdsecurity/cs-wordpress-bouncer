@@ -12,7 +12,12 @@ require_once __DIR__.'/settings.php';
 require_once __DIR__.'/theme.php';
 require_once __DIR__.'/advanced-settings.php';
 
-add_action('admin_notices', [new AdminNotice(), 'displayAdminNotice']);
+if(is_multisite()){
+    add_action('network_admin_notices', [new AdminNotice(), 'displayAdminNotice']);
+}else{
+    add_action('admin_notices', [new AdminNotice(), 'displayAdminNotice']);
+}
+
 
 function crowdsec_option_update_callback($name, $oldValue, $newValue)
 {
@@ -43,7 +48,8 @@ if (is_admin()) {
             $message = __('CrowdSec cache has just been cleared.');
 
             // In stream mode, immediatelly warm the cache up.
-            if (get_option('crowdsec_stream_mode')) {
+            $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
+            if ($streamMode) {
                 $refresh = $bouncer->refreshBlocklistCache();
                 $new = $refresh['new']??0;
                 $deleted = $refresh['deleted']??0;
@@ -69,20 +75,19 @@ if (is_admin()) {
     function refreshBouncerCacheInAdminPage()
     {
         try {
-            if (!get_option('crowdsec_stream_mode')) {
+            $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
+            if (!$streamMode) {
                 return false;
             }
 
             // In stream mode, immediately warm the cache up.
-            if (get_option('crowdsec_stream_mode')) {
-                $configs = getDatabaseConfigs();
-                $bouncer = new Bouncer($configs);
-                $result = $bouncer->refreshBlocklistCache();
-                $new = $result['new']??0;
-                $deleted = $result['deleted']??0;
-                $message = __('The cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
-                AdminNotice::displaySuccess($message);
-            }
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
+            $result = $bouncer->refreshBlocklistCache();
+            $new = $result['new']??0;
+            $deleted = $result['deleted']??0;
+            $message = __('The cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
+            AdminNotice::displaySuccess($message);
         } catch (Exception $e) {
             if(isset($bouncer) && $bouncer->getLogger()) {
                 $bouncer->getLogger()->error('', [
@@ -145,7 +150,9 @@ if (is_admin()) {
     function testGeolocationInAdminPage($ip)
     {
         try {
-            if (!get_option('crowdsec_geolocation_maxmind_database_path')) {
+            $maxmindDatabasePath = is_multisite() ? get_site_option('crowdsec_geolocation_maxmind_database_path') :
+                get_option('crowdsec_geolocation_maxmind_database_path');
+            if (!$maxmindDatabasePath) {
                 throw new BouncerException("Maxmind database path can not be empty");
             }
             $configs = getDatabaseConfigs();
@@ -247,8 +254,10 @@ if (is_admin()) {
         return $links;
     });
 
+    $adminMenu = is_multisite() ? 'network_admin_menu' : 'admin_menu';
+
     // ADMIN MENU AND PAGES
-    add_action('admin_menu', function () {
+    add_action($adminMenu, function () {
         function sanitizeCheckbox($input)
         {
             return isset($input);
@@ -258,7 +267,7 @@ if (is_admin()) {
         {
             register_setting($optionGroup, $optionName, function ($input) use ($optionName, $onActivation, $onDeactivation) {
                 $input = esc_attr($input);
-                $previousState = !empty(get_option($optionName));
+                $previousState = is_multisite() ? !empty(get_site_option($optionName)) : !empty(get_option($optionName));
                 $currentState = !empty($input);
 
                 if ($previousState !== $currentState) {
@@ -275,7 +284,7 @@ if (is_admin()) {
             add_settings_field($optionName, $label, function ($args) use ($optionName, $descriptionHtml) {
                 $name = $args['label_for'];
                 $classes = $args['class'];
-                $checked = !empty(get_option($optionName));
+                $checked = is_multisite() ? !empty(get_site_option($optionName)) : !empty(get_option($optionName));
                 echo '<div class="'.$classes.'">'.
                     '<input type="checkbox" id="'.$name.'" name="'.$name.'" '.($checked ? 'checked' : '').
                     ' class=" '.($checked ? 'checked' : '').'">'.
@@ -290,7 +299,7 @@ if (is_admin()) {
         {
             register_setting($optionGroup, $optionName, function ($input) use ($onChange, $optionName) {
                 $currentState = esc_attr($input);
-                $previousState = esc_attr(get_option($optionName));
+                $previousState = is_multisite() ? esc_attr(get_site_option($optionName)) : esc_attr(get_option($optionName));
 
                 if ($previousState !== $currentState) {
                     $currentState = $onChange($currentState);
@@ -301,7 +310,7 @@ if (is_admin()) {
             add_settings_field($optionName, $label, function ($args) use ($descriptionHtml, $optionName, $inputStyle, $inputType, $disabled) {
                 $name = $args['label_for'];
                 $placeholder = $args['placeholder'];
-                $value = esc_attr(get_option($optionName));
+                $value = $previousState = is_multisite() ? esc_attr(get_site_option($optionName)) : esc_attr(get_option($optionName));
                 echo '<input '.($disabled ? 'disabled="disabled"' : '')." style=\"$inputStyle\" type=\"$inputType\" class=\"regular-text\" name=\"$name\" value=\"$value\" placeholder=\"$placeholder\">$descriptionHtml";
             }, $pageName, $sectionName, [
                 'label_for' => $optionName,
@@ -311,7 +320,7 @@ if (is_admin()) {
 
         function addFieldSelect(string $optionName, string $label, string $optionGroup, string $pageName, string $sectionName, callable $onChange, string $descriptionHtml, array $choices)
         {
-            $previousState = esc_attr(get_option($optionName));
+            $previousState = $previousState = is_multisite() ? esc_attr(get_site_option($optionName)) : esc_attr(get_option($optionName));
             // Retro compatibility with crowdsec php lib < 0.14.0
             if($optionName === 'crowdsec_bouncing_level'){
             	if($previousState === 'normal_boucing'){

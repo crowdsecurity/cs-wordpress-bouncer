@@ -5,13 +5,72 @@ use CrowdSec\RemediationEngine\Constants as RemConstants;
 use IPLib\Factory;
 require_once __DIR__ . '/../Constants.php';
 require_once __DIR__ . '/../options-config.php';
+require_once __DIR__ . '/notice.php';
 
 function adminAdvancedSettings()
 {
+    if(is_multisite()){
+        add_action('network_admin_edit_crowdsec_advanced_settings', 'crowdsec_multi_save_advanced_settings');
+    }
+
+    function crowdsec_multi_save_advanced_settings()
+    {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec-advanced-settings-update')) {
+            wp_nonce_ays('crowdsec_save_advanced_settings');
+        }
+
+        $options =
+            [
+                'crowdsec_stream_mode',
+                'crowdsec_stream_mode_refresh_frequency',
+                'crowdsec_redis_dsn',
+                'crowdsec_memcached_dsn',
+                'crowdsec_cache_system',
+                'crowdsec_clean_ip_cache_duration',
+                'crowdsec_bad_ip_cache_duration',
+                'crowdsec_captcha_cache_duration',
+                'crowdsec_fallback_remediation',
+                'crowdsec_trust_ip_forward_list',
+                'crowdsec_hide_mentions',
+                'crowdsec_geolocation_enabled',
+                'crowdsec_geolocation_type',
+                'crowdsec_geolocation_maxmind_database_type',
+                'crowdsec_geolocation_maxmind_database_path',
+                'crowdsec_geolocation_cache_duration',
+                'crowdsec_debug_mode',
+                'crowdsec_disable_prod_log',
+                'crowdsec_custom_user_agent',
+                'crowdsec_display_errors',
+                'crowdsec_forced_test_ip',
+                'crowdsec_forced_test_forwarded_ip'
+
+            ];
+
+        foreach ( $options as $option ) {
+            if ( isset( $_POST[ $option ] ) ) {
+                update_site_option( $option, sanitize_text_field($_POST[ $option ]) );
+            } else {
+                delete_site_option( $option );
+            }
+        }
+
+        wp_safe_redirect(
+            add_query_arg(
+                array(
+                    'page' => 'crowdsec_advanced_settings',
+                    'updated' => true
+                ),
+                network_admin_url('admin.php')
+            )
+        );
+        exit;
+    }
+
     /***************************
      ** Section "Stream mode" **
      **************************/
-
+    $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
     add_settings_section('crowdsec_admin_advanced_stream_mode', 'Communication mode to the API', function () {
     }, 'crowdsec_advanced_settings');
 
@@ -34,7 +93,7 @@ function adminAdvancedSettings()
     }, '
     <p>With the stream mode, every decision is retrieved in an asynchronous way. 3 advantages: <br>&nbsp;1) Inivisible latency when loading pages<br>&nbsp;2) The IP verifications works even if your CrowdSec is not reachable.<br>&nbsp;3) The API can never be overloaded by the WordPress traffic</p>
     <p>Note: This method has one limit: all the decisions updates since the previous resync will not be taken in account until the next resync.</p>'.
-        (get_option('crowdsec_stream_mode') ?
+       ($streamMode ?
             '<p><input id="crowdsec_refresh_cache" style="margin-right:10px" type="button" value="Refresh the cache now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_refresh_cache\').submit();"></p>' :
             '<p><input id="crowdsec_refresh_cache" style="margin-right:10px" type="button" disabled="disabled" value="Refresh the cache now" class="button button-secondary button-small"></p>'));
 
@@ -43,13 +102,18 @@ function adminAdvancedSettings()
         $input = (int) $input;
         if ($input < 1) {
             $input = 1;
-            add_settings_error('Resync decisions each', 'crowdsec_error', 'The "Resync decisions each" value should be more than 1sec (WP_CRON_LOCK_TIMEOUT). We just reset the frequency to 1 seconds.');
+            $message = 'The "Resync decisions each" value should be more than 1sec (WP_CRON_LOCK_TIMEOUT). We just reset the frequency to 1 seconds.';
+            if(is_multisite()){
+                AdminNotice::displayError($message);
+            }else{
+                add_settings_error('Resync decisions each', 'crowdsec_error', $message);
+            }
 
             return $input;
         }
-
+        $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
         // Update wp-cron schedule.
-        if ((bool) get_option('crowdsec_stream_mode')) {
+        if ((bool) $streamMode) {
             $configs = getDatabaseConfigs();
             $configs['crowdsec_stream_mode'] = true;
             $bouncer = new Bouncer($configs);
@@ -123,10 +187,17 @@ function adminAdvancedSettings()
     }, '<p>Fill in this field only if you have chosen the Memcached cache.<br>Example of DSN: memcached://localhost:11211.', 'memcached://...', '');
 
     // Field "crowdsec_cache_system"
+    $cacheSystem = is_multisite() ? get_site_option('crowdsec_cache_system') : get_option('crowdsec_cache_system');
     addFieldSelect('crowdsec_cache_system', 'Technology', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         if (!in_array($input, [Constants::CACHE_SYSTEM_PHPFS, Constants::CACHE_SYSTEM_REDIS, Constants::CACHE_SYSTEM_MEMCACHED])) {
             $input = Constants::CACHE_SYSTEM_PHPFS;
-            add_settings_error('Technology', 'crowdsec_error', 'Technology: Incorrect cache technology selected.');
+            $message = 'Technology: Incorrect cache technology selected.';
+            if(is_multisite()){
+                AdminNotice::displayError($message);
+            }else{
+                add_settings_error('Technology', 'crowdsec_error', $message);
+
+            }
         }
         $error = false;
         $message = '';
@@ -165,7 +236,8 @@ function adminAdvancedSettings()
         }
 
         try {
-            if (get_option('crowdsec_stream_mode') && !$error) {
+            $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
+            if ($streamMode && !$error) {
                 // system
                 $bouncer->clearCache();
                 $result = $bouncer->refreshBlocklistCache();
@@ -180,7 +252,7 @@ function adminAdvancedSettings()
         }
 
         return $input;
-    }, ((Constants::CACHE_SYSTEM_PHPFS === get_option('crowdsec_cache_system')) ?
+    }, ((Constants::CACHE_SYSTEM_PHPFS === $cacheSystem) ?
         '<input style="margin-right:10px" type="button" id="crowdsec_prune_cache" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_action_prune_cache\').submit();">' : '').
         '<p>The File system cache is faster than calling Local API. Redis or Memcached is faster than the File System cache.<br>
 <b>Important note: </b> If you use the File system cache, make sure the <i>wp-content/plugins/crowdsec/.cache</i> path is not publicly accessible.<br>
@@ -193,39 +265,59 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     // Field "crowdsec_clean_ip_cache_duration"
     addFieldString('crowdsec_clean_ip_cache_duration', 'Recheck clean IPs each<br>(live mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         if(!empty($input)){
-            if (!get_option('crowdsec_stream_mode') && (int) $input <= 0) {
-                add_settings_error('Recheck clean IPs each', 'crowdsec_error', 'Recheck clean IPs each: Minimum is 1 second.');
+            $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
+            if (!$streamMode && (int) $input <= 0) {
+                $message = 'Recheck clean IPs each: Minimum is 1 second.';
+                if(is_multisite()){
+                    AdminNotice::displayError($message);
+                }else{
+                    add_settings_error($message);
+
+                }
 
                 return '1';
             }
 
             return (int) $input > 0 ? (int) $input : 1 ;
         }
-        $saved = (int) get_option('crowdsec_clean_ip_cache_duration');
+        $saved = is_multisite() ? (int) get_site_option('crowdsec_clean_ip_cache_duration') : (int) get_option('crowdsec_clean_ip_cache_duration');
         return $saved > 0 ? $saved : 1;
 
-    }, ' seconds. <p>The duration between re-asking Local API about an already checked clean IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
+    }, ' seconds. <p>The duration between re-asking Local API about an already checked clean IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) $streamMode);
 
     // Field "crowdsec_bad_ip_cache_duration"
     addFieldString('crowdsec_bad_ip_cache_duration', 'Recheck bad IPs each<br>(live mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         if(!empty($input)) {
-            if (!get_option('crowdsec_stream_mode') && !empty($input) && (int)$input <= 0) {
-                add_settings_error('Recheck bad IPs each', 'crowdsec_error', 'Recheck bad IPs each: Minimum is 1 second.');
+            $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
+            if (!$streamMode && !empty($input) && (int)$input <= 0) {
+                $message = 'Recheck bad IPs each: Minimum is 1 second.';
+                if(is_multisite()){
+                    AdminNotice::displayError($message);
+                }else{
+                    add_settings_error($message);
+
+                }
 
                 return '1';
             }
 
             return (int)$input > 0 ? (int)$input : 1;
         }
-        $saved = (int) get_option('crowdsec_bad_ip_cache_duration');
+        $saved = is_multisite() ? (int) get_site_option('crowdsec_bad_ip_cache_duration') :  (int) get_option('crowdsec_bad_ip_cache_duration');
         return $saved > 0 ? $saved : 1;
 
-    }, ' seconds. <p>The duration between re-asking Local API about an already checked bad IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) get_option('crowdsec_stream_mode'));
+    }, ' seconds. <p>The duration between re-asking Local API about an already checked bad IP.<br>Minimum 1 second.<br> Note that this setting can not be apply in stream mode.', '...', 'width: 115px;', 'number', (bool) $streamMode);
 
     // Field "crowdsec_captcha_cache_duration"
     addFieldString('crowdsec_captcha_cache_duration', 'Captcha flow cache lifetime', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         if ( (int) $input <= 0) {
-            add_settings_error('Captcha cache duration', 'crowdsec_error', 'Captcha cache duration: Minimum is 1 second.');
+            $message = 'Captcha cache duration: Minimum is 1 second.';
+            if(is_multisite()){
+                AdminNotice::displayError($message);
+            }else{
+                add_settings_error($message);
+
+            }
 
             return Constants::CACHE_EXPIRATION_FOR_CAPTCHA;
         }
@@ -253,7 +345,12 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
         $remediations = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BYPASS];
         if (!in_array($input, $remediations)) {
             $input = Constants::BOUNCING_LEVEL_DISABLED;
-            add_settings_error('Fallback to', 'crowdsec_error', 'Fallback to: Incorrect Fallback selected.');
+            $message = 'Fallback to: Incorrect Fallback selected.';
+            if(is_multisite()){
+                AdminNotice::displayError($message);
+            }else{
+                add_settings_error('Fallback to', 'crowdsec_error', $message);
+            }
         }
 
         return $input;
@@ -290,16 +387,36 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function ($input) {
         try {
             if ('' === $input) {
-                update_option('crowdsec_trust_ip_forward_array', []);
+                if(is_multisite()){
+                    update_site_option('crowdsec_trust_ip_forward_array', []);
+                }else{
+                    update_option('crowdsec_trust_ip_forward_array', []);
+                }
 
                 return $input;
             }
             $comparableIpBoundsList = convertInlineIpRangesToComparableIpBounds($input);
-            update_option('crowdsec_trust_ip_forward_array', $comparableIpBoundsList);
+            if(is_multisite()){
+                update_site_option('crowdsec_trust_ip_forward_array', $comparableIpBoundsList);
+            }else{
+                update_option('crowdsec_trust_ip_forward_array', $comparableIpBoundsList);
+            }
+
             AdminNotice::displaySuccess('IPs with X-Forwarded-For to trust successfully saved.');
         } catch (BouncerException $e) {
-            update_option('crowdsec_trust_ip_forward_array', []);
-            add_settings_error('Trust these CDN IPs', 'crowdsec_error', 'Trust these CDN IPs: Invalid IP List format.');
+            if(is_multisite()){
+                update_site_option('crowdsec_trust_ip_forward_array', []);
+            }else{
+                update_option('crowdsec_trust_ip_forward_array', []);
+            }
+
+            $message = 'Trust these CDN IPs: Invalid IP List format.';
+            if(is_multisite()){
+                AdminNotice::displayError($message);
+            }else{
+                add_settings_error('Trust these CDN IPs', 'crowdsec_error', $message);
+
+            }
 
             return '';
         }
@@ -334,7 +451,12 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
         'crowdsec_admin_advanced_geolocation', function ($input) {
             if ($input !== Constants::GEOLOCATION_TYPE_MAXMIND) {
                 $input = Constants::GEOLOCATION_TYPE_MAXMIND;
-                add_settings_error('Geolocation type', 'crowdsec_error', 'Geolocation type: Incorrect geolocation type selected.');
+                $message = 'Geolocation type: Incorrect geolocation type selected.';
+                if(is_multisite()){
+                    AdminNotice::displayError($message);
+                }else{
+                    add_settings_error('Geolocation type', 'crowdsec_error', $message);
+                }
             }
 
             return $input;
@@ -345,7 +467,12 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
         'crowdsec_admin_advanced_geolocation', function ($input) {
             if (!in_array($input, [Constants::MAXMIND_COUNTRY, RemConstants::MAXMIND_CITY])) {
                 $input = Constants::MAXMIND_COUNTRY;
-                add_settings_error('Geolocation MaxMind database type', 'crowdsec_error', 'MaxMind database type: Incorrect type selected.');
+                $message = 'MaxMind database type: Incorrect type selected.';
+                if(is_multisite()){
+                    AdminNotice::displayError($message);
+                }else{
+                    add_settings_error('Geolocation MaxMind database type', 'crowdsec_error', $message);
+                }
             }
 
             return $input;
@@ -359,7 +486,12 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     addFieldString('crowdsec_geolocation_cache_duration', 'Geolocation cache lifetime', 'crowdsec_plugin_advanced_settings',
         'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function ($input) {
             if ( (int) $input < 0) {
-                add_settings_error('Geolocation cache duration', 'crowdsec_error', 'Geolocation cache duration: Minimum is 0 second.');
+                $message = 'Geolocation cache duration: Minimum is 0 second.';
+                if(is_multisite()){
+                    AdminNotice::displayError($message);
+                }else{
+                    add_settings_error('Geolocation cache duration', 'crowdsec_error', $message);
+                }
 
                 return Constants::CACHE_EXPIRATION_FOR_GEO;
             }
@@ -391,7 +523,12 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     // Field "Custom User Agent"
     addFieldString('crowdsec_custom_user_agent', 'Custom User-Agent', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function ($input) {
         if ( 1 !== preg_match('#^[A-Za-z0-9]{0,5}$#', $input)) {
-            add_settings_error('Custom User-Agent', 'crowdsec_error', 'Custom User-Agent: Only alphanumeric characters ([A-Za-z0-9]) are allowed with a maximum of 5 characters.');
+            $message = 'Custom User-Agent: Only alphanumeric characters ([A-Za-z0-9]) are allowed with a maximum of 5 characters.';
+            if(is_multisite()){
+                AdminNotice::displayError($message);
+            }else{
+                add_settings_error('Custom User-Agent', 'crowdsec_error', $message);
+            }
 
             return '';
         }
