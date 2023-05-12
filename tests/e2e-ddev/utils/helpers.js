@@ -10,6 +10,7 @@ const {
     LAPI_URL_FROM_WP,
     TIMEOUT,
     PROXY_IP,
+    MULTISITE
 } = require("./constants");
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -17,7 +18,8 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 jest.setTimeout(TIMEOUT);
 
 const goToAdmin = async () => {
-    await page.goto(ADMIN_URL);
+    const adminUrl = MULTISITE ? `${ADMIN_URL}network` : `${ADMIN_URL}`;
+    await page.goto(`${adminUrl}`);
 };
 
 const goToPublicPage = async (endpoint = "") => {
@@ -34,6 +36,10 @@ const runCacheAction = async (actionType = "refresh", otherParams = "") => {
 };
 
 const onAdminGoToSettingsPage = async () => {
+    
+    if(MULTISITE){
+        await goToPublicPage("/wp-admin/network/");
+    }
     // CrowdSec Menu
     await page.click(
         "#adminmenuwrap > #adminmenu > #toplevel_page_crowdsec_plugin > .wp-has-submenu > .wp-menu-name",
@@ -75,10 +81,18 @@ const onAdminSaveSettings = async (check = true) => {
     await page.click("[type=submit]");
 
     if (check) {
-        await expect(page).toHaveText(
-            "#setting-error-settings_updated",
-            "Settings saved.",
-        );
+        
+        if(MULTISITE){
+            await expect(page).toHaveText(
+                ".notice",
+                "Settings saved.",
+            );
+        }else{
+            await expect(page).toHaveText(
+                "#setting-error-settings_updated",
+                "Settings saved.",
+            );
+        }
     }
 
     await wait(2000);

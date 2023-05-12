@@ -55,6 +55,8 @@ function adminAdvancedSettings()
             }
         }
 
+        writeStaticConfigFile();
+
         wp_safe_redirect(
             add_query_arg(
                 array(

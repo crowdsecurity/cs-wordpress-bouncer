@@ -39,6 +39,12 @@ case $TYPE in
 esac
 
 
+CHECKMULTISITE=$(ddev exec --raw -j grep MULTISITE wp-config-ddev.php | sed "s/define('MULTISITE',//g" | sed "s/);//g" | sed 's/ //g' | sed 's/\r//g'  | tail -1)
+if [ $CHECKMULTISITE == "true" ]; then
+  MULTISITE=true
+else
+  MULTISITE=false
+fi
 HOSTNAME=$(ddev exec printenv DDEV_HOSTNAME | sed 's/\r//g')
 WORDPRESS_VERSION=$(ddev exec printenv DDEV_PROJECT | sed 's/\r//g' | sed 's/wp//g')
 WORDPRESS_URL=https://$HOSTNAME
@@ -53,7 +59,7 @@ FAIL_FAST=true
 
 case $TYPE in
   "host")
-    CROWDSEC_URL_FROM_HOST=$(ddev describe | grep -A 1 "crowdsec" | sed 's/Host: //g' |  sed -e 's|│||g' | sed s/'\s'//g | tail -1)
+    CROWDSEC_URL_FROM_HOST=$(ddev describe | grep -A 1 "crowdsec" | sed 's/Host: //g' |  sed -e 's|│||g' | sed s/'\s'//g |  sed -e 's|,.*||g' | tail -1)
     cd "../"
     DEBUG_STRING="PWDEBUG=1"
     YARN_PATH="./"
@@ -114,6 +120,7 @@ HEADLESS=$HEADLESS \
 FAIL_FAST=$FAIL_FAST \
 SLOWMO=$SLOWMO \
 VARHTML_PATH=$VARHTML_PATH \
+MULTISITE=$MULTISITE \
 yarn --cwd $YARN_PATH test \
     $JEST_PARAMS \
     --json \

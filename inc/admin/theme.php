@@ -44,11 +44,13 @@ function themeSettings()
 
         foreach ( $options as $option ) {
             if ( isset( $_POST[ $option ] ) ) {
-                update_site_option( $option, sanitize_text_field($_POST[ $option ]) );
+                update_site_option( $option, sanitize_text_field(stripslashes_deep($_POST[ $option ])) );
             } else {
                 delete_site_option( $option );
             }
         }
+
+        writeStaticConfigFile();
 
         wp_safe_redirect(
             add_query_arg(

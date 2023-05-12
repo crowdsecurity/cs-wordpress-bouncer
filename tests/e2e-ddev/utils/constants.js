@@ -14,6 +14,7 @@ const { TIMEOUT } = process.env;
 const { CURRENT_IP } = process.env;
 const { PROXY_IP } = process.env;
 const { VARHTML_PATH } = process.env;
+const { MULTISITE } = process.env;
 const OTHER_IP = "1.2.3.4";
 const WP59 = WORDPRESS_VERSION.startsWith("59");
 const WP58 = WORDPRESS_VERSION.startsWith("58");
@@ -70,5 +71,6 @@ module.exports = {
     WATCHER_PASSWORD,
     BOUNCER_CERT_FILE,
     BOUNCER_KEY_FILE,
-    VARHTML_PATH
+    VARHTML_PATH,
+    MULTISITE
 };
