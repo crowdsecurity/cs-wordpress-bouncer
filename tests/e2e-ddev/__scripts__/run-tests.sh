@@ -15,6 +15,7 @@ fi
 
 TYPE=${1:-host}
 FILE_LIST=${2:-""}
+SUBDOMAIN=${3:-""}
 
 
 case $TYPE in
@@ -39,17 +40,29 @@ case $TYPE in
 esac
 
 
-CHECKMULTISITE=$(ddev exec --raw -j grep MULTISITE wp-config-ddev.php | sed "s/define('MULTISITE',//g" | sed "s/);//g" | sed 's/ //g' | sed 's/\r//g'  | tail -1)
+CHECKMULTISITE=$(ddev exec --raw -j grep MULTISITE wp-config-ddev.php | tail -1 | sed "s/define( 'MULTISITE',//g" | sed "s/);//g" | sed 's/ //g' | sed 's/\r//g'  | tail -1)
 if [ $CHECKMULTISITE == "true" ]; then
   MULTISITE=true
 else
   MULTISITE=false
 fi
+SITE_NAME=$(ddev exec printenv DDEV_SITENAME | sed 's/\r//g')
 HOSTNAME=$(ddev exec printenv DDEV_HOSTNAME | sed 's/\r//g')
 WORDPRESS_VERSION=$(ddev exec printenv DDEV_PROJECT | sed 's/\r//g' | sed 's/wp//g')
-WORDPRESS_URL=https://$HOSTNAME
+WORDPRESS_ADMIN_URL=$(ddev exec printenv DDEV_PRIMARY_URL | sed 's/\r//g')
+if [ $CHECKMULTISITE == "true" ]; then
+  WORDPRESS_FRONT_URL="https://${SUBDOMAIN}.${SITE_NAME}.ddev.site"
+else
+  WORDPRESS_FRONT_URL=$WORDPRESS_ADMIN_URL
+fi
+
 PROXY_IP=$(ddev find-ip ddev-router)
-BOUNCER_KEY=$(ddev exec wp option get crowdsec_api_key | tail -n 2 | head -n 1 | sed 's/\r//g')
+if [ $CHECKMULTISITE == "true" ]; then
+  BOUNCER_KEY=$(ddev wp network meta get 1 crowdsec_api_key | tail -n 2 | head -n 1 | sed 's/\r//g')
+else
+  BOUNCER_KEY=$(ddev wp option get crowdsec_api_key | tail -n 2 | head -n 1 | sed 's/\r//g')
+fi
+
 JEST_PARAMS="--bail=true  --runInBand --verbose"
 TLS_PATH="tls" # Relative to var path
 # If FAIL_FAST, will exit on first individual test fail
@@ -108,7 +121,8 @@ esac
 # Run command
 
 $COMMAND \
-WORDPRESS_URL=$WORDPRESS_URL \
+WORDPRESS_ADMIN_URL=$WORDPRESS_ADMIN_URL \
+WORDPRESS_FRONT_URL=$WORDPRESS_FRONT_URL \
 WORDPRESS_VERSION=$WORDPRESS_VERSION \
 $DEBUG_STRING \
 BOUNCER_KEY=$BOUNCER_KEY \

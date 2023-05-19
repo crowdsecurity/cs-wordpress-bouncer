@@ -4,6 +4,7 @@ const { addDecision, deleteAllDecisions } = require("./watcherClient");
 const {
     ADMIN_URL,
     BASE_URL,
+    BASE_ADMIN_URL,
     ADMIN_LOGIN,
     ADMIN_PASSWORD,
     BOUNCER_KEY,
@@ -81,7 +82,7 @@ const onAdminSaveSettings = async (check = true) => {
 
     if (check) {
         if (MULTISITE) {
-            await expect(page).toHaveText(".notice", "Settings saved.");
+            await expect(page).toHaveText(".notice", "saved.");
         } else {
             await expect(page).toHaveText(
                 "#setting-error-settings_updated",
@@ -223,7 +224,7 @@ const forceCronRun = async () => {
     // force WP Cron to run cache update as bouncing is done before cache updating
     // This could be fixed by running homemade call to cache update
     // if it's the time to update cache
-    await page.goto(`${BASE_URL}/wp-cron.php`);
+    await page.goto(`${BASE_ADMIN_URL}/wp-cron.php`);
     await wait(2000);
 };
 

@@ -21,7 +21,7 @@ function adminSettings()
                 'crowdsec_api_key',
                 'crowdsec_tls_cert_path',
                 'crowdsec_tls_key_path',
-                'crowdsec_tls_key_path',
+                'crowdsec_tls_ca_cert_path',
                 'crowdsec_tls_verify_peer',
                 'crowdsec_use_curl',
                 'crowdsec_api_timeout',

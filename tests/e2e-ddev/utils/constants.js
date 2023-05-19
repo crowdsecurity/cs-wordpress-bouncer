@@ -1,5 +1,6 @@
-const BASE_URL = process.env.WORDPRESS_URL;
-const ADMIN_URL = `${BASE_URL}/wp-admin/`;
+const BASE_URL = process.env.WORDPRESS_FRONT_URL;
+const BASE_ADMIN_URL = process.env.WORDPRESS_ADMIN_URL;
+const ADMIN_URL = `${BASE_ADMIN_URL}/wp-admin/`;
 const { BOUNCER_KEY } = process.env;
 
 const { WORDPRESS_VERSION } = process.env;
@@ -38,6 +39,7 @@ const BOUNCER_KEY_FILE = `crowdsec/tls/bouncer-key.pem`;
 module.exports = {
     ADMIN_URL,
     BASE_URL,
+    BASE_ADMIN_URL,
     BOUNCER_KEY,
     CURRENT_IP,
     PROXY_IP,
