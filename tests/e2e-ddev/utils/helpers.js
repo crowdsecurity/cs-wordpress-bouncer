@@ -17,9 +17,9 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 jest.setTimeout(TIMEOUT);
 
-const goToAdmin = async () => {
+const goToAdmin = async (endpoint = "") => {
     const adminUrl = MULTISITE ? `${ADMIN_URL}network` : `${ADMIN_URL}`;
-    await page.goto(`${adminUrl}`);
+    await page.goto(`${adminUrl}${endpoint}`);
 };
 
 const goToPublicPage = async (endpoint = "") => {
