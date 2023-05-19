@@ -10,6 +10,10 @@ inputs:
     required: true
     description: "Path to the js test file"
 
+  subdomain:
+    required: false
+    description: "Subdomain for Multisite frontend test"
+
 runs:
   using: "composite"
   steps:
@@ -17,7 +21,7 @@ runs:
       shell: bash
       run: |
         cd ${{ inputs.test_path }}/__scripts__
-        ./run-tests.sh ci "./__tests__/${{ inputs.file_path }}"
+        ./run-tests.sh ci "./__tests__/${{ inputs.file_path }}" "${{ inputs.subdomain }}"
         cd ${{ inputs.test_path }}
         PENDING_TESTS=$(grep -oP '"numPendingTests":\K(.*),"numRuntimeErrorTestSuites"' .test-results.json | sed  's/,"numRuntimeErrorTestSuites"//g')
         if [[ $PENDING_TESTS == "0" ]]
