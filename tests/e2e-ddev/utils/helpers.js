@@ -10,7 +10,7 @@ const {
     LAPI_URL_FROM_WP,
     TIMEOUT,
     PROXY_IP,
-    MULTISITE
+    MULTISITE,
 } = require("./constants");
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -36,8 +36,7 @@ const runCacheAction = async (actionType = "refresh", otherParams = "") => {
 };
 
 const onAdminGoToSettingsPage = async () => {
-    
-    if(MULTISITE){
+    if (MULTISITE) {
         await goToPublicPage("/wp-admin/network/");
     }
     // CrowdSec Menu
@@ -81,13 +80,9 @@ const onAdminSaveSettings = async (check = true) => {
     await page.click("[type=submit]");
 
     if (check) {
-        
-        if(MULTISITE){
-            await expect(page).toHaveText(
-                ".notice",
-                "Settings saved.",
-            );
-        }else{
+        if (MULTISITE) {
+            await expect(page).toHaveText(".notice", "Settings saved.");
+        } else {
             await expect(page).toHaveText(
                 "#setting-error-settings_updated",
                 "Settings saved.",

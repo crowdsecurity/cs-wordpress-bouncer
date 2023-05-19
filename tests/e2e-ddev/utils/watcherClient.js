@@ -9,7 +9,7 @@ const {
     AGENT_CERT_FILE,
     AGENT_KEY_FILE,
     CA_CERT_FILE,
-    VARHTML_PATH
+    VARHTML_PATH,
 } = require("./constants");
 
 const httpsAgent = new https.Agent({
@@ -22,7 +22,7 @@ const httpsAgent = new https.Agent({
 const httpClient = axios.create({
     baseURL: LAPI_URL_FROM_PLAYWRIGHT,
     timeout: 1000,
-    httpsAgent
+    httpsAgent,
 });
 
 let authenticated = false;
