@@ -19,7 +19,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 jest.setTimeout(TIMEOUT);
 
 const goToAdmin = async (endpoint = "") => {
-    const adminUrl = MULTISITE ? `${ADMIN_URL}network` : `${ADMIN_URL}`;
+    const adminUrl = MULTISITE == "true" ? `${ADMIN_URL}network` : `${ADMIN_URL}`;
     await page.goto(`${adminUrl}${endpoint}`);
 };
 
@@ -37,7 +37,7 @@ const runCacheAction = async (actionType = "refresh", otherParams = "") => {
 };
 
 const onAdminGoToSettingsPage = async () => {
-    if (MULTISITE) {
+    if (MULTISITE == "true") {
         await goToPublicPage("/wp-admin/network/");
     }
     // CrowdSec Menu
@@ -81,7 +81,7 @@ const onAdminSaveSettings = async (check = true) => {
     await page.click("[type=submit]");
 
     if (check) {
-        if (MULTISITE) {
+        if (MULTISITE == "true") {
             await expect(page).toHaveText(".notice", "saved.");
         } else {
             await expect(page).toHaveText(
