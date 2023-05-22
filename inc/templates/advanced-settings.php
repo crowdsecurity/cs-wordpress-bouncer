@@ -38,7 +38,7 @@
 					echo '<input type="hidden" name="nonce" value="'.wp_create_nonce('crowdsec-advanced-settings-update')
 						 .'"/>';
 				}else{
-					settings_fields('crowdsec_advanced_settings');
+					settings_fields('crowdsec_plugin_advanced_settings');
 				}
 				do_settings_sections('crowdsec_advanced_settings');
 				?>
