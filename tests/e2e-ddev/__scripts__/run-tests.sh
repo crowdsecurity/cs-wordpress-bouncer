@@ -15,7 +15,7 @@ fi
 
 TYPE=${1:-host}
 FILE_LIST=${2:-""}
-SUBDOMAIN=${3:-""}
+SUBSITE=${3:-""}
 
 
 case $TYPE in
@@ -51,7 +51,7 @@ HOSTNAME=$(ddev exec printenv DDEV_HOSTNAME | sed 's/\r//g')
 WORDPRESS_VERSION=$(ddev exec printenv DDEV_PROJECT | sed 's/\r//g' | sed 's/wp//g')
 WORDPRESS_ADMIN_URL=$(ddev exec printenv DDEV_PRIMARY_URL | sed 's/\r//g')
 if [ $CHECKMULTISITE == "true" ]; then
-  WORDPRESS_FRONT_URL="https://${SUBDOMAIN}.${SITE_NAME}.ddev.site"
+  WORDPRESS_FRONT_URL="https://${SITE_NAME}.ddev.site/${SUBSITE}"
 else
   WORDPRESS_FRONT_URL=$WORDPRESS_ADMIN_URL
 fi

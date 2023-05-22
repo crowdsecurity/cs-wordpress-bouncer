@@ -22,7 +22,7 @@ jobs:
       matrix:
         wp-version: [ "4.9", "6.2" ]
         php-version: [ "7.2" ]
-        subdomain: ["site1", "site2"]
+        subsite: ["site1", "site2"]
 
     name: End-to-end test suite
     runs-on: ubuntu-latest
@@ -52,7 +52,7 @@ jobs:
           echo "WP_VERSION_CODE=$(echo wp${{ matrix.wp-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
 
       - name: Create empty WordPress DDEV project (with Apache)
-        run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }} --php-version=${{ matrix.php-version }} --webserver-type=apache-fpm --additional-hostnames=site1.${{ env.WP_VERSION_CODE }},site2.${{ env.WP_VERSION_CODE }}
+        run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }} --php-version=${{ matrix.php-version }} --webserver-type=apache-fpm
 
       - name: Add Redis, Memcached, Crowdsec and Playwright
         run: |
@@ -69,17 +69,17 @@ jobs:
       - name: Download WordPress
         run: ddev wp core download --version=${{ matrix.wp-version }}
 
-      - name: Setup WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
+      - name: Setup Multisite WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
         run: |
-          ddev wp core multisite-install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com' --subdomains=true
+          ddev wp core multisite-install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'
 
       - name: Copy multisite .htaccess
-        run: cp .ddev/okaeli-add-on/wordpress/custom_files/.htaccess-multisite-subdomain .htaccess
+        run: cp .ddev/okaeli-add-on/wordpress/custom_files/.htaccess-multisite-subfolder .htaccess
 
       - name: Prepare multisite config
         run: |
           sed -i -e 's/#ddev-generated//g' wp-config-ddev.php
-          sed -i -e 's/REPLACE_SUBDOMAIN_INSTALL/true/g' .ddev/okaeli-add-on/wordpress/custom_files/multisite-config.php
+          sed -i -e 's/REPLACE_SUBDOMAIN_INSTALL/false/g' .ddev/okaeli-add-on/wordpress/custom_files/multisite-config.php
           sed -i -e 's/REPLACE_PROJECT_URI/${{ env.WP_VERSION_CODE }}.ddev.site/g' .ddev/okaeli-add-on/wordpress/custom_files/multisite-config.php
           sed -i '/DB_HOST/ r .ddev/okaeli-add-on/wordpress/custom_files/multisite-config.php' wp-config-ddev.php
           sed -i -e 's/#ddev-generated//g' wp-config-ddev.php
@@ -124,7 +124,7 @@ jobs:
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 1-activate-plugin.js
-          subdomain: ${{ matrix.subdomain }}
+          subsite: ${{ matrix.subsite }}
 
       - name: Configure CrowdSec and Wordpress bouncer plugin
         run: |
@@ -135,21 +135,21 @@ jobs:
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 2-live-mode-remediations.js
-          subdomain: ${{ matrix.subdomain }}
+          subsite: ${{ matrix.subsite }}
 
       - name: Run more Live mode remediation tests
         uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 3-live-mode-more.js
-          subdomain: ${{ matrix.subdomain }}
+          subsite: ${{ matrix.subsite }}
 
       - name: Run Live mode cache tests
         uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 4-live-mode-cache.js
-          subdomain: ${{ matrix.subdomain }}
+          subsite: ${{ matrix.subsite }}
 
       - name: Prepare cron usage
         run: |
@@ -160,28 +160,28 @@ jobs:
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 5-stream-mode.js
-          subdomain: ${{ matrix.subdomain }}
+          subsite: ${{ matrix.subsite }}
 
       - name: Run Redis tests
         uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 6-redis.js
-          subdomain: ${{ matrix.subdomain }}
+          subsite: ${{ matrix.subsite }}
 
       - name: Run Memcached tests
         uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 7-memcached.js
-          subdomain: ${{ matrix.subdomain }}
+          subsite: ${{ matrix.subsite }}
 
       - name: Run Geolocation tests
         uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 8-geolocation.js
-          subdomain: ${{ matrix.subdomain }}
+          subsite: ${{ matrix.subsite }}
 
 
       - name: tmate debugging session
