@@ -1,4 +1,4 @@
-name: End-to-end test suite
+name: End-to-end multisite
 on:
   push:
     branches:
@@ -16,7 +16,7 @@ env:
   DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  end-to-end-test-suite:
+  end-to-end-multisite:
     strategy:
       fail-fast: false
       matrix:
@@ -24,7 +24,7 @@ jobs:
         php-version: [ "7.2" ]
         subsite: ["site1", "site2"]
 
-    name: End-to-end test suite
+    name: End-to-end Multisite
     runs-on: ubuntu-latest
     if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
 
