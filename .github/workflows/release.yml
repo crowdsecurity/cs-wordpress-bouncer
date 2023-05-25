@@ -125,7 +125,7 @@ jobs:
             -   name: WordPress Plugin Deploy
                 if: github.event.inputs.deploy_to_wordpress == 'true'
                 id: deploy
-                uses: 10up/action-wordpress-plugin-deploy@2.1.1
+                uses: 10up/action-wordpress-plugin-deploy@2.2.0
                 with:
                     generate-zip: true
                 env:
