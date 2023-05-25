@@ -61,7 +61,6 @@ Please note that it is possible to customize all the colors of these pages in a 
 
 On the other hand, all texts are also fully customizable. This will allow you, for example, to present translated pages in your users’ language.
 
-
 ### Configurations
 
 This plugin comes with configurations that you will find under `CrowdSec` admin section.
@@ -592,7 +591,18 @@ If you are using Apache, you should add this line to your `.htaccess` file:
 
     php_value auto_prepend_file "/wordpress-root-directory/wp-content/plugins/crowdsec/inc/standalone-bounce.php"
 
+### Multisite usage
 
+If you are using the [`multisite` WordPress feature](https://wordpress.org/documentation/article/wordpress-glossary/#multisite), the bouncer plugin has to be network activated and 
+configurations will be used for all sites of the network. This means that every individual site on your network will be protected by the bouncer with the same settings.
+
+#### Differences with a single installation
+
+In a WordPress multisite installation, `CrowdSec` configurations are accessible via the `My Sites -> Network admin` left panel.
+
+![Multisite admin](./images/screenshots/admin-multisite.jpg)
+
+Settings are stored in the `wp_sitemeta` table instead of the `wp_options` table for a single WordPress installation.
 
 ## Resources
 
