@@ -1,12 +1,5 @@
 /* eslint-disable no-undef */
-const {
-    ADMIN_URL,
-    WP59,
-    WP58,
-    WP57,
-    WP56,
-    WP55,
-} = require("../utils/constants");
+const { WP59, WP58, WP57, WP56, WP55, MULTISITE } = require("../utils/constants");
 
 const {
     goToAdmin,
@@ -24,10 +17,13 @@ describe(`Setup CrowdSec plugin`, () => {
     it('Should install CrowdSec plugin"', async () => {
         // "Plugins" page
         await wait(2000);
-        await page.goto(`${ADMIN_URL}/plugins.php`);
+        await goToAdmin("/plugins.php");
         if (WP55 || WP56 || WP57 || WP58 || WP59) {
             await page.click("#activate-crowdsec");
-        } else {
+        } else if(MULTISITE == "true"){
+            await page.click('[aria-label="Network Activate CrowdSec"]');
+        }
+        else {
             await page.click('[aria-label="Activate CrowdSec"]');
         }
 

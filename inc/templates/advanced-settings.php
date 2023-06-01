@@ -31,15 +31,21 @@
 	<?php settings_errors(); ?>
 	<div class="tab-content">
 		<div id="tab-1" class="tab-pane active">
-		<form method="post" action="options.php">
+			<form method="post" action="<?php echo (is_multisite()) ? add_query_arg( 'action', 'crowdsec_advanced_settings',	'edit.php' ) : 'options.php';?>">
 				<?php
-                    settings_fields('crowdsec_plugin_advanced_settings');
-                    do_settings_sections('crowdsec_advanced_settings');
-                ?>
+				if(is_multisite()){
+					echo '<input type="hidden" name="action" value="crowdsec_advanced_settings_update"/>';
+					echo '<input type="hidden" name="nonce" value="'.wp_create_nonce('crowdsec-advanced-settings-update')
+						 .'"/>';
+				}else{
+					settings_fields('crowdsec_plugin_advanced_settings');
+				}
+				do_settings_sections('crowdsec_advanced_settings');
+				?>
 				<?php
-                    submit_button();
-                ?>
-		</form>
+				submit_button();
+				?>
+			</form>
 		<form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_action_clear_cache">
 			<input type="hidden" name="action" value="crowdsec_clear_cache">
 			<input type="hidden" name="nonce" value="<?php echo wp_create_nonce('crowdsec_clear_cache'); ?>">

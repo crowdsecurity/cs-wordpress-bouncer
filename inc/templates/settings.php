@@ -48,9 +48,14 @@
 	<?php settings_errors(); ?>
 	<div class="tab-content">
 		<div id="tab-1" class="tab-pane active">
-			<form method="post" action="options.php">
+			<form method="post" action="<?php echo (is_multisite()) ? add_query_arg( 'action', 'crowdsec_settings', 'edit.php' ) : 'options.php';?>">
 				<?php
-                settings_fields('crowdsec_plugin_settings');
+                if(is_multisite()){
+                    echo '<input type="hidden" name="action" value="crowdsec_settings_update"/>';
+                    echo '<input type="hidden" name="nonce" value="'.wp_create_nonce('crowdsec-settings-update').'"/>';
+                }else{
+                    settings_fields('crowdsec_plugin_settings');
+                }
                 do_settings_sections('crowdsec_settings');
                 ?>
 				<?php
@@ -60,7 +65,7 @@
             <h2><?php echo __("Test your settings");?></h2>
             <p><?php echo __("Here you can check if your <b>saved</b> settings are correct.");?></p>
             <p><?php echo __("Click the 'Test bouncing' button and the bouncer will try to get the remediation for the following IP:");?></p>
-            <form action="admin-post.php" method="post" id="crowdsec_action_test_connection">
+            <form action="<?php echo admin_url('admin-post.php') ?>" method="post" id="crowdsec_action_test_connection">
                 <input type="hidden" name="action" value="crowdsec_test_connection"/>
                 <input type="hidden" name="nonce" value="<?php echo wp_create_nonce('crowdsec_test_connection'); ?>"/>
                 <input type="text" name="crowdsec_test_connection_ip" value="<?php echo $_SERVER['REMOTE_ADDR'];?>"/>
@@ -69,7 +74,7 @@
                 ?>
             </form>
             <p><?php echo __("Click the 'Test geolocation' button to try getting country for the following IP:");?></p>
-            <form action="admin-post.php" method="post" id="crowdsec_action_test_geolocation">
+            <form action="<?php echo admin_url('admin-post.php') ?>" method="post" id="crowdsec_action_test_geolocation">
                 <input type="hidden" name="action" value="crowdsec_test_geolocation"/>
                 <input type="hidden" name="nonce" value="<?php echo wp_create_nonce('crowdsec_test_geolocation'); ?>"/>
                 <input type="text" name="crowdsec_test_geolocation_ip" value="<?php echo $_SERVER['REMOTE_ADDR'];?>"/>

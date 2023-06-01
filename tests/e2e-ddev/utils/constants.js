@@ -1,5 +1,6 @@
-const BASE_URL = process.env.WORDPRESS_URL;
-const ADMIN_URL = `${BASE_URL}/wp-admin/`;
+const BASE_URL = process.env.WORDPRESS_FRONT_URL;
+const BASE_ADMIN_URL = process.env.WORDPRESS_ADMIN_URL;
+const ADMIN_URL = `${BASE_ADMIN_URL}/wp-admin/`;
 const { BOUNCER_KEY } = process.env;
 
 const { WORDPRESS_VERSION } = process.env;
@@ -14,6 +15,7 @@ const { TIMEOUT } = process.env;
 const { CURRENT_IP } = process.env;
 const { PROXY_IP } = process.env;
 const { VARHTML_PATH } = process.env;
+const { MULTISITE } = process.env;
 const OTHER_IP = "1.2.3.4";
 const WP59 = WORDPRESS_VERSION.startsWith("59");
 const WP58 = WORDPRESS_VERSION.startsWith("58");
@@ -37,6 +39,7 @@ const BOUNCER_KEY_FILE = `crowdsec/tls/bouncer-key.pem`;
 module.exports = {
     ADMIN_URL,
     BASE_URL,
+    BASE_ADMIN_URL,
     BOUNCER_KEY,
     CURRENT_IP,
     PROXY_IP,
@@ -70,5 +73,6 @@ module.exports = {
     WATCHER_PASSWORD,
     BOUNCER_CERT_FILE,
     BOUNCER_KEY_FILE,
-    VARHTML_PATH
+    VARHTML_PATH,
+    MULTISITE
 };

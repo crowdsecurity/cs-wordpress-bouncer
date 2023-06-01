@@ -3,6 +3,55 @@ require_once __DIR__ . '/../Constants.php';
 
 function adminSettings()
 {
+    if(is_multisite()){
+        add_action('network_admin_edit_crowdsec_settings', 'crowdsec_multi_save_settings');
+    }
+
+    function crowdsec_multi_save_settings()
+    {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec-settings-update')) {
+            wp_nonce_ays('crowdsec_save_settings');
+        }
+
+        $options =
+            [
+                'crowdsec_api_url',
+                'crowdsec_auth_type',
+                'crowdsec_api_key',
+                'crowdsec_tls_cert_path',
+                'crowdsec_tls_key_path',
+                'crowdsec_tls_ca_cert_path',
+                'crowdsec_tls_verify_peer',
+                'crowdsec_use_curl',
+                'crowdsec_api_timeout',
+                'crowdsec_bouncing_level',
+                'crowdsec_public_website_only'
+
+            ];
+
+        foreach ( $options as $option ) {
+            if ( isset( $_POST[ $option ] ) ) {
+                update_site_option( $option, sanitize_text_field($_POST[ $option ]) );
+            } else {
+                delete_site_option( $option );
+            }
+        }
+
+        writeStaticConfigFile();
+
+        wp_safe_redirect(
+            add_query_arg(
+                array(
+                    'page' => 'crowdsec_plugin',
+                    'updated' => true
+                ),
+                network_admin_url('admin.php')
+            )
+        );
+        exit;
+    }
+
     /**********************************
      ** Section "Connection details" **
      *********************************/

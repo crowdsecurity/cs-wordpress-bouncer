@@ -9,7 +9,7 @@ function writeStaticConfigFile($name = null, $newValue = null)
     $crowdSecWpPluginOptions = getCrowdSecOptionsConfig();
     $data = [];
     foreach ($crowdSecWpPluginOptions as $option) {
-        $data[$option['name']] = get_option($option['name']);
+        $data[$option['name']] = is_multisite() ? get_site_option($option['name']) : get_option($option['name']);
     }
     if ($name) {
         $data[$name] = $newValue;
@@ -51,7 +51,11 @@ function activate_crowdsec_plugin()
     $crowdSecWpPluginOptions = getCrowdSecOptionsConfig();
     foreach ($crowdSecWpPluginOptions as $crowdSecWpPluginOption) {
         if ($crowdSecWpPluginOption['autoInit']) {
-            update_option($crowdSecWpPluginOption['name'], $crowdSecWpPluginOption['default']);
+            if(is_multisite()){
+                update_site_option($crowdSecWpPluginOption['name'], $crowdSecWpPluginOption['default']);
+            } else {
+                update_option($crowdSecWpPluginOption['name'], $crowdSecWpPluginOption['default']);
+            }
         }
     }
 
@@ -68,8 +72,8 @@ function deactivate_crowdsec_plugin()
     // Unschedule existing "refresh cache" wp-cron.
     unscheduleBlocklistRefresh();
 
-    $apiUrl = esc_attr(get_option('crowdsec_api_url'));
-    $apiKey = esc_attr(get_option('crowdsec_api_key'));
+    $apiUrl = is_multisite() ? esc_attr(get_site_option('crowdsec_api_url')) : esc_attr(get_option('crowdsec_api_url'));
+    $apiKey = is_multisite() ? esc_attr(get_site_option('crowdsec_api_key')) : esc_attr(get_option('crowdsec_api_key'));
     if (!empty($apiUrl) && !empty($apiKey)) {
         // Clear the bouncer cache.
         clearBouncerCacheInAdminPage();
@@ -80,7 +84,11 @@ function deactivate_crowdsec_plugin()
     $crowdSecWpPluginOptions = getCrowdSecOptionsConfig();
     foreach ($crowdSecWpPluginOptions as $crowdSecWpPluginOption) {
         if ($crowdSecWpPluginOption['autoInit']) {
-            delete_option($crowdSecWpPluginOption['name']);
+            if(is_multisite()){
+                delete_site_option($crowdSecWpPluginOption['name']);
+            } else {
+                delete_option($crowdSecWpPluginOption['name']);
+            }
         }
     }
 }

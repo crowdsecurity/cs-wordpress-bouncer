@@ -4,20 +4,23 @@ const { addDecision, deleteAllDecisions } = require("./watcherClient");
 const {
     ADMIN_URL,
     BASE_URL,
+    BASE_ADMIN_URL,
     ADMIN_LOGIN,
     ADMIN_PASSWORD,
     BOUNCER_KEY,
     LAPI_URL_FROM_WP,
     TIMEOUT,
     PROXY_IP,
+    MULTISITE,
 } = require("./constants");
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 jest.setTimeout(TIMEOUT);
 
-const goToAdmin = async () => {
-    await page.goto(ADMIN_URL);
+const goToAdmin = async (endpoint = "") => {
+    const adminUrl = MULTISITE == "true" ? `${ADMIN_URL}network` : `${ADMIN_URL}`;
+    await page.goto(`${adminUrl}${endpoint}`);
 };
 
 const goToPublicPage = async (endpoint = "") => {
@@ -34,6 +37,9 @@ const runCacheAction = async (actionType = "refresh", otherParams = "") => {
 };
 
 const onAdminGoToSettingsPage = async () => {
+    if (MULTISITE == "true") {
+        await goToPublicPage("/wp-admin/network/");
+    }
     // CrowdSec Menu
     await page.click(
         "#adminmenuwrap > #adminmenu > #toplevel_page_crowdsec_plugin > .wp-has-submenu > .wp-menu-name",
@@ -75,10 +81,14 @@ const onAdminSaveSettings = async (check = true) => {
     await page.click("[type=submit]");
 
     if (check) {
-        await expect(page).toHaveText(
-            "#setting-error-settings_updated",
-            "Settings saved.",
-        );
+        if (MULTISITE == "true") {
+            await expect(page).toHaveText(".notice", "saved.");
+        } else {
+            await expect(page).toHaveText(
+                "#setting-error-settings_updated",
+                "Settings saved.",
+            );
+        }
     }
 
     await wait(2000);
@@ -214,7 +224,7 @@ const forceCronRun = async () => {
     // force WP Cron to run cache update as bouncing is done before cache updating
     // This could be fixed by running homemade call to cache update
     // if it's the time to update cache
-    await page.goto(`${BASE_URL}/wp-cron.php`);
+    await page.goto(`${BASE_ADMIN_URL}/wp-cron.php`);
     await wait(2000);
 };
 

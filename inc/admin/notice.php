@@ -6,13 +6,21 @@ class AdminNotice
 
     public function displayAdminNotice()
     {
-        $option = get_option(self::NOTICE_FIELD);
+        $option = is_multisite() ? get_site_option(self::NOTICE_FIELD) : get_option(self::NOTICE_FIELD);
         $message = isset($option['message']) ? $option['message'] : false;
         $noticeLevel = !empty($option['notice-level']) ? $option['notice-level'] : 'notice-error';
 
         if ($message) {
             echo "<div class='notice {$noticeLevel} is-dismissible'><p>{$message}</p></div>";
-            delete_option(self::NOTICE_FIELD);
+            if (is_multisite()) {
+                delete_site_option(self::NOTICE_FIELD);
+            } else {
+                delete_option(self::NOTICE_FIELD);
+            }
+        } elseif( is_multisite() && isset( $_GET[ 'page' ] ) && in_array($_GET[ 'page' ], ['crowdsec_plugin',
+                'crowdsec_theme_settings', 'crowdsec_advanced_settings'])
+                 && isset( $_GET[ 'updated'] )  ) {
+            ?><div class="notice"><p><b><?php echo __('Settings saved.') ?></b></p></div><?php
         }
     }
 
@@ -38,9 +46,16 @@ class AdminNotice
 
     protected static function updateOption($message, $noticeLevel)
     {
-        update_option(self::NOTICE_FIELD, [
-            'message' => $message,
-            'notice-level' => $noticeLevel,
-        ]);
+        if (is_multisite()) {
+            update_site_option(self::NOTICE_FIELD, [
+                'message' => $message,
+                'notice-level' => $noticeLevel,
+            ]);
+        } else {
+            update_option(self::NOTICE_FIELD, [
+                'message' => $message,
+                'notice-level' => $noticeLevel,
+            ]);
+        }
     }
 }

@@ -2,6 +2,67 @@
 
 function themeSettings()
 {
+    if(is_multisite()){
+        add_action('network_admin_edit_crowdsec_theme_settings', 'crowdsec_multi_save_theme_settings');
+    }
+
+
+    function crowdsec_multi_save_theme_settings()
+    {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec-theme-settings-update')) {
+            wp_nonce_ays('crowdsec_save_theme_settings');
+        }
+
+        $options =
+            [
+                'crowdsec_theme_text_captcha_wall_tab_title',
+                'crowdsec_theme_text_captcha_wall_title',
+                'crowdsec_theme_text_captcha_wall_subtitle',
+                'crowdsec_theme_text_captcha_wall_refresh_image_link',
+                'crowdsec_theme_text_captcha_wall_captcha_placeholder',
+                'crowdsec_theme_text_captcha_wall_send_button',
+                'crowdsec_theme_text_captcha_wall_send_button',
+                'crowdsec_theme_text_captcha_wall_error_message',
+                'crowdsec_theme_text_captcha_wall_footer',
+                'crowdsec_theme_text_captcha_wall_footer',
+                'crowdsec_theme_text_ban_wall_tab_title',
+                'crowdsec_theme_text_ban_wall_title',
+                'crowdsec_theme_text_ban_wall_subtitle',
+                'crowdsec_theme_text_ban_wall_footer',
+                'crowdsec_theme_color_text_primary',
+                'crowdsec_theme_color_text_secondary',
+                'crowdsec_theme_color_text_button',
+                'crowdsec_theme_color_text_error_message',
+                'crowdsec_theme_color_background_page',
+                'crowdsec_theme_color_background_container',
+                'crowdsec_theme_color_background_button',
+                'crowdsec_theme_color_background_button_hover',
+                'crowdsec_theme_custom_css'
+
+            ];
+
+        foreach ( $options as $option ) {
+            if ( isset( $_POST[ $option ] ) ) {
+                update_site_option( $option, sanitize_text_field(stripslashes_deep($_POST[ $option ])) );
+            } else {
+                delete_site_option( $option );
+            }
+        }
+
+        writeStaticConfigFile();
+
+        wp_safe_redirect(
+            add_query_arg(
+                array(
+                    'page' => 'crowdsec_theme_settings',
+                    'updated' => true
+                ),
+                network_admin_url('admin.php')
+            )
+        );
+        exit;
+    }
     /******************************************
      ** Section "Captcha wall text contents" **
      *****************************************/

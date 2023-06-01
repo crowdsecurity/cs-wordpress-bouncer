@@ -68,7 +68,7 @@ function getDatabaseConfigs(): array
     $crowdSecWpPluginOptions = getCrowdSecOptionsConfig();
     $finalConfigs = [];
     foreach ($crowdSecWpPluginOptions as $option) {
-        $finalConfigs[$option['name']] = get_option($option['name']);
+        $finalConfigs[$option['name']] = is_multisite() ? get_site_option($option['name']) : get_option($option['name']);
     }
 
     return $finalConfigs;
