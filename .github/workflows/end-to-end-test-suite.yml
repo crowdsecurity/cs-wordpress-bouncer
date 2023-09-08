@@ -173,7 +173,6 @@ jobs:
           file_path: 8-geolocation.js
 
       - name: Check tested version
-        if: always()
         run: |
           CURRENT_VERSION=$(ddev wp core version)
           if [[ ${{ matrix.wp-version }} == $CURRENT_VERSION ]]

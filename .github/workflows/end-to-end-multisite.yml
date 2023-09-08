@@ -3,10 +3,14 @@ on:
   push:
     branches:
       - main
-      - feat/multisite
     paths-ignore:
       - '**.md'
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: Debug with tmate
+        default: false
 
 permissions:
   contents: read
@@ -190,7 +194,6 @@ jobs:
           subsite: ${{ matrix.subsite }}
 
       - name: Check tested version
-        if: always()
         run: |
           CURRENT_VERSION=$(ddev wp core version)
           if [[ ${{ matrix.wp-version }} == $CURRENT_VERSION ]]
@@ -209,6 +212,6 @@ jobs:
           limit-access-to-actor: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
         timeout-minutes: 15
-        if: failure()
+        if: failure() && github.event.inputs.debug_enabled == 'true'
 
 

@@ -206,6 +206,12 @@ jobs:
             - name: Create empty WordPress DDEV project (with Apache)
               run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }} --php-version=${{ matrix.php-version }} --webserver-type=apache-fpm
 
+            - name: Disable automatic update
+              run: |
+                  # @see https://wordpress.org/documentation/article/configuring-automatic-background-updates/#constant-to-disable-all-updates
+                  sed -i -e 's/#ddev-generated//g' wp-config-ddev.php
+                  echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> wp-config-ddev.php
+
             - name: Add Redis, Memcached, Crowdsec and Playwright
               run: |
                   ddev get ddev/ddev-redis
