@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        wp-version: [ "4.9", "6.2" ]
+        wp-version: [ "4.9", "6.2", "6.3" ]
         php-version: [ "7.2" ]
         subsite: ["site1", "site2"]
 
@@ -42,7 +42,7 @@ jobs:
           sudo apt-get -q update
           sudo apt-get -q -y install libnss3-tools ddev
           mkcert -install
-          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+          ddev config global --instrumentation-opt-in=false --omit-containers=ddev-ssh-agent
 
 
       - name: Set WP_VERSION_CODE env
