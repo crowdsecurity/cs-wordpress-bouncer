@@ -60,6 +60,12 @@ jobs:
       - name: Create empty WordPress DDEV project (with Apache)
         run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }} --php-version=${{ matrix.php-version }} --webserver-type=apache-fpm
 
+      - name: Disable automatic update
+        run: |
+          # @see https://wordpress.org/documentation/article/configuring-automatic-background-updates/#constant-to-disable-all-updates
+          sed -i -e 's/#ddev-generated//g' wp-config-ddev.php
+          echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> wp-config-ddev.php
+
       - name: Add Redis, Memcached, Crowdsec and Playwright
         run: |
           ddev get ddev/ddev-redis
@@ -77,8 +83,7 @@ jobs:
 
       - name: Setup WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
         run: |
-          ddev exec wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'
-          ddev exec wp core update-db
+          ddev wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'
 
       - name: Clone ${{ env.EXTENSION_NAME }} files
         uses: actions/checkout@v3
@@ -109,6 +114,7 @@ jobs:
           ddev --version
           ddev exec php -v
           ddev exec -s crowdsec crowdsec -version
+
 
       - name: Run Plugin activation tests
         uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
@@ -165,3 +171,18 @@ jobs:
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 8-geolocation.js
+
+      - name: Check tested version
+        if: always()
+        run: |
+          CURRENT_VERSION=$(ddev wp core version)
+          if [[ ${{ matrix.wp-version }} == $CURRENT_VERSION ]]
+          then
+              echo "Tested version was as expected"
+          else
+              echo "Tested version was not as expected"
+              echo $CURRENT_VERSION
+              echo ${{ matrix.wp-version }}
+              exit 1
+          fi
+

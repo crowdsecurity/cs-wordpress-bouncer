@@ -17,7 +17,7 @@ describe(`Setup CrowdSec plugin`, () => {
     it('Should install CrowdSec plugin"', async () => {
         // "Plugins" page
         await wait(2000);
-        await goToAdmin("/plugins.php");
+        await goToAdmin("plugins.php");
         if (WP55 || WP56 || WP57 || WP58 || WP59) {
             await page.click("#activate-crowdsec");
         } else if(MULTISITE == "true"){
