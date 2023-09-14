@@ -93,6 +93,10 @@ ddev get julienloizelet/ddev-tools
 ddev get julienloizelet/ddev-playwright
 ```
 
+If you wish to use an older version of WordPress, add
+
+`define( 'AUTOMATIC_UPDATER_DISABLED', true );` in the `wp-config-ddev.php` file.
+
 - Launch DDEV
 
 ```shell
