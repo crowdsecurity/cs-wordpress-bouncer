@@ -53,7 +53,7 @@ jobs:
           sudo apt-get -q update
           sudo apt-get -q -y install libnss3-tools ddev
           mkcert -install
-          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+          ddev config global --instrumentation-opt-in=false --omit-containers=ddev-ssh-agent
 
 
       - name: Set WP_VERSION_CODE env
