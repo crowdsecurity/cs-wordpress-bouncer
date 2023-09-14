@@ -166,7 +166,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                wp-version: [ "4.9", "5.0", "5.5", "5.9", "6.1", "6.2" ]
+                wp-version: [ "4.9", "5.0", "5.5", "5.9", "6.1", "6.3" ]
                 php-version: [ "7.2", "7.4", "8.0" ]
                 exclude:
                     - { php-version: "7.4", wp-version: "4.9" }
@@ -205,6 +205,12 @@ jobs:
 
             - name: Create empty WordPress DDEV project (with Apache)
               run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }} --php-version=${{ matrix.php-version }} --webserver-type=apache-fpm
+
+            - name: Disable automatic update
+              run: |
+                  # @see https://wordpress.org/documentation/article/configuring-automatic-background-updates/#constant-to-disable-all-updates
+                  sed -i -e 's/#ddev-generated//g' wp-config-ddev.php
+                  echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> wp-config-ddev.php
 
             - name: Add Redis, Memcached, Crowdsec and Playwright
               run: |

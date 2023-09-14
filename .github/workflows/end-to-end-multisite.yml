@@ -3,10 +3,14 @@ on:
   push:
     branches:
       - main
-      - feat/multisite
     paths-ignore:
       - '**.md'
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: Debug with tmate
+        default: false
 
 permissions:
   contents: read
@@ -20,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        wp-version: [ "4.9", "6.2" ]
+        wp-version: [ "4.9", "6.2", "6.3" ]
         php-version: [ "7.2" ]
         subsite: ["site1", "site2"]
 
@@ -42,7 +46,7 @@ jobs:
           sudo apt-get -q update
           sudo apt-get -q -y install libnss3-tools ddev
           mkcert -install
-          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+          ddev config global --instrumentation-opt-in=false --omit-containers=ddev-ssh-agent
 
 
       - name: Set WP_VERSION_CODE env
@@ -53,6 +57,12 @@ jobs:
 
       - name: Create empty WordPress DDEV project (with Apache)
         run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }} --php-version=${{ matrix.php-version }} --webserver-type=apache-fpm
+
+      - name: Disable automatic update
+        run: |
+          # @see https://wordpress.org/documentation/article/configuring-automatic-background-updates/#constant-to-disable-all-updates
+          sed -i -e 's/#ddev-generated//g' wp-config-ddev.php
+          echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> wp-config-ddev.php
 
       - name: Add Redis, Memcached, Crowdsec and Playwright
         run: |
@@ -183,6 +193,18 @@ jobs:
           file_path: 8-geolocation.js
           subsite: ${{ matrix.subsite }}
 
+      - name: Check tested version
+        run: |
+          CURRENT_VERSION=$(ddev wp core version)
+          if [[ ${{ matrix.wp-version }} == $CURRENT_VERSION ]]
+          then
+              echo "Tested version was as expected"
+          else
+              echo "Tested version was not as expected"
+              echo $CURRENT_VERSION
+              echo ${{ matrix.wp-version }}
+              exit 1
+          fi
 
       - name: tmate debugging session
         uses: mxschmitt/action-tmate@v3
@@ -190,4 +212,6 @@ jobs:
           limit-access-to-actor: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
         timeout-minutes: 15
-        if: failure()
+        if: failure() && github.event.inputs.debug_enabled == 'true'
+
+

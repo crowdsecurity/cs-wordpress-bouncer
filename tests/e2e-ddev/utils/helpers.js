@@ -19,7 +19,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 jest.setTimeout(TIMEOUT);
 
 const goToAdmin = async (endpoint = "") => {
-    const adminUrl = MULTISITE == "true" ? `${ADMIN_URL}network` : `${ADMIN_URL}`;
+    const adminUrl = MULTISITE == "true" ? `${ADMIN_URL}network/` : `${ADMIN_URL}`;
     await page.goto(`${adminUrl}${endpoint}`);
 };
 
@@ -82,7 +82,7 @@ const onAdminSaveSettings = async (check = true) => {
 
     if (check) {
         if (MULTISITE == "true") {
-            await expect(page).toHaveText(".notice", "saved.");
+            await expect(page).toHaveText(".wrap .notice", "saved.");
         } else {
             await expect(page).toHaveText(
                 "#setting-error-settings_updated",

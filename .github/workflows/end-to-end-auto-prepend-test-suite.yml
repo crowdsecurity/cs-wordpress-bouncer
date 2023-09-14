@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        wp-version: [ "4.9", "5.0", "5.2", "5.4", "5.6", "5.8", "5.9", "6.0", "6.1", "6.2" ]
+        wp-version: [ "4.9", "5.0", "5.2", "5.4", "5.6", "5.8", "6.0", "6.1", "6.2","6.3" ]
         php-version: [ "7.2", "7.4", "8.0" ]
         exclude:
           - { php-version: "7.4", wp-version: "4.9" }
@@ -48,7 +48,7 @@ jobs:
           sudo apt-get -q update
           sudo apt-get -q -y install libnss3-tools ddev
           mkcert -install
-          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+          ddev config global --instrumentation-opt-in=false --omit-containers=ddev-ssh-agent
 
 
       - name: Set WP_VERSION_CODE env
@@ -59,6 +59,12 @@ jobs:
 
       - name: Create empty WordPress DDEV project (with Nginx)
         run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }} --php-version=${{ matrix.php-version }} --webserver-type=nginx-fpm
+
+      - name: Disable automatic update
+        run: |
+          # @see https://wordpress.org/documentation/article/configuring-automatic-background-updates/#constant-to-disable-all-updates
+          sed -i -e 's/#ddev-generated//g' wp-config-ddev.php
+          echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> wp-config-ddev.php
 
       - name: Add Redis, Memcached, Crowdsec and Playwright
         run: |
@@ -77,7 +83,7 @@ jobs:
 
       - name: Setup WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
         run: |
-          ddev exec wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'  
+          ddev wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'  
 
       - name: Clone ${{ env.EXTENSION_NAME }} files
         uses: actions/checkout@v3
@@ -109,11 +115,8 @@ jobs:
           ddev exec php -v
           ddev exec -s crowdsec crowdsec -version
 
-      - name: Run Plugin activation tests
-        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
-        with:
-          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
-          file_path: 1-activate-plugin.js
+      - name: Activate plugin with wp
+        run: ddev wp plugin install crowdsec --activate
 
       - name: Configure CrowdSec and Wordpress bouncer plugin
         run: |
@@ -184,3 +187,16 @@ jobs:
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 8-geolocation.js
+
+      - name: Check tested version
+        run: |
+          CURRENT_VERSION=$(ddev wp core version)
+          if [[ ${{ matrix.wp-version }} == $CURRENT_VERSION ]]
+          then
+              echo "Tested version was as expected"
+          else
+              echo "Tested version was not as expected"
+              echo $CURRENT_VERSION
+              echo ${{ matrix.wp-version }}
+              exit 1
+          fi

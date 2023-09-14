@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+
+## [2.5.1](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.5.1) - 2023-09-14
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.5.0...v2.5.1)
+
+### Added
+
+- Add compatibility with WordPress 6.3
+
+
+---
+
+
 ## [2.5.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.5.0) - 2023-06-01
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.4.1...v2.5.0)
 
