@@ -40,7 +40,7 @@ case $TYPE in
 esac
 
 
-CHECKMULTISITE=$(ddev exec --raw -j grep MULTISITE wp-config-ddev.php | tail -1 | sed "s/define( 'MULTISITE',//g" | sed "s/);//g" | sed 's/ //g' | sed 's/\r//g'  | tail -1)
+CHECKMULTISITE=$(ddev exec --raw -j grep MULTISITE wp-config.php | tail -1 | sed "s/define( 'MULTISITE',//g" | sed "s/);//g" | sed 's/ //g' | sed 's/\r//g'  | tail -1)
 if [[ "$CHECKMULTISITE" == "true" ]]; then
   MULTISITE=true
 else
