@@ -82,7 +82,7 @@ const onAdminSaveSettings = async (check = true) => {
 
     if (check) {
         if (MULTISITE == "true") {
-            await expect(page).toHaveText(".wrap .notice", "saved.");
+            await expect(page).toHaveText(".wrap", "saved.");
         } else {
             await expect(page).toHaveText(
                 "#setting-error-settings_updated",

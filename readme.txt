@@ -3,7 +3,7 @@ Contributors: crowdsec
 Donate link: https://crowdsec.net/
 Tags: crowdsec-bouncer, wordpress, security, firewall, captcha, ip-scanner, ip-blocker, ip-blocking, ip-address, ip-database, ip-range-check, crowdsec, ban-hosts, ban-management, anti-hacking, hacker-protection, captcha-image, captcha-generator, captcha-generation, captcha-service
 Requires at least: 4.9
-Tested up to: 6.3
+Tested up to: 6.4
 Stable tag: 2.5.1
 Requires PHP: 7.2
 License: MIT

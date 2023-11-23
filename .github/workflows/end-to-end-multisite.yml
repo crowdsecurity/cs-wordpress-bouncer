@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        wp-version: [ "4.9", "6.2", "6.3" ]
+        wp-version: [ "4.9", "6.2", "6.4" ]
         php-version: [ "7.2" ]
         subsite: ["site1", "site2"]
 
@@ -64,6 +64,10 @@ jobs:
           sed -i -e 's/#ddev-generated//g' wp-config-ddev.php
           echo "define( 'AUTOMATIC_UPDATER_DISABLED', true );" >> wp-config-ddev.php
 
+      - name: Disable DDEV config
+        run: |
+          sed -i -e 's/#ddev-generated//g' wp-config.php
+
       - name: Add Redis, Memcached, Crowdsec and Playwright
         run: |
           ddev get ddev/ddev-redis
@@ -85,14 +89,6 @@ jobs:
 
       - name: Copy multisite .htaccess
         run: cp .ddev/okaeli-add-on/wordpress/custom_files/.htaccess-multisite-subfolder .htaccess
-
-      - name: Prepare multisite config
-        run: |
-          sed -i -e 's/#ddev-generated//g' wp-config-ddev.php
-          sed -i -e 's/REPLACE_SUBDOMAIN_INSTALL/false/g' .ddev/okaeli-add-on/wordpress/custom_files/multisite-config.php
-          sed -i -e 's/REPLACE_PROJECT_URI/${{ env.WP_VERSION_CODE }}.ddev.site/g' .ddev/okaeli-add-on/wordpress/custom_files/multisite-config.php
-          sed -i '/DB_HOST/ r .ddev/okaeli-add-on/wordpress/custom_files/multisite-config.php' wp-config-ddev.php
-          sed -i -e 's/#ddev-generated//g' wp-config-ddev.php
 
       - name: Create sub sites
         run: |
