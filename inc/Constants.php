@@ -19,6 +19,7 @@ class Constants extends LibConstants
 
     public const LOG_BASE_PATH = __DIR__ . '/../logs/';
     public const CACHE_PATH = __DIR__ . '/../.cache';
+    public const STANDALONE_BASE_FILE_PATH = __DIR__ . '/../../../../wp-content/uploads/crowdsec/';
     public const CONFIG_PATH = __DIR__ . '/standalone-settings.php';
     public const VERSION = 'v2.5.2';
 }

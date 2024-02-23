@@ -25,6 +25,8 @@ class Bouncer extends AbstractBouncer
 
     protected $shouldNotBounceWpAdmin = true;
 
+    protected $baseFilesPath;
+
     /**
      * @throws BouncerException
      * @throws CacheStorageException
@@ -51,6 +53,25 @@ class Bouncer extends AbstractBouncer
     protected function specialcharsDecodeEntQuotes(string $value): string
     {
         return htmlspecialchars_decode($value, \ENT_QUOTES);
+    }
+
+    private function getBaseFilesPath(): string
+    {
+        if ($this->baseFilesPath === null) {
+            $result = Constants::STANDALONE_BASE_FILE_PATH;
+
+            if (function_exists('wp_upload_dir')) {
+                $dir = wp_upload_dir(null, false);
+                if (is_array($dir) && array_key_exists('basedir', $dir)) {
+                    $result = $dir['basedir'] . '/crowdsec/';
+                } elseif (defined('WP_CONTENT_DIR')) {
+                    $result = WP_CONTENT_DIR . '/uploads/crowdsec/';
+                }
+            }
+            $this->baseFilesPath = $result;
+        }
+
+        return $this->baseFilesPath;
     }
 
     /**
@@ -83,7 +104,7 @@ class Bouncer extends AbstractBouncer
             // Debug
             'debug_mode' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_debug_mode', false)),
             'disable_prod_log' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_disable_prod_log', false)),
-            'log_directory_path' => Constants::LOG_BASE_PATH,
+            'log_directory_path' => $this->getBaseFilesPath() . 'logs/',
             'forced_test_ip' => (string)($rawConfigs['crowdsec_forced_test_ip'] ?? ''),
             'forced_test_forwarded_ip' => (string)($rawConfigs['crowdsec_forced_test_forwarded_ip'] ?? ''),
             'display_errors' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_display_errors', false)),
@@ -106,7 +127,7 @@ class Bouncer extends AbstractBouncer
                 'crowdsec_cache_system',
                 Constants::CACHE_SYSTEM_PHPFS
             ))),
-            'fs_cache_path' => Constants::CACHE_PATH,
+            'fs_cache_path' => $this->getBaseFilesPath() . 'cache/',
             'redis_dsn' => $this->escape((string)$rawConfigs['crowdsec_redis_dsn'] ?? ''),
             'memcached_dsn' => $this->escape((string)$rawConfigs['crowdsec_memcached_dsn'] ?? ''),
             'clean_ip_cache_duration' => (int)($this->handleRawConfig(
