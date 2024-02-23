@@ -61,11 +61,18 @@ class Bouncer extends AbstractBouncer
             $result = Constants::STANDALONE_BASE_FILE_PATH;
 
             if (function_exists('wp_upload_dir')) {
+                if(is_multisite()){
+                    $mainSiteId = get_main_site_id();
+                    switch_to_blog($mainSiteId);
+                }
                 $dir = wp_upload_dir(null, false);
                 if (is_array($dir) && array_key_exists('basedir', $dir)) {
                     $result = $dir['basedir'] . '/crowdsec/';
                 } elseif (defined('WP_CONTENT_DIR')) {
                     $result = WP_CONTENT_DIR . '/uploads/crowdsec/';
+                }
+                if(is_multisite()) {
+                    restore_current_blog();
                 }
             }
             $this->baseFilesPath = $result;
