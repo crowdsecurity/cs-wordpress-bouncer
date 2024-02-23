@@ -102,7 +102,7 @@ jobs:
           ddev wp site create --slug="site2" --title="WordPress Site2"  
 
       - name: Clone ${{ env.EXTENSION_NAME }} files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{ env.EXTENSION_PATH }}
 
