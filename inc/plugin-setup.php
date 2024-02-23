@@ -15,7 +15,7 @@ function writeStaticConfigFile($name = null, $newValue = null)
         $data[$name] = $newValue;
     }
     $json = json_encode($data);
-    file_put_contents(Constants::CONFIG_PATH, "<?php return '$json';");
+    file_put_contents(Constants::STANDALONE_CONFIG_PATH, "<?php return '$json';");
 }
 
 /**
