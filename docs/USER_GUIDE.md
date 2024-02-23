@@ -359,7 +359,7 @@ Set 0 to disable caching. Enabling this will avoid multiple call to the geolocat
 
 Enable if you want to see some debug information in a specific log file.
 
-When this mode is enabled, a `debug.log` file will be written in `wp-content/plugins/crowdsec/logs` folder.
+When this mode is enabled, a `debug.log` file will be written in `wp-content/uploads/crowdsec/logs` folder.
 
 **Make sure this path is not publicly accessible.** [See security note below](#security).
 
@@ -367,7 +367,7 @@ When this mode is enabled, a `debug.log` file will be written in `wp-content/plu
 
 `Debug mode → Disable prod log`
 
-By default, a `prod.log` file will be written in `wp-content/plugins/crowdsec/logs` folder.
+By default, a `prod.log` file will be written in `wp-content/uploads/crowdsec/logs` folder.
 
 **Make sure this path is not publicly accessible.** [See security note below](#security).
 
@@ -500,8 +500,8 @@ Here are some examples of how to set options with the `WP-CLI` tool.
 Some files used or created by this plugin must be protected from direct access attempts:
 
 - The `standalone-settings.php` file created in the `wp-content/plugins/crowdsec/inc` folder for the [Auto Prepend File](#auto-prepend-file-mode) mode
-- Log files are created in the `wp-content/plugins/crowdsec/logs` folder
-- Cache files of the File system cache are created in the `wp-content/plugins/crowdsec/.cache` folder
+- Log files are created in the `wp-content/uploads/crowdsec/logs` folder
+- Cache files of the File system cache are created in the `wp-content/uploads/crowdsec/cache` folder
 - TLS authentication files are located in a user defined path
 - Geolocation database files are located in a user defined path
 
@@ -524,7 +524,7 @@ server {
    ...
    ...
    # Deny all attempts to access some folders of the crowdsec plugin
-   location ~ /crowdsec/(.cache|logs|inc/standalone-settings) {
+   location ~ /crowdsec/(cache|logs|inc/standalone-settings) {
            deny all;
    }
    ...
@@ -538,8 +538,8 @@ If you are using Apache, the plugin root folder already contain the required `.h
 cache and standalone setting files: 
 
 ```htaccess
-Redirectmatch 403 wp-content/plugins/crowdsec/logs/
-Redirectmatch 403 wp-content/plugins/crowdsec/.cache/
+Redirectmatch 403 wp-content/uploads/crowdsec/logs/
+Redirectmatch 403 wp-content/uploads/crowdsec/cache/
 Redirectmatch 403 wp-content/plugins/crowdsec/inc/standalone-settings
 ```
 
@@ -559,6 +559,9 @@ To enable the `auto prepend file` mode, you have to configure your server by add
 - In this mode, a setting file `inc/standalone-settings.php` will be generated each time you save the CrowdSec 
   plugin configuration from the WordPress admin. **Make sure this file is not publicly accessible.** [See security note 
   above](#security).
+
+- This mode requires to have the plugin installed in the `wp-content/plugins/crowdsec` folder. This is the default 
+  installation folder of WordPress plugins.
 
 
 Adding an `auto_prepend_file` directive can be done in different ways:
