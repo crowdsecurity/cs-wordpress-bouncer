@@ -41,7 +41,21 @@ jobs:
                     echo "VERSION_NUMBER=$(echo ${{ github.event.inputs.tag_name }} | sed 's/v//g' )" >> $GITHUB_ENV
 
             -   name: Clone sources
-                uses: actions/checkout@v3
+                uses: actions/checkout@v4
+
+            -   name: Check standalone-settings exists and is empty
+                run: |
+                    if [ ! -f inc/standalone-settings.php ]
+                    then
+                      echo "inc/standalone-settings.php does not exist"
+                      exit 1
+                    elif [ -s inc/standalone-settings.php ]
+                    then
+                      echo "inc/standalone-settings.php is not empty"
+                      exit 1
+                    else
+                      echo "inc/standalone-settings.php exists and is empty"
+                    fi
 
             -   name: Check version ${{ env.VERSION_NUMBER }} consistency in files
                 # Check crowdsec.php (2), readme.txt (1), inc/Constants.php (1) and CHANGELOG.md (3)
@@ -111,7 +125,7 @@ jobs:
                     fi
 
             -   name: Create Tag ${{ github.event.inputs.tag_name }}
-                uses: actions/github-script@v6
+                uses: actions/github-script@v7
                 with:
                     github-token: ${{ github.token }}
                     script: |
@@ -236,7 +250,7 @@ jobs:
                   echo "LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/${{ env.GITHUB_ORIGIN }}/releases/latest | grep -oP "\/tag\/v\K(.*)$")" >> $GITHUB_ENV
 
             - name: Clone files from last release
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               with:
                   path: raw_sources
                   ref: "v${{ env.LAST_TAG }}"

@@ -127,6 +127,13 @@ mkdir -p wp-content/plugins/crowdsec && cd wp-content/plugins/crowdsec
 git clone git@github.com:crowdsecurity/cs-wordpress-bouncer.git ./
 ```
 
+**IMPORTANT**: Please run the following command to avoid committing changes in the `inc/standalone-settings.php` file:
+
+```shell
+git update-index --assume-unchanged inc/standalone-settings.php
+```
+
+
 Login to the admin by browsing the url `https://your-project-name.ddev.site/admin` (username: `admin` and password: `admin123`)
 
 Activate the CrowdSec plugin.
