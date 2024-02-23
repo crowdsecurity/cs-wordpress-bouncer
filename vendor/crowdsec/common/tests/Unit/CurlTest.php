@@ -19,6 +19,7 @@ use CrowdSec\Common\Client\ClientException;
 use CrowdSec\Common\Client\HttpMessage\Request;
 use CrowdSec\Common\Client\HttpMessage\Response;
 use CrowdSec\Common\Client\RequestHandler\Curl;
+use CrowdSec\Common\Constants;
 use CrowdSec\Common\Tests\Constants as TestConstants;
 use CrowdSec\Common\Tests\MockedData;
 use CrowdSec\Common\Tests\PHPUnitUtil;
@@ -142,6 +143,7 @@ final class CurlTest extends AbstractClient
             \CURLOPT_URL => $url,
             \CURLOPT_CUSTOMREQUEST => $method,
             \CURLOPT_TIMEOUT => TestConstants::API_TIMEOUT,
+            \CURLOPT_CONNECTTIMEOUT => Constants::API_CONNECT_TIMEOUT,
             \CURLOPT_SSL_VERIFYPEER => false,
             \CURLOPT_ENCODING => '',
         ];
@@ -179,6 +181,7 @@ final class CurlTest extends AbstractClient
             \CURLOPT_URL => $url . '?foo=bar&crowd=sec',
             \CURLOPT_CUSTOMREQUEST => $method,
             \CURLOPT_TIMEOUT => TestConstants::API_TIMEOUT,
+            \CURLOPT_CONNECTTIMEOUT => Constants::API_CONNECT_TIMEOUT,
             \CURLOPT_SSL_VERIFYPEER => false,
             \CURLOPT_ENCODING => '',
         ];
@@ -215,6 +218,7 @@ final class CurlTest extends AbstractClient
             \CURLOPT_URL => $url,
             \CURLOPT_CUSTOMREQUEST => $method,
             \CURLOPT_TIMEOUT => TestConstants::API_TIMEOUT,
+            \CURLOPT_CONNECTTIMEOUT => Constants::API_CONNECT_TIMEOUT,
             \CURLOPT_SSL_VERIFYPEER => true,
             \CURLOPT_ENCODING => '',
             \CURLOPT_SSLCERT => 'tls_cert_path_test',
@@ -250,6 +254,7 @@ final class CurlTest extends AbstractClient
             \CURLOPT_URL => $url,
             \CURLOPT_CUSTOMREQUEST => $method,
             \CURLOPT_TIMEOUT => TestConstants::API_TIMEOUT,
+            \CURLOPT_CONNECTTIMEOUT => Constants::API_CONNECT_TIMEOUT,
             \CURLOPT_SSL_VERIFYPEER => true,
             \CURLOPT_SSLCERT => 'tls_cert_path_test',
             \CURLOPT_SSLKEY => 'tls_key_path_test',

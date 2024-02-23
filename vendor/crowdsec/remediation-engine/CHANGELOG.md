@@ -12,6 +12,18 @@ The [public API](https://semver.org/spec/v2.0.0.html#spec-item-1)  of this libra
 
 ---
 
+## [3.3.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.3.0) - 2023-12-14
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.2.0...v3.3.0)
+
+### Changed
+
+- Update `crowdsec/common` dependency to `v2.2.0` (`api_connect_timeout` setting)
+- Update `crowdsec/capi-client` dependency to `v3.1.0` (`api_connect_timeout` setting)
+- Update `crowdsec/lapi-client` dependency to `v3.2.0` (`api_connect_timeout` setting)
+
+
+---
+
 
 ## [3.2.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.2.0) - 2023-04-20
 [_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.1.1...v3.2.0)

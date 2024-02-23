@@ -19,9 +19,6 @@ use CrowdSec\Common\Constants;
  */
 class FileGetContents extends CommonFileGetContents implements CapiHandlerInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getListDecisions(string $url, array $headers = []): string
     {
         $config = $this->createListContextConfig($headers);

@@ -38,9 +38,6 @@ class FileStorage implements StorageInterface
         $this->env = $env;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function retrieveMachineId(): ?string
     {
         $storageContent = $this->readFile($this->getBasePath() . self::MACHINE_ID_FILE);
@@ -48,9 +45,6 @@ class FileStorage implements StorageInterface
         return !empty($storageContent['machine_id']) ? $storageContent['machine_id'] : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function retrievePassword(): ?string
     {
         $storageContent = $this->readFile($this->getBasePath() . self::PASSWORD_FILE);
@@ -58,9 +52,6 @@ class FileStorage implements StorageInterface
         return !empty($storageContent['password']) ? $storageContent['password'] : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function retrieveScenarios(): ?array
     {
         $storageContent = $this->readFile($this->getBasePath() . self::SCENARIOS_FILE);
@@ -68,9 +59,6 @@ class FileStorage implements StorageInterface
         return !empty($storageContent['scenarios']) ? $storageContent['scenarios'] : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function retrieveToken(): ?string
     {
         $storageContent = $this->readFile($this->getBasePath() . self::TOKEN_FILE);
@@ -78,9 +66,6 @@ class FileStorage implements StorageInterface
         return !empty($storageContent['token']) ? $storageContent['token'] : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function storeMachineId(string $machineId): bool
     {
         try {
@@ -93,9 +78,6 @@ class FileStorage implements StorageInterface
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function storePassword(string $password): bool
     {
         try {
@@ -108,9 +90,6 @@ class FileStorage implements StorageInterface
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function storeScenarios(array $scenarios): bool
     {
         try {
@@ -123,9 +102,6 @@ class FileStorage implements StorageInterface
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function storeToken(string $token): bool
     {
         try {

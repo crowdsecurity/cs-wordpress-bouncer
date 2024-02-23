@@ -46,9 +46,9 @@ class PHPUnitUtil
      *
      * @see https://stackoverflow.com/a/37667018/7497291
      *
-     * @param $object - instance in which protected value is being modified
+     * @param $object   - instance in which protected value is being modified
      * @param $property - property on instance being modified
-     * @param $value - new value of the property being modified
+     * @param $value    - new value of the property being modified
      *
      * @return void
      */

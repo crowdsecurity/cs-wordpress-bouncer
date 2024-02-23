@@ -19,9 +19,6 @@ use CrowdSec\Common\Constants;
  */
 class Curl extends CommonCurl implements CapiHandlerInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getListDecisions(string $url, array $headers = []): string
     {
         $handle = curl_init();

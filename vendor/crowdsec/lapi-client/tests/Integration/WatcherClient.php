@@ -126,6 +126,7 @@ class WatcherClient extends AbstractClient
     {
         $scope = (Constants::SCOPE_IP === $scope && 2 === count(explode('/', $value))) ? Constants::SCOPE_RANGE :
             $scope;
+
         /**
          * Must use capital first letter as the crowdsec agent seems to query with first capital letter
          * during getStreamDecisions.

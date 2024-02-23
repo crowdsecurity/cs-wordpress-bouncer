@@ -66,8 +66,6 @@ abstract class AbstractClient
 
     /**
      * Retrieve a config value by name.
-     *
-     * @return mixed
      */
     public function getConfig(string $name)
     {

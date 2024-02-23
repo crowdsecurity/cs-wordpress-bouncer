@@ -46,8 +46,6 @@ class LapiRemediation extends AbstractRemediation
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws CacheStorageException
      * @throws InvalidArgumentException
      * @throws RemediationException
@@ -106,8 +104,6 @@ class LapiRemediation extends AbstractRemediation
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      *
      * @throws CacheException

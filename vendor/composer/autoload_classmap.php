@@ -7,13 +7,13 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Attribute' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
+    'CURLStringFile' => $vendorDir . '/symfony/polyfill-php81/Resources/stubs/CURLStringFile.php',
     'Composer\\CaBundle\\CaBundle' => $vendorDir . '/composer/ca-bundle/src/CaBundle.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'CrowdSecBouncer\\AbstractBouncer' => $vendorDir . '/crowdsec/bouncer/src/AbstractBouncer.php',
     'CrowdSecBouncer\\BouncerException' => $vendorDir . '/crowdsec/bouncer/src/BouncerException.php',
     'CrowdSecBouncer\\Configuration' => $vendorDir . '/crowdsec/bouncer/src/Configuration.php',
     'CrowdSecBouncer\\Constants' => $vendorDir . '/crowdsec/bouncer/src/Constants.php',
-    'CrowdSecBouncer\\Fixes\\Gregwar\\Captcha\\CaptchaBuilder' => $vendorDir . '/crowdsec/bouncer/src/Fixes/Gregwar/Captcha/CaptchaBuilder.php',
     'CrowdSecBouncer\\Template' => $vendorDir . '/crowdsec/bouncer/src/Template.php',
     'CrowdSec\\CapiClient\\ClientException' => $vendorDir . '/crowdsec/capi-client/src/ClientException.php',
     'CrowdSec\\CapiClient\\Client\\AbstractClient' => $vendorDir . '/crowdsec/capi-client/src/Client/AbstractClient.php',

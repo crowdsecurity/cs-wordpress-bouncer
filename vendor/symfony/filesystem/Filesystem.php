@@ -132,7 +132,7 @@ class Filesystem
      *
      * @throws IOException When touch fails
      */
-    public function touch($files, int $time = null, int $atime = null)
+    public function touch($files, ?int $time = null, ?int $atime = null)
     {
         foreach ($this->toIterable($files) as $file) {
             if (!($time ? self::box('touch', $file, $time, $atime) : self::box('touch', $file))) {
@@ -170,7 +170,7 @@ class Filesystem
                 }
             } elseif (is_dir($file)) {
                 if (!$isRecursive) {
-                    $tmpName = \dirname(realpath($file)).'/.'.strrev(strtr(base64_encode(random_bytes(2)), '/=', '-.'));
+                    $tmpName = \dirname(realpath($file)).'/.'.strrev(strtr(base64_encode(random_bytes(2)), '/=', '-_'));
 
                     if (file_exists($tmpName)) {
                         try {
@@ -534,7 +534,7 @@ class Filesystem
      *
      * @throws IOException When file type is unknown
      */
-    public function mirror(string $originDir, string $targetDir, \Traversable $iterator = null, array $options = [])
+    public function mirror(string $originDir, string $targetDir, ?\Traversable $iterator = null, array $options = [])
     {
         $targetDir = rtrim($targetDir, '/\\');
         $originDir = rtrim($originDir, '/\\');
@@ -668,6 +668,12 @@ class Filesystem
         }
 
         $dir = \dirname($filename);
+
+        if (is_link($filename) && $linkTarget = $this->readlink($filename)) {
+            $this->dumpFile(Path::makeAbsolute($linkTarget, $dir), $content);
+
+            return;
+        }
 
         if (!is_dir($dir)) {
             $this->mkdir($dir);

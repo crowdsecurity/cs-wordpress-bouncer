@@ -38,7 +38,6 @@ final class BouncerTest extends TestCase
      */
     protected $watcherClient;
 
-
     private function addTlsConfig(&$bouncerConfigs, $tlsPath)
     {
         $bouncerConfigs['tls_cert_path'] = $tlsPath . '/bouncer.pem';

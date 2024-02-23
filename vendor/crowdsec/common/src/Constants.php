@@ -17,7 +17,11 @@ namespace CrowdSec\Common;
 class Constants
 {
     /**
-     * @var int the default timeout (in seconds) when calling CrowdSec
+     * @var int the default connection timeout (time of connection phase in seconds) when calling a CrowdSec API
+     */
+    public const API_CONNECT_TIMEOUT = 300;
+    /**
+     * @var int the default timeout (total time of transfer operation in seconds) when calling a CrowdSec API
      */
     public const API_TIMEOUT = 120;
     /**
@@ -67,9 +71,9 @@ class Constants
     /**
      * @var string The scenario regex
      */
-    public const SCENARIO_REGEX = '#^[A-Za-z0-9]{0,16}\/[A-Za-z0-9_-]{0,32}$#';
+    public const SCENARIO_REGEX = '#^[A-Za-z0-9]{0,16}\/[A-Za-z0-9_-]{0,64}$#';
     /**
-     *  @var string The CrowdSec country scope for decisions
+     * @var string The CrowdSec country scope for decisions
      */
     public const SCOPE_COUNTRY = 'country';
     /**
@@ -83,7 +87,7 @@ class Constants
     /**
      * @var string The current version of this library
      */
-    public const VERSION = 'v2.1.0';
+    public const VERSION = 'v2.2.0';
     /**
      * @var string The version regex
      */

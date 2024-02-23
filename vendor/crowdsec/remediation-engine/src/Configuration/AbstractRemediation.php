@@ -130,8 +130,8 @@ abstract class AbstractRemediation extends AbstractConfiguration
     {
         $rootNode->validate()
                 ->ifTrue(function (array $v) {
-                    return Constants::REMEDIATION_BYPASS !== $v['fallback_remediation'] &&
-                           !in_array($v['fallback_remediation'], $v['ordered_remediations']);
+                    return Constants::REMEDIATION_BYPASS !== $v['fallback_remediation']
+                           && !in_array($v['fallback_remediation'], $v['ordered_remediations']);
                 })
                 ->thenInvalid('Fallback remediation must belong to ordered remediations.')
             ->end();

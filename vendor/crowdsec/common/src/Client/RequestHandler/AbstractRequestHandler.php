@@ -28,8 +28,6 @@ abstract class AbstractRequestHandler implements RequestHandlerInterface
 
     /**
      * Retrieve a config value by name.
-     *
-     * @return mixed
      */
     public function getConfig(string $name)
     {

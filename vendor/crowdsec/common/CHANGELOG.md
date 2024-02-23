@@ -12,6 +12,28 @@ the `src` folder.
 
 ---
 
+## [2.2.0](https://github.com/crowdsecurity/php-common/releases/tag/v2.2.0) - 2023-12-07
+[_Compare with previous release_](https://github.com/crowdsecurity/php-common/compare/v2.1.1...v2.2.0)
+
+
+### Added
+
+- Add `api_connect_timeout` configuration for `Curl` request handler
+
+
+---
+
+
+## [2.1.1](https://github.com/crowdsecurity/php-common/releases/tag/v2.1.1) - 2023-07-12
+[_Compare with previous release_](https://github.com/crowdsecurity/php-common/compare/v2.1.0...v2.1.1)
+
+
+### Fixed
+
+- Fix scenario regular expression to handle longer name
+
+
+---
 
 ## [2.1.0](https://github.com/crowdsecurity/php-common/releases/tag/v2.1.0) - 2023-03-30
 [_Compare with previous release_](https://github.com/crowdsecurity/php-common/compare/v2.0.0...v2.1.0)

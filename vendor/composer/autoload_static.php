@@ -208,13 +208,13 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
 
     public static $classMap = array (
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
+        'CURLStringFile' => __DIR__ . '/..' . '/symfony/polyfill-php81/Resources/stubs/CURLStringFile.php',
         'Composer\\CaBundle\\CaBundle' => __DIR__ . '/..' . '/composer/ca-bundle/src/CaBundle.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'CrowdSecBouncer\\AbstractBouncer' => __DIR__ . '/..' . '/crowdsec/bouncer/src/AbstractBouncer.php',
         'CrowdSecBouncer\\BouncerException' => __DIR__ . '/..' . '/crowdsec/bouncer/src/BouncerException.php',
         'CrowdSecBouncer\\Configuration' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Configuration.php',
         'CrowdSecBouncer\\Constants' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Constants.php',
-        'CrowdSecBouncer\\Fixes\\Gregwar\\Captcha\\CaptchaBuilder' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Fixes/Gregwar/Captcha/CaptchaBuilder.php',
         'CrowdSecBouncer\\Template' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Template.php',
         'CrowdSec\\CapiClient\\ClientException' => __DIR__ . '/..' . '/crowdsec/capi-client/src/ClientException.php',
         'CrowdSec\\CapiClient\\Client\\AbstractClient' => __DIR__ . '/..' . '/crowdsec/capi-client/src/Client/AbstractClient.php',

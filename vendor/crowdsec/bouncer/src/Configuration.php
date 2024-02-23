@@ -44,8 +44,6 @@ class Configuration extends AbstractConfiguration
     ];
 
     /**
-     * {@inheritdoc}
-     *
      * @throws \InvalidArgumentException
      */
     public function getConfigTreeBuilder(): TreeBuilder
@@ -157,7 +155,6 @@ class Configuration extends AbstractConfiguration
     }
 
     /**
-     * @param $rootNode
      * @return void
      */
     private function addTemplateNodes($rootNode)

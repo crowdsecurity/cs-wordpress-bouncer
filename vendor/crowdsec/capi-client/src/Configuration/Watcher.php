@@ -32,6 +32,7 @@ class Watcher extends AbstractConfiguration
         'user_agent_version',
         'scenarios',
         'api_timeout',
+        'api_connect_timeout',
         'metrics',
     ];
 
@@ -105,6 +106,7 @@ class Watcher extends AbstractConfiguration
                 ->scalarPrototype()->cannotBeEmpty()->end()
             ->end()
             ->integerNode('api_timeout')->defaultValue(Constants::API_TIMEOUT)->end()
+            ->integerNode('api_connect_timeout')->defaultValue(Constants::API_CONNECT_TIMEOUT)->end()
         ->end()
         ;
         $this->addMetricsNodes($rootNode);

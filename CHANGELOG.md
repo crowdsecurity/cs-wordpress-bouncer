@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.6.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.6.0) - 2024-0?-??
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.5.2...v2.6.0)
+
+### Changed
+
+- Move logs and cache folders to `wp-content/uploads/crowdsec` to avoid deletion on plugin update and pass checksum validation
+
+
+---
+
 
 ## [2.5.2](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.5.2) - 2023-11-23
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.5.1...v2.5.2)

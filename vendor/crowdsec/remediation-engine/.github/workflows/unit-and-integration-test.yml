@@ -5,6 +5,8 @@ on:
       - main
     paths-ignore:
       - '**.md'
+  schedule:
+    - cron: '25 02 * * THU'
   workflow_dispatch:
     inputs:
       unit_tests:
@@ -28,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.2','7.3','7.4','8.0','8.1', '8.2']
+        php-version: ['7.2','7.3','7.4','8.0','8.1', '8.2', '8.3']
 
     name: Unit and integration test
     runs-on: ubuntu-latest
@@ -45,7 +47,7 @@ jobs:
           sudo apt-get -q update
           sudo apt-get -q -y install libnss3-tools ddev
           mkcert -install
-          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+          ddev config global --instrumentation-opt-in=false --omit-containers=ddev-ssh-agent
 
       - name: Create empty PHP DDEV project
         run: ddev config --project-type=php --project-name=remediation-engine  --php-version=${{ matrix.php-version }}
@@ -56,7 +58,7 @@ jobs:
           ddev get ddev/ddev-memcached
           # override redis.conf
           ddev get julienloizelet/ddev-tools
-          ddev get julienloizelet/ddev-crowdsec-php  
+          ddev get julienloizelet/ddev-crowdsec-php
 
       - name: Start DDEV
         run: |
@@ -83,7 +85,8 @@ jobs:
       - name: Prepare PHP UNIT tests
         if: |
           github.event.inputs.unit_tests == 'true' ||
-          github.event_name == 'push'
+          github.event_name == 'push' ||
+          github.event_name == 'schedule'
         run: |
           ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/${{env.EXTENSION_PATH}}/tests/geolocation
           ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/${{env.EXTENSION_PATH}}/tests/geolocation
@@ -97,13 +100,15 @@ jobs:
       - name: Run Unit tests
         if: |
           github.event.inputs.unit_tests == 'true' ||
-          github.event_name == 'push'
+          github.event_name == 'push' ||
+          github.event_name == 'schedule'
         run:  ddev php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --debug ./${{env.EXTENSION_PATH}}/tests/Unit --testdox
 
       - name: Prepare integration tests
         if: |
           github.event.inputs.integration_tests == 'true' ||
-          github.event_name == 'push'
+          github.event_name == 'push' ||
+          github.event_name == 'schedule'
         run: |
           echo -n "{\"machine_id\":\"${{ secrets.TEST_MACHINE_ID }}\"}" > ${{env.EXTENSION_PATH}}/tests/Integration/dev-machine-id.json
           echo -n "{\"password\":\"${{ secrets.TEST_MACHINE_PWD }}\"}" > ${{env.EXTENSION_PATH}}/tests/Integration/dev-password.json
@@ -111,5 +116,6 @@ jobs:
       - name: Run Integration tests
         if: |
           github.event.inputs.integration_tests == 'true' ||
-          github.event_name == 'push'
+          github.event_name == 'push' ||
+          github.event_name == 'schedule'
         run: ddev php  ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit  ./${{env.EXTENSION_PATH}}/tests/Integration --testdox

@@ -349,7 +349,7 @@ You have to pass an array of CrowdSec scenarios that will be used to log in your
 You should find a list of available scenarios on the [CrowdSec hub collections page](https://hub.crowdsec.net/browse/).
 
 
-Each scenario must match the regular expression `#^[A-Za-z0-9]{0,16}\/[A-Za-z0-9_-]{0,32}$#`.
+Each scenario must match the regular expression `#^[A-Za-z0-9]{0,16}\/[A-Za-z0-9_-]{0,64}$#`.
 
 
 ### CAPI timeout

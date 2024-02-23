@@ -33,6 +33,7 @@ class Configuration extends AbstractConfiguration
         'tls_ca_cert_path',
         'tls_verify_peer',
         'api_timeout',
+        'api_connect_timeout',
     ];
 
     /**
@@ -108,6 +109,7 @@ class Configuration extends AbstractConfiguration
             ->end()
             ->booleanNode('tls_verify_peer')->defaultValue(false)->end()
             ->integerNode('api_timeout')->defaultValue(Constants::API_TIMEOUT)->end()
+            ->integerNode('api_connect_timeout')->defaultValue(Constants::API_CONNECT_TIMEOUT)->end()
         ->end();
     }
 

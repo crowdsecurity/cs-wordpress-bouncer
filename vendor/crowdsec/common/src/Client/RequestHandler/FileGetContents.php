@@ -21,9 +21,6 @@ use CrowdSec\Common\Constants;
  */
 class FileGetContents extends AbstractRequestHandler
 {
-    /**
-     * {@inheritdoc}
-     */
     public function handle(Request $request): Response
     {
         $config = $this->createContextConfig($request);
