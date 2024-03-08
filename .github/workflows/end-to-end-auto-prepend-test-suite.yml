@@ -134,18 +134,19 @@ jobs:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 10-enable-autoprependfile-mode.js
 
-      - name: Prepare auto-prepend-file mode test suite
+      - name: Add php.ini for auto_prepend_file mode
         run: |
-          cd ${{ github.workspace }}/.ddev
-          ddev nginx-config okaeli-add-on/wordpress/custom_files/crowdsec/crowdsec-prepend-nginx-site.conf
+          mkdir .ddev/php
+          cp .ddev/okaeli-add-on/wordpress/custom_files/auto-prepend-file-bouncer/php.ini .ddev/php/php.ini
+          ddev restart
 
       - name: Verify auto_prepend_file directive
         run: |
           cd ${{ github.workspace }}
           cp .ddev/okaeli-add-on/common/custom_files/phpinfo.php phpinfo.php
           curl -v https://${{ env.WP_VERSION_CODE }}.ddev.site/phpinfo.php
-          PREPENDVERIF=$(curl https://${{ env.WP_VERSION_CODE }}.ddev.site/phpinfo.php | grep -o -E "auto_prepend_file=(.*)php(.*)" | sed 's/<\/tr>//g; s/<\/td>//g;' | tr '\n' '#')
-          if [[ $PREPENDVERIF == "auto_prepend_file=/var/www/html/wp-content/plugins/crowdsec/inc/standalone-bounce.php#auto_prepend_file=/var/www/html/wp-content/plugins/crowdsec/inc/standalone-bounce.php#" ]]
+          PREPENDVERIF=$(curl https://${{ env.WP_VERSION_CODE }}.ddev.site/phpinfo.php | grep -o -E "auto_prepend_file(.*)php(.*)" | sed 's/<\/tr>//g; s/<\/td>//g; s/<td class="v">//g' | tr '\n' '#' )
+          if [[ $PREPENDVERIF == "auto_prepend_file/var/www/html/wp-content/plugins/crowdsec/inc/standalone-bounce.php/var/www/html/wp-content/plugins/crowdsec/inc/standalone-bounce.php#" ]]
           then
               echo "AUTO PREPEND FILE OK"
           else
