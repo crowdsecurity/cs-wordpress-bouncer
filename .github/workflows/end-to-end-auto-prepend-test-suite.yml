@@ -128,12 +128,6 @@ jobs:
         run: |
           ddev crowdsec-config
 
-      - name: Enable Plugin auto_prepend_file mode
-        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
-        with:
-          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
-          file_path: 10-enable-autoprependfile-mode.js
-
       - name: Prepare auto-prepend-file mode test suite
         run: |
           cd ${{ github.workspace }}/.ddev
@@ -153,6 +147,12 @@ jobs:
               echo $PREPENDVERIF
               exit 1
           fi
+
+      - name: Enable Plugin auto_prepend_file mode
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
+        with:
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          file_path: 10-enable-autoprependfile-mode.js
 
       - name: Run Live mode remediation tests
         uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
