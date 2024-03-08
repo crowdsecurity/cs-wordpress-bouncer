@@ -110,7 +110,7 @@ jobs:
         run: |
           mkdir -p crowdsec/tls
           mkdir -p crowdsec/geolocation
-          cp .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-from-plugin-folder.php cache-actions.php
+          cp .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-with-wordpress-load.php cache-actions.php
           cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* crowdsec/tls
           ddev maxmind-download DEFAULT GeoLite2-City crowdsec/geolocation
           ddev maxmind-download DEFAULT GeoLite2-Country crowdsec/geolocation
