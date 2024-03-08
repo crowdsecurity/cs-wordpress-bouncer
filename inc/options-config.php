@@ -60,6 +60,7 @@ function getCrowdSecOptionsConfig(): array
         ['name' => 'crowdsec_geolocation_type', 'default' => Constants::GEOLOCATION_TYPE_MAXMIND, 'autoInit' => true],
         ['name' => 'crowdsec_geolocation_maxmind_database_type', 'default' => Constants::MAXMIND_COUNTRY, 'autoInit' => true],
         ['name' => 'crowdsec_geolocation_maxmind_database_path', 'default' => '', 'autoInit' => true],
+        ['name' => 'crowdsec_auto_prepend_file_mode', 'default' => '', 'autoInit' => true],
     ];
 }
 

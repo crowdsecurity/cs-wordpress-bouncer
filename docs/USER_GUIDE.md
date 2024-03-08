@@ -396,10 +396,17 @@ Should be disabled in production.
 
 ***
 
-![Test](images/screenshots/config-test.jpg)
+![Standalone and Test](images/screenshots/config-standalone-and-test.png)
 
 ***
 
+
+`Auto prepend file mode → Enable auto_prepend_file mode`
+
+This setting allows the bouncer to bounce IPs before running any PHP script in the project.
+
+
+***
 
 `Test settings → Forced test IP`
 
@@ -464,7 +471,7 @@ Here are some examples of how to set options with the `WP-CLI` tool.
 | `Button background color`                                    | `wp option set crowdsec_theme_color_background_button #626365  ` |
 | `Button background color (hover)`                            | `wp option set crowdsec_theme_color_background_button_hover #333  ` |
 | **Theme customization** → *Use your own css code*            |                                                              |
-| Custom CSS code`                                             | `echo -n "body {background: rgb(2,0,36);}" | wp option set crowdsec_theme_custom_css ` |
+| Custom CSS code`                                             | `echo -n "body {background: rgb(2,0,36);}" | wp option set crowdsec_theme_custom_css `                    |
 | **Advanced settings** → *Communication mode to the API*      |                                                              |
 | `Enable the "Stream mode"`**:warning:**                      | - <code>wp option set crowdsec_stream_mode on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_stream_mode</code> |
 | `Resync decisions each (stream mode only)`**:warning:**      | `wp option set crowdsec_stream_mode_refresh_frequency 120`   |
@@ -489,6 +496,8 @@ Here are some examples of how to set options with the `WP-CLI` tool.
 | `Enable debug mode`                                          | - <code>wp option set crowdsec_debug_mode on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_debug_mode</code> |
 | `Disable prod log`                                           | - <code>wp option set crowdsec_disable_prod_log on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_disable_prod_log</code> |
 | `Enable errors display`                                      | - <code>wp option set crowdsec_display_errors on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_display_errors</code> |
+| **Advanced settings** → *Auto prepend file mode*             |                                                              |
+| `Enable auto_prepend_file mode`                              | - <code>wp option set crowdsec_auto_prepend_file_mode on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_auto_prepend_file_mode</code> |
 | **Advanced settings** → *Test settings*                      |                                                              |
 | `Forced test IP`                                             | `wp option set crowdsec_forced_test_ip 1.2.3.4`              |
 | `Forced test X-Forwarded-For IP`                             | <code>wp option set crowdsec_forced_test_forwarded_ip 1.2.3.4</code> |
@@ -506,6 +515,8 @@ Some files used or created by this plugin must be protected from direct access a
 - Geolocation database files are located in a user defined path
 
 **N.B.:**
+
+- There is no need to protect `standalone-settings.php` file if you don't use `auto_prepend_file` mode.
 
 - There is no need to protect cache files if you are using Redis or Memcached cache systems.
 - There is no need to protect log files if you disable debug and prod logging.

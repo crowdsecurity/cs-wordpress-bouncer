@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Move logs and cache folders to `wp-content/uploads/crowdsec` to avoid deletion on plugin update and pass checksum validation
+- Write `standalone-settings.php` file only if the new setting `Enable auto_prepend_file mode` is on.
+
+### Added
+
+- Add a `Enable auto_prepend_file mode` setting.
 
 
 ---

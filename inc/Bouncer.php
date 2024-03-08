@@ -58,7 +58,7 @@ class Bouncer extends AbstractBouncer
     private function getBaseFilesPath(): string
     {
         if ($this->baseFilesPath === null) {
-            $result = Constants::STANDALONE_BASE_FILE_PATH;
+            $result = Constants::DEFAULT_BASE_FILE_PATH;
 
             if (function_exists('wp_upload_dir')) {
                 if(is_multisite()){

@@ -43,8 +43,8 @@ function adminAdvancedSettings()
                 'crowdsec_custom_user_agent',
                 'crowdsec_display_errors',
                 'crowdsec_forced_test_ip',
-                'crowdsec_forced_test_forwarded_ip'
-
+                'crowdsec_forced_test_forwarded_ip',
+                'crowdsec_auto_prepend_file_mode'
             ];
 
         foreach ( $options as $option ) {
@@ -550,6 +550,20 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 	// Field "crowdsec_display_errors"
 	addFieldCheckbox('crowdsec_display_errors', 'Enable errors display', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_display_errors', function () {}, function () {}, '
     <p><strong>Do not use in production.</strong> When this mode is enabled, you will see every unexpected bouncing errors in the browser.</p>');
+
+
+    /*******************************
+     ** Section "Auto prepend file mode" **
+     ******************************/
+
+    add_settings_section('crowdsec_admin_advanced_auto_prepend_file_mode', 'Auto prepend file mode', function () {
+        echo '';
+    }, 'crowdsec_advanced_settings');
+
+    // Field "crowdsec_standalone_mode"
+    addFieldCheckbox('crowdsec_auto_prepend_file_mode', 'Enable auto_prepend_file mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_auto_prepend_file_mode', function () {}, function () {}, '
+    <p>This setting allows the bouncer to bounce IPs before running any PHP script in the project. <a href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#auto-prepend-file-mode" target="_blank">Discover how to setup with this guide</a>.</p><p>Enable this option <b>before</b> adding the "<em>auto_prepend_file</em>" directive for your PHP setup.</p>');
+
 
     /*******************************
      ** Section "Test mode" **
