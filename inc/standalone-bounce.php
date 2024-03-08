@@ -13,7 +13,6 @@ use CrowdSecBouncer\BouncerException;
 
 // If there is any technical problem while bouncing, don't block the user.
 try {
-
     $jsonConfigs = @include_once __DIR__.'/standalone-settings.php';
 
     if($jsonConfigs){

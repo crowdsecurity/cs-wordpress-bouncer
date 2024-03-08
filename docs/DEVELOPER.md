@@ -170,7 +170,7 @@ And we use also a custom PHP script to make some cache test. Thus, you should co
 
 ```bash
 cd wp-sources
-cp  .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-from-plugin-folder.php cache-actions.php 
+cp  .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-with-wordpress-load.php cache-actions.php 
 ```
 
 
