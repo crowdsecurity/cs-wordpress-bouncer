@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.6.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.6.0) - 2024-03-14
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.5.2...v2.6.0)
+
+### Changed
+
+- Move logs and cache folders to `wp-content/uploads/crowdsec` to avoid deletion on plugin update and pass checksum validation
+- Write `standalone-settings.php` file only if the new setting `Enable auto_prepend_file mode` is on.
+
+### Added
+
+- Add a `Enable auto_prepend_file mode` setting.
+
+
+---
+
 
 ## [2.5.2](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.5.2) - 2023-11-23
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.5.1...v2.5.2)

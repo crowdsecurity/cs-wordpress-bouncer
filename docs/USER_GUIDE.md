@@ -359,7 +359,7 @@ Set 0 to disable caching. Enabling this will avoid multiple call to the geolocat
 
 Enable if you want to see some debug information in a specific log file.
 
-When this mode is enabled, a `debug.log` file will be written in `wp-content/plugins/crowdsec/logs` folder.
+When this mode is enabled, a `debug.log` file will be written in `wp-content/uploads/crowdsec/logs` folder.
 
 **Make sure this path is not publicly accessible.** [See security note below](#security).
 
@@ -367,7 +367,7 @@ When this mode is enabled, a `debug.log` file will be written in `wp-content/plu
 
 `Debug mode → Disable prod log`
 
-By default, a `prod.log` file will be written in `wp-content/plugins/crowdsec/logs` folder.
+By default, a `prod.log` file will be written in `wp-content/uploads/crowdsec/logs` folder.
 
 **Make sure this path is not publicly accessible.** [See security note below](#security).
 
@@ -396,10 +396,17 @@ Should be disabled in production.
 
 ***
 
-![Test](images/screenshots/config-test.jpg)
+![Standalone and Test](images/screenshots/config-standalone-and-test.png)
 
 ***
 
+
+`Auto prepend file mode → Enable auto_prepend_file mode`
+
+This setting allows the bouncer to bounce IPs before running any PHP script in the project.
+
+
+***
 
 `Test settings → Forced test IP`
 
@@ -464,7 +471,7 @@ Here are some examples of how to set options with the `WP-CLI` tool.
 | `Button background color`                                    | `wp option set crowdsec_theme_color_background_button #626365  ` |
 | `Button background color (hover)`                            | `wp option set crowdsec_theme_color_background_button_hover #333  ` |
 | **Theme customization** → *Use your own css code*            |                                                              |
-| Custom CSS code`                                             | `echo -n "body {background: rgb(2,0,36);}" | wp option set crowdsec_theme_custom_css ` |
+| Custom CSS code`                                             | `echo -n "body {background: rgb(2,0,36);}" | wp option set crowdsec_theme_custom_css `                    |
 | **Advanced settings** → *Communication mode to the API*      |                                                              |
 | `Enable the "Stream mode"`**:warning:**                      | - <code>wp option set crowdsec_stream_mode on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_stream_mode</code> |
 | `Resync decisions each (stream mode only)`**:warning:**      | `wp option set crowdsec_stream_mode_refresh_frequency 120`   |
@@ -489,6 +496,8 @@ Here are some examples of how to set options with the `WP-CLI` tool.
 | `Enable debug mode`                                          | - <code>wp option set crowdsec_debug_mode on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_debug_mode</code> |
 | `Disable prod log`                                           | - <code>wp option set crowdsec_disable_prod_log on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_disable_prod_log</code> |
 | `Enable errors display`                                      | - <code>wp option set crowdsec_display_errors on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_display_errors</code> |
+| **Advanced settings** → *Auto prepend file mode*             |                                                              |
+| `Enable auto_prepend_file mode`                              | - <code>wp option set crowdsec_auto_prepend_file_mode on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_auto_prepend_file_mode</code> |
 | **Advanced settings** → *Test settings*                      |                                                              |
 | `Forced test IP`                                             | `wp option set crowdsec_forced_test_ip 1.2.3.4`              |
 | `Forced test X-Forwarded-For IP`                             | <code>wp option set crowdsec_forced_test_forwarded_ip 1.2.3.4</code> |
@@ -500,12 +509,14 @@ Here are some examples of how to set options with the `WP-CLI` tool.
 Some files used or created by this plugin must be protected from direct access attempts:
 
 - The `standalone-settings.php` file created in the `wp-content/plugins/crowdsec/inc` folder for the [Auto Prepend File](#auto-prepend-file-mode) mode
-- Log files are created in the `wp-content/plugins/crowdsec/logs` folder
-- Cache files of the File system cache are created in the `wp-content/plugins/crowdsec/.cache` folder
+- Log files are created in the `wp-content/uploads/crowdsec/logs` folder
+- Cache files of the File system cache are created in the `wp-content/uploads/crowdsec/cache` folder
 - TLS authentication files are located in a user defined path
 - Geolocation database files are located in a user defined path
 
 **N.B.:**
+
+- There is no need to protect `standalone-settings.php` file if you don't use `auto_prepend_file` mode.
 
 - There is no need to protect cache files if you are using Redis or Memcached cache systems.
 - There is no need to protect log files if you disable debug and prod logging.
@@ -524,7 +535,7 @@ server {
    ...
    ...
    # Deny all attempts to access some folders of the crowdsec plugin
-   location ~ /crowdsec/(.cache|logs|inc/standalone-settings) {
+   location ~ /crowdsec/(cache|logs|inc/standalone-settings) {
            deny all;
    }
    ...
@@ -538,8 +549,8 @@ If you are using Apache, the plugin root folder already contain the required `.h
 cache and standalone setting files: 
 
 ```htaccess
-Redirectmatch 403 wp-content/plugins/crowdsec/logs/
-Redirectmatch 403 wp-content/plugins/crowdsec/.cache/
+Redirectmatch 403 wp-content/uploads/crowdsec/logs/
+Redirectmatch 403 wp-content/uploads/crowdsec/cache/
 Redirectmatch 403 wp-content/plugins/crowdsec/inc/standalone-settings
 ```
 
@@ -559,6 +570,9 @@ To enable the `auto prepend file` mode, you have to configure your server by add
 - In this mode, a setting file `inc/standalone-settings.php` will be generated each time you save the CrowdSec 
   plugin configuration from the WordPress admin. **Make sure this file is not publicly accessible.** [See security note 
   above](#security).
+
+- This mode requires to have the plugin installed in the `wp-content/plugins/crowdsec` folder. This is the default 
+  installation folder of WordPress plugins.
 
 
 Adding an `auto_prepend_file` directive can be done in different ways:

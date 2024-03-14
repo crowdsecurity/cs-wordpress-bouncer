@@ -17,8 +17,7 @@ use CrowdSecBouncer\Constants as LibConstants;
 class Constants extends LibConstants
 {
 
-    public const LOG_BASE_PATH = __DIR__ . '/../logs/';
-    public const CACHE_PATH = __DIR__ . '/../.cache';
-    public const CONFIG_PATH = __DIR__ . '/standalone-settings.php';
-    public const VERSION = 'v2.5.2';
+    public const DEFAULT_BASE_FILE_PATH = __DIR__ . '/../../../../wp-content/uploads/crowdsec/';
+    public const STANDALONE_CONFIG_PATH = __DIR__ . '/standalone-settings.php';
+    public const VERSION = 'v2.6.0';
 }

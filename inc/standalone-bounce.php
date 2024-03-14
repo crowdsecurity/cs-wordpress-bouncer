@@ -13,7 +13,6 @@ use CrowdSecBouncer\BouncerException;
 
 // If there is any technical problem while bouncing, don't block the user.
 try {
-
     $jsonConfigs = @include_once __DIR__.'/standalone-settings.php';
 
     if($jsonConfigs){
@@ -25,11 +24,13 @@ try {
         }
         $bouncer = new Bouncer($crowdSecConfigs);
         $bouncer->run();
+    } else {
+        throw new BouncerException('No setting file found for the auto_prepend_file mode.');
     }
 } catch (\Throwable $e) {
-    // Try to log in the debug.log file of WordPress if bouncer logger is not ready
+    // Try to log error if bouncer logger is not ready
     if (!isset($bouncer) || !$bouncer->getLogger()) {
-        error_log(print_r('safelyBounce error:' . $e->getMessage() .
+        error_log(print_r('[CrowdSec] safelyBounce error:' . $e->getMessage() .
                           ' in file:' . $e->getFile() .
                           '(line ' . $e->getLine() . ')', true
         ));

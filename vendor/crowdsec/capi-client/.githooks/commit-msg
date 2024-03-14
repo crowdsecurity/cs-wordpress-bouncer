@@ -5,7 +5,7 @@ if [ -z "$1" ]; then
 	exit 1
 fi
 
-commitTitle="$(cat $1 | head -n1)"
+commitTitle="$(head -n 1 < "$1")"
 
 # ignore merge
 if echo "$commitTitle" | grep -qE "^Merge"; then
@@ -15,7 +15,7 @@ fi
 
 # check commit message
 REGEX='^(feat|fix|docs|style|refactor|ci|test|chore|comment)\(.*\)\:.*'
-if ! echo "$commitTitle" | grep -qE ${REGEX}; then
+if ! echo "$commitTitle" | grep -qE "${REGEX}"; then
 	echo "Your commit title '$commitTitle' did not follow conventional commit message rules:"
 	echo "Please comply with the regex ${REGEX}"
 	exit 1

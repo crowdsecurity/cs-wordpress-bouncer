@@ -42,8 +42,6 @@ class CapiRemediation extends AbstractRemediation
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws CacheStorageException
      * @throws InvalidArgumentException
      * @throws RemediationException|CacheException
@@ -59,6 +57,7 @@ class CapiRemediation extends AbstractRemediation
             ]);
 
             $this->updateRemediationOriginCount(AbstractCache::CLEAN);
+
             // As CAPI is always in stream_mode, we do not store this bypass
             return Constants::REMEDIATION_BYPASS;
         }
@@ -229,11 +228,11 @@ class CapiRemediation extends AbstractRemediation
     private function validateBlocklist(array $blocklist): bool
     {
         if (
-            !empty($blocklist['name']) &&
-            !empty($blocklist['url']) &&
-            !empty($blocklist['remediation']) &&
-            !empty($blocklist['scope']) &&
-            !empty($blocklist['duration'])
+            !empty($blocklist['name'])
+            && !empty($blocklist['url'])
+            && !empty($blocklist['remediation'])
+            && !empty($blocklist['scope'])
+            && !empty($blocklist['duration'])
         ) {
             return true;
         }
@@ -247,8 +246,6 @@ class CapiRemediation extends AbstractRemediation
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws CacheStorageException
      * @throws InvalidArgumentException
      * @throws CacheException|ClientException

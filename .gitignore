@@ -10,4 +10,6 @@ node_modules/
 
 # App
 *.log
+
+# auto_prepend_file mode settings
 inc/standalone-settings.php

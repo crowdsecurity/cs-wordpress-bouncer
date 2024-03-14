@@ -39,8 +39,6 @@ class Memcached extends AbstractCache
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws CacheStorageException
      */
     public function clear(): bool
@@ -56,8 +54,6 @@ class Memcached extends AbstractCache
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws CacheStorageException
      */
     public function commit(): bool
@@ -83,8 +79,6 @@ class Memcached extends AbstractCache
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws CacheStorageException
      */
     public function getItem(string $cacheKey): CacheItemInterface

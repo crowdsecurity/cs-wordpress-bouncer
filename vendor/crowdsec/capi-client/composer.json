@@ -36,7 +36,7 @@
     },
     "require": {
         "php": "^7.2.5 || ^8.0",
-        "crowdsec/common": "^2.0.0",
+        "crowdsec/common": "^2.2.0",
         "ext-json": "*",
         "symfony/config": "^4.4.44 || ^5.4.11 || ^6.0.11",
         "symfony/uid": "^5.4.19 || ^6.2.5",

@@ -76,7 +76,13 @@ jobs:
           ddev get julienloizelet/ddev-crowdsec-php
 
       - name: Start DDEV
-        run: ddev start
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          shell: bash
+          command: |
+            ddev start
 
       - name: Download WordPress
         run: ddev wp core download --version=${{ matrix.wp-version }}
@@ -86,7 +92,7 @@ jobs:
           ddev wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com'  
 
       - name: Clone ${{ env.EXTENSION_NAME }} files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{ env.EXTENSION_PATH }}
 
@@ -94,7 +100,7 @@ jobs:
         run: |
           mkdir -p crowdsec/tls
           mkdir -p crowdsec/geolocation
-          cp .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-from-plugin-folder.php cache-actions.php
+          cp .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-with-wordpress-load.php cache-actions.php
           cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* crowdsec/tls
           ddev maxmind-download DEFAULT GeoLite2-City crowdsec/geolocation
           ddev maxmind-download DEFAULT GeoLite2-Country crowdsec/geolocation
@@ -141,6 +147,12 @@ jobs:
               echo $PREPENDVERIF
               exit 1
           fi
+
+      - name: Enable Plugin auto_prepend_file mode
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
+        with:
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          file_path: 10-enable-autoprependfile-mode.js
 
       - name: Run Live mode remediation tests
         uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test

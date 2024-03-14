@@ -51,19 +51,24 @@ This project is fully compatible with DDEV 1.21.3, and it is recommended to use 
 For the DDEV installation, please follow the [official instructions](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/).
 
 
+#### DDEV installation
+
+For the DDEV installation, please follow the [official instructions](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/).
+
+
 #### Prepare DDEV PHP environment
 
 The final structure of the project will look like below.
 
 ```
-crowdsec-capi-client-dev-project (choose the name you want for this folder)
+crowdsec-capi-dev-project (choose the name you want for this folder)
 │       
 │
-└───.ddev (do not change this folder name)
+└───.ddev
 │   │   
-│   │ (Cloned sources of a PHP specific ddev repo)
+│   │ (DDEV files)
 │   
-└───my-own-modules (do not change this folder name)
+└───my-code (do not change this folder name)
     │   
     │
     └───capi-client (do not change this folder name)
@@ -74,31 +79,29 @@ crowdsec-capi-client-dev-project (choose the name you want for this folder)
 
 - Create an empty folder that will contain all necessary sources:
 ```bash
-mkdir crowdsec-capi-client-dev-project
+mkdir crowdsec-capi-dev-project
 ```
 
-- Create a `capi-client` folder with sources of this repo:
+- Create a DDEV php project:
 
 ```bash
-cd crowdsec-capi-client-dev-project
-mkdir -p my-own-modules/capi-client
-cd my-own-modules/capi-client && git clone git@github.com:crowdsecurity/php-capi-client.git ./
+cd crowdsec-capi-dev-project
+ddev config --project-type=php --php-version=8.2 --project-name=crowdsec-capi-client
 ```
 
-- Create an empty `.ddev` folder for DDEV and clone our pre-configured DDEV repo:
+- Add some DDEV add-ons:
 
 ```bash
-cd crowdsec-capi-client-dev-project
-mkdir .ddev && cd .ddev && git clone git@github.com:julienloizelet/ddev-php.git ./
+ddev get julienloizelet/ddev-tools
 ```
 
-By default, ddev will launch a PHP 7.2 container. If you want to work with another PHP version, copy the
-corresponding config file. For example:
+- Clone this repo sources in a `my-code/capi-client` folder:
 
 ```bash
-cd crowdsec-capi-client-dev-project
-cp .ddev/config_overrides/config.php74.yaml .ddev/config.php74.yaml
+mkdir -p my-code/capi-client
+cd my-code/capi-client && git clone git@github.com:crowdsecurity/php-capi-client.git ./
 ```
+
 - Launch DDEV
 
 ```bash
@@ -115,19 +118,19 @@ This should take some times on the first launch as this will download all necess
 Run:
 
 ```bash
-ddev composer update --working-dir ./my-own-modules/capi-client
+ddev composer update --working-dir ./my-code/capi-client
 ```
 
 #### Unit test
 
 ```bash
-ddev php ./my-own-modules/capi-client/vendor/bin/phpunit  ./my-own-modules/capi-client/tests/Unit --testdox
+ddev php ./my-code/capi-client/vendor/bin/phpunit  ./my-code/capi-client/tests/Unit --testdox
 ```
 
 #### Integration test
 
 ```bash
-ddev php ./my-own-modules/capi-client/vendor/bin/phpunit  ./my-own-modules/capi-client/tests/Integration --testdox     
+ddev php ./my-code/capi-client/vendor/bin/phpunit  ./my-code/capi-client/tests/Integration --testdox     
 ```
 
 #### Coding standards
@@ -136,7 +139,7 @@ We set up some coding standards tools that you will find in the `tools/coding-st
 In order to use these, you will need to work with a PHP version >= 7.4 and run first:
 
 ```bash
-ddev composer update --working-dir=./my-own-modules/capi-client/tools/coding-standards
+ddev composer update --working-dir=./my-code/capi-client/tools/coding-standards
 ```
 
 ##### PHPCS Fixer
@@ -147,7 +150,7 @@ With ddev, you can do the following:
 
 
 ```bash
-ddev phpcsfixer my-own-modules/capi-client/tools/coding-standards/php-cs-fixer ../
+ddev phpcsfixer my-code/capi-client/tools/coding-standards/php-cs-fixer ../
 
 ```
 
@@ -157,7 +160,7 @@ To use the [PHPSTAN](https://github.com/phpstan/phpstan) tool, you can run:
 
 
 ```bash
-ddev phpstan /var/www/html/my-own-modules/capi-client/tools/coding-standards phpstan/phpstan.neon /var/www/html/my-own-modules/capi-client/src
+ddev phpstan /var/www/html/my-code/capi-client/tools/coding-standards phpstan/phpstan.neon /var/www/html/my-code/capi-client/src
 
 ```
 
@@ -167,7 +170,7 @@ ddev phpstan /var/www/html/my-own-modules/capi-client/tools/coding-standards php
 To use the [PHPMD](https://github.com/phpmd/phpmd) tool, you can run:
 
 ```bash
-ddev phpmd ./my-own-modules/capi-client/tools/coding-standards phpmd/rulesets.xml ../../src
+ddev phpmd ./my-code/capi-client/tools/coding-standards phpmd/rulesets.xml ../../src
 
 ```
 
@@ -176,13 +179,13 @@ ddev phpmd ./my-own-modules/capi-client/tools/coding-standards phpmd/rulesets.xm
 To use [PHP Code Sniffer](https://github.com/squizlabs/PHP_CodeSniffer) tools, you can run:
 
 ```bash
-ddev phpcs ./my-own-modules/capi-client/tools/coding-standards my-own-modules/capi-client/src PSR12
+ddev phpcs ./my-code/capi-client/tools/coding-standards my-code/capi-client/src PSR12
 ```
 
 and:
 
 ```bash
-ddev phpcbf  ./my-own-modules/capi-client/tools/coding-standards my-own-modules/capi-client/src PSR12
+ddev phpcbf  ./my-code/capi-client/tools/coding-standards my-code/capi-client/src PSR12
 ```
 
 
@@ -191,7 +194,7 @@ ddev phpcbf  ./my-own-modules/capi-client/tools/coding-standards my-own-modules/
 To use [PSALM](https://github.com/vimeo/psalm) tools, you can run:
 
 ```bash
-ddev psalm ./my-own-modules/capi-client/tools/coding-standards ./my-own-modules/capi-client/tools/coding-standards/psalm
+ddev psalm ./my-code/capi-client/tools/coding-standards ./my-code/capi-client/tools/coding-standards/psalm
 ```
 
 ##### PHP Unit Code coverage
@@ -206,7 +209,7 @@ ddev xdebug
 
 To generate a html report, you can run:
 ```bash
-ddev php -dxdebug.mode=coverage ./my-own-modules/capi-client/tools/coding-standards/vendor/bin/phpunit --configuration ./my-own-modules/capi-client/tools/coding-standards/phpunit/phpunit.xml
+ddev php -dxdebug.mode=coverage ./my-code/capi-client/tools/coding-standards/vendor/bin/phpunit --configuration ./my-code/capi-client/tools/coding-standards/phpunit/phpunit.xml
 ```
 
 You should find the main report file `dashboard.html` in `tools/coding-standards/phpunit/code-coverage` folder.
@@ -215,7 +218,7 @@ You should find the main report file `dashboard.html` in `tools/coding-standards
 If you want to generate a text report in the same folder:
 
 ```bash
-ddev php -dxdebug.mode=coverage ./my-own-modules/capi-client/tools/coding-standards/vendor/bin/phpunit --configuration ./my-own-modules/capi-client/tools/coding-standards/phpunit/phpunit.xml --coverage-text=./my-own-modules/capi-client/tools/coding-standards/phpunit/code-coverage/report.txt
+ddev php -dxdebug.mode=coverage ./my-code/capi-client/tools/coding-standards/vendor/bin/phpunit --configuration ./my-code/capi-client/tools/coding-standards/phpunit/phpunit.xml --coverage-text=./my-code/capi-client/tools/coding-standards/phpunit/code-coverage/report.txt
 ```
 
 ## Commit message

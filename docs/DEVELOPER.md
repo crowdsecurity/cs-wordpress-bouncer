@@ -127,6 +127,7 @@ mkdir -p wp-content/plugins/crowdsec && cd wp-content/plugins/crowdsec
 git clone git@github.com:crowdsecurity/cs-wordpress-bouncer.git ./
 ```
 
+
 Login to the admin by browsing the url `https://your-project-name.ddev.site/admin` (username: `admin` and password: `admin123`)
 
 Activate the CrowdSec plugin.
@@ -169,7 +170,7 @@ And we use also a custom PHP script to make some cache test. Thus, you should co
 
 ```bash
 cd wp-sources
-cp  .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-from-plugin-folder.php cache-actions.php 
+cp  .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-with-wordpress-load.php cache-actions.php 
 ```
 
 

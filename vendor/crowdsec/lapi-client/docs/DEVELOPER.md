@@ -117,6 +117,22 @@ ddev php ./my-code/lapi-client/vendor/bin/phpunit  ./my-code/lapi-client/tests/U
 
 #### Integration test
 
+First, create a bouncer and keep the result key.
+
+```bash
+ddev create-bouncer
+```
+
+Then, as we use a TLS ready CrowdSec container, you have to copy some certificates and key:
+
+```bash
+cd crowdsec-lapi-dev-project
+mkdir cfssl
+cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* cfssl
+```
+
+Finally, run
+
 In order to launch integration tests, we have to set some environment variables:
 
 ```bash

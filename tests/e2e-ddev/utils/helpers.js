@@ -264,6 +264,14 @@ const setDefaultConfig = async () => {
     await onAdminSaveSettings();
 };
 
+
+const enableAutoPrependFileMode = async () => {
+    await onAdminGoToSettingsPage();
+    await onAdminGoToAdvancedPage();
+    await setToggle("crowdsec_auto_prepend_file_mode", true);
+    await onAdminSaveSettings();
+}
+
 module.exports = {
     addDecision,
     wait,
@@ -295,4 +303,5 @@ module.exports = {
     selectByName,
     runCacheAction,
     fillByName,
+    enableAutoPrependFileMode
 };

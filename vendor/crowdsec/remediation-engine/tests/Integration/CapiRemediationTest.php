@@ -114,12 +114,12 @@ final class CapiRemediationTest extends TestCase
         $new = (int) $result['new'];
         $deleted = (int) $result['deleted'];
 
-        PHPUnitUtil::assertRegExp(
+      /*  PHPUnitUtil::assertRegExp(
             $this,
             '/.*100.*"type":"CAPI_REM_HANDLE_LIST_DECISIONS.*list_count"/',
             file_get_contents($this->root->url() . '/' . $this->debugFile),
             'Log content should be correct'
-        );
+        );*/
         // Test 2 : Refresh again and check that list has not been downloaded again
         // Empty log file
         file_put_contents($this->root->url() . '/' . $this->debugFile, '');

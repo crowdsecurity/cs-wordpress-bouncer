@@ -13,7 +13,7 @@ use CrowdSec\RemediationEngine\CacheStorage\CacheStorageException;
 use CrowdSec\RemediationEngine\CacheStorage\Memcached;
 use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
-use CrowdSecBouncer\Fixes\Gregwar\Captcha\CaptchaBuilder;
+use Gregwar\Captcha\CaptchaBuilder;
 use Gregwar\Captcha\PhraseBuilder;
 use IPLib\Factory;
 use Monolog\Handler\NullHandler;
@@ -108,8 +108,6 @@ abstract class AbstractBouncer
 
     /**
      * Retrieve Bouncer configuration by name.
-     *
-     * @return mixed
      */
     public function getConfig(string $name)
     {

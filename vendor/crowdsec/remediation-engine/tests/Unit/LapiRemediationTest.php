@@ -530,8 +530,8 @@ final class LapiRemediationTest extends AbstractRemediation
             'Bypass should have been cached'
         );
         $this->assertTrue(
-            $expectedCleanTime <= $cachedItem[0][AbstractCache::INDEX_EXP] &&
-            $cachedItem[0][AbstractCache::INDEX_EXP] <= $expectedCleanTime + 1,
+            $expectedCleanTime <= $cachedItem[0][AbstractCache::INDEX_EXP]
+            && $cachedItem[0][AbstractCache::INDEX_EXP] <= $expectedCleanTime + 1,
             'Should return current time + clean ip duration config'
         );
         $this->assertEquals(
@@ -721,8 +721,8 @@ final class LapiRemediationTest extends AbstractRemediation
             'captcha should have been cached'
         );
         $this->assertTrue(
-            $expectedBadTime <= $cachedItem[0][AbstractCache::INDEX_EXP] &&
-            $cachedItem[0][AbstractCache::INDEX_EXP] <= $expectedBadTime + 1,
+            $expectedBadTime <= $cachedItem[0][AbstractCache::INDEX_EXP]
+            && $cachedItem[0][AbstractCache::INDEX_EXP] <= $expectedBadTime + 1,
             'Should return current time + bad ip duration config'
         );
         $this->assertEquals(

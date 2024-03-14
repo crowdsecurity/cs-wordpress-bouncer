@@ -14,8 +14,10 @@ function writeStaticConfigFile($name = null, $newValue = null)
     if ($name) {
         $data[$name] = $newValue;
     }
-    $json = json_encode($data);
-    file_put_contents(Constants::CONFIG_PATH, "<?php return '$json';");
+    if (!empty($data['crowdsec_auto_prepend_file_mode'])) {
+        $json = json_encode($data);
+        file_put_contents(Constants::STANDALONE_CONFIG_PATH, "<?php return '$json';");
+    }
 }
 
 /**
@@ -80,7 +82,6 @@ function deactivate_crowdsec_plugin()
     }
 
     // Clean options.
-
     $crowdSecWpPluginOptions = getCrowdSecOptionsConfig();
     foreach ($crowdSecWpPluginOptions as $crowdSecWpPluginOption) {
         if ($crowdSecWpPluginOption['autoInit']) {

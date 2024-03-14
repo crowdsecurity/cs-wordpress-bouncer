@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.2','7.3','7.4','8.0','8.1', '8.2']
+        php-version: ['7.2','7.3','7.4','8.0','8.1', '8.2', '8.3']
 
     name: Unit and integration test
     runs-on: ubuntu-latest
@@ -33,38 +33,36 @@ jobs:
       EXTENSION_PATH: "my-code/lapi-client"
 
     steps:
-      - name: Clone DDEV files
-        uses: actions/checkout@v3
-        with:
-          path: .ddev
-          repository: julienloizelet/ddev-php
-          ref: "main"
-
       - name: Install DDEV
-        env:
-          DDEV_VERSION: v1.21.4
         run: |
           # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
-          sudo apt-get -qq update
-          sudo apt-get -qq -y install libnss3-tools
-          curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh
-          bash install_ddev.sh ${{env.DDEV_VERSION}}
-          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
-          rm install_ddev.sh
+          curl -fsSL https://apt.fury.io/drud/gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ddev.gpg > /dev/null
+          echo "deb [signed-by=/etc/apt/trusted.gpg.d/ddev.gpg] https://apt.fury.io/drud/ * *" | sudo tee /etc/apt/sources.list.d/ddev.list
+          sudo apt-get -q update
+          sudo apt-get -q -y install libnss3-tools ddev
+          mkcert -install
+          ddev config global --instrumentation-opt-in=false --omit-containers=ddev-ssh-agent
 
-      - name: Set PHP_VERSION_CODE env
-        # used in some directory path and conventional file naming
-        # Example : 7.4 => 74
+      - name: Create empty PHP DDEV project
+        run: ddev config --project-type=php --project-name=crowdsec-lapi-client  --php-version=${{ matrix.php-version }}
+
+      - name: Add-ons install
         run: |
-           echo "PHP_VERSION_CODE=$(echo php${{ matrix.php-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
+          ddev get julienloizelet/ddev-tools
+          ddev get julienloizelet/ddev-crowdsec-php
+
+      - name: Add Redis, Memcached and X-Debug
+        if: ${{ matrix.php-version == '8.3' }}
+        run: |
+          cp .ddev/okaeli-add-on/common/custom_files/config.php83missing.yaml .ddev/config.php83missing.yaml
+
+      - name: Prepare for TLS tests
+        run: |
+          mkdir ${{ github.workspace }}/cfssl
+          cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* ${{ github.workspace }}/cfssl    
 
       - name: Start DDEV  with PHP ${{ matrix.php-version }}
-        run: |
-          cp .ddev/config_overrides/config.${{ env.PHP_VERSION_CODE }}.yaml .ddev/config.${{ env.PHP_VERSION_CODE }}.yaml
-          cp .ddev/additional_docker_compose/docker-compose.crowdsec.yaml .ddev/docker-compose.crowdsec.yaml
-          mkdir ${{ github.workspace }}/cfssl
-          cp -r .ddev/custom_files/crowdsec/cfssl/* ${{ github.workspace }}/cfssl
-          ddev start
+        run: ddev start
 
       - name: Some DEBUG information
         run: |

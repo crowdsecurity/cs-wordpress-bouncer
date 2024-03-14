@@ -467,11 +467,11 @@ abstract class AbstractRemediation
     private function validateRawDecision(array $rawDecision): bool
     {
         if (
-            !empty($rawDecision['scope']) &&
-            !empty($rawDecision['value']) &&
-            !empty($rawDecision['type']) &&
-            !empty($rawDecision['origin']) &&
-            !empty($rawDecision['duration'])
+            !empty($rawDecision['scope'])
+            && !empty($rawDecision['value'])
+            && !empty($rawDecision['type'])
+            && !empty($rawDecision['origin'])
+            && !empty($rawDecision['duration'])
         ) {
             return true;
         }

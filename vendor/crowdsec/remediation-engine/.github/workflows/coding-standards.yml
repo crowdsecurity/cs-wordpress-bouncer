@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.4', '8.0', '8.1', '8.2']
+        php-version: ['7.4', '8.0', '8.1', '8.2', '8.3']
 
     name: Coding standards test
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
           sudo apt-get -q update
           sudo apt-get -q -y install libnss3-tools ddev
           mkcert -install
-          ddev config global --instrumentation-opt-in=false --omit-containers=dba,ddev-ssh-agent
+          ddev config global --instrumentation-opt-in=false --omit-containers=ddev-ssh-agent
 
       - name: Create empty PHP DDEV project
         run: ddev config --project-type=php --project-name=remediation-engine  --php-version=${{ matrix.php-version }}
@@ -52,7 +52,7 @@ jobs:
           ddev get ddev/ddev-memcached
           # override redis.conf
           ddev get julienloizelet/ddev-tools
-          ddev get julienloizelet/ddev-crowdsec-php  
+          ddev get julienloizelet/ddev-crowdsec-php
 
       - name: Start DDEV
         run: |

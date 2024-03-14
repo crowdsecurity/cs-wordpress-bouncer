@@ -10,6 +10,16 @@ The [public API](https://semver.org/spec/v2.0.0.html#spec-item-1) of this librar
 
 ---
 
+## [3.1.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v3.1.0) - 2023-12-07
+[_Compare with previous release_](https://github.com/crowdsecurity/php-capi-client/compare/v3.0.0...v3.1.0)
+
+
+### Added
+
+- Add `api_connect_timeout` configuration
+
+---
+
 ## [3.0.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v3.0.0) - 2023-03-09
 [_Compare with previous release_](https://github.com/crowdsecurity/php-capi-client/compare/v2.1.0...v3.0.0)
 

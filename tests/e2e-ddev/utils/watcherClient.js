@@ -21,7 +21,7 @@ const httpsAgent = new https.Agent({
 
 const httpClient = axios.create({
     baseURL: LAPI_URL_FROM_PLAYWRIGHT,
-    timeout: 1000,
+    timeout: 5000,
     httpsAgent,
 });
 
@@ -80,10 +80,7 @@ const auth = async () => {
         return;
     }
     try {
-        const response = await httpClient.post("/v1/watchers/login", {
-            machine_id: WATCHER_LOGIN,
-            password: WATCHER_PASSWORD,
-        });
+        const response = await httpClient.post("/v1/watchers/login", {});
         httpClient.defaults.headers.common.Authorization = `Bearer ${response.data.token}`;
         authenticated = true;
     } catch (error) {
@@ -162,7 +159,7 @@ module.exports.deleteAllDecisions = async () => {
         await auth();
         await httpClient.delete("/v1/decisions");
     } catch (error) {
-        console.log(error.response);
+        console.log(error.response || error);
         throw new Error(error);
     }
 };
