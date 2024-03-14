@@ -143,7 +143,7 @@ jobs:
 
             -   name: Create release ${{ env.VERSION_NUMBER }} with Wordpress zip
                 if: github.event.inputs.deploy_to_wordpress == 'true'
-                uses: softprops/action-gh-release@v1
+                uses: softprops/action-gh-release@v2
                 with:
                     files: crowdsec.zip
                     body_path: CHANGELOG.txt
@@ -154,7 +154,7 @@ jobs:
 
             -   name: Create release ${{ env.VERSION_NUMBER }} without Wordpress zip
                 if: github.event.inputs.deploy_to_wordpress != 'true'
-                uses: softprops/action-gh-release@v1
+                uses: softprops/action-gh-release@v2
                 with:
                     body_path: CHANGELOG.txt
                     name: ${{ env.VERSION_NUMBER }}

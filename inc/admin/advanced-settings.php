@@ -257,7 +257,7 @@ function adminAdvancedSettings()
     }, ((Constants::CACHE_SYSTEM_PHPFS === $cacheSystem) ?
         '<input style="margin-right:10px" type="button" id="crowdsec_prune_cache" value="Prune now" class="button button-secondary" onclick="document.getElementById(\'crowdsec_action_prune_cache\').submit();">' : '').
         '<p>The File system cache is faster than calling Local API. Redis or Memcached is faster than the File System cache.<br>
-<b>Important note: </b> If you use the File system cache, make sure the <i>wp-content/plugins/crowdsec/.cache</i> path is not publicly accessible.<br>
+<b>Important note: </b> If you use the File system cache, make sure the <i>wp-content/uploads/crowdsec/cache</i> path is not publicly accessible.<br>
 Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a></p>', [
         Constants::CACHE_SYSTEM_PHPFS => 'File system',
         Constants::CACHE_SYSTEM_REDIS => 'Redis',
@@ -510,17 +510,17 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
     add_settings_section('crowdsec_admin_advanced_debug', 'Debug mode', function () {
         echo 'Configure the debug mode.<br>
-<b>Important note: </b> Make sure the <i>wp-content/plugins/crowdsec/logs</i> path is not publicly accessible.<br>
+<b>Important note: </b> Make sure the <i>wp-content/uploads/crowdsec/logs</i> path is not publicly accessible.<br>
 Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a>';
     }, 'crowdsec_advanced_settings');
 
     // Field "crowdsec_debug_mode"
     addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>Should not be used in production.<br>When this mode is enabled, a <i>debug.log</i> file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.</p>');
+    <p>Should not be used in production.<br>When this mode is enabled, a <i>debug.log</i> file will be written in the <i>wp-content/uploads/crowdsec/logs</i> folder.</p>');
 
     // Field "crowdsec_disable_prod_log"
     addFieldCheckbox('crowdsec_disable_prod_log', 'Disable prod log', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
-    <p>By default, a <i>prod.log</i> file will be written in the <i>wp-content/plugins/crowdsec/logs</i> folder.<br>You can disable this log here.</p>');
+    <p>By default, a <i>prod.log</i> file is written in the <i>wp-content/uploads/crowdsec/logs</i> folder.<br>You can disable this log here.</p>');
 
     // Field "Custom User Agent"
     addFieldString('crowdsec_custom_user_agent', 'Custom User-Agent', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function ($input) {
