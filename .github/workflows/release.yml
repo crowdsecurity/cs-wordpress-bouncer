@@ -43,20 +43,6 @@ jobs:
             -   name: Clone sources
                 uses: actions/checkout@v4
 
-            -   name: Check standalone-settings exists and is empty
-                run: |
-                    if [ ! -f inc/standalone-settings.php ]
-                    then
-                      echo "inc/standalone-settings.php does not exist"
-                      exit 1
-                    elif [ -s inc/standalone-settings.php ]
-                    then
-                      echo "inc/standalone-settings.php is not empty"
-                      exit 1
-                    else
-                      echo "inc/standalone-settings.php exists and is empty"
-                    fi
-
             -   name: Check version ${{ env.VERSION_NUMBER }} consistency in files
                 # Check crowdsec.php (2), readme.txt (1), inc/Constants.php (1) and CHANGELOG.md (3)
                 run: |
