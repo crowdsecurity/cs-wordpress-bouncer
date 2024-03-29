@@ -1,4 +1,7 @@
 <?php
+
+use CrowdSecWordPressBouncer\Bouncer;
+
 require_once __DIR__ . '/options-config.php';
 require_once __DIR__ . '/Bouncer.php';
 

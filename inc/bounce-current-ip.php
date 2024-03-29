@@ -6,6 +6,8 @@ require_once __DIR__ . '/Bouncer.php';
 require_once __DIR__ . '/Constants.php';
 require_once __DIR__ . '/options-config.php';
 
+use CrowdSecWordPressBouncer\Constants;
+use CrowdSecWordPressBouncer\Bouncer;
 use CrowdSecBouncer\BouncerException;
 use Psr\Cache\CacheException;
 

@@ -1,8 +1,12 @@
 <?php
 
+use CrowdSecWordPressBouncer\AdminNotice;
+use CrowdSecWordPressBouncer\Constants;
+use CrowdSecWordPressBouncer\Bouncer;
 use CrowdSecBouncer\BouncerException;
 use CrowdSec\RemediationEngine\Constants as RemConstants;
 use IPLib\Factory;
+
 require_once __DIR__ . '/../Constants.php';
 require_once __DIR__ . '/../options-config.php';
 require_once __DIR__ . '/notice.php';

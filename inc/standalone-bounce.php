@@ -3,13 +3,12 @@
 define('CROWDSEC_STANDALONE_RUNNING_CONTEXT', true);
 
 require_once __DIR__.'/../vendor/autoload.php';
-
 require_once __DIR__.'/Bouncer.php';
 require_once __DIR__.'/Constants.php';
 
-
 use CrowdSecBouncer\BouncerException;
-
+use CrowdSecWordPressBouncer\Constants;
+use CrowdSecWordPressBouncer\Bouncer;
 
 // If there is any technical problem while bouncing, don't block the user.
 try {

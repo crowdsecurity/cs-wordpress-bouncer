@@ -1,5 +1,7 @@
 <?php
 
+namespace CrowdSecWordPressBouncer;
+
 class AdminNotice
 {
     const NOTICE_FIELD = 'crowdsec_admin_notice_message';
@@ -7,7 +9,7 @@ class AdminNotice
     public function displayAdminNotice()
     {
         $option = is_multisite() ? get_site_option(self::NOTICE_FIELD) : get_option(self::NOTICE_FIELD);
-        $message = isset($option['message']) ? $option['message'] : false;
+        $message = $option['message'] ?? false;
         $noticeLevel = !empty($option['notice-level']) ? $option['notice-level'] : 'notice-error';
 
         if ($message) {

@@ -1,5 +1,8 @@
 <?php
+
 declare(strict_types=1);
+
+namespace CrowdSecWordPressBouncer;
 
 use CrowdSec\RemediationEngine\CacheStorage\CacheStorageException;
 use CrowdSec\RemediationEngine\LapiRemediation;

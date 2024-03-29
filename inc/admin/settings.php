@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../Constants.php';
+use CrowdSecWordPressBouncer\Constants;
+
 
 function adminSettings()
 {

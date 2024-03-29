@@ -1,5 +1,7 @@
 <?php
 
+use CrowdSecWordPressBouncer\Constants;
+
 require_once __DIR__.'/options-config.php';
 require_once __DIR__ . '/Constants.php';
 
