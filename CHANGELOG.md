@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+---
+
+## [2.6.2](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.6.2) - 2024-03-29
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.1...v2.6.2)
+
+### Fixed
+
+- Use `CrowdSecWordPressBouncer` namespace to avoid conflict with other plugins or themes
+
+---
+
+
 ## [2.6.1](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.6.1) - 2024-03-14
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.0...v2.6.1)
 
