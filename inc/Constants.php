@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace CrowdSecWordPressBouncer;
+
 use CrowdSecBouncer\Constants as LibConstants;
 
 /**

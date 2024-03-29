@@ -1,7 +1,10 @@
 <?php
 
+use CrowdSecWordPressBouncer\Constants;
 use CrowdSecBouncer\BouncerException;
 use CrowdSec\RemediationEngine\Geolocation;
+use CrowdSecWordPressBouncer\AdminNotice;
+use CrowdSecWordPressBouncer\Bouncer;
 
 require_once __DIR__ . '/notice.php';
 require_once __DIR__ . '/../Constants.php';
@@ -222,7 +225,7 @@ if (is_admin()) {
             !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_test_connection')) {
             die('This link expired.');
         }
-        $ip = isset($_POST['crowdsec_test_connection_ip']) ? $_POST['crowdsec_test_connection_ip'] : $_SERVER['REMOTE_ADDR'];
+        $ip = $_POST['crowdsec_test_connection_ip'] ?? $_SERVER['REMOTE_ADDR'];
         testBouncerConnexionInAdminPage($ip);
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
@@ -233,7 +236,7 @@ if (is_admin()) {
             !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_test_geolocation')) {
             die('This link expired.');
         }
-        $ip = isset($_POST['crowdsec_test_geolocation_ip']) ? $_POST['crowdsec_test_geolocation_ip'] : $_SERVER['REMOTE_ADDR'];
+        $ip = $_POST['crowdsec_test_geolocation_ip'] ?? $_SERVER['REMOTE_ADDR'];
         testGeolocationInAdminPage($ip);
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
