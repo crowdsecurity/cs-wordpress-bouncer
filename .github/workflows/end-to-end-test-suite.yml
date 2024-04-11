@@ -19,13 +19,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        wp-version: [ "4.9", "5.0", "5.9", "6.0", "6.4", "6.5" ]
-        php-version: [ "7.2", "7.4", "8.0" ]
-        exclude:
-          - { php-version: "7.4", wp-version: "4.9" }
-          - { php-version: "7.4", wp-version: "5.0" }
-          - { php-version: "8.0", wp-version: "4.9" }
-          - { php-version: "8.0", wp-version: "5.0" }
+        include:
+          - wp-version: '4.9'
+            php-version: '7.2'
+          - wp-version: '5.0'
+            php-version: '7.2'
+          - wp-version: '5.9'
+            php-version: '7.2'
+          - wp-version: '5.9'
+            php-version: '8.0'
+          - wp-version: '6.0'
+            php-version: '7.2'
+          - wp-version: '6.0'
+            php-version: '8.0'
+          - wp-version: '6.5'
+            php-version: '7.2'
+          - wp-version: '6.5'
+            php-version: '8.0'
+          - wp-version: '6.5'
+            php-version: '8.3'
 
     name: End-to-end test suite
     runs-on: ubuntu-latest
