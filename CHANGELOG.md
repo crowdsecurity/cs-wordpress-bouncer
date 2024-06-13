@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix Redis connection error when using a user and password in DSN
+- Fix Redis connection error when using user and password in DSN
 
 ---
 
