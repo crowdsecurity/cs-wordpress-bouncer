@@ -32,6 +32,7 @@
     - [Memcached](#memcached)
 - [Commit message](#commit-message)
   - [Allowed message `type` values](#allowed-message-type-values)
+- [Update documentation table of contents](#update-documentation-table-of-contents)
 - [Release process](#release-process)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -397,6 +398,24 @@ chmod +x .git/hooks/commit-msg
 - refactor (refactoring production code)
 - style (formatting; no production code change)
 - test (adding missing tests, refactoring tests; no production code change)
+
+
+## Update documentation table of contents
+
+To update the table of contents in the documentation, you can use [the `doctoc` tool](https://github.com/thlorenz/doctoc).
+
+First, install it:
+
+```bash
+npm install -g doctoc
+```
+
+Then, run it in the documentation folder:
+
+```bash
+doctoc docs/*
+```
+
 
 
 ## Release process

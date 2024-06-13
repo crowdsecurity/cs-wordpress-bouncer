@@ -13,4 +13,8 @@ return array(
     '23c18046f52bef3eea034657bafda50f' => $vendorDir . '/symfony/polyfill-php81/bootstrap.php',
     '09f6b20656683369174dd6fa83b7e5fb' => $vendorDir . '/symfony/polyfill-uuid/bootstrap.php',
     '0d59ee240a4cd96ddbb4ff164fccea4d' => $vendorDir . '/symfony/polyfill-php73/bootstrap.php',
+    '89efb1254ef2d1c5d80096acd12c4098' => $vendorDir . '/twig/twig/src/Resources/core.php',
+    'ffecb95d45175fd40f75be8a23b34f90' => $vendorDir . '/twig/twig/src/Resources/debug.php',
+    'c7baa00073ee9c61edf148c51917cfb4' => $vendorDir . '/twig/twig/src/Resources/escaper.php',
+    'f844ccf1d25df8663951193c3fc307c8' => $vendorDir . '/twig/twig/src/Resources/string_loader.php',
 );

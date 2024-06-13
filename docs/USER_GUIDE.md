@@ -23,6 +23,8 @@
     - [PHP](#php)
     - [Nginx](#nginx-1)
     - [Apache](#apache-1)
+  - [Multisite usage](#multisite-usage)
+    - [Differences with a single installation](#differences-with-a-single-installation)
 - [Resources](#resources)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
