@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.6.4](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.6.4) - 2024-06-13
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.3...v2.6.4)
+
+### Fixed
+
+- Fix Redis connection error when using a user and password in DSN
+
+---
+
+
 ## [2.6.3](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.6.3) - 2024-04-05
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.2...v2.6.3)
 
