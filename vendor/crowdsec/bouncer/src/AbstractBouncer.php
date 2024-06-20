@@ -45,7 +45,7 @@ abstract class AbstractBouncer
     public function __construct(
         array $configs,
         AbstractRemediation $remediationEngine,
-        LoggerInterface $logger = null
+        ?LoggerInterface $logger = null
     ) {
         // @codeCoverageIgnoreStart
         if (!$logger) {
@@ -513,7 +513,7 @@ abstract class AbstractBouncer
      *
      * @return string The HTML compiled template
      */
-    private function getBanHtml(): string
+    protected function getBanHtml(): string
     {
         $template = new Template('ban.html.twig');
 
@@ -528,7 +528,7 @@ abstract class AbstractBouncer
     /**
      * Returns a default "CrowdSec Captcha (401)" HTML template.
      */
-    private function getCaptchaHtml(
+    protected function getCaptchaHtml(
         bool $error,
         string $captchaImageSrc,
         string $captchaResolutionFormUrl

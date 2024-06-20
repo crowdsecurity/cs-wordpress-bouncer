@@ -48,6 +48,36 @@ class Bouncer extends AbstractBouncer
         parent::__construct($configs, $remediation, $this->logger);
     }
 
+    private function renderTemplate(string $templatePath,array $configs = []): string
+    {
+        ob_start();
+        $config = array_merge($this->configs, $configs);
+        include __DIR__ . '/templates/' . $templatePath;
+        $html = ob_get_contents();
+        ob_end_clean();
+        return $html;
+    }
+
+    protected function getBanHtml(): string
+    {
+        return $this->renderTemplate('ban-wall.php');
+    }
+
+    protected function getCaptchaHtml(
+        bool $error,
+        string $captchaImageSrc,
+        string $captchaResolutionFormUrl
+    ): string {
+        $configs = [
+            'error' => $error,
+            'captcha_img' => $captchaImageSrc,
+            'captcha_resolution_url' => $captchaResolutionFormUrl,
+        ];
+
+
+        return $this->renderTemplate('captcha-wall.php', $configs);
+    }
+
     protected function escape(string $value): string
     {
         return htmlspecialchars($value, \ENT_QUOTES, 'UTF-8');

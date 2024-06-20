@@ -19,10 +19,13 @@
 		}
 	},
 	"require": {
-		"crowdsec/bouncer": "^2.0.0",
+		"crowdsec/bouncer": "^2.2.0",
 		"symfony/cache": "5.4.40",
 		"symfony/polyfill-mbstring": "^1.27.0",
 		"symfony/service-contracts": "^2.5.2"
+	},
+	"replace": {
+		"twig/twig": "*"
 	},
 	"autoload": {
 		"psr-4": {
