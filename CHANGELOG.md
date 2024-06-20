@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+
+
+## [2.6.6](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.6.6) - 2024-06-20
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.5...v2.6.6)
+
+### Fixed
+
+- Remove Twig dependency to avoid conflict with other plugins or themes (see [issue 153](https://github.com/crowdsecurity/cs-wordpress-bouncer/issues/153))
+  (Previous release was not correctly published)
+
+---
+
 ## [2.6.5](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.6.5) - 2024-06-20
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.4...v2.6.5)
 
