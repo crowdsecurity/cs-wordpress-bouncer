@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        wp-version: [ "4.9", "5.9", "6.5" ]
+        wp-version: [ "4.9", "5.9", "6.6" ]
         php-version: [ "7.2" ]
         subsite: ["site1", "site2"]
 
