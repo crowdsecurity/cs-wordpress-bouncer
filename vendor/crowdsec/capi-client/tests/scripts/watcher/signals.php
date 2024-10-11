@@ -26,11 +26,17 @@ $configs = [
     'machine_id_prefix' => 'capiclienttest',
     'user_agent_suffix' => 'CapiClientTest',
     'scenarios' => $scenarios,
-    ];
-$client = new Watcher($configs, new FileStorage());
+    'env' => 'dev',
+];
+$client = new Watcher(
+    $configs,
+    new FileStorage(__DIR__ . '/../../../src/Storage', $configs['env']),
+    null,
+    new ConsoleLog(['level' => 'critical'])
+);
 echo 'Watcher instantiated' . \PHP_EOL;
 
-echo 'Calling signals for ' . $client->getConfig('api_url') . \PHP_EOL;
+echo 'Pushing signals for ' . $client->getConfig('api_url') . \PHP_EOL;
 echo 'Scenarios list: ' . \PHP_EOL;
 print_r($client->getConfig('scenarios'));
 echo 'Signals list: ' . \PHP_EOL;

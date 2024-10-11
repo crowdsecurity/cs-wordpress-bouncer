@@ -1,15 +1,14 @@
 <?php
 
-use CrowdSecWordPressBouncer\AdminNotice;
+use CrowdSecWordPressBouncer\Admin\AdminNotice;
 use CrowdSecWordPressBouncer\Constants;
 use CrowdSecWordPressBouncer\Bouncer;
 use CrowdSecBouncer\BouncerException;
 use CrowdSec\RemediationEngine\Constants as RemConstants;
+use CrowdSec\LapiClient\Constants as LapiConstants;
 use IPLib\Factory;
 
-require_once __DIR__ . '/../Constants.php';
 require_once __DIR__ . '/../options-config.php';
-require_once __DIR__ . '/notice.php';
 
 function adminAdvancedSettings()
 {
@@ -48,7 +47,11 @@ function adminAdvancedSettings()
                 'crowdsec_display_errors',
                 'crowdsec_forced_test_ip',
                 'crowdsec_forced_test_forwarded_ip',
-                'crowdsec_auto_prepend_file_mode'
+                'crowdsec_auto_prepend_file_mode',
+                'crowdsec_use_appsec',
+                'crowdsec_appsec_url',
+                'crowdsec_appsec_fallback_remediation',
+                'crowdsec_appsec_timeout_ms',
             ];
 
         foreach ( $options as $option ) {
@@ -342,7 +345,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
     // Field "crowdsec_fallback_remediation"
     $choice = [];
-    $remediations = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BYPASS];
+    $remediations = [Constants::REMEDIATION_BYPASS, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BAN,];
     foreach ($remediations as $remediation) {
         $choice[$remediation] = $remediation;
     }
@@ -350,7 +353,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     'crowdsec_admin_advanced_remediations', function ($input) {
         $remediations = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BYPASS];
         if (!in_array($input, $remediations)) {
-            $input = Constants::BOUNCING_LEVEL_DISABLED;
+            $input = Constants::REMEDIATION_BYPASS;
             $message = 'Fallback to: Incorrect Fallback selected.';
             if(is_multisite()){
                 AdminNotice::displayError($message);
@@ -506,6 +509,60 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
         }, ' seconds. <p>The lifetime of cached country geolocation result for some IP.<br>Default: '
            .Constants::CACHE_EXPIRATION_FOR_GEO.'.<br>Set 0 to disable caching', Constants::CACHE_EXPIRATION_FOR_GEO,
         'width: 115px;', 'number');
+
+
+    /***************************
+     ** Section "AppSec" **
+     **************************/
+    $useAppSec = is_multisite() ? get_site_option('crowdsec_use_appsec') : get_option('crowdsec_use_appsec');
+
+    add_settings_section('crowdsec_admin_advanced_appsec', 'AppSec', function () {
+        echo 'Configure some details about AppSec';
+    }, 'crowdsec_advanced_settings');
+
+    // Field "AppSec enabled"
+    addFieldCheckbox('crowdsec_use_appsec', 'Enable AppSec feature', 'crowdsec_plugin_advanced_settings',
+        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_appsec', function () {}, function () {}, '
+    <p>Enable if you want to use also CrowdSec AppSec decisions.<br>If enabled, bounced IP will be TODO.</p>');
+
+    addFieldString('crowdsec_appsec_url', 'AppSec Url', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_appsec', function ($input, $default = '') {
+        if(empty($input) && $default){
+            add_settings_error('AppSec URL', 'crowdsec_error', 'AppSec URL: Can not be empty. Default value used: '.$default);
+            $input = $default;
+        }
+
+        return $input;
+    }, '', 'Your AppSec URL (e.g. http://localhost:7422)', '');
+
+    // Field "timeout"
+    addFieldString('crowdsec_appsec_timeout_ms', 'AppSec request timeout', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
+        'crowdsec_admin_advanced_appsec', function ($input) {
+            if ((int) $input === 0) {
+                add_settings_error('AppSec timeout', 'crowdsec_error', 'AppSec timeout: Must be different than 0.');
+
+                return Constants::APPSEC_TIMEOUT_MS;
+            }
+
+            return $input ;
+        }, ' milliseconds. <p>Maximum execution time (in milliseconds) for a AppSec request.<br> Set a negative value (e.g. -1) to allow unlimited request timeout.<br>Default to ' . Constants::APPSEC_TIMEOUT_MS .'.',
+        Constants::APPSEC_TIMEOUT_MS, 'width: 115px;', 'number');
+
+    addFieldSelect('crowdsec_appsec_fallback_remediation', 'AppSec Fallback to', 'crowdsec_plugin_advanced_settings',
+        'crowdsec_advanced_settings',
+        'crowdsec_admin_advanced_appsec', function ($input) {
+            $remediations = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BYPASS];
+            if (!in_array($input, $remediations)) {
+                $input = Constants::REMEDIATION_BYPASS;
+                $message = 'Fallback to: Incorrect Fallback selected.';
+                if(is_multisite()){
+                    AdminNotice::displayError($message);
+                }else{
+                    add_settings_error('AppSec Fallback to', 'crowdsec_error', $message);
+                }
+            }
+
+            return $input;
+        }, '<p>Which remediation to apply when AppSec call failed due to timeout.</p>', $choice);
 
 
     /*******************************

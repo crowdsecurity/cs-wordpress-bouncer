@@ -16,9 +16,11 @@ namespace CrowdSec\Common\Tests\Unit;
  */
 
 use CrowdSec\Common\Client\ClientException;
+use CrowdSec\Common\Client\HttpMessage\AppSecRequest;
 use CrowdSec\Common\Client\HttpMessage\Request;
 use CrowdSec\Common\Client\HttpMessage\Response;
 use CrowdSec\Common\Client\RequestHandler\Curl;
+use CrowdSec\Common\Client\TimeoutException;
 use CrowdSec\Common\Constants;
 use CrowdSec\Common\Tests\Constants as TestConstants;
 use CrowdSec\Common\Tests\MockedData;
@@ -27,6 +29,7 @@ use CrowdSec\Common\Tests\PHPUnitUtil;
 /**
  * @uses \CrowdSec\Common\Client\AbstractClient
  * @uses \CrowdSec\Common\Client\HttpMessage\Request
+ * @uses \CrowdSec\Common\Client\HttpMessage\AppSecRequest
  * @uses \CrowdSec\Common\Client\HttpMessage\Response
  * @uses \CrowdSec\Common\Client\HttpMessage\AbstractMessage
  *
@@ -34,8 +37,13 @@ use CrowdSec\Common\Tests\PHPUnitUtil;
  * @covers \CrowdSec\Common\Client\RequestHandler\Curl::handle
  * @covers \CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler::__construct
  * @covers \CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler::getConfig
- * @covers \CrowdSec\Common\Client\RequestHandler\Curl::handleConfigs
+ * @covers \CrowdSec\Common\Client\RequestHandler\Curl::handleSSL
+ * @covers \CrowdSec\Common\Client\RequestHandler\Curl::handleTimeout
  * @covers \CrowdSec\Common\Client\RequestHandler\Curl::handleMethod
+ * @covers \CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler::getTimeout
+ * @covers \CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler::getConnectTimeout
+ * @covers \CrowdSec\Common\Client\RequestHandler\Curl::getConnectTimeoutOption
+ * @covers \CrowdSec\Common\Client\RequestHandler\Curl::getTimeoutOption
  */
 final class CurlTest extends AbstractClient
 {
@@ -56,7 +64,25 @@ final class CurlTest extends AbstractClient
         $this->assertEquals(400, $code);
 
         $this->assertEquals(
-            'User agent is required',
+            'Header "User-Agent" is required',
+            $error,
+            'Should failed and throw if no user agent'
+        );
+        // Test 1 bis AppSec header required
+        $request = new AppSecRequest('test-uri', 'POST', ['User-Agent' => 'ok']);
+        $error = '';
+        $code = 0;
+        try {
+            $mockCurlRequest->handle($request);
+        } catch (ClientException $e) {
+            $error = $e->getMessage();
+            $code = $e->getCode();
+        }
+
+        $this->assertEquals(400, $code);
+
+        $this->assertEquals(
+            'Header "X-Crowdsec-Appsec-Ip" is required',
             $error,
             'Should failed and throw if no user agent'
         );
@@ -266,5 +292,145 @@ final class CurlTest extends AbstractClient
             $curlOptions,
             'Curl options must be as expected for DELETE'
         );
+    }
+
+    public function testOptionsForAppSec()
+    {
+        $url = TestConstants::APPSEC_URL . '/';
+        $method = 'POST';
+        $headers = [
+            'X-Crowdsec-Appsec-Ip' => 'test-value',
+            'X-Crowdsec-Appsec-Host' => 'test-value',
+            'X-Crowdsec-Appsec-User-Agent' => 'test-value',
+            'X-Crowdsec-Appsec-Verb' => 'test-value',
+            'X-Crowdsec-Appsec-Method' => 'test-value',
+            'X-Crowdsec-Appsec-Uri' => 'test-value',
+            'X-Crowdsec-Appsec-Api-Key' => 'test-value',
+        ];
+        $rawBody = 'this is raw body';
+        $configs = $this->tlsConfigs;
+
+        $curlRequester = new Curl($configs);
+        $request = new AppSecRequest($url, 'POST', $headers, $rawBody);
+
+        $curlOptions = PHPUnitUtil::callMethod(
+            $curlRequester,
+            'createOptions',
+            [$request]
+        );
+        $expected = [
+            \CURLOPT_HEADER => false,
+            \CURLOPT_RETURNTRANSFER => true,
+            \CURLOPT_HTTPHEADER => [
+                'X-Crowdsec-Appsec-Ip:test-value',
+                'X-Crowdsec-Appsec-Host:test-value',
+                'X-Crowdsec-Appsec-User-Agent:test-value',
+                'X-Crowdsec-Appsec-Verb:test-value',
+                'X-Crowdsec-Appsec-Method:test-value',
+                'X-Crowdsec-Appsec-Uri:test-value',
+                'X-Crowdsec-Appsec-Api-Key:test-value',
+            ],
+            \CURLOPT_POST => true,
+            \CURLOPT_POSTFIELDS => 'this is raw body',
+            \CURLOPT_URL => $url,
+            \CURLOPT_CUSTOMREQUEST => $method,
+            \CURLOPT_TIMEOUT_MS => TestConstants::APPSEC_TIMEOUT_MS,
+            \CURLOPT_CONNECTTIMEOUT_MS => Constants::APPSEC_CONNECT_TIMEOUT_MS,
+            \CURLOPT_SSL_VERIFYPEER => false,
+            \CURLOPT_ENCODING => '',
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $curlOptions,
+            'Curl options must be as expected for POST'
+        );
+
+        $method = 'GET';
+        $curlRequester = new Curl($configs);
+
+        $request = new AppSecRequest($url, $method, array_merge($headers, ['User-Agent' => TestConstants::USER_AGENT_SUFFIX]));
+
+        $curlOptions = PHPUnitUtil::callMethod(
+            $curlRequester,
+            'createOptions',
+            [$request]
+        );
+
+        $expected = [
+            \CURLOPT_HEADER => false,
+            \CURLOPT_RETURNTRANSFER => true,
+            \CURLOPT_USERAGENT => TestConstants::USER_AGENT_SUFFIX,
+            \CURLOPT_HTTPHEADER => [
+                'X-Crowdsec-Appsec-Ip:test-value',
+                'X-Crowdsec-Appsec-Host:test-value',
+                'X-Crowdsec-Appsec-User-Agent:test-value',
+                'X-Crowdsec-Appsec-Verb:test-value',
+                'X-Crowdsec-Appsec-Method:test-value',
+                'X-Crowdsec-Appsec-Uri:test-value',
+                'X-Crowdsec-Appsec-Api-Key:test-value',
+                'User-Agent:' . TestConstants::USER_AGENT_SUFFIX,
+            ],
+            \CURLOPT_POST => false,
+            \CURLOPT_HTTPGET => true,
+            \CURLOPT_URL => $url,
+            \CURLOPT_CUSTOMREQUEST => $method,
+            \CURLOPT_TIMEOUT_MS => TestConstants::APPSEC_TIMEOUT_MS,
+            \CURLOPT_CONNECTTIMEOUT_MS => Constants::APPSEC_CONNECT_TIMEOUT_MS,
+            \CURLOPT_SSL_VERIFYPEER => false,
+            \CURLOPT_ENCODING => '',
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $curlOptions,
+            'Curl options must be as expected for GET'
+        );
+    }
+
+    public function testHandleThrowsTimeoutException()
+    {
+        // Mock the Request object
+        $request = $this->createMock(Request::class);
+        $request->method('getMethod')->willReturn('GET');
+        $request->method('getParams')->willReturn([]);
+        $request->method('getUri')->willReturn('http://example.com');
+
+        $mockCurlRequest = $this->getCurlMock(['exec', 'errno', 'error']);
+
+        $mockCurlRequest->method('exec')->willReturn(false);
+        $mockCurlRequest->method('errno')->willReturn(\CURLE_OPERATION_TIMEOUTED);
+        $mockCurlRequest->method('error')->willReturn('Operation timed out');
+
+        // Test that TimeoutException is thrown
+        $this->expectException(TimeoutException::class);
+        $this->expectExceptionMessage('CURL call timeout: Operation timed out');
+        $this->expectExceptionCode(500);
+
+        // Call the handle method
+        $mockCurlRequest->handle($request);
+    }
+
+    public function testHandleThrowsClientException()
+    {
+        // Mock the Request object
+        $request = $this->createMock(Request::class);
+        $request->method('getMethod')->willReturn('GET');
+        $request->method('getParams')->willReturn([]);
+        $request->method('getUri')->willReturn('http://example.com');
+
+        $mockCurlRequest = $this->getCurlMock(['exec', 'errno', 'error']);
+
+        $mockCurlRequest->method('exec')->willReturn(false);
+        $mockCurlRequest->method('errno')->willReturn(\CURLE_HTTP_POST_ERROR);
+        $mockCurlRequest->method('error')->willReturn('There was an error');
+
+        // Test that ClientException is thrown
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage('Unexpected CURL call failure: There was an error');
+        $this->expectExceptionCode(500);
+
+        // Call the handle method
+        $mockCurlRequest->handle($request);
     }
 }

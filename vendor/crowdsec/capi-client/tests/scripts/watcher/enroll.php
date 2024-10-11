@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 
 use CrowdSec\CapiClient\Storage\FileStorage;
 use CrowdSec\CapiClient\Watcher;
+use CrowdSec\Common\Logger\ConsoleLog;
 
 // Parse arguments
 $scenarios = isset($argv[1]) ? json_decode($argv[1], true) : false;
@@ -28,8 +29,15 @@ echo \PHP_EOL . 'Instantiate watcher ...' . \PHP_EOL;
 $configs = [
     'machine_id_prefix' => 'capiclienttest',
     'user_agent_suffix' => 'CapiClientTest',
-    'scenarios' => $scenarios, ];
-$client = new Watcher($configs, new FileStorage());
+    'scenarios' => $scenarios,
+    'env' => 'dev',
+];
+$client = new Watcher(
+    $configs,
+    new FileStorage(__DIR__ . '/../../../src/Storage', $configs['env']),
+    null,
+    new ConsoleLog(['level' => 'critical'])
+);
 echo 'Watcher instantiated' . \PHP_EOL;
 
 echo 'Calling enroll for ' . $client->getConfig('api_url') . \PHP_EOL;

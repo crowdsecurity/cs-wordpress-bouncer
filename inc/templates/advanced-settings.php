@@ -5,27 +5,58 @@
 	jQuery(() => {
 		const $cacheTechno = jQuery('[name=crowdsec_cache_system]');
 		const $cacheTechnoDiv = $cacheTechno.parent().parent();
-		const $redisDsnDiv = jQuery('[name=crowdsec_redis_dsn]').parent().parent();
-		const $memcachedDsnDiv = jQuery('[name=crowdsec_memcached_dsn]').parent().parent();
+        const $redisDsn = jQuery('[name=crowdsec_redis_dsn]');
+		const $redisDsnDiv = $redisDsn.parent().parent();
+        const $memcachedDsn = jQuery('[name=crowdsec_memcached_dsn]');
+		const $memcachedDsnDiv = $memcachedDsn.parent().parent();
 		$cacheTechnoDiv.insertBefore($redisDsnDiv);
+
+        // AppSec
+        const $useAppSec = jQuery('[name=crowdsec_use_appsec]');
+        const $appSecUrl = jQuery('[name=crowdsec_appsec_url]');
+        const $appSecUrlTr = $appSecUrl.parent().parent();
+        const $appSecTimeoutTr = jQuery('[name=crowdsec_appsec_timeout_ms]').parent().parent();
+        const $appSecFallback = jQuery('[name=crowdsec_appsec_fallback_remediation]').parent().parent();
+
+        function updateAppSecDisplay () {
+            if($useAppSec.is(":checked")) {
+                $appSecUrl.attr('required', 'required');
+                $appSecUrlTr.show();
+                $appSecTimeoutTr.show();
+                $appSecFallback.show();
+            } else {
+                $appSecUrl.removeAttr('required');
+                $appSecUrlTr.hide();
+                $appSecTimeoutTr.hide();
+                $appSecFallback.hide();
+            }
+        }
 
 		function updateDsnDisplay () {
 			switch ($cacheTechno.val()) {
 				case 'redis':
+                    $redisDsn.attr('required', 'required');
+                    $memcachedDsn.removeAttr('required');
 					$redisDsnDiv.show();
 					$memcachedDsnDiv.hide();
 					break;
 				case 'memcached':
+                    $redisDsn.removeAttr('required');
+                    $memcachedDsn.attr('required', 'required');
 					$redisDsnDiv.hide();
 					$memcachedDsnDiv.show();
 					break;
 				default:
+                    $redisDsn.removeAttr('required');
+                    $memcachedDsn.removeAttr('required');
 					$redisDsnDiv.hide();
 					$memcachedDsnDiv.hide();
 			}
 		}
 		updateDsnDisplay();
+        updateAppSecDisplay();
 		$cacheTechno.change(updateDsnDisplay);
+        $useAppSec.change(updateAppSecDisplay);
 	});
 	</script>
 	<?php settings_errors(); ?>

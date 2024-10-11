@@ -18,8 +18,10 @@ namespace CrowdSec\Common\Tests\Unit;
  */
 
 use CrowdSec\Common\Client\ClientException;
+use CrowdSec\Common\Client\HttpMessage\AppSecRequest;
 use CrowdSec\Common\Client\HttpMessage\Request;
 use CrowdSec\Common\Client\RequestHandler\FileGetContents;
+use CrowdSec\Common\Client\TimeoutException;
 use CrowdSec\Common\Constants;
 use CrowdSec\Common\Tests\Constants as TestConstants;
 use CrowdSec\Common\Tests\PHPUnitUtil;
@@ -27,15 +29,20 @@ use CrowdSec\Common\Tests\PHPUnitUtil;
 /**
  * @uses \CrowdSec\Common\Client\AbstractClient
  * @uses \CrowdSec\Common\Client\HttpMessage\Request
+ * @uses \CrowdSec\Common\Client\HttpMessage\AppSecRequest
  * @uses \CrowdSec\Common\Client\HttpMessage\Response
  * @uses \CrowdSec\Common\Client\HttpMessage\AbstractMessage
  *
  * @covers \CrowdSec\Common\Client\RequestHandler\FileGetContents::handle
+ * @covers \CrowdSec\Common\Client\RequestHandler\FileGetContents::handleSSL
  * @covers \CrowdSec\Common\Client\RequestHandler\FileGetContents::createContextConfig
  * @covers \CrowdSec\Common\Client\RequestHandler\FileGetContents::convertHeadersToString
  * @covers \CrowdSec\Common\Client\RequestHandler\FileGetContents::getResponseHttpCode
  * @covers \CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler::__construct
  * @covers \CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler::getConfig
+ * @covers \CrowdSec\Common\Client\RequestHandler\AbstractRequestHandler::getTimeout
+ * @covers \CrowdSec\Common\Client\RequestHandler\FileGetContents::handleTimeout
+ * @covers \CrowdSec\Common\Client\RequestHandler\FileGetContents::isTimeoutError
  */
 final class FileGetContentsTest extends AbstractClient
 {
@@ -154,6 +161,98 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
         );
     }
 
+    public function testContextConfigForAppSec()
+    {
+        $method = 'POST';
+        $headers = [
+            'X-Crowdsec-Appsec-Ip' => 'test-value',
+            'X-Crowdsec-Appsec-Host' => 'test-value',
+            'X-Crowdsec-Appsec-User-Agent' => 'test-value',
+            'X-Crowdsec-Appsec-Verb' => 'test-value',
+            'X-Crowdsec-Appsec-Method' => 'test-value',
+            'X-Crowdsec-Appsec-Uri' => 'test-value',
+            'X-Crowdsec-Appsec-Api-Key' => 'test-value',
+        ];
+        $rawBody = 'This is a raw body';
+        $configs = $this->tlsConfigs;
+
+        $fgcRequester = new FileGetContents($configs);
+
+        $request = new AppSecRequest('test-url', $method, $headers, $rawBody);
+
+        $contextConfig = PHPUnitUtil::callMethod(
+            $fgcRequester,
+            'createContextConfig',
+            [$request]
+        );
+
+        $contextConfig['http']['header'] = str_replace("\r", '', $contextConfig['http']['header']);
+
+        $expected = [
+            'http' => [
+                'method' => $method,
+                'header' => 'X-Crowdsec-Appsec-Ip: test-value
+X-Crowdsec-Appsec-Host: test-value
+X-Crowdsec-Appsec-User-Agent: test-value
+X-Crowdsec-Appsec-Verb: test-value
+X-Crowdsec-Appsec-Method: test-value
+X-Crowdsec-Appsec-Uri: test-value
+X-Crowdsec-Appsec-Api-Key: test-value
+',
+                'ignore_errors' => true,
+                'content' => 'This is a raw body',
+                'timeout' => TestConstants::APPSEC_TIMEOUT_MS / 1000,
+            ],
+            'ssl' => [
+                'verify_peer' => false,
+            ],
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $contextConfig,
+            'Context config must be as expected for POST'
+        );
+
+        $method = 'GET';
+
+        $request = new AppSecRequest('test-url', $method, array_merge($headers, ['User-Agent' => TestConstants::USER_AGENT_SUFFIX]));
+
+        $contextConfig = PHPUnitUtil::callMethod(
+            $fgcRequester,
+            'createContextConfig',
+            [$request]
+        );
+
+        $contextConfig['http']['header'] = str_replace("\r", '', $contextConfig['http']['header']);
+
+        $expected = [
+            'http' => [
+                'method' => $method,
+                'header' => 'X-Crowdsec-Appsec-Ip: test-value
+X-Crowdsec-Appsec-Host: test-value
+X-Crowdsec-Appsec-User-Agent: test-value
+X-Crowdsec-Appsec-Verb: test-value
+X-Crowdsec-Appsec-Method: test-value
+X-Crowdsec-Appsec-Uri: test-value
+X-Crowdsec-Appsec-Api-Key: test-value
+User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
+',
+                'ignore_errors' => true,
+                'timeout' => TestConstants::APPSEC_TIMEOUT_MS / 1000,
+            ],
+            'ssl' => [
+                'verify_peer' => false,
+            ],
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $contextConfig,
+            'Context config must be as expected for GET'
+        );
+    }
+
     public function testHandleError()
     {
         $mockFGCRequest = $this->getFGCMock(['exec']);
@@ -167,7 +266,21 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
         }
 
         $this->assertEquals(
-            'User agent is required',
+            'Header "User-Agent" is required',
+            $error,
+            'Should failed and throw if no user agent'
+        );
+
+        $request = new AppSecRequest('test-uri', 'POST', ['User-Agent' => 'test']);
+        $error = false;
+        try {
+            $mockFGCRequest->handle($request);
+        } catch (ClientException $e) {
+            $error = $e->getMessage();
+        }
+
+        $this->assertEquals(
+            'Header "X-Crowdsec-Appsec-Ip" is required',
             $error,
             'Should failed and throw if no user agent'
         );
@@ -180,7 +293,6 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
         );
 
         $request = new Request('test-uri', 'POST', ['User-Agent' => TestConstants::USER_AGENT_SUFFIX]);
-
         $code = 0;
         try {
             $mockFGCRequest->handle($request);
@@ -192,7 +304,7 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
         $this->assertEquals(500, $code);
 
         $this->assertEquals(
-            'Unexpected HTTP call failure.',
+            'Unexpected file_get_contents call failure: ',
             $error,
             'Should failed and throw if no response'
         );
@@ -233,5 +345,92 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
             $result,
             'Response status code should be retrieved'
         );
+    }
+
+    public function testHandleThrowsClientException()
+    {
+        // Mock the Request object
+        $request = $this->createMock(Request::class);
+        $request->method('getMethod')->willReturn('GET');
+        $request->method('getParams')->willReturn([]);
+        $request->method('getUri')->willReturn('http://example.com');
+
+        // Create an instance of your class
+        $mockFGCRequest = $this->getFGCMock(['exec']);
+
+        // Mock the exec method to trigger a warning and simulate failure
+        $mockFGCRequest->method('exec')
+            ->willReturnCallback(function () {
+                // Trigger a warning that will be caught by the method's error handler
+                trigger_error('Connection refused', \E_USER_ERROR);
+
+                // Simulate a failure response
+                return ['response' => false];
+            });
+
+        // Test that ClientException is thrown
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage('Unexpected file_get_contents call failure: Connection refused');
+
+        // Call the handle method
+        $mockFGCRequest->handle($request);
+    }
+
+    public function testHandleThrowsTimeoutException()
+    {
+        // Mock the Request object
+        $request = $this->createMock(Request::class);
+        $request->method('getMethod')->willReturn('GET');
+        $request->method('getParams')->willReturn([]);
+        $request->method('getUri')->willReturn('http://example.com');
+
+        // Create an instance of your class
+        $mockFGCRequest = $this->getFGCMock(['exec']);
+
+        // Mock the exec method to trigger a warning and simulate failure
+        $mockFGCRequest->method('exec')
+            ->willReturnCallback(function () {
+                // Trigger a warning that will be caught by the method's error handler
+                trigger_error('failed to open stream: Connection timed out', \E_USER_ERROR);
+
+                // Simulate a failure response
+                return ['response' => false];
+            });
+
+        // Test that ClientException is thrown
+        $this->expectException(TimeoutException::class);
+        $this->expectExceptionMessage('file_get_contents call timeout: failed to open stream: Connection timed out');
+
+        // Call the handle method
+        $mockFGCRequest->handle($request);
+    }
+
+    public function testHandleThrowsSslTimeoutException()
+    {
+        // Mock the Request object
+        $request = $this->createMock(Request::class);
+        $request->method('getMethod')->willReturn('GET');
+        $request->method('getParams')->willReturn([]);
+        $request->method('getUri')->willReturn('http://example.com');
+
+        // Create an instance of your class
+        $mockFGCRequest = $this->getFGCMock(['exec']);
+
+        // Mock the exec method to trigger a warning and simulate failure
+        $mockFGCRequest->method('exec')
+            ->willReturnCallback(function () {
+                // Trigger a warning that will be caught by the method's error handler
+                trigger_error('SSL: Handshake timed out', \E_USER_ERROR);
+
+                // Simulate a failure response
+                return ['response' => false];
+            });
+
+        // Test that ClientException is thrown
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage('Unexpected file_get_contents call failure: SSL: Handshake timed out');
+
+        // Call the handle method
+        $mockFGCRequest->handle($request);
     }
 }

@@ -28,12 +28,12 @@ class Constants
      * 66051 = intdiv(ip2long(IP_V4),256)
      */
     public const IP_V4_BUCKET_CACHE_KEY = AbstractCache::IPV4_BUCKET_KEY . AbstractCache::SEP .
-                                          '66051';
+        '66051';
     public const IP_V4_CACHE_KEY = RemConstants::SCOPE_IP . AbstractCache::SEP . self::IP_V4;
     public const IP_V4_3_CACHE_KEY = RemConstants::SCOPE_IP . AbstractCache::SEP . self::IP_V4_3;
     public const IP_V4_RANGE_CACHE_KEY = RemConstants::SCOPE_RANGE . AbstractCache::SEP . self::IP_V4 .
-                                         AbstractCache::SEP .
-                                         self::IP_RANGE;
+        AbstractCache::SEP .
+        self::IP_RANGE;
     public const IP_V6 = '2001:0db8:85a3:0000:0000:8a2e:0370:7334';
     public const IP_V6_CACHE_KEY = '2001_0db8_85a3_0000_0000_8a2e_0370_7334';
     public const TMP_DIR = '/tmp';

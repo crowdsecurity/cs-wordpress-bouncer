@@ -3,14 +3,10 @@
 use CrowdSecWordPressBouncer\Constants;
 use CrowdSecBouncer\BouncerException;
 use CrowdSec\RemediationEngine\Geolocation;
-use CrowdSecWordPressBouncer\AdminNotice;
+use CrowdSecWordPressBouncer\Admin\AdminNotice;
 use CrowdSecWordPressBouncer\Bouncer;
 
-require_once __DIR__ . '/notice.php';
-require_once __DIR__ . '/../Constants.php';
-require_once __DIR__ . '/../Bouncer.php';
 require_once __DIR__ . '/../options-config.php';
-
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/theme.php';
 require_once __DIR__.'/advanced-settings.php';
@@ -20,7 +16,6 @@ if(is_multisite()){
 }else{
     add_action('admin_notices', [new AdminNotice(), 'displayAdminNotice']);
 }
-
 
 function crowdsec_option_update_callback($name, $oldValue, $newValue)
 {
@@ -298,12 +293,28 @@ if (is_admin()) {
             ]);
         }
 
-        function addFieldString(string $optionName, string $label, string $optionGroup, string $pageName, string $sectionName, callable $onChange, $descriptionHtml, $placeholder, $inputStyle, $inputType = 'text', $disabled = false)
+        function addFieldString(
+                string $optionName,
+                string $label,
+                string $optionGroup,
+                string $pageName,
+                string $sectionName,
+                callable $onChange,
+                $descriptionHtml,
+                $placeholder,
+                $inputStyle,
+                $inputType = 'text',
+                $disabled = false,
+                $default = ''
+        )
         {
-            register_setting($optionGroup, $optionName, function ($input) use ($onChange, $optionName) {
+            register_setting($optionGroup, $optionName, function ($input) use ($onChange, $optionName, $default) {
                 $currentState = esc_attr($input);
                 $previousState = is_multisite() ? esc_attr(get_site_option($optionName)) : esc_attr(get_option($optionName));
 
+                if (empty($currentState) && !empty($default)) {
+                    $currentState = $onChange($currentState, $default);
+                }
                 if ($previousState !== $currentState) {
                     $currentState = $onChange($currentState);
                 }
@@ -314,7 +325,8 @@ if (is_admin()) {
                 $name = $args['label_for'];
                 $placeholder = $args['placeholder'];
                 $value = $previousState = is_multisite() ? esc_attr(get_site_option($optionName)) : esc_attr(get_option($optionName));
-                echo '<input '.($disabled ? 'disabled="disabled"' : '')." style=\"$inputStyle\" type=\"$inputType\" class=\"regular-text\" name=\"$name\" value=\"$value\" placeholder=\"$placeholder\">$descriptionHtml";
+                echo '<input  '.($disabled ? 'disabled="disabled"' : '')." 
+                style=\"$inputStyle\" type=\"$inputType\" class=\"regular-text\" name=\"$name\" value=\"$value\" placeholder=\"$placeholder\">$descriptionHtml";
             }, $pageName, $sectionName, [
                 'label_for' => $optionName,
                 'placeholder' => $placeholder,
@@ -353,13 +365,6 @@ if (is_admin()) {
             }, $pageName, $sectionName);
         }
 
-        /*add_menu_page('CrowdSec Plugin', 'CrowdSec', 'manage_options', 'crowdsec_plugin', function () {
-            require_once(CROWDSEC_PLUGIN_PATH . "/templates/dashboard.php");
-        }, 'dashicons-shield', 110);
-        add_submenu_page('crowdsec_plugin', 'Settings', 'Settings', 'manage_options', 'crowdsec_settings', function () {
-            require_once(CROWDSEC_PLUGIN_PATH . "/templates/settings.php");
-        });
-        */
         add_menu_page('CrowdSec Plugin', 'CrowdSec', 'manage_options', 'crowdsec_plugin', function () {
             require_once CROWDSEC_PLUGIN_PATH.'/inc/templates/settings.php';
         }, 'dashicons-shield', 110);

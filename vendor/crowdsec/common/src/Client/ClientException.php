@@ -7,7 +7,7 @@ namespace CrowdSec\Common\Client;
 use CrowdSec\Common\Exception;
 
 /**
- * Class for all exceptions thrown by CrowdSec client.
+ * Class for generic exceptions thrown by CrowdSec client.
  *
  * @author    CrowdSec team
  *

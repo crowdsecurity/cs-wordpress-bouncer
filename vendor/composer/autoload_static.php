@@ -17,10 +17,6 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
     );
 
     public static $prefixLengthsPsr4 = array (
-        '\\' => 
-        array (
-            '\\' => 1,
-        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Uuid\\' => 22,
@@ -66,16 +62,13 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
             'CrowdSec\\LapiClient\\' => 20,
             'CrowdSec\\Common\\' => 16,
             'CrowdSec\\CapiClient\\' => 20,
+            'CrowdSecWordPressBouncer\\' => 25,
             'CrowdSecBouncer\\' => 16,
             'Composer\\CaBundle\\' => 18,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        '\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/',
-        ),
         'Symfony\\Polyfill\\Uuid\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-uuid',
@@ -188,6 +181,10 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
         array (
             0 => __DIR__ . '/..' . '/crowdsec/capi-client/src',
         ),
+        'CrowdSecWordPressBouncer\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/inc',
+        ),
         'CrowdSecBouncer\\' => 
         array (
             0 => __DIR__ . '/..' . '/crowdsec/bouncer/src',
@@ -208,6 +205,9 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
         'CrowdSecBouncer\\Configuration' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Configuration.php',
         'CrowdSecBouncer\\Constants' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Constants.php',
         'CrowdSecBouncer\\Template' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Template.php',
+        'CrowdSecWordPressBouncer\\Admin\\AdminNotice' => __DIR__ . '/../..' . '/inc/Admin/AdminNotice.php',
+        'CrowdSecWordPressBouncer\\Bouncer' => __DIR__ . '/../..' . '/inc/Bouncer.php',
+        'CrowdSecWordPressBouncer\\Constants' => __DIR__ . '/../..' . '/inc/Constants.php',
         'CrowdSec\\CapiClient\\ClientException' => __DIR__ . '/..' . '/crowdsec/capi-client/src/ClientException.php',
         'CrowdSec\\CapiClient\\Client\\AbstractClient' => __DIR__ . '/..' . '/crowdsec/capi-client/src/Client/AbstractClient.php',
         'CrowdSec\\CapiClient\\Client\\CapiHandler\\CapiHandlerInterface' => __DIR__ . '/..' . '/crowdsec/capi-client/src/Client/CapiHandler/CapiHandlerInterface.php',
@@ -225,12 +225,14 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
         'CrowdSec\\Common\\Client\\AbstractClient' => __DIR__ . '/..' . '/crowdsec/common/src/Client/AbstractClient.php',
         'CrowdSec\\Common\\Client\\ClientException' => __DIR__ . '/..' . '/crowdsec/common/src/Client/ClientException.php',
         'CrowdSec\\Common\\Client\\HttpMessage\\AbstractMessage' => __DIR__ . '/..' . '/crowdsec/common/src/Client/HttpMessage/AbstractMessage.php',
+        'CrowdSec\\Common\\Client\\HttpMessage\\AppSecRequest' => __DIR__ . '/..' . '/crowdsec/common/src/Client/HttpMessage/AppSecRequest.php',
         'CrowdSec\\Common\\Client\\HttpMessage\\Request' => __DIR__ . '/..' . '/crowdsec/common/src/Client/HttpMessage/Request.php',
         'CrowdSec\\Common\\Client\\HttpMessage\\Response' => __DIR__ . '/..' . '/crowdsec/common/src/Client/HttpMessage/Response.php',
         'CrowdSec\\Common\\Client\\RequestHandler\\AbstractRequestHandler' => __DIR__ . '/..' . '/crowdsec/common/src/Client/RequestHandler/AbstractRequestHandler.php',
         'CrowdSec\\Common\\Client\\RequestHandler\\Curl' => __DIR__ . '/..' . '/crowdsec/common/src/Client/RequestHandler/Curl.php',
         'CrowdSec\\Common\\Client\\RequestHandler\\FileGetContents' => __DIR__ . '/..' . '/crowdsec/common/src/Client/RequestHandler/FileGetContents.php',
         'CrowdSec\\Common\\Client\\RequestHandler\\RequestHandlerInterface' => __DIR__ . '/..' . '/crowdsec/common/src/Client/RequestHandler/RequestHandlerInterface.php',
+        'CrowdSec\\Common\\Client\\TimeoutException' => __DIR__ . '/..' . '/crowdsec/common/src/Client/TimeoutException.php',
         'CrowdSec\\Common\\Configuration\\AbstractConfiguration' => __DIR__ . '/..' . '/crowdsec/common/src/Configuration/AbstractConfiguration.php',
         'CrowdSec\\Common\\Constants' => __DIR__ . '/..' . '/crowdsec/common/src/Constants.php',
         'CrowdSec\\Common\\Exception' => __DIR__ . '/..' . '/crowdsec/common/src/Exception.php',
@@ -241,6 +243,7 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
         'CrowdSec\\LapiClient\\ClientException' => __DIR__ . '/..' . '/crowdsec/lapi-client/src/ClientException.php',
         'CrowdSec\\LapiClient\\Configuration' => __DIR__ . '/..' . '/crowdsec/lapi-client/src/Configuration.php',
         'CrowdSec\\LapiClient\\Constants' => __DIR__ . '/..' . '/crowdsec/lapi-client/src/Constants.php',
+        'CrowdSec\\LapiClient\\TimeoutException' => __DIR__ . '/..' . '/crowdsec/lapi-client/src/TimeoutException.php',
         'CrowdSec\\RemediationEngine\\AbstractRemediation' => __DIR__ . '/..' . '/crowdsec/remediation-engine/src/AbstractRemediation.php',
         'CrowdSec\\RemediationEngine\\CacheStorage\\AbstractCache' => __DIR__ . '/..' . '/crowdsec/remediation-engine/src/CacheStorage/AbstractCache.php',
         'CrowdSec\\RemediationEngine\\CacheStorage\\CacheStorageException' => __DIR__ . '/..' . '/crowdsec/remediation-engine/src/CacheStorage/CacheStorageException.php',

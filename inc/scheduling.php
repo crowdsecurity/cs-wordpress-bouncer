@@ -3,7 +3,6 @@
 use CrowdSecWordPressBouncer\Bouncer;
 
 require_once __DIR__ . '/options-config.php';
-require_once __DIR__ . '/Bouncer.php';
 
 use CrowdSecBouncer\BouncerException;
 define('CROWDSEC_REFRESH_BLOCKLIST_CRON_HOOK', 'crowdsec_refresh_blocklist_cron_hook');

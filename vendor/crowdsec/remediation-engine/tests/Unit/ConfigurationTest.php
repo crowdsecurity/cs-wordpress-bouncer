@@ -42,6 +42,8 @@ use Symfony\Component\Config\Definition\Processor;
  * @covers \CrowdSec\RemediationEngine\Configuration\Lapi::getConfigTreeBuilder
  * @covers \CrowdSec\RemediationEngine\Configuration\Capi::addCapiNodes
  * @covers \CrowdSec\RemediationEngine\Configuration\AbstractCache::addCommonNodes
+ * @covers \CrowdSec\RemediationEngine\Configuration\Lapi::addAppSecNodes
+ * @covers \CrowdSec\RemediationEngine\Configuration\Lapi::validateAppSec
  */
 final class ConfigurationTest extends TestCase
 {
@@ -225,6 +227,7 @@ final class ConfigurationTest extends TestCase
                         'database_type' => Constants::MAXMIND_COUNTRY,
                     ],
                 ],
+                'appsec_fallback_remediation' => 'captcha',
             ],
             $result,
             'Should set default config'
@@ -249,13 +252,14 @@ final class ConfigurationTest extends TestCase
                         'database_type' => Constants::MAXMIND_COUNTRY,
                     ],
                 ],
+                'appsec_fallback_remediation' => 'captcha',
             ],
             $result,
             'Should set stream mode false'
         );
 
         // Test bypass is always with the lowest priority (i.e. always last element)
-        $configs = ['ordered_remediations' => ['rem1', 'rem2']];
+        $configs = ['ordered_remediations' => ['rem1', 'rem2'], 'appsec_fallback_remediation' => 'rem1'];
         $result = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($configs)]);
         $this->assertEquals(
             [
@@ -272,11 +276,12 @@ final class ConfigurationTest extends TestCase
                         'database_type' => Constants::MAXMIND_COUNTRY,
                     ],
                 ],
+                'appsec_fallback_remediation' => 'rem1',
             ],
             $result,
             'Should add bypass with the lowest priority'
         );
-        $configs = ['ordered_remediations' => ['rem1', 'bypass', 'rem2', 'rem3', 'bypass', 'rem4']];
+        $configs = ['ordered_remediations' => ['rem1', 'bypass', 'rem2', 'rem3', 'bypass', 'rem4'], 'appsec_fallback_remediation' => 'rem4'];
         $result = $processor->processConfiguration($configuration, [$configs]);
         $this->assertEquals(
             [
@@ -293,6 +298,7 @@ final class ConfigurationTest extends TestCase
                         'database_type' => Constants::MAXMIND_COUNTRY,
                     ],
                 ],
+                'appsec_fallback_remediation' => 'rem4',
             ],
             $result,
             'Should add bypass with the lowest priority'
@@ -315,6 +321,7 @@ final class ConfigurationTest extends TestCase
                         'database_type' => Constants::MAXMIND_COUNTRY,
                     ],
                 ],
+                'appsec_fallback_remediation' => 'captcha',
             ],
             $result,
             'Should normalize config'
@@ -498,7 +505,7 @@ final class ConfigurationTest extends TestCase
         $configs = [
             'redis_dsn' => 'redis_dsn_test',
             'some_useless_conf' => 'what-ever',
-            ];
+        ];
         $result = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($configs)]);
         $this->assertEquals(
             [

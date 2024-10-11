@@ -1,6 +1,6 @@
 <?php
 
-namespace CrowdSecWordPressBouncer;
+namespace CrowdSecWordPressBouncer\Admin;
 
 class AdminNotice
 {

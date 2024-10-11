@@ -9,6 +9,10 @@ const ADMIN_PASSWORD = "admin123";
 const WATCHER_LOGIN = "watcherLogin";
 const WATCHER_PASSWORD = "watcherPassword";
 const LAPI_URL_FROM_WP = "https://crowdsec:8080";
+const APPSEC_URL = "http://crowdsec:7422";
+const APPSEC_TEST_URL = "?test=testappsec.php";
+const APPSEC_MALICIOUS_BODY = "class.module.classLoader.resources.";
+const APPSEC_WP_PAGE = "/appsec";
 const { LAPI_URL_FROM_PLAYWRIGHT } = process.env;
 const { DEBUG } = process.env;
 const { TIMEOUT } = process.env;
@@ -46,6 +50,10 @@ module.exports = {
     ADMIN_LOGIN,
     ADMIN_PASSWORD,
     LAPI_URL_FROM_WP,
+    APPSEC_URL,
+    APPSEC_TEST_URL,
+    APPSEC_WP_PAGE,
+    APPSEC_MALICIOUS_BODY,
     LAPI_URL_FROM_PLAYWRIGHT,
     OTHER_IP,
     WP59,
@@ -69,10 +77,8 @@ module.exports = {
     AGENT_CERT_FILE,
     AGENT_KEY_FILE,
     CA_CERT_FILE,
-    WATCHER_LOGIN,
-    WATCHER_PASSWORD,
     BOUNCER_CERT_FILE,
     BOUNCER_KEY_FILE,
     VARHTML_PATH,
-    MULTISITE
+    MULTISITE,
 };

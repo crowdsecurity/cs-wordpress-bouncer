@@ -371,8 +371,8 @@ class MockedData
                 [
                     'scope' => 'range',
                     'decisions' => [
-                            Constants::IP_V4 . '/' . Constants::IP_RANGE,
-                        ],
+                        Constants::IP_V4 . '/' . Constants::IP_RANGE,
+                    ],
                 ],
             ],
             'new' => [],
@@ -417,8 +417,8 @@ class MockedData
                 [
                     'scope' => 'ip',
                     'decisions' => [
-                            Constants::IP_V4,
-                        ],
+                        Constants::IP_V4,
+                    ],
                 ],
             ],
             'new' => [
@@ -439,8 +439,8 @@ class MockedData
                 [
                     'scope' => 'do-not-know-delete',
                     'decisions' => [
-                            Constants::IP_V4,
-                        ],
+                        Constants::IP_V4,
+                    ],
                 ],
             ],
             'new' => [],

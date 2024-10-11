@@ -13,10 +13,6 @@
 - [Quick start](#quick-start)
   - [Installation](#installation)
   - [Watcher instantiation](#watcher-instantiation)
-    - [CAPI calls](#capi-calls)
-      - [Push signals](#push-signals)
-      - [Get Decisions stream list](#get-decisions-stream-list)
-      - [Enroll a watcher](#enroll-a-watcher)
 - [Watcher configurations](#watcher-configurations)
   - [Environment](#environment)
   - [Machine Id prefix](#machine-id-prefix)
@@ -25,22 +21,15 @@
   - [Scenarios](#scenarios)
   - [CAPI timeout](#capi-timeout)
   - [Metrics](#metrics)
-    - [Bouncer metrics](#bouncer-metrics)
-    - [Machine metrics](#machine-metrics)
 - [Storage implementation](#storage-implementation)
 - [Override the curl list handler](#override-the-curl-list-handler)
   - [Custom implementation](#custom-implementation)
   - [Ready to use `file_get_contents` implementation](#ready-to-use-file_get_contents-implementation)
 - [Example scripts](#example-scripts)
   - [Get decisions stream](#get-decisions-stream)
-    - [Command usage](#command-usage)
-    - [Example usage](#example-usage)
-  - [Push signals](#push-signals-1)
-    - [Command usage](#command-usage-1)
-    - [Example](#example)
-  - [Enroll a watcher](#enroll-a-watcher-1)
-    - [Command usage](#command-usage-2)
-    - [Example](#example-1)
+  - [Push signals](#push-signals)
+  - [Build and push one signal](#build-and-push-one-signal)
+  - [Enroll a watcher](#enroll-a-watcher)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -206,6 +195,10 @@ You have to pass 3 arrays as parameters for this method:
   - `message`: A human-readable message to add context for the alert. This is not required. Default to an empty message.
   - `start_at`: First event date for alert. This is not required. Default to `created_at` value.
   - `stop_at`: Last event date for alert. This is not required. Default to `created_at` value.
+  - `context`: An array of context key-value pairs. 
+    Each context array must have a `key` and `value` indexes: `[["key"=>"key1","value"=>"value1"],..., ["key"=>"keyN","value"=>"valueN"]]`.
+    
+    This is not required. Default to an empty array.
 
 
 - An array `$source` with the following available keys:
@@ -287,7 +280,7 @@ This setting is not required.
 When you make your first call with a watcher, a `machine_id` will be generated and stored through your storage 
 implementation. This `machine_id` is a string of length 48 composed of characters matching the regular expression `#^[a-z0-9]+$#`.
 
-The `machine_id_prefix` setting allows to set a custom prefix to this `machine_id`. It must be a string matching the regular expression `#^[a-z0-9]{0,16}$#`. 
+The `machine_id_prefix` setting allows to set a custom prefix to this `machine_id`. It must be a string matching the regular expression `#^[a-z0-9]{0,48}$#`. 
 
 The final generated `machine_id` will still have a length of 48.
 
@@ -346,7 +339,7 @@ $configs = [
 This `scenarios` setting is required.
 
 You have to pass an array of CrowdSec scenarios that will be used to log in your watcher. 
-You should find a list of available scenarios on the [CrowdSec hub collections page](https://hub.crowdsec.net/browse/).
+You should find a list of available scenarios on the [CrowdSec hub collections page](https://app.crowdsec.net/hub).
 
 
 Each scenario must match the regular expression `#^[A-Za-z0-9]{0,16}\/[A-Za-z0-9_-]{0,64}$#`.
@@ -570,8 +563,24 @@ php tests/scripts/watcher/signals.php <SCENARIOS_JSON> <SIGNALS_JSON>
 #### Example
 
 ```bash
-php tests/scripts/watcher/signals.php '["crowdsecurity/http-backdoors-attempts", "crowdsecurity/http-bad-user-agent"]' '[{"message":"Ip 1.1.1.1 performed crowdsecurity/http-path-traversal-probing (6 events over 29.992437958s) at 2020-11-06 20:14:11.189255784 +0000 UTC m=+52.785061338","scenario":"crowdsecurity/http-path-traversal-probing","scenario_hash":"","scenario_version":"","source":{"id":1,"as_name":"TEST","cn":"FR","ip":"1.1.1.1","latitude":48.9917,"longitude":1.9097,"range":"1.1.1.1\/32","scope":"Ip","value":"1.1.1.1"},"start_at":"2020-11-06T20:13:41.196817737Z","stop_at":"2020-11-06T20:14:11.189252228Z"},{"message":"Ip 2.2.2.2 performed crowdsecurity/http-probing (6 events over 29.992437958s) at 2020-11-06 20:14:11.189255784 +0000 UTC m=+52.785061338","scenario":"crowdsecurity/http-probing","scenario_hash":"","scenario_version":"","source":{"id":2,"as_name":"TEST","cn":"FR","ip":"2.2.2.2","latitude":48.9917,"longitude":1.9097,"range":"2.2.2.2\/32","scope":"Ip","value":"2.2.2.2"},"start_at":"2020-11-06T20:13:41.196817737Z","stop_at":"2020-11-06T20:14:11.189252228Z"}]'
+php tests/scripts/watcher/signals.php '["crowdsecurity/http-backdoors-attempts", "crowdsecurity/http-bad-user-agent"]' '[{"message":"Ip 1.1.1.1 performed crowdsecurity/http-path-traversal-probing (6 events over 29.992437958s) at 2020-11-06 20:14:11.189255784 +0000 UTC m=+52.785061338","scenario":"crowdsecurity/http-path-traversal-probing","scenario_hash":"","scenario_version":"","source":{"id":1,"as_name":"TEST","cn":"FR","ip":"1.1.1.1","latitude":48.9917,"longitude":1.9097,"scope":"ip","value":"1.1.1.1"},"start_at":"2020-11-06T20:13:41.196817737Z","stop_at":"2020-11-06T20:14:11.189252228Z"},{"message":"Ip 2.2.2.2 performed crowdsecurity/http-probing (6 events over 29.992437958s) at 2020-11-06 20:14:11.189255784 +0000 UTC m=+52.785061338","scenario":"crowdsecurity/http-probing","scenario_hash":"","scenario_version":"","source":{"id":2,"as_name":"TEST","cn":"FR","ip":"2.2.2.2","latitude":48.9917,"longitude":1.9097,"scope":"ip","value":"2.2.2.2"},"start_at":"2020-11-06T20:13:41.196817737Z","stop_at":"2020-11-06T20:14:11.189252228Z","context":[{"key":"exampleKey1","value":"exampleValue1"}]}]'
 ```
+
+### Build and push one signal
+
+#### Command usage
+
+```php
+php tests/scripts/watcher/build-and-push-one-signal.php <SCENARIOS_JSON> <SIGNAL_JSON>
+```
+
+#### Example
+
+```bash
+php tests/scripts/watcher/build-and-push-one-signal.php '["crowdsecurity/http-backdoors-attempts", "crowdsecurity/http-bad-user-agent"]' '{"message":"Ip 2.2.2.2 performed crowdsecurity/http-probing (6 events over 29.992437958s) at 2020-11-06 20:14:11.189255784 +0000 UTC m=+52.785061338","scenario":"crowdsecurity/http-probing","scenario_hash":"","scenario_version":"","source":{"id":2,"as_name":"TEST","cn":"FR","ip":"2.2.2.2","latitude":48.9917,"longitude":1.9097,"scope":"ip","value":"2.2.2.2"},"context":[{"key":"exampleKey1","value":"exampleValue1"}]}'
+```
+
+
 
 ### Enroll a watcher
 

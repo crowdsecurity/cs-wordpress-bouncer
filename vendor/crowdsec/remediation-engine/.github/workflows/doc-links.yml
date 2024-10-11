@@ -1,0 +1,41 @@
+name: Documentation links
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  markdown-test-links:
+    name: Markdown test links
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Clone sources
+        uses: actions/checkout@v4
+        with:
+          path: extension
+
+      - name: Launch localhost server
+        run: |
+          sudo npm install --global http-server
+          http-server ./extension &
+
+      - name: Set up Ruby 2.6
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+
+      - name: Check links in Markdown files
+        run: |
+          gem install awesome_bot
+          cd extension
+          awesome_bot --files README.md --allow-dupe --allow-redirect --allow 401,301 --skip-save-results --white-list ddev.site --base-url http://localhost:8080/
+          awesome_bot docs/*.md --allow-dupe --allow-redirect --allow 401,301 --skip-save-results --white-list crowdsec.net/v2,ddev.site,your-lapi-url,your-appsec-url,https://crowdsec,http://crowdsec,http://localhost:7422 --base-url http://localhost:8080/docs/

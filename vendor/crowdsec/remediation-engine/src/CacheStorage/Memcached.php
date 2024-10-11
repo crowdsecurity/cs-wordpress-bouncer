@@ -21,7 +21,7 @@ class Memcached extends AbstractCache
      *
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    public function __construct(array $configs, LoggerInterface $logger = null)
+    public function __construct(array $configs, ?LoggerInterface $logger = null)
     {
         $this->configure($configs);
         $this->setCustomErrorHandler();

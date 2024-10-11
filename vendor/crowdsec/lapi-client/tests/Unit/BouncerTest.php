@@ -29,10 +29,14 @@ use CrowdSec\LapiClient\Tests\PHPUnitUtil;
  * @covers \CrowdSec\LapiClient\Bouncer::manageRequest
  * @covers \CrowdSec\LapiClient\Bouncer::getStreamDecisions
  * @covers \CrowdSec\LapiClient\Bouncer::getFilteredDecisions
+ * @covers \CrowdSec\LapiClient\Bouncer::getAppSecDecision
+ * @covers \CrowdSec\LapiClient\Bouncer::manageAppSecRequest
  * @covers \CrowdSec\LapiClient\Bouncer::formatUserAgent
  * @covers \CrowdSec\LapiClient\Configuration::getConfigTreeBuilder
  * @covers \CrowdSec\LapiClient\Configuration::addConnectionNodes
+ * @covers \CrowdSec\LapiClient\Configuration::addAppSecNodes
  * @covers \CrowdSec\LapiClient\Configuration::validate
+ * @uses \CrowdSec\LapiClient\Bouncer::cleanHeadersForLog
  */
 final class BouncerTest extends AbstractClient
 {
@@ -82,6 +86,30 @@ final class BouncerTest extends AbstractClient
                 ]
             );
         $mockClient->getFilteredDecisions(['ip' => '1.2.3.4']);
+    }
+
+    public function testAppSecDecisionParams()
+    {
+        $mockClient = $this->getMockBuilder('CrowdSec\LapiClient\Bouncer')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs(['configs' => $this->configs])
+            ->onlyMethods(['requestAppSec'])
+            ->getMock();
+
+        $headers = [
+            'User-Agent' => Constants::USER_AGENT_PREFIX . '_' . TestConstants::USER_AGENT_SUFFIX
+                            . '/' . TestConstants::USER_AGENT_VERSION,
+            'X-Api-Key' => TestConstants::API_KEY,
+        ];
+
+        $mockClient->expects($this->exactly(1))->method('requestAppSec')
+            ->withConsecutive(
+                [
+                    'GET',
+                    $headers,
+                ]
+            );
+        $mockClient->getAppSecDecision($headers);
     }
 
     public function testRequest()
@@ -139,6 +167,61 @@ final class BouncerTest extends AbstractClient
         $this->assertEquals('CrowdSec\LapiClient\ClientException', $errorClass, 'Thrown exception should be an instance of CrowdSec\LapiClient\ClientException');
     }
 
+    public function testRequestAppSec()
+    {
+        // Test a valid POST request and its return
+
+        $mockCurl = $this->getCurlMock(['handle']);
+
+        $mockClient = $this->getMockBuilder('CrowdSec\LapiClient\Bouncer')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([
+                'configs' => $this->configs,
+                'requestHandler' => $mockCurl,
+            ])
+            ->onlyMethods(['sendRequest'])
+            ->getMock();
+
+        $mockCurl->expects($this->exactly(1))->method('handle')->will($this->returnValue(
+            new Response(MockedData::APPSEC_ALLOWED, MockedData::HTTP_200, [])
+        ));
+
+        $response = PHPUnitUtil::callMethod(
+            $mockClient,
+            'requestAppSec',
+            ['POST', [], '']
+        );
+
+        $this->assertEquals(
+            json_decode(MockedData::APPSEC_ALLOWED, true),
+            $response,
+            'Should format response as expected'
+        );
+
+        // Test a not allowed request method (PUT)
+        $error = '';
+        $errorClass = '';
+        try {
+            PHPUnitUtil::callMethod(
+                $mockClient,
+                'manageAppSecRequest',
+                ['PUT', [], '']
+            );
+        } catch (ClientException $e) {
+            $error = $e->getMessage();
+            $errorClass = \get_class($e);
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/not allowed/',
+            $error,
+            'Not allowed method should throw an exception before sending request'
+        );
+
+        $this->assertEquals('CrowdSec\LapiClient\ClientException', $errorClass, 'Thrown exception should be an instance of CrowdSec\LapiClient\ClientException');
+    }
+
     public function testConfigure()
     {
         $client = new Bouncer($this->configs);
@@ -148,11 +231,41 @@ final class BouncerTest extends AbstractClient
             $client->getConfig('api_url'),
             'Url should be configured by default'
         );
+        // appsec url
+        $this->assertEquals(
+            Constants::DEFAULT_APPSEC_URL,
+            $client->getConfig('appsec_url'),
+            'App Sec Url should be configured by default'
+        );
         // user agent suffix
         $this->assertEquals(
             TestConstants::USER_AGENT_SUFFIX,
             $client->getConfig('user_agent_suffix'),
             'User agent suffix should be configured'
+        );
+        // api timeout
+        $this->assertEquals(
+            TestConstants::API_TIMEOUT,
+            $client->getConfig('api_timeout'),
+            'Api timeout should be configured'
+        );
+        // api connect timeout
+        $this->assertEquals(
+            TestConstants::API_CONNECT_TIMEOUT,
+            $client->getConfig('api_connect_timeout'),
+            'Api connect timeout should be configured'
+        );
+        // appsec timeout
+        $this->assertEquals(
+            TestConstants::APPSEC_TIMEOUT_MS,
+            $client->getConfig('appsec_timeout_ms'),
+            'App Sec timeout should be configured'
+        );
+        // appsec connect timeout
+        $this->assertEquals(
+            TestConstants::APPSEC_CONNECT_TIMEOUT_MS,
+            $client->getConfig('appsec_connect_timeout_ms'),
+            'App Sec connect timeout should be configured'
         );
         $error = '';
         try {

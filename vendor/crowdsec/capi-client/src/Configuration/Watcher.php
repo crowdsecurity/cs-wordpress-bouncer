@@ -58,9 +58,9 @@ class Watcher extends AbstractConfiguration
             ->scalarNode('machine_id_prefix')
                 ->validate()
                 ->ifTrue(function (string $value) {
-                    return 1 !== preg_match('#^[a-z0-9]{0,16}$#', $value);
+                    return 1 !== preg_match('#^[a-z0-9]{0,48}$#', $value);
                 })
-                ->thenInvalid('Invalid machine id prefix. Length must be <= 16. Allowed chars are a-z0-9')
+                ->thenInvalid('Invalid machine id prefix. Length must be <= 48. Allowed chars are a-z0-9')
                 ->end()
             ->end()
             ->scalarNode('user_agent_suffix')

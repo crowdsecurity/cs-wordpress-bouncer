@@ -33,4 +33,8 @@ EOT;
     public const UNAUTHORIZED = <<<EOT
 {"message":"Unauthorized"}
 EOT;
+
+    public const APPSEC_ALLOWED = <<<EOT
+{"action":"allow","http_status":200}
+EOT;
 }

@@ -36,7 +36,14 @@ class Constants
      */
     public const API_TIMEOUT = 25;
 
+    public const API_CONNECT_TIMEOUT = 13;
+
+    public const APPSEC_TIMEOUT_MS = 700;
+
+    public const APPSEC_CONNECT_TIMEOUT_MS = 300;
+
     public const BAD_IP = '1.2.3.4';
+    public const BAD_IP_APPSEC = '1.2.3.5';
     public const IP_RANGE = '24';
     public const JAPAN = 'JP';
 }

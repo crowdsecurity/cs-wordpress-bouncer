@@ -35,6 +35,12 @@ class Constants
      * @var string The timeout used to request CrowdSec
      */
     public const API_TIMEOUT = 25;
+    /**
+     * @var string The timeout used to request CrowdSec AppSec
+     */
+    public const APPSEC_TIMEOUT_MS = 100;
 
     public const API_URL = 'http://unit.crowdsec.net';
+
+    public const APPSEC_URL = 'http://unit-appsec.crowdsec.net';
 }

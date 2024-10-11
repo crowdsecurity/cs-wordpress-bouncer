@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 The [public API](https://semver.org/spec/v2.0.0.html#spec-item-1) of this library consists of all public or protected methods, properties and constants belonging to the `src` folder.
 
+As far as possible, we try to adhere to [Symfony guidelines](https://symfony.com/doc/current/contributing/code/bc.html#working-on-symfony-code) when deciding whether a change is a breaking change or not.
+
+
+---
+
+## [3.2.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v3.2.0) - 2024-09-12
+[_Compare with previous release_](https://github.com/crowdsecurity/php-capi-client/compare/v3.1.0...v3.2.0)
+
+
+### Changed
+
+- Allow `machine_id_prefix` to have a length of 48 characters (full length of a machine ID)
+
+### Added
+
+- Add `context` support for Signals builder helper
+
 ---
 
 ## [3.1.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v3.1.0) - 2023-12-07

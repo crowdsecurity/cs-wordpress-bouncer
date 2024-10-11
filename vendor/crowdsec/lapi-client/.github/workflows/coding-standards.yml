@@ -15,6 +15,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+  DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   test-suite:
     strategy:
@@ -45,13 +49,13 @@ jobs:
       - name: Add-ons install
         run: ddev get julienloizelet/ddev-tools
 
-      - name: Add Redis, Memcached and X-Debug
-        if: ${{ matrix.php-version == '8.3' }}
-        run: |
-          cp .ddev/okaeli-add-on/common/custom_files/config.php83missing.yaml .ddev/config.php83missing.yaml
-
-      - name: Start DDEV  with PHP ${{ matrix.php-version }}
-        run: ddev start
+      - name: Start DDEV
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          shell: bash
+          command: ddev start
 
       - name: Some DEBUG information
         run: |
@@ -59,7 +63,7 @@ jobs:
           ddev exec php -v
 
       - name: Clone sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{env.EXTENSION_PATH}}
 

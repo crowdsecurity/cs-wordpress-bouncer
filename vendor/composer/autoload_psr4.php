@@ -6,7 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    '\\' => array($baseDir . '/'),
     'Symfony\\Polyfill\\Uuid\\' => array($vendorDir . '/symfony/polyfill-uuid'),
     'Symfony\\Polyfill\\Php81\\' => array($vendorDir . '/symfony/polyfill-php81'),
     'Symfony\\Polyfill\\Php80\\' => array($vendorDir . '/symfony/polyfill-php80'),
@@ -35,6 +34,7 @@ return array(
     'CrowdSec\\LapiClient\\' => array($vendorDir . '/crowdsec/lapi-client/src'),
     'CrowdSec\\Common\\' => array($vendorDir . '/crowdsec/common/src'),
     'CrowdSec\\CapiClient\\' => array($vendorDir . '/crowdsec/capi-client/src'),
+    'CrowdSecWordPressBouncer\\' => array($baseDir . '/inc'),
     'CrowdSecBouncer\\' => array($vendorDir . '/crowdsec/bouncer/src'),
     'Composer\\CaBundle\\' => array($vendorDir . '/composer/ca-bundle/src'),
 );

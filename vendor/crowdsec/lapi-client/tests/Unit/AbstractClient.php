@@ -29,12 +29,18 @@ abstract class AbstractClient extends TestCase
         'auth_type' => Constants::AUTH_KEY,
         'api_key' => TestConstants::API_KEY,
         'api_timeout' => TestConstants::API_TIMEOUT,
+        'api_connect_timeout' => TestConstants::API_CONNECT_TIMEOUT,
+        'appsec_timeout_ms' => TestConstants::APPSEC_TIMEOUT_MS,
+        'appsec_connect_timeout_ms' => TestConstants::APPSEC_CONNECT_TIMEOUT_MS,
     ];
 
     protected $tlsConfigs = [
         'user_agent_suffix' => TestConstants::USER_AGENT_SUFFIX,
         'auth_type' => Constants::AUTH_TLS,
         'api_timeout' => TestConstants::API_TIMEOUT,
+        'api_connect_timeout' => TestConstants::API_CONNECT_TIMEOUT,
+        'appsec_timeout_ms' => TestConstants::APPSEC_TIMEOUT_MS,
+        'appsec_connect_timeout_ms' => TestConstants::APPSEC_CONNECT_TIMEOUT_MS,
         'tls_cert_path' => 'tls_cert_path_test',
         'tls_key_path' => 'tls_key_path_test',
         'tls_verify_peer' => true,

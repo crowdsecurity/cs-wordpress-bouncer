@@ -4,8 +4,6 @@ const fs = require("fs");
 
 const {
     LAPI_URL_FROM_PLAYWRIGHT,
-    WATCHER_LOGIN,
-    WATCHER_PASSWORD,
     AGENT_CERT_FILE,
     AGENT_KEY_FILE,
     CA_CERT_FILE,

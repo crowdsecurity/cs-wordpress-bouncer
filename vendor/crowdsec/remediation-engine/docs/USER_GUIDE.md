@@ -15,24 +15,11 @@
   - [Capi Remediation](#capi-remediation)
     - [Instantiation](#instantiation)
     - [Features](#features-1)
-      - [Retrieve fresh decisions from CAPI](#retrieve-fresh-decisions-from-capi)
-      - [Get remediation for an IP](#get-remediation-for-an-ip)
-      - [Clear cache](#clear-cache)
-      - [Prune cache](#prune-cache)
     - [Stream mode and example scripts](#stream-mode-and-example-scripts)
   - [Lapi Remediation](#lapi-remediation)
     - [Instantiation](#instantiation-1)
     - [Features](#features-2)
-      - [Get Decisions stream list from LAPI](#get-decisions-stream-list-from-lapi)
-      - [Get remediation for an IP](#get-remediation-for-an-ip-1)
-      - [Clear cache](#clear-cache-1)
-      - [Prune cache](#prune-cache-1)
     - [Example scripts](#example-scripts)
-      - [Get decisions stream](#get-decisions-stream)
-      - [Get remediation for an IP](#get-remediation-for-an-ip-2)
-      - [Get remediation for an IP using geolocation](#get-remediation-for-an-ip-using-geolocation)
-      - [Clear cache](#clear-cache-2)
-      - [Prune cache](#prune-cache-2)
 - [CAPI remediation engine configurations](#capi-remediation-engine-configurations)
   - [Remediation priorities](#remediation-priorities)
   - [Remediation fallback](#remediation-fallback)
@@ -42,11 +29,13 @@
   - [Stream mode](#stream-mode)
   - [Clean IP cache duration](#clean-ip-cache-duration)
   - [Bad IP cache duration](#bad-ip-cache-duration)
+  - [AppSec fallback remediation](#appsec-fallback-remediation)
 - [Cache configurations](#cache-configurations)
   - [PhpFiles cache files directory](#phpfiles-cache-files-directory)
   - [Redis cache DSN](#redis-cache-dsn)
   - [Memcached cache DSN](#memcached-cache-dsn)
   - [Cache tags](#cache-tags)
+  - [AppSec url](#appsec-url)
 - [Helpers](#helpers)
   - [Origins count](#origins-count)
 
@@ -75,6 +64,7 @@ This kind of action is called a remediation and can be:
     - Use the cached decisions for CAPI and for LAPI in stream mode
     - For LAPI in live mode, call LAPI if there is no cached decision
     - Use customizable remediation priorities
+  - Determine AppSec (LAPI) remediation for a given request 
   
 - Overridable cache handler (built-in support for `Redis`, `Memcached` and `PhpFiles` caches)
 
@@ -190,6 +180,8 @@ Unlike Memcached and Redis, there is no PhpFiles pruning mechanism that automati
 Thus, if you are using the PhpFiles cache, you should use this method.
 
 
+
+
 #### Stream mode and example scripts
 
 The CAPI remediation engine is intended to work asynchronously: this is what we call the `stream mode`: 
@@ -255,6 +247,7 @@ $logger = new FileLog(['debug_mode' => true]);
 $clientConfigs = [
     'auth_type' => 'api_key',
     'api_url' => 'http://your-lapi-url:8080',
+    'app_sec_url' => 'http://your-appsec-url:7422',
     'api_key' => '****************',
 ];
 $lapiClient = new Bouncer($clientConfigs, null, $logger);
@@ -330,6 +323,21 @@ $remediationEngine->pruneCache();
 
 Unlike Memcached and Redis, there is no PhpFiles pruning mechanism that automatically removes expired items.
 Thus, if you are using the PhpFiles cache, you should use this method.
+
+##### Get AppSec remediation for a request
+
+To retrieve an AppSec decision, you can do the following call:
+
+```php
+$remediationEngine->getAppSecRemediation($headers, $rawBody);
+```
+
+The `$headers` parameter is an array containing the headers of the forwarded request and some required headers for the AppSec decision.
+
+The `$rawBody` parameter is optional and must be used if the forwarded request contains a body. It must be a string.
+
+Please see the [CrowdSec AppSec documentation](https://docs.crowdsec.net/docs/appsec/intro) for more details.
+
 
 #### Example scripts
 
@@ -410,6 +418,20 @@ php tests/scripts/prune-cache-lapi.php <BOUNCER_KEY> <LAPI_URL>
 
 ```bash
 php tests/scripts/prune-cache-lapi.php c580ebdff45da6e01415ed0e9bc9c06b  https://crowdsec:8080
+```
+
+##### Get AppSec remediation
+
+###### Command usage
+
+```php
+php tests/scripts/get-remediation-appsec.php <APPSEC_URL> <IP> <URI> <HOST> <VERB> <API_KEY> <USER_AGENT> <HEADERS_JSON> [<RAW_BODY>]
+```
+
+###### Example usage
+
+```bash
+php tests/scripts/get-appsec-remediation http://crowdsec:7422  172.0.0.24 /login example.com POST c580eb*********de541 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0' '{"Content-Type":"application/x-www-form-urlencoded","Accept-Language":"en-US,en;q=0.5"}' 'class.module.classLoader.resources.'
 ```
 
 
@@ -575,6 +597,23 @@ This is only useful in live mode. In stream mode, the cache duration depends onl
 
 In seconds. Must be greater or equal than 1. Default to 120 seconds if not set.
 
+### AppSec fallback remediation
+
+```php
+$configs = [
+        ... 
+        'appsec_fallback_remediation' => 'captcha'
+        ...
+];
+```
+Will be used as remediation in case of AppSec failure (timeout).
+
+Select from `bypass` (minimum remediation), `captcha` (recommended) or `ban` (maximum remediation).
+
+This setting is not required. If you don't set any value, `captcha` will be used by default.
+
+If you set some value, be aware to include this value in the `ordered_remediations` setting too.
+
 
 ## Cache configurations
 
@@ -639,24 +678,39 @@ Beware that there is a caveat with Symfony tagged caching and Redis: it doesn't 
 Cache tags is not supported for the provided Memcached cache.
 
 
+### AppSec url
+
+If you want to use the AppSec feature, you need to set the `app_sec_url` setting:
+
+```php
+$configs = [
+...
+'app_sec_url' => https://your-appsec-url:7422
+...
+];
+```
+
+This setting is not required and is `http://localhost:7422` by default.
+
 ## Helpers
 
 ### Origins count
 
-In order to have some metrics, we store in cache the number of calls to the `getIpRemedation` method while 
+In order to have some metrics, we store in cache the number of calls to the `getIpRemedation` and `getAppSecRemediation` methods while 
 separating the counters by origin of the final remediation. 
 
 The `getOriginsCount` helper method returns an array whose keys are origins and values are the counter associated to 
-the origin. When the remediation is a `bypass` (i.e. no active decision for the tested IP), we set the origin as 
-`clean`.
+the origin. When the retrieved remediation is a `bypass` (i.e. no active decision for the tested IP or no ban returned by AppSec for the tested request), we set the origin as `clean` or `clean_appsec`.
 
 ```php
 /** @var $remediation \CrowdSec\RemediationEngine\AbstractRemediation */
 $originsCount = $remediation->getOriginsCount();
 
 /*$originsCount = [
-    'clean' => 150, 
+    'appsec' => 6,
+    'clean' => 150,
+    'clean_appsec' => 2, 
     'capi' => 28,
-    'lists' => 16
+    'lists' => 16,
 ]*/
 ```

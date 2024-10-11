@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CrowdSec\Common\Tests\Unit;
 
 /**
- * Test for file storage.
+ * Test for configuration.
  *
  * @author    CrowdSec team
  *

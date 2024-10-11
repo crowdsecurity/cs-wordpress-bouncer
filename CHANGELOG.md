@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.7.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.7.0) - 2024-??-??
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.7...v2.7.0)
+
+### Changed
+
+- Make some input required when necessary in the settings page (LAPI URL, Api key if authentication type is Api key, etc.)
+
+---
+
 ## [2.6.7](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.6.7) - 2024-07-26
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.6...v2.6.7)
 

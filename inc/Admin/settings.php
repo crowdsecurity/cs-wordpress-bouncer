@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../Constants.php';
 use CrowdSecWordPressBouncer\Constants;
+use CrowdSec\LapiClient\Constants as LapiConstants;
 
 
 function adminSettings()
@@ -63,10 +63,16 @@ function adminSettings()
     }, 'crowdsec_settings');
 
     // Field "crowdsec_api_url"
-    addFieldString('crowdsec_api_url', 'Local API URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
+    addFieldString('crowdsec_api_url', 'Local API URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input, $default = '') {
+
+        if(empty($input) && $default){
+            add_settings_error('Local API URL', 'crowdsec_error', 'Local API URL: Can not be empty. Default value used: ' . $default);
+            $input = $default;
+        }
+
         return $input;
     }, '',
-        'Your Local API URL (e.g. http://localhost:8080)', '');
+        'Your Local API URL (e.g. http://localhost:8080)', '', 'text', false, LapiConstants::DEFAULT_LAPI_URL);
 
     // Field "crowdsec_bouncing_level"
     addFieldSelect('crowdsec_auth_type', 'Authentication type', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
@@ -129,7 +135,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
             return Constants::API_TIMEOUT;
         }
 
-        return (int) $input !== 0 ? (int) $input : Constants::API_TIMEOUT ;
+        return $input ;
     }, ' seconds. <p>Maximum execution time (in seconds) for a Local API request.<br> Set a negative value (e.g. -1) to allow unlimited request timeout.<br>Default to ' . Constants::API_TIMEOUT .'.',
         Constants::API_TIMEOUT, 'width: 115px;', 'number');
 

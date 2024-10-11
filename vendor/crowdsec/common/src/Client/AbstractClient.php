@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CrowdSec\Common\Client;
 
+use CrowdSec\Common\Client\HttpMessage\AppSecRequest;
 use CrowdSec\Common\Client\HttpMessage\Request;
 use CrowdSec\Common\Client\HttpMessage\Response;
 use CrowdSec\Common\Client\RequestHandler\Curl;
@@ -33,6 +34,10 @@ abstract class AbstractClient
      */
     private $allowedMethods = ['POST', 'GET', 'DELETE'];
     /**
+     * @var string[]
+     */
+    private $allowedAppSecMethods = ['POST', 'GET'];
+    /**
      * @var LoggerInterface
      */
     protected $logger;
@@ -44,15 +49,20 @@ abstract class AbstractClient
      * @var string
      */
     private $url;
+    /**
+     * @var string
+     */
+    private $appSecUrl;
 
     public function __construct(
         array $configs,
-        RequestHandlerInterface $requestHandler = null,
-        LoggerInterface $logger = null
+        ?RequestHandlerInterface $requestHandler = null,
+        ?LoggerInterface $logger = null
     ) {
         $this->configs = $configs;
         $this->requestHandler = ($requestHandler) ?: new Curl($this->configs);
         $this->url = $this->getConfig('api_url');
+        $this->appSecUrl = $this->getConfig('appsec_url');
         if (!$logger) {
             $logger = new Logger('null');
             $logger->pushHandler(new NullHandler());
@@ -87,6 +97,11 @@ abstract class AbstractClient
         return rtrim($this->url, '/') . '/';
     }
 
+    public function getAppSecUrl(): string
+    {
+        return rtrim($this->appSecUrl, '/') . '/';
+    }
+
     /**
      * Performs an HTTP request (POST, GET, ...) and returns its response body as an array.
      *
@@ -113,6 +128,30 @@ abstract class AbstractClient
     }
 
     /**
+     * Performs an HTTP request (POST, GET) to AppSec and returns its response body as an array.
+     *
+     * @throws ClientException
+     */
+    protected function requestAppSec(
+        string $method,
+        array $headers = [],
+        string $rawBody = ''
+    ): array {
+        $method = strtoupper($method);
+        if (!in_array($method, $this->allowedAppSecMethods)) {
+            $message = "Method ($method) is not allowed.";
+            $this->logger->error($message, ['type' => 'CLIENT_APPSEC_REQUEST']);
+            throw new ClientException($message);
+        }
+
+        $response = $this->sendRequest(
+            new AppSecRequest($this->getAppSecUrl(), $method, $headers, $rawBody)
+        );
+
+        return $this->formatResponseBody($response, ['403']);
+    }
+
+    /**
      * @throws ClientException
      */
     private function sendRequest(Request $request): Response
@@ -125,7 +164,7 @@ abstract class AbstractClient
      *
      * @throws ClientException
      */
-    private function formatResponseBody(Response $response): array
+    private function formatResponseBody(Response $response, array $mutedCodes = ['404']): array
     {
         $statusCode = $response->getStatusCode();
 
@@ -137,13 +176,14 @@ abstract class AbstractClient
             if (null === $decoded) {
                 $message = 'Body response is not a valid json';
                 $this->logger->error($message, ['type' => 'CLIENT_FORMAT_RESPONSE']);
+                $this->logger->error($response->getJsonBody(), ['type' => 'DEBUG_RESPONSE']);
                 throw new ClientException($message);
             }
         }
 
         if ($statusCode < 200 || $statusCode >= 300) {
             $message = "Unexpected response status code: $statusCode. Body was: " . str_replace("\n", '', $body);
-            if (404 !== $statusCode) {
+            if (!in_array($statusCode, $mutedCodes)) {
                 throw new ClientException($message, $statusCode);
             }
         }

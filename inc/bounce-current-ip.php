@@ -1,9 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-
-require_once __DIR__ . '/Bouncer.php';
-require_once __DIR__ . '/Constants.php';
 require_once __DIR__ . '/options-config.php';
 
 use CrowdSecWordPressBouncer\Constants;
@@ -11,10 +8,6 @@ use CrowdSecWordPressBouncer\Bouncer;
 use CrowdSecBouncer\BouncerException;
 use Psr\Cache\CacheException;
 
-/**
- * @throws CacheException
- * @throws \Psr\Cache\InvalidArgumentException
- */
 function safelyBounceCurrentIp()
 {
     if (defined("ALREADY_BOUNCED_WITH_STANDALONE")) {
@@ -30,18 +23,23 @@ function safelyBounceCurrentIp()
         }
         $bouncer = new Bouncer($crowdSecConfigs);
         $bouncer->run();
-    } catch (\Throwable $e) {
-        // Try to log in the debug.log file of WordPress if bouncer logger is not ready
-        if (!isset($bouncer) || !$bouncer->getLogger()) {
-            error_log(print_r('safelyBounce error:' . $e->getMessage() .
-                              ' in file:' . $e->getFile() .
-                              '(line ' . $e->getLine() . ')', true
-            ));
-            return;
-        }
-        $displayErrors =  $bouncer->getConfig('display_errors');
-        if (true === $displayErrors) {
-            throw new BouncerException($e->getMessage(), $e->getCode(), $e);
-        }
+    } catch (CacheException|\Throwable $e) {
+        handleException($e, $bouncer ?? null);
+    }
+}
+
+function handleException($e, ?Bouncer $bouncer = null)
+{
+    // Try to log in the debug.log file of WordPress if bouncer logger is not ready
+    if (!$bouncer || !$bouncer->getLogger()) {
+        error_log(print_r('safelyBounce error: ' . $e->getMessage() .
+                          ' in file: ' . $e->getFile() .
+                          '(line ' . $e->getLine() . ')', true
+        ));
+        return;
+    }
+    $displayErrors = $bouncer->getConfig('display_errors');
+    if (true === $displayErrors) {
+        throw new BouncerException($e->getMessage(), $e->getCode(), $e);
     }
 }

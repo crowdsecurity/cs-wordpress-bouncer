@@ -15,9 +15,15 @@ on:
         type: boolean
         description: Run Integration tests
         default: true
+  schedule:
+    - cron: '15 3 * * 4'
 
 permissions:
   contents: read
+
+env:
+  # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+  DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   test-suite:
@@ -51,18 +57,18 @@ jobs:
           ddev get julienloizelet/ddev-tools
           ddev get julienloizelet/ddev-crowdsec-php
 
-      - name: Add Redis, Memcached and X-Debug
-        if: ${{ matrix.php-version == '8.3' }}
-        run: |
-          cp .ddev/okaeli-add-on/common/custom_files/config.php83missing.yaml .ddev/config.php83missing.yaml
-
       - name: Prepare for TLS tests
         run: |
           mkdir ${{ github.workspace }}/cfssl
           cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* ${{ github.workspace }}/cfssl    
 
-      - name: Start DDEV  with PHP ${{ matrix.php-version }}
-        run: ddev start
+      - name: Start DDEV
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          shell: bash
+          command: ddev start
 
       - name: Some DEBUG information
         run: |
@@ -75,7 +81,7 @@ jobs:
           echo "BOUNCER_KEY=$(ddev create-bouncer)" >> $GITHUB_ENV
 
       - name: Clone sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{env.EXTENSION_PATH}}
 
@@ -98,10 +104,19 @@ jobs:
         if: |
           github.event.inputs.integration_tests == 'true' ||
           github.event_name == 'push'
-        run:  ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group ignore ./${{env.EXTENSION_PATH}}/tests/Integration
+        run:  ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group timeout ./${{env.EXTENSION_PATH}}/tests/Integration
 
       - name: Run Integration tests (with TLS)
         if: |
           github.event.inputs.integration_tests == 'true' ||
           github.event_name == 'push'
-        run: ddev exec AGENT_TLS_PATH=/var/www/html/cfssl BOUNCER_TLS_PATH=/var/www/html/cfssl LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group ignore ./${{env.EXTENSION_PATH}}/tests/Integration
+        run: ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl BOUNCER_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group timeout ./${{env.EXTENSION_PATH}}/tests/Integration
+
+      - name: Run Integration tests with timeout
+        if: |
+          github.event.inputs.integration_tests == 'true' ||
+          github.event_name == 'push'
+        run: |
+          ddev exec -s crowdsec apk add iproute2
+          ddev exec -s crowdsec tc qdisc add dev eth0 root netem delay 500ms
+          ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --group timeout ./${{env.EXTENSION_PATH}}/tests/Integration

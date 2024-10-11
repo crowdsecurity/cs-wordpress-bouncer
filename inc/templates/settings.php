@@ -3,18 +3,30 @@
     <script type="text/javascript">
 
         jQuery(() => {
+            // Lapi URL
+            const $apiUrl = jQuery('[name=crowdsec_api_url]');
+            $apiUrl.attr('required', 'required');
+            // TLS
             const $authType = jQuery('[name=crowdsec_auth_type]');
             const $verifyPeer = jQuery('[name=crowdsec_tls_verify_peer]');
-            const $apiKeyTr = jQuery('[name=crowdsec_api_key]').parent().parent();
-            const $tlsCertTr = jQuery('[name=crowdsec_tls_cert_path]').parent().parent();
-            const $tlsKeyTr = jQuery('[name=crowdsec_tls_key_path]').parent().parent();
+            const $apiKey = jQuery('[name=crowdsec_api_key]');
+            const $apiKeyTr = $apiKey.parent().parent();
+            const $tlsCert = jQuery('[name=crowdsec_tls_cert_path]');
+            const $tlsCertTr = $tlsCert.parent().parent();
+            const $tlsKey = jQuery('[name=crowdsec_tls_key_path]');
+            const $tlsKeyTr = $tlsKey.parent().parent();
             const $tlsVerifyPeerTr = $verifyPeer.parent().parent().parent();
-            const $tlsCaTr = jQuery('[name=crowdsec_tls_ca_cert_path]').parent().parent();
+            const $tlsCa = jQuery('[name=crowdsec_tls_ca_cert_path]');
+            const $tlsCaTr = $tlsCa.parent().parent();
 
             function handleCaCert () {
                 if(!$verifyPeer.is(":checked")) {
+                    $tlsCa.removeAttr('required');
                     $tlsCaTr.hide();
-                } else {$tlsCaTr.show()}
+                } else {
+                    $tlsCa.attr('required', 'required');
+                    $tlsCaTr.show();
+                }
             }
 
             function updateTlsDisplay () {
@@ -25,15 +37,19 @@
                 $apiKeyTr.addClass('crowdsec-api-key');
                 switch ($authType.val()) {
                     case 'api_key':
+                        $apiKey.attr('required', 'required');
+                        $tlsKey.removeAttr('required');
+                        $tlsCert.removeAttr('required');
                         jQuery('[class=crowdsec-tls]').hide();
                         jQuery('[class=crowdsec-api-key]').show();
                         break;
                     case 'tls':
+                        $apiKey.removeAttr('required');
+                        $tlsKey.attr('required', 'required');
+                        $tlsCert.attr('required', 'required');
                         jQuery('[class=crowdsec-tls]').show();
                         jQuery('[class=crowdsec-api-key]').hide();
-                        if(!$verifyPeer.is(":checked")) {
-                            $tlsCaTr.hide();
-                        }
+                        handleCaCert ();
                         break;
                     default:
                         jQuery('[class=crowdsec-tls]').hide();

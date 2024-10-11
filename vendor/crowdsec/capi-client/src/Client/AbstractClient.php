@@ -28,8 +28,8 @@ abstract class AbstractClient extends CommonAbstractClient
 
     public function __construct(
         array $configs,
-        CapiHandlerInterface $listHandler = null,
-        LoggerInterface $logger = null
+        ?CapiHandlerInterface $listHandler = null,
+        ?LoggerInterface $logger = null
     ) {
         $this->configs = $configs;
         $this->capiHandler = ($listHandler) ?: new Curl($this->configs);

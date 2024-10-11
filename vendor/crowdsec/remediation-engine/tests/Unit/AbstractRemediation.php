@@ -24,7 +24,7 @@ abstract class AbstractRemediation extends TestCase
     protected function getCacheMock(
         string $type,
         array $configs,
-        LoggerInterface $logger = null,
+        ?LoggerInterface $logger = null,
         array $methods = []
     ): MockObject {
         switch ($type) {
@@ -61,7 +61,7 @@ abstract class AbstractRemediation extends TestCase
     {
         return $this->getMockBuilder('CrowdSec\LapiClient\Bouncer')
             ->disableOriginalConstructor()
-            ->onlyMethods(['getStreamDecisions', 'getFilteredDecisions'])
+            ->onlyMethods(['getStreamDecisions', 'getFilteredDecisions', 'getAppSecDecision'])
             ->getMock();
     }
 

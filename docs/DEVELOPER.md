@@ -15,12 +15,7 @@
   - [WordPress installation](#wordpress-installation)
   - [DDEV Usage](#ddev-usage)
     - [Test the module](#test-the-module)
-      - [Install the module](#install-the-module)
-      - [End-to-end tests](#end-to-end-tests)
-      - [Auto_prepend_file mode](#auto_prepend_file-mode)
     - [Update composer dependencies](#update-composer-dependencies)
-      - [Development phase](#development-phase)
-      - [Production release](#production-release)
 - [Quick start guide](#quick-start-guide)
   - [Live mode](#live-mode)
     - [Discover the cache system](#discover-the-cache-system)
@@ -167,6 +162,15 @@ tar -xf GeoLite2-Country.tar.gz
 tar -xf GeoLite2-City.tar.gz
 ```
 
+For AppSec post request test, we are using a custom page. You have to create this page in your WordPress site: 
+
+```bash
+cd wp-sources
+cat .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/html/appsec-post.html | ddev wp post create --post_type=page --post_status=publish --post_title="AppSec" -   
+```  
+
+
+
 And we use also a custom PHP script to make some cache test. Thus, you should copy this PHP script too in the root folder: 
 
 ```bash
@@ -198,12 +202,15 @@ For example:
 ./run-tests.sh host "./2-live-mode-remediations.js"
 ```
 
-**N.B**.:
+###### Test in docker
 
 Before testing with the `docker` or `ci` parameter, you have to install all the required dependencies
 in the playwright container with this command :
 
     ./test-init.sh
+
+###### Test on host
+
 
 If you want to test with the `host` parameter, you will have to install manually all the required dependencies:
 
@@ -211,6 +218,39 @@ If you want to test with the `host` parameter, you will have to install manually
 yarn --cwd ./tests/e2e-ddev --force
 yarn global add cross-env
 ```
+
+You will also have to edit your `/etc/hosts` file to add the following line:
+
+```
+<crowdec-container-ip> crowdsec
+```
+where `<crowdec-container-ip>` is the IP of the `crowdsec` container. You can find it with the command `ddev find-ip crowdsec`.
+
+Example:
+
+```
+172.19.0.5     crowdsec
+```
+
+##### Testing timeout in the CrowdSec container
+
+If you need to test a timeout, you can use the following command:
+
+Install `iproute2`
+```bash
+ddev exec -s crowdsec apk add iproute2
+```
+Add the delay you want:
+```bash
+ddev exec -s crowdsec tc qdisc add dev eth0 root netem delay 500ms
+```
+
+To remove the delay:
+```bash
+ddev exec -s crowdsec tc qdisc del dev eth0 root netem
+```
+
+
 
 
 ##### Auto_prepend_file mode

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CrowdSec\Common\Client\RequestHandler;
 
 use CrowdSec\Common\Client\ClientException;
+use CrowdSec\Common\Client\HttpMessage\AppSecRequest;
 use CrowdSec\Common\Client\HttpMessage\Request;
 use CrowdSec\Common\Client\HttpMessage\Response;
+use CrowdSec\Common\Client\TimeoutException;
 use CrowdSec\Common\Constants;
 
 /**
@@ -21,6 +23,10 @@ use CrowdSec\Common\Constants;
  */
 class Curl extends AbstractRequestHandler
 {
+    /**
+     * @throws ClientException
+     * @throws TimeoutException
+     */
     public function handle(Request $request): Response
     {
         $handle = curl_init();
@@ -31,7 +37,12 @@ class Curl extends AbstractRequestHandler
         $response = $this->exec($handle);
 
         if (false === $response) {
-            throw new ClientException('Unexpected CURL call failure: ' . curl_error($handle), 500);
+            $errorCode = $this->errno($handle);
+            $errorMessage = $this->error($handle);
+            if (\CURLE_OPERATION_TIMEOUTED === $errorCode) {
+                throw new TimeoutException('CURL call timeout: ' . $errorMessage, 500);
+            }
+            throw new ClientException('Unexpected CURL call failure: ' . $errorMessage, 500);
         }
 
         $statusCode = $this->getResponseHttpCode($handle);
@@ -42,6 +53,22 @@ class Curl extends AbstractRequestHandler
         curl_close($handle);
 
         return new Response((string) $response, $statusCode);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function errno($handle): int
+    {
+        return curl_errno($handle);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function error($handle): string
+    {
+        return curl_error($handle);
     }
 
     /**
@@ -62,51 +89,58 @@ class Curl extends AbstractRequestHandler
         return curl_getinfo($handle, \CURLINFO_HTTP_CODE);
     }
 
-    private function handleConfigs(): array
+    /**
+     * Retrieve Curl options.
+     *
+     * @throws ClientException
+     */
+    private function createOptions(Request $request): array
     {
-        $result = [\CURLOPT_SSL_VERIFYPEER => false];
-        $authType = $this->getConfig('auth_type');
-        if ($authType && Constants::AUTH_TLS === $authType) {
-            $verifyPeer = $this->getConfig('tls_verify_peer') ?? true;
-            $result[\CURLOPT_SSL_VERIFYPEER] = $verifyPeer;
-            // The --cert option
-            $result[\CURLOPT_SSLCERT] = $this->getConfig('tls_cert_path') ?? '';
-            // The --key option
-            $result[\CURLOPT_SSLKEY] = $this->getConfig('tls_key_path') ?? '';
-            if ($verifyPeer) {
-                // The --cacert option
-                $result[\CURLOPT_CAINFO] = $this->getConfig('tls_ca_cert_path') ?? '';
+        $headers = $request->getValidatedHeaders();
+        $method = $request->getMethod();
+        $url = $request->getUri();
+        $parameters = $request->getParams();
+        $rawBody = $request instanceof AppSecRequest ? $request->getRawBody() : '';
+        $options = [
+            \CURLOPT_HEADER => false,
+            \CURLOPT_RETURNTRANSFER => true,
+            \CURLOPT_ENCODING => '',
+        ];
+        if (isset($headers['User-Agent'])) {
+            $options[\CURLOPT_USERAGENT] = $headers['User-Agent'];
+        }
+
+        $options[\CURLOPT_HTTPHEADER] = [];
+        foreach ($headers as $key => $values) {
+            foreach (\is_array($values) ? $values : [$values] as $value) {
+                $options[\CURLOPT_HTTPHEADER][] = sprintf('%s:%s', $key, $value);
             }
         }
-        $timeout = $this->getConfig('api_timeout') ?? Constants::API_TIMEOUT;
-        /**
-         * To obtain an unlimited timeout, we don't pass the option (as it is the default behavior).
-         *
-         * @see https://curl.se/libcurl/c/CURLOPT_TIMEOUT.html
-         */
-        if ($timeout > 0) {
-            $result[\CURLOPT_TIMEOUT] = $timeout;
-        }
-        $connectTimeout = $this->getConfig('api_connect_timeout') ?? Constants::API_CONNECT_TIMEOUT;
-        if ($connectTimeout >= 0) {
-            /**
-             * 0 means infinite timeout (@see https://www.php.net/manual/en/function.curl-setopt.php.
-             *
-             * @see https://curl.se/libcurl/c/CURLOPT_CONNECTTIMEOUT.html
-             */
-            $result[\CURLOPT_CONNECTTIMEOUT] = $connectTimeout;
-        }
+        // We need to keep keys indexes (array_merge not keeping indexes)
+        $options += $this->handleSSL($request);
+        $options += $this->handleTimeout($request);
+        $options += $this->handleMethod($method, $url, $parameters, $rawBody);
 
-        return $result;
+        return $options;
     }
 
-    private function handleMethod(string $method, string $url, array $parameters = []): array
+    private function getConnectTimeoutOption(Request $request): int
+    {
+        return $request instanceof AppSecRequest ? \CURLOPT_CONNECTTIMEOUT_MS : \CURLOPT_CONNECTTIMEOUT;
+    }
+
+    private function getTimeoutOption(Request $request): int
+    {
+        return $request instanceof AppSecRequest ? \CURLOPT_TIMEOUT_MS : \CURLOPT_TIMEOUT;
+    }
+
+    private function handleMethod(string $method, string $url, array $parameters = [], string $rawBody = ''): array
     {
         $result = [];
         if ('POST' === strtoupper($method)) {
             $result[\CURLOPT_POST] = true;
             $result[\CURLOPT_CUSTOMREQUEST] = 'POST';
-            $result[\CURLOPT_POSTFIELDS] = json_encode($parameters);
+            $result[\CURLOPT_POSTFIELDS] = $rawBody ?: json_encode($parameters);
         } elseif ('GET' === strtoupper($method)) {
             $result[\CURLOPT_POST] = false;
             $result[\CURLOPT_CUSTOMREQUEST] = 'GET';
@@ -125,37 +159,58 @@ class Curl extends AbstractRequestHandler
         return $result;
     }
 
-    /**
-     * Retrieve Curl options.
-     *
-     * @throws ClientException
-     */
-    private function createOptions(Request $request): array
+    private function handleSSL(Request $request): array
     {
-        $headers = $request->getHeaders();
-        $method = $request->getMethod();
-        $url = $request->getUri();
-        $parameters = $request->getParams();
-        if (!isset($headers['User-Agent'])) {
-            throw new ClientException('User agent is required', 400);
+        $result = [\CURLOPT_SSL_VERIFYPEER => false];
+        if ($request instanceof AppSecRequest) {
+            /**
+             * AppSec does not currently support TLS authentication.
+             *
+             * @see https://github.com/crowdsecurity/crowdsec/issues/3172
+             */
+            return $result;
         }
-        $options = [
-            \CURLOPT_HEADER => false,
-            \CURLOPT_RETURNTRANSFER => true,
-            \CURLOPT_USERAGENT => $headers['User-Agent'],
-            \CURLOPT_ENCODING => '',
-        ];
 
-        $options[\CURLOPT_HTTPHEADER] = [];
-        foreach ($headers as $key => $values) {
-            foreach (\is_array($values) ? $values : [$values] as $value) {
-                $options[\CURLOPT_HTTPHEADER][] = sprintf('%s:%s', $key, $value);
+        $authType = $this->getConfig('auth_type');
+        if ($authType && Constants::AUTH_TLS === $authType) {
+            $verifyPeer = $this->getConfig('tls_verify_peer') ?? true;
+            $result[\CURLOPT_SSL_VERIFYPEER] = $verifyPeer;
+            // The --cert option
+            $result[\CURLOPT_SSLCERT] = $this->getConfig('tls_cert_path') ?? '';
+            // The --key option
+            $result[\CURLOPT_SSLKEY] = $this->getConfig('tls_key_path') ?? '';
+            if ($verifyPeer) {
+                // The --cacert option
+                $result[\CURLOPT_CAINFO] = $this->getConfig('tls_ca_cert_path') ?? '';
             }
         }
-        // We need to keep keys indexes (array_merge not keeping indexes)
-        $options += $this->handleConfigs();
-        $options += $this->handleMethod($method, $url, $parameters);
 
-        return $options;
+        return $result;
+    }
+
+    private function handleTimeout(Request $request): array
+    {
+        $result = [];
+        $timeout = $this->getTimeout($request);
+        /**
+         * To obtain an unlimited timeout (with non-positive value),
+         * we don't pass the option (as unlimited timeout is the default behavior).
+         *
+         * @see https://curl.se/libcurl/c/CURLOPT_TIMEOUT.html
+         */
+        if ($timeout > 0) {
+            $result[$this->getTimeoutOption($request)] = $timeout;
+        }
+        $connectTimeout = $this->getConnectTimeout($request);
+        if ($connectTimeout >= 0) {
+            /**
+             * 0 means infinite timeout (@see https://www.php.net/manual/en/function.curl-setopt.php.
+             *
+             * @see https://curl.se/libcurl/c/CURLOPT_CONNECTTIMEOUT.html
+             */
+            $result[$this->getConnectTimeoutOption($request)] = $connectTimeout;
+        }
+
+        return $result;
     }
 }

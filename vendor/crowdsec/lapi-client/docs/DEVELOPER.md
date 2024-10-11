@@ -17,14 +17,10 @@
     - [Unit test](#unit-test)
     - [Integration test](#integration-test)
     - [Coding standards](#coding-standards)
-      - [PHPCS Fixer](#phpcs-fixer)
-      - [PHPSTAN](#phpstan)
-      - [PHP Mess Detector](#php-mess-detector)
-      - [PHPCS and PHPCBF](#phpcs-and-phpcbf)
-      - [PSALM](#psalm)
-      - [PHP Unit Code coverage](#php-unit-code-coverage)
+    - [Testing timeout in the CrowdSec container](#testing-timeout-in-the-crowdsec-container)
 - [Commit message](#commit-message)
   - [Allowed message `type` values](#allowed-message-type-values)
+- [Update documentation table of contents](#update-documentation-table-of-contents)
 - [Release process](#release-process)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -136,7 +132,7 @@ Finally, run
 In order to launch integration tests, we have to set some environment variables:
 
 ```bash
-ddev exec BOUNCER_KEY=<BOUNCER_KEY> AGENT_TLS_PATH=/var/www/html/cfssl LAPI_URL=https://crowdsec:8080 php ./my-code/lapi-client/vendor/bin/phpunit  ./my-code/lapi-client/tests/Integration --testdox     
+ddev exec BOUNCER_KEY=<BOUNCER_KEY> AGENT_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 php ./my-code/lapi-client/vendor/bin/phpunit  ./my-code/lapi-client/tests/Integration --testdox --exclude-group timeout     
 ```
 
 `<BOUNCER_KEY>` should have been created and retrieved before this test by running `ddev create-bouncer`.
@@ -144,7 +140,8 @@ ddev exec BOUNCER_KEY=<BOUNCER_KEY> AGENT_TLS_PATH=/var/www/html/cfssl LAPI_URL=
 If you need to test with a TLS authentication, you should launch:
 
 ```bash
-ddev exec BOUNCER_TLS_PATH=/var/www/html/cfssl AGENT_TLS_PATH=/var/www/html/cfssl LAPI_URL=https://crowdsec:8080 php ./my-code/lapi-client/vendor/bin/phpunit  ./my-code/lapi-client/tests/Integration --testdox     
+ddev exec BOUNCER_TLS_PATH=/var/www/html/cfssl BOUNCER_KEY=<BOUNCER_KEY> AGENT_TLS_PATH=/var/www/html/cfssl 
+APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 php ./my-code/lapi-client/vendor/bin/phpunit  ./my-code/lapi-client/tests/Integration --testdox --exclude-group timeout     
 ```
 
 #### Coding standards
@@ -165,7 +162,6 @@ With ddev, you can do the following:
 
 ```bash
 ddev phpcsfixer my-code/lapi-client/tools/coding-standards/php-cs-fixer ../
-
 ```
 
 ##### PHPSTAN
@@ -235,6 +231,33 @@ If you want to generate a text report in the same folder:
 ddev php -dxdebug.mode=coverage ./my-code/lapi-client/tools/coding-standards/vendor/bin/phpunit --configuration ./my-code/lapi-client/tools/coding-standards/phpunit/phpunit.xml --coverage-text=./my-code/lapi-client/tools/coding-standards/phpunit/code-coverage/report.txt
 ```
 
+#### Testing timeout in the CrowdSec container
+
+If you need to test a timeout, you can use the following command:
+
+Install `iproute2`
+```bash
+ddev exec -s crowdsec apk add iproute2
+```
+Add the delay you want:
+```bash
+ddev exec -s crowdsec tc qdisc add dev eth0 root netem delay 500ms
+```
+
+To remove the delay:
+```bash
+ddev exec -s crowdsec tc qdisc del dev eth0 root netem
+```
+
+To execute integration tests with a timeout, you can run:
+
+```bash
+ddev exec BOUNCER_KEY=<BOUNCER_KEY> AGENT_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 
+LAPI_URL=https://crowdsec:8080 php ./my-code/lapi-client/vendor/bin/phpunit  ./my-code/lapi-client/tests/Integration --testdox --group timeout     
+```
+
+
+
 ## Commit message
 
 In order to have an explicit commit history, we are using some commits message convention with the following format:
@@ -269,6 +292,24 @@ chmod +x .git/hooks/commit-msg
 - refactor (refactoring production code)
 - style (formatting; no production code change)
 - test (adding missing tests, refactoring tests; no production code change)
+
+
+## Update documentation table of contents
+
+To update the table of contents in the documentation, you can use [the `doctoc` tool](https://github.com/thlorenz/doctoc).
+
+First, install it:
+
+```bash
+npm install -g doctoc
+```
+
+Then, run it in the documentation folder:
+
+```bash
+doctoc docs/* --maxlevel 4  
+```
+
 
 ## Release process
 

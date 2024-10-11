@@ -15,6 +15,8 @@ on:
         type: boolean
         description: Run Integration tests
         default: true
+  schedule:
+    - cron: '15 3 * * 4'
 
 permissions:
   contents: read
@@ -24,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.2','7.3','7.4','8.0','8.1', '8.2']
+        php-version: ['7.2','7.3','7.4','8.0','8.1','8.2','8.3']
 
     name: Unit and integration test
     runs-on: ubuntu-latest
@@ -49,10 +51,6 @@ jobs:
       - name: Add-ons install
         run: ddev get julienloizelet/ddev-tools
 
-      - name: Add Redis, Memcached and X-Debug
-        if: ${{ matrix.php-version == '8.3' }}
-        run: |
-          cp .ddev/okaeli-add-on/common/custom_files/config.php83missing.yaml .ddev/config.php83missing.yaml
 
       - name: Start DDEV  with PHP ${{ matrix.php-version }}
         run: ddev start
@@ -63,7 +61,7 @@ jobs:
           ddev exec php -v
 
       - name: Clone sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{env.EXTENSION_PATH}}
 
