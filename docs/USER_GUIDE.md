@@ -301,7 +301,7 @@ Enable if you want to ask the AppSec component for a remediation based on the cu
 
 Not available if you use TLS certficates as authentication type.
 
-For more information on the AppSec component, please refer to the [documentation](https://docs.crowdsec.net/docs/appsec/intro).
+For more information on the AppSec component, please refer to the [documentation](https://docs.crowdsec.net/docs/appsec/intro/).
 
 ---
 
