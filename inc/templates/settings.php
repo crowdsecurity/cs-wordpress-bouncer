@@ -25,7 +25,7 @@
                     $tlsCaTr.hide();
                 } else {
                     $tlsCa.attr('required', 'required');
-                    $tlsCaTr.show();
+                    $tlsCaTr.show("slow");
                 }
             }
 
@@ -41,19 +41,19 @@
                         $tlsKey.removeAttr('required');
                         $tlsCert.removeAttr('required');
                         jQuery('[class=crowdsec-tls]').hide();
-                        jQuery('[class=crowdsec-api-key]').show();
+                        jQuery('[class=crowdsec-api-key]').show("slow");
                         break;
                     case 'tls':
                         $apiKey.removeAttr('required');
                         $tlsKey.attr('required', 'required');
                         $tlsCert.attr('required', 'required');
-                        jQuery('[class=crowdsec-tls]').show();
+                        jQuery('[class=crowdsec-tls]').show("slow");
                         jQuery('[class=crowdsec-api-key]').hide();
                         handleCaCert ();
                         break;
                     default:
                         jQuery('[class=crowdsec-tls]').hide();
-                        jQuery('[class=crowdsec-api-key]').show();
+                        jQuery('[class=crowdsec-api-key]').show("slow");
                 }
             }
             updateTlsDisplay();

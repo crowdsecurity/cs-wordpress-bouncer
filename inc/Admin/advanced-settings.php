@@ -111,7 +111,7 @@ function adminAdvancedSettings()
         $input = (int) $input;
         if ($input < 1) {
             $input = 1;
-            $message = 'The "Resync decisions each" value should be more than 1sec (WP_CRON_LOCK_TIMEOUT). We just reset the frequency to 1 seconds.';
+            $message = 'The "Resync decisions each" value should be more than 1 sec (WP_CRON_LOCK_TIMEOUT). We just reset the frequency to 1 seconds.';
             if(is_multisite()){
                 AdminNotice::displayError($message);
             }else{

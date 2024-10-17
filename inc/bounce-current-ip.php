@@ -32,7 +32,7 @@ function handleException($e, ?Bouncer $bouncer = null)
 {
     // Try to log in the debug.log file of WordPress if bouncer logger is not ready
     if (!$bouncer || !$bouncer->getLogger()) {
-        error_log(print_r('safelyBounce error: ' . $e->getMessage() .
+        error_log(print_r('[CrowdSec Plugin] safelyBounce error: ' . $e->getMessage() .
                           ' in file: ' . $e->getFile() .
                           '(line ' . $e->getLine() . ')', true
         ));
