@@ -97,6 +97,7 @@ jobs:
         run: |
           ddev exec -s crowdsec apk add iproute2
           cat .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/html/appsec-post.html | ddev wp post create --post_type=page --post_status=publish --post_title="AppSec" - 
+          ddev wp rewrite structure "/%postname%/"
           mkdir -p crowdsec/tls
           mkdir -p crowdsec/geolocation
           cp .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-with-wordpress-load.php cache-actions.php
