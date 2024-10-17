@@ -15,7 +15,7 @@ function writeStaticConfigFile($name = null, $newValue = null)
         $data[$name] = $newValue;
     }
 
-    if (!empty($data['crowdsec_auto_prepend_file_mode'])) {
+    if (!empty($data['crowdsec_auto_prepend_file_mode']) || file_exists(Constants::STANDALONE_CONFIG_PATH)) {
         $json = json_encode($data);
         file_put_contents(Constants::STANDALONE_CONFIG_PATH, "<?php return '$json';");
     }

@@ -277,8 +277,7 @@ const setDefaultConfig = async () => {
     await fillInput("crowdsec_forced_test_ip", "");
     await fillInput("crowdsec_forced_test_forwarded_ip", "");
 
-    // Auto prepend file mode
-    await setToggle("crowdsec_auto_prepend_file_mode", false);
+    // Do not set auto_prepend_file mode to false as it will make auto_prepend_file tests fail
 
     await onAdminSaveSettings();
 };
@@ -287,6 +286,13 @@ const enableAutoPrependFileMode = async () => {
     await onAdminGoToSettingsPage();
     await onAdminGoToAdvancedPage();
     await setToggle("crowdsec_auto_prepend_file_mode", true);
+    await onAdminSaveSettings();
+};
+
+const disableAutoPrependFileMode = async () => {
+    await onAdminGoToSettingsPage();
+    await onAdminGoToAdvancedPage();
+    await setToggle("crowdsec_auto_prepend_file_mode", false);
     await onAdminSaveSettings();
 };
 
@@ -336,4 +342,5 @@ module.exports = {
     clickById,
     getTextById,
     computeCurrentPageRemediation,
+    disableAutoPrependFileMode,
 };
