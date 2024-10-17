@@ -262,7 +262,6 @@ const setDefaultConfig = async () => {
     await onAdminSaveSettings(false);
     await onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo(1);
     await onAdminAdvancedSettingsPageSetBadIpCacheDurationTo(1);
-    await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
 
     await fillInput("crowdsec_trust_ip_forward_list", PROXY_IP);
     await selectByName("crowdsec_fallback_remediation", "captcha");
