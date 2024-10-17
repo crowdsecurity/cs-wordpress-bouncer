@@ -2,8 +2,6 @@ name: Deploy and Create Release
 # example: gh workflow run release.yml -f tag_name=v1.1.4 -f deploy_to_wordpress=true
 on:
     workflow_dispatch:
-        branches:
-            - main
         inputs:
             tag_name:
                 type: string
@@ -20,6 +18,7 @@ permissions:
 env:
     # Allow ddev get to use a GitHub token to prevent rate limiting by tests
     DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    TAG_NAME: ${{ github.event.inputs.tag_name }}
 
 jobs:
     deploy-create-release:
@@ -29,29 +28,30 @@ jobs:
         steps:
             -   name: Check naming convention
                 run: |
-                    VERIF=$(echo ${{ github.event.inputs.tag_name }} | grep -E "^v([0-9]{1,}\.)([0-9]{1,}\.)([0-9]{1,})(-(alpha|beta)\.[0-9]{1,})?$")
+                    VERIF=$(echo ${{ env.TAG_NAME }} | grep -E "^v([0-9]{1,}\.)([0-9]{1,}\.)([0-9]{1,})(-(alpha|beta)\.[0-9]{1,})?$")
                     if [ ! ${VERIF} ]
                     then
-                      echo "Tag name '${{ github.event.inputs.tag_name }}' does not comply with naming convention vX.Y.Z"
+                      echo "Tag name '${{ env.TAG_NAME }}' does not comply with naming convention vX.Y.Z"
                       exit 1
                     fi
 
             -   name: Set version number without v
+                id: set-version-number
                 run: |
-                    echo "VERSION_NUMBER=$(echo ${{ github.event.inputs.tag_name }} | sed 's/v//g' )" >> $GITHUB_ENV
+                    echo "version_number=$(echo ${{ github.event.inputs.tag_name }} | sed 's/v//g' )" >> $GITHUB_OUTPUT
 
             -   name: Clone sources
                 uses: actions/checkout@v4
 
-            -   name: Check version ${{ env.VERSION_NUMBER }} consistency in files
+            -   name: Check version consistency in files
                 # Check crowdsec.php (2), readme.txt (1), inc/Constants.php (1) and CHANGELOG.md (3)
                 run: |
                     CURRENT_DATE=$(date +'%Y-%m-%d')
                     CHANGELOG_VERSION=$(grep -o -E "## \[(.*)\].* - $CURRENT_DATE"  CHANGELOG.md | head -1 | sed 's/ //g')
                     echo $CURRENT_DATE
                     echo $CHANGELOG_VERSION
-                    echo "##[${{ env.VERSION_NUMBER }}]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE"
-                    if [[ $CHANGELOG_VERSION == "##[${{ env.VERSION_NUMBER }}]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v${{ env.VERSION_NUMBER }})-$CURRENT_DATE" ]]
+                    echo "##[${{ steps.set-version-number.outputs.version_number }}]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/${{ env.TAG_NAME }})-$CURRENT_DATE"
+                    if [[ $CHANGELOG_VERSION == "##[${{ steps.set-version-number.outputs.version_number }}]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/${{ env.TAG_NAME }})-$CURRENT_DATE" ]]
                     then
                         echo "Version in CHANGELOG.md: OK"
                     else
@@ -60,19 +60,19 @@ jobs:
                     fi
                     COMPARISON=$(grep -oP "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/\K(.*)$" CHANGELOG.md | head -1)
                     LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/latest | grep -oP "\/tag\/\K(.*)$")
-                    if [[ $COMPARISON == "$LAST_TAG...v${{ env.VERSION_NUMBER }})" ]]
+                    if [[ $COMPARISON == "$LAST_TAG...${{ env.TAG_NAME }})" ]]
                     then
                       echo "VERSION COMPARISON OK"
                     else
                       echo "VERSION COMPARISON KO"
                       echo $COMPARISON
-                      echo "$LAST_TAG...v${{ env.VERSION_NUMBER }})"
+                      echo "$LAST_TAG...${{ env.TAG_NAME }})"
                       exit 1
                     fi
                     VERSION=$(grep -E "Version: (.*)"  crowdsec.php | sed 's/ //g')
                     echo $VERSION
-                    echo "*Version:${{ env.VERSION_NUMBER }}"
-                    if [[ $VERSION == "*Version:${{ env.VERSION_NUMBER }}" ]]
+                    echo "*Version:${{ steps.set-version-number.outputs.version_number }}"
+                    if [[ $VERSION == "*Version:${{ steps.set-version-number.outputs.version_number}}" ]]
                     then
                        echo "Version in crowdsec.php: OK"
                     else
@@ -81,8 +81,8 @@ jobs:
                     fi
                     CROWDSEC_STABLE=$(grep -E "Stable tag: (.*)"  crowdsec.php | sed 's/ //g')
                     echo $CROWDSEC_STABLE
-                    echo "*Stabletag:${{ env.VERSION_NUMBER }}"
-                    if [[ $CROWDSEC_STABLE == "*Stabletag:${{ env.VERSION_NUMBER }}" ]]
+                    echo "*Stabletag:${{ steps.set-version-number.outputs.version_number }}"
+                    if [[ $CROWDSEC_STABLE == "*Stabletag:${{ steps.set-version-number.outputs.version_number }}" ]]
                     then
                         echo "Stable tag in crowdsec.php: OK"
                     else
@@ -91,8 +91,8 @@ jobs:
                     fi
                     README_STABLE=$(grep -E "Stable tag: (.*)"  readme.txt | sed 's/ //g')
                     echo $README_STABLE
-                    echo "Stabletag:${{ env.VERSION_NUMBER }}"
-                    if [[ $README_STABLE == "Stabletag:${{ env.VERSION_NUMBER }}" ]]
+                    echo "Stabletag:${{ steps.set-version-number.outputs.version_number }}"
+                    if [[ $README_STABLE == "Stabletag:${{ steps.set-version-number.outputs.version_number }}" ]]
                     then
                         echo "Stable tag in readme.txt: OK"
                     else
@@ -101,8 +101,8 @@ jobs:
                     fi
                     CONSTANT_VERSION=$(grep -E "VERSION = 'v(.*)"  inc/Constants.php | sed 's/[\x27(),/ ]//g')
                     echo $CONSTANT_VERSION
-                    echo "publicconstVERSION=v${{ env.VERSION_NUMBER }};"
-                    if [[ $CONSTANT_VERSION == "publicconstVERSION=v${{ env.VERSION_NUMBER }};" ]]
+                    echo "publicconstVERSION=${{ env.TAG_NAME }};"
+                    if [[ $CONSTANT_VERSION == "publicconstVERSION=${{ env.TAG_NAME }};" ]]
                     then
                         echo "Version in inc/Constants.php: OK"
                     else
@@ -110,7 +110,7 @@ jobs:
                         exit 1
                     fi
 
-            -   name: Create Tag ${{ github.event.inputs.tag_name }}
+            -   name: Create Tag
                 uses: actions/github-script@v7
                 with:
                     github-token: ${{ github.token }}
@@ -118,7 +118,7 @@ jobs:
                         github.rest.git.createRef({
                           owner: context.repo.owner,
                           repo: context.repo.repo,
-                          ref: "refs/tags/${{ github.event.inputs.tag_name }}",
+                          ref: "refs/tags/${{ env.TAG_NAME }}",
                           sha: context.sha
                         })
 
@@ -132,33 +132,32 @@ jobs:
                     SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
                     SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
                     SLUG: crowdsec
-                    VERSION: ${{ env.VERSION_NUMBER }}
+                    VERSION: ${{ steps.set-version-number.outputs.version_number }}
 
             -   name: Prepare release notes
                 run: |
-                    VERSION_RELEASE_NOTES=$(awk -v ver="[${{ env.VERSION_NUMBER }}]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v${{ env.VERSION_NUMBER }})" '/^## / { if (p) { exit }; if ($2 == ver) { p=1; next} } p && NF' CHANGELOG.md | sed ':a;N;$!ba;s/\n---/ /g')
+                    VERSION_RELEASE_NOTES=$(awk -v ver="[${{ steps.set-version-number.outputs.version_number }}]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/${{ env.TAG_NAME }})" '/^## / { if (p) { exit }; if ($2 == ver) { p=1; next} } p && NF' CHANGELOG.md | sed ':a;N;$!ba;s/\n---/ /g')
                     echo "$VERSION_RELEASE_NOTES" >> CHANGELOG.txt
                     cat CHANGELOG.txt
 
-
-            -   name: Create release ${{ env.VERSION_NUMBER }} with Wordpress zip
+            -   name: Create release with Wordpress zip
                 if: github.event.inputs.deploy_to_wordpress == 'true'
                 uses: softprops/action-gh-release@v2
                 with:
                     files: crowdsec.zip
                     body_path: CHANGELOG.txt
-                    name: ${{ env.VERSION_NUMBER }}
-                    tag_name: ${{ github.event.inputs.tag_name }}
+                    name: ${{ steps.set-version-number.outputs.version_number }}
+                    tag_name: ${{ env.TAG_NAME }}
                     draft: false
                     prerelease: false
 
-            -   name: Create release ${{ env.VERSION_NUMBER }} without Wordpress zip
+            -   name: Create release without Wordpress zip
                 if: github.event.inputs.deploy_to_wordpress != 'true'
                 uses: softprops/action-gh-release@v2
                 with:
                     body_path: CHANGELOG.txt
-                    name: ${{ env.VERSION_NUMBER }}
-                    tag_name: ${{ github.event.inputs.tag_name }}
+                    name: ${{ steps.set-version-number.outputs.version_number }}
+                    tag_name: ${{ env.TAG_NAME }}
                     draft: false
                     prerelease: false
 
@@ -199,11 +198,12 @@ jobs:
             - name: Set WP_VERSION_CODE env
                 # used in some directory path and conventional file naming
                 # Example : 5.6.5 => wp565
+              id: set-wp-version-code
               run: |
-                  echo "WP_VERSION_CODE=$(echo wp${{ matrix.wp-version }} | sed 's/\.//g' )" >> $GITHUB_ENV
+                  echo "wp_version_code=$(echo wp${{ matrix.wp-version }} | sed 's/\.//g' )" >> $GITHUB_OUTPUT
 
             - name: Create empty WordPress DDEV project (with Apache)
-              run: ddev config --project-type=wordpress --project-name=${{ env.WP_VERSION_CODE }} --php-version=${{ matrix.php-version }} --webserver-type=apache-fpm
+              run: ddev config --project-type=wordpress --project-name=${{ steps.set-wp-version-code.outputs.wp_version_code }} --php-version=${{ matrix.php-version }} --webserver-type=apache-fpm
 
             - name: Disable automatic update
               run: |
@@ -234,23 +234,24 @@ jobs:
 
             - name: Setup WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }}
               run: |
-                  ddev exec wp core install --url='https://${{ env.WP_VERSION_CODE }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com' 
+                  ddev exec wp core install --url='https://${{ steps.set-wp-version-code.outputs.wp_version_code }}.ddev.site' --title='WordPress' --admin_user='admin' --admin_password='admin123' --admin_email='admin@admin.com' 
 
             - name: Set LAST_TAG env
+              id: set-last-tag
               run: |
-                  echo "LAST_TAG=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/${{ env.GITHUB_ORIGIN }}/releases/latest | grep -oP "\/tag\/v\K(.*)$")" >> $GITHUB_ENV
+                  echo "last_tag=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/${{ env.GITHUB_ORIGIN }}/releases/latest | grep -oP "\/tag\/v\K(.*)$")" >> $GITHUB_OUTPUT
 
             - name: Clone files from last release
               uses: actions/checkout@v4
               with:
                   path: raw_sources
-                  ref: "v${{ env.LAST_TAG }}"
+                  ref: "v${{ steps.set-last-tag.outputs.last_tag }}"
                   repository: "${{ env.GITHUB_ORIGIN }}"
 
             - name: Retrieve last stable release zip
               run: |
-                  curl -fL https://downloads.wordpress.org/plugin/crowdsec.${{ env.LAST_TAG }}.zip -o crowdsec.$LAST_TAG.zip
-                  unzip crowdsec.${{ env.LAST_TAG }}.zip -d ${{ github.workspace }}/wp-content/plugins
+                  curl -fL https://downloads.wordpress.org/plugin/crowdsec.${{ steps.set-last-tag.outputs.last_tag }}.zip -o crowdsec.$LAST_TAG.zip
+                  unzip crowdsec.${{ steps.set-last-tag.outputs.last_tag }}.zip -d ${{ github.workspace }}/wp-content/plugins
 
             - name: Copy needed tests files
               run: |
