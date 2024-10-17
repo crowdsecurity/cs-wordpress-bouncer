@@ -6,8 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.7.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.7.0) - 2024-10-18
-[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.7...v2.7.0)
+## [2.7.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.7.0) - 2024-??-??
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.7...HEAD)
 
 ### Added
 
