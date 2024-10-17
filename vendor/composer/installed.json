@@ -225,17 +225,17 @@
         },
         {
             "name": "crowdsec/common",
-            "version": "v2.3.0",
-            "version_normalized": "2.3.0.0",
+            "version": "v2.3.1",
+            "version_normalized": "2.3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-common.git",
-                "reference": "536bb855f0d55148e4e2f902be4f69903ae1ec54"
+                "reference": "639afd34daa36a14c4f47e1d70a9ac5f038541d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-common/zipball/536bb855f0d55148e4e2f902be4f69903ae1ec54",
-                "reference": "536bb855f0d55148e4e2f902be4f69903ae1ec54",
+                "url": "https://api.github.com/repos/crowdsecurity/php-common/zipball/639afd34daa36a14c4f47e1d70a9ac5f038541d5",
+                "reference": "639afd34daa36a14c4f47e1d70a9ac5f038541d5",
                 "shasum": ""
             },
             "require": {
@@ -252,7 +252,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2024-10-04T01:48:01+00:00",
+            "time": "2024-10-16T05:12:27+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -289,7 +289,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-common/issues",
-                "source": "https://github.com/crowdsecurity/php-common/tree/v2.3.0"
+                "source": "https://github.com/crowdsecurity/php-common/tree/v2.3.1"
             },
             "install-path": "../crowdsec/common"
         },

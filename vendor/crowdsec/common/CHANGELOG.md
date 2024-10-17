@@ -14,6 +14,17 @@ As far as possible, we try to adhere to [Symfony guidelines](https://symfony.com
 
 ---
 
+## [2.3.1](https://github.com/crowdsecurity/php-common/releases/tag/v2.3.1) - 2024-10-16
+[_Compare with previous release_](https://github.com/crowdsecurity/php-common/compare/v2.3.0...v2.3.1)
+
+
+### Fixed
+
+- Remove `Host` header for `file_get_contents` request handler
+- Check status code before trying to decode the response body
+
+---
+
 ## [2.3.0](https://github.com/crowdsecurity/php-common/releases/tag/v2.3.0) - 2024-10-04
 [_Compare with previous release_](https://github.com/crowdsecurity/php-common/compare/v2.2.0...v2.3.0)
 

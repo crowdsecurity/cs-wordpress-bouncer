@@ -172,6 +172,8 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
             'X-Crowdsec-Appsec-Method' => 'test-value',
             'X-Crowdsec-Appsec-Uri' => 'test-value',
             'X-Crowdsec-Appsec-Api-Key' => 'test-value',
+            'Host' => 'test-value-should-be-removed',
+            'Custom-Header' => 'test-value-should-be-kept',
         ];
         $rawBody = 'This is a raw body';
         $configs = $this->tlsConfigs;
@@ -198,6 +200,7 @@ X-Crowdsec-Appsec-Verb: test-value
 X-Crowdsec-Appsec-Method: test-value
 X-Crowdsec-Appsec-Uri: test-value
 X-Crowdsec-Appsec-Api-Key: test-value
+Custom-Header: test-value-should-be-kept
 ',
                 'ignore_errors' => true,
                 'content' => 'This is a raw body',
@@ -236,6 +239,7 @@ X-Crowdsec-Appsec-Verb: test-value
 X-Crowdsec-Appsec-Method: test-value
 X-Crowdsec-Appsec-Uri: test-value
 X-Crowdsec-Appsec-Api-Key: test-value
+Custom-Header: test-value-should-be-kept
 User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
 ',
                 'ignore_errors' => true,
