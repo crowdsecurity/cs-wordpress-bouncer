@@ -21,6 +21,8 @@ try {
             }
         }
         $bouncer = new Bouncer($crowdSecConfigs);
+        $logger = $bouncer->getLogger();
+        $logger->debug('Running in auto_prepend_file mode');
         $bouncer->run();
     } else {
         throw new BouncerException('No setting file found for the auto_prepend_file mode.');

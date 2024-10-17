@@ -14,6 +14,6 @@ describe(`Setup CrowdSec plugin`, () => {
 
     it('Should enable auto_prepend_file mode"', async () => {
         await wait(2000);
-        await enableAutoPrependFileMode()
+        await enableAutoPrependFileMode();
     });
 });
