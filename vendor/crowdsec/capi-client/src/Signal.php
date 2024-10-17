@@ -26,15 +26,15 @@ class Signal
     /**
      * @var array
      */
+    private $decisions;
+    /**
+     * @var array
+     */
     private $properties;
     /**
      * @var array
      */
     private $source;
-    /**
-     * @var array
-     */
-    private $decisions;
 
     public function __construct(
         array $properties,
@@ -44,6 +44,21 @@ class Signal
         $this->configureProperties($properties);
         $this->configureSource($source);
         $this->configureDecisions($decisions);
+    }
+
+    public function toArray(): array
+    {
+        return $this->properties + [
+            'decisions' => $this->decisions,
+            'source' => $this->source,
+        ];
+    }
+
+    private function configureDecisions(array $decisions): void
+    {
+        $configuration = new SignalDecisionsConfig();
+        $processor = new Processor();
+        $this->decisions = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($decisions)]);
     }
 
     private function configureProperties(array $properties): void
@@ -61,20 +76,5 @@ class Signal
         $configuration = new SignalSourceConfig();
         $processor = new Processor();
         $this->source = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($source)]);
-    }
-
-    private function configureDecisions(array $decisions): void
-    {
-        $configuration = new SignalDecisionsConfig();
-        $processor = new Processor();
-        $this->decisions = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($decisions)]);
-    }
-
-    public function toArray(): array
-    {
-        return $this->properties + [
-            'decisions' => $this->decisions,
-            'source' => $this->source,
-        ];
     }
 }

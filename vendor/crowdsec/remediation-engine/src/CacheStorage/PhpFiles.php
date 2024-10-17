@@ -15,7 +15,7 @@ class PhpFiles extends AbstractCache
     /**
      * @throws CacheStorageException
      */
-    public function __construct(array $configs, LoggerInterface $logger = null)
+    public function __construct(array $configs, ?LoggerInterface $logger = null)
     {
         $this->configure($configs);
         try {

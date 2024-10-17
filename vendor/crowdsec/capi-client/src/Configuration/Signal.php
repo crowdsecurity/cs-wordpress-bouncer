@@ -36,6 +36,7 @@ class Signal extends AbstractConfiguration
         'start_at',
         'stop_at',
         'uuid',
+        'context',
     ];
 
     /**
@@ -91,6 +92,14 @@ class Signal extends AbstractConfiguration
                     return 1 !== preg_match(Constants::ISO8601_REGEX, $value);
                 })
                 ->thenInvalid('Invalid stop_at. Must match with ' . Constants::ISO8601_REGEX)
+                ->end()
+            ->end()
+            ->arrayNode('context')
+                ->arrayPrototype()
+                    ->children()
+                        ->scalarNode('key')->isRequired()->cannotBeEmpty()->end()
+                        ->scalarNode('value')->isRequired()->end()
+                    ->end()
                 ->end()
             ->end()
         ->end()

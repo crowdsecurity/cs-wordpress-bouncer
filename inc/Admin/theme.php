@@ -69,7 +69,7 @@ function themeSettings()
 
     add_settings_section('crowdsec_theme_captcha_texts', 'Adapt the wording of the Captcha Wall', function () {
         echo 'You can customize the text display on the captcha wall.';
-    }, 'crowdsec_theme_settings');
+    }, 'crowdsec_theme_settings',['after_section' => '<hr>']);
 
     // Field "crowdsec_theme_text_captcha_wall_tab_title"
     addFieldString('crowdsec_theme_text_captcha_wall_tab_title', 'Browser tab text', 'crowdsec_plugin_theme_settings', 'crowdsec_theme_settings', 'crowdsec_theme_captcha_texts', function ($input) {
@@ -117,7 +117,7 @@ function themeSettings()
 
     add_settings_section('crowdsec_theme_ban_texts', 'Adapt the wording of the Ban Wall', function () {
         echo 'You can customize the text display on the ban wall.';
-    }, 'crowdsec_theme_settings');
+    }, 'crowdsec_theme_settings',['after_section' => '<hr>']);
 
     // Field "crowdsec_theme_text_ban_wall_tab_title"
     addFieldString('crowdsec_theme_text_ban_wall_tab_title', 'Browser tab text', 'crowdsec_plugin_theme_settings', 'crowdsec_theme_settings', 'crowdsec_theme_ban_texts', function ($input) {
@@ -145,7 +145,7 @@ function themeSettings()
 
     add_settings_section('crowdsec_theme_colors', 'Use your own colors', function () {
         echo 'You can customize remediation wall colors (ban wall and captcha wall).';
-    }, 'crowdsec_theme_settings');
+    }, 'crowdsec_theme_settings',['after_section' => '<hr>']);
 
     // Field "crowdsec_theme_color_text_primary"
     addFieldString('crowdsec_theme_color_text_primary', 'Primary text color', 'crowdsec_plugin_theme_settings', 'crowdsec_theme_settings', 'crowdsec_theme_colors', function ($input) {
@@ -193,7 +193,7 @@ function themeSettings()
 
     add_settings_section('crowdsec_theme_css', 'Use your own CSS code', function () {
         echo 'You can customize remediation walls with CSS code (ban wall and captcha wall).';
-    }, 'crowdsec_theme_settings');
+    }, 'crowdsec_theme_settings',['after_section' => '<hr>']);
 
     // Field "crowdsec_theme_custom_css"
     addFieldString('crowdsec_theme_custom_css', 'Custom CSS code', 'crowdsec_plugin_theme_settings', 'crowdsec_theme_settings', 'crowdsec_theme_css', function ($input) {

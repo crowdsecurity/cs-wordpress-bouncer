@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CrowdSec\Common\Client\RequestHandler;
 
 use CrowdSec\Common\Client\ClientException;
+use CrowdSec\Common\Client\HttpMessage\AppSecRequest;
 use CrowdSec\Common\Client\HttpMessage\Request;
 use CrowdSec\Common\Client\HttpMessage\Response;
+use CrowdSec\Common\Client\TimeoutException;
 use CrowdSec\Common\Constants;
 
 /**
@@ -21,6 +23,10 @@ use CrowdSec\Common\Constants;
  */
 class FileGetContents extends AbstractRequestHandler
 {
+    /**
+     * @throws ClientException
+     * @throws TimeoutException
+     */
     public function handle(Request $request): Response
     {
         $config = $this->createContextConfig($request);
@@ -35,10 +41,24 @@ class FileGetContents extends AbstractRequestHandler
             $url .= http_build_query($parameters);
         }
 
+        $lastError = null;
+        // Set a custom error handler to catch warnings
+        set_error_handler(function ($errno, $errstr) use (&$lastError) {
+            $lastError = $errstr;
+
+            return true;
+        });
         $fullResponse = $this->exec($url, $context);
-        $responseBody = (isset($fullResponse['response'])) ? $fullResponse['response'] : false;
+        // Restore the previous error handler
+        restore_error_handler();
+        $responseBody = $fullResponse['response'] ?? false;
+        // Check for errors
         if (false === $responseBody) {
-            throw new ClientException('Unexpected HTTP call failure.', 500);
+            // Use error_get_last() to check if it was a timeout error
+            if ($this->isTimeoutError($lastError)) {
+                throw new TimeoutException('file_get_contents call timeout: ' . $lastError, 500);
+            }
+            throw new ClientException('Unexpected file_get_contents call failure: ' . $lastError, 500);
         }
         $responseHeaders = (isset($fullResponse['header'])) ? $fullResponse['header'] : [];
         $parts = !empty($responseHeaders) ? explode(' ', $responseHeaders[0]) : [];
@@ -48,13 +68,37 @@ class FileGetContents extends AbstractRequestHandler
     }
 
     /**
+     * Check for a timeout error, excluding SSL-related timeouts.
+     */
+    private function isTimeoutError($lastError): bool
+    {
+        // Check for a "real" timeout error, excluding SSL-related timeouts
+        return $lastError && false !== strpos($lastError, 'timed out') && false === stripos($lastError, 'SSL');
+    }
+
+    /**
+     * Convert a key-value array of headers to the official HTTP header string.
+     */
+    protected function convertHeadersToString(array $headers): string
+    {
+        $builtHeaderString = '';
+        foreach ($headers as $key => $value) {
+            $builtHeaderString .= "$key: $value\r\n";
+        }
+
+        return $builtHeaderString;
+    }
+
+    /**
      * @codeCoverageIgnore
-     *
-     * @param resource $context
      */
     protected function exec(string $url, $context): array
     {
-        return ['response' => file_get_contents($url, false, $context), 'header' => $http_response_header];
+        return [
+            'response' => file_get_contents($url, false, $context),
+            // @phpstan-ignore-next-line (https://github.com/phpstan/phpstan/issues/3213)
+            'header' => $http_response_header ?? [],
+        ];
     }
 
     /**
@@ -73,19 +117,6 @@ class FileGetContents extends AbstractRequestHandler
     }
 
     /**
-     * Convert a key-value array of headers to the official HTTP header string.
-     */
-    protected function convertHeadersToString(array $headers): string
-    {
-        $builtHeaderString = '';
-        foreach ($headers as $key => $value) {
-            $builtHeaderString .= "$key: $value\r\n";
-        }
-
-        return $builtHeaderString;
-    }
-
-    /**
      * Retrieve configuration for the stream content.
      *
      * @return array|array[]
@@ -94,42 +125,78 @@ class FileGetContents extends AbstractRequestHandler
      */
     private function createContextConfig(Request $request): array
     {
-        $headers = $request->getHeaders();
-        if (!isset($headers['User-Agent'])) {
-            throw new ClientException('User agent is required', 400);
+        $headers = $request->getValidatedHeaders();
+        /**
+         * It's not recommended to set the Host header when using file_get_contents (with follow_location).
+         *
+         * @see https://www.php.net/manual/en/context.http.php#context.http.header
+         * As it was causing issues with PHP 7.2, we are removing it.
+         * For AppSec requests, original host is sent in the X-Crowdsec-Appsec-Host header.
+         */
+        unset($headers['Host']);
+        $isAppSec = $request instanceof AppSecRequest;
+        $rawBody = '';
+        if ($isAppSec) {
+            /** @var AppSecRequest $request */
+            $rawBody = $request->getRawBody();
         }
         $header = $this->convertHeadersToString($headers);
         $method = $request->getMethod();
-        $timeout = $this->getConfig('api_timeout');
-        // Negative value will result in an unlimited timeout
-        $timeout = is_null($timeout) ? Constants::API_TIMEOUT : $timeout;
         $config = [
             'http' => [
                 'method' => $method,
                 'header' => $header,
                 'ignore_errors' => true,
-                'timeout' => $timeout,
             ],
         ];
+        $config['http'] += $this->handleTimeout($request);
+        $config += $this->handleSSL($request);
 
-        $config['ssl'] = ['verify_peer' => false];
+        if ('POST' === strtoupper($method)) {
+            $config['http']['content'] =
+                $isAppSec ? $rawBody : json_encode($request->getParams());
+        }
+
+        return $config;
+    }
+
+    private function handleSSL(Request $request): array
+    {
+        $result = ['ssl' => ['verify_peer' => false]];
+        if ($request instanceof AppSecRequest) {
+            /**
+             * AppSec does not currently support TLS authentication.
+             *
+             * @see https://github.com/crowdsecurity/crowdsec/issues/3172
+             */
+            return $result;
+        }
         $authType = $this->getConfig('auth_type');
         if ($authType && Constants::AUTH_TLS === $authType) {
             $verifyPeer = $this->getConfig('tls_verify_peer') ?? true;
-            $config['ssl'] = [
+            $result['ssl'] = [
                 'verify_peer' => $verifyPeer,
                 'local_cert' => $this->getConfig('tls_cert_path') ?? '',
                 'local_pk' => $this->getConfig('tls_key_path') ?? '',
             ];
             if ($verifyPeer) {
-                $config['ssl']['cafile'] = $this->getConfig('tls_ca_cert_path') ?? '';
+                $result['ssl']['cafile'] = $this->getConfig('tls_ca_cert_path') ?? '';
             }
         }
 
-        if ('POST' === strtoupper($method)) {
-            $config['http']['content'] = json_encode($request->getParams());
-        }
+        return $result;
+    }
 
-        return $config;
+    /**
+     * Value must always be in seconds.
+     * Negative value will result in an unlimited timeout.
+     *
+     * @see https://www.php.net/manual/en/context.http.php#context.http.timeout
+     */
+    private function handleTimeout(Request $request): array
+    {
+        $timeout = $this->getTimeout($request);
+
+        return ['timeout' => $request instanceof AppSecRequest ? $timeout / 1000 : $timeout];
     }
 }

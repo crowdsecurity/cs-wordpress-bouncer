@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CrowdSec\Common\Client\HttpMessage;
 
+use CrowdSec\Common\Client\ClientException;
+use CrowdSec\Common\Constants;
+
 /**
  * Request that will be sent to CrowdSec.
  *
@@ -22,6 +25,12 @@ class Request extends AbstractMessage
     protected $headers = [
         'Accept' => 'application/json',
         'Content-Type' => 'application/json',
+    ];
+    /**
+     * @var string[]
+     */
+    protected $requiredHeaders = [
+        Constants::HEADER_LAPI_USER_AGENT,
     ];
     /**
      * @var string
@@ -61,5 +70,22 @@ class Request extends AbstractMessage
     public function getUri(): string
     {
         return $this->uri;
+    }
+
+    /**
+     * Retrieve validated headers.
+     *
+     * @throws ClientException
+     */
+    public function getValidatedHeaders(): array
+    {
+        $headers = $this->getHeaders();
+        foreach ($this->requiredHeaders as $requiredHeader) {
+            if (!isset($headers[$requiredHeader])) {
+                throw new ClientException("Header \"$requiredHeader\" is required", 400);
+            }
+        }
+
+        return $headers;
     }
 }

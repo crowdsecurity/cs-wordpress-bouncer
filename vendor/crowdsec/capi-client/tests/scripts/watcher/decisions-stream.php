@@ -24,8 +24,14 @@ $configs = [
     'machine_id_prefix' => 'capiclienttest',
     'user_agent_suffix' => 'CapiClientTest',
     'scenarios' => $scenarios,
+    'env' => 'dev',
 ];
-$client = new Watcher($configs, new FileStorage(), null, new ConsoleLog());
+$client = new Watcher(
+    $configs,
+    new FileStorage(__DIR__ . '/../../../src/Storage', $configs['env']),
+    null,
+    new ConsoleLog(['level' => 'critical'])
+);
 echo 'Watcher instantiated' . \PHP_EOL;
 
 echo 'Calling ' . $client->getConfig('api_url') . ' for decisions stream ...' . \PHP_EOL;

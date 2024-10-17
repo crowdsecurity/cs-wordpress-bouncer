@@ -1,15 +1,20 @@
+name: Documentation links
+
 on:
   workflow_dispatch:
-
-name: Markdown files test and update
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
-  markdown-test-and-update:
-    name: Markdown files test and update
+  markdown-test-links:
+    name: Markdown test links
     runs-on: ubuntu-latest
     steps:
 
@@ -34,12 +39,3 @@ jobs:
           cd extension
           awesome_bot --files README.md --allow-dupe --allow 401 --skip-save-results --white-list ddev.site --base-url http://localhost:8080/
           awesome_bot docs/*.md --skip-save-results --allow-dupe --allow 401 --white-list crowdsec.net/v2,ddev.site --base-url http://localhost:8080/docs/
-
-      - name: Generate table of contents
-        uses: technote-space/toc-generator@v4
-        with:
-          MAX_HEADER_LEVEL: 5
-          COMMIT_NAME: CrowdSec Dev Bot
-          TARGET_PATHS: 'docs/*.md'
-          CHECK_ONLY_DEFAULT_BRANCH: true
-          CREATE_PR: true

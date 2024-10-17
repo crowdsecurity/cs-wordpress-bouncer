@@ -19,17 +19,17 @@
 		}
 	},
 	"require": {
-		"crowdsec/bouncer": "^2.2.0",
+		"crowdsec/bouncer": "^3.0.0",
 		"symfony/cache": "5.4.40",
-		"symfony/polyfill-mbstring": "^1.27.0",
-		"symfony/service-contracts": "^2.5.2"
+		"symfony/polyfill-mbstring": "^1.31.0",
+		"symfony/service-contracts": "^2.5.3"
 	},
 	"replace": {
 		"twig/twig": "*"
 	},
 	"autoload": {
 		"psr-4": {
-			"\\": "./"
+			"CrowdSecWordPressBouncer\\": "./inc/"
 		}
 	}
 }

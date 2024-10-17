@@ -126,6 +126,10 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::isWarm
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::warmUp
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::getClient
+ * @covers \CrowdSec\RemediationEngine\Configuration\Lapi::addAppSecNodes
+ * @covers \CrowdSec\RemediationEngine\Configuration\Lapi::validateAppSec
+ * @covers \CrowdSec\RemediationEngine\AbstractRemediation::processCachedDecisions
+ * @covers \CrowdSec\RemediationEngine\AbstractRemediation::retrieveRemediationFromCachedDecisions
  */
 final class LapiRemediationTest extends AbstractRemediation
 {

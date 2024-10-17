@@ -27,6 +27,10 @@ class Constants extends CommonConstants
      */
     public const DECISIONS_STREAM_ENDPOINT = '/v1/decisions/stream';
     /**
+     * @var string The Default URL of the CrowdSec AppSec endpoint
+     */
+    public const DEFAULT_APPSEC_URL = 'http://localhost:7422';
+    /**
      * @var string The Default URL of the CrowdSec LAPI
      */
     public const DEFAULT_LAPI_URL = 'http://localhost:8080';
@@ -37,5 +41,5 @@ class Constants extends CommonConstants
     /**
      * @var string The current version of this library
      */
-    public const VERSION = 'v3.2.0';
+    public const VERSION = 'v3.3.1';
 }

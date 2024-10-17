@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-const fs = require("fs");
 const { addDecision, deleteAllDecisions } = require("./watcherClient");
 const {
     ADMIN_URL,
@@ -12,6 +11,7 @@ const {
     TIMEOUT,
     PROXY_IP,
     MULTISITE,
+    APPSEC_URL,
 } = require("./constants");
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -19,7 +19,8 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 jest.setTimeout(TIMEOUT);
 
 const goToAdmin = async (endpoint = "") => {
-    const adminUrl = MULTISITE == "true" ? `${ADMIN_URL}network/` : `${ADMIN_URL}`;
+    const adminUrl =
+        MULTISITE == "true" ? `${ADMIN_URL}network/` : `${ADMIN_URL}`;
     await page.goto(`${adminUrl}${endpoint}`);
 };
 
@@ -123,6 +124,18 @@ const fillInput = async (optionName, value) => {
 
 const fillByName = async (name, value) => {
     await page.fill(`[name=${name}]`, `${value}`);
+};
+
+const fillById = async (name, value) => {
+    await page.fill(`[id=${name}]`, `${value}`);
+};
+
+const clickById = async (id) => {
+    await page.click(`#${id}`);
+};
+
+const getTextById = async (id) => {
+    return page.locator(`#${id}`).innerText();
 };
 
 const onAdvancedPageEnableStreamMode = async () => {
@@ -249,7 +262,6 @@ const setDefaultConfig = async () => {
     await onAdminSaveSettings(false);
     await onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo(1);
     await onAdminAdvancedSettingsPageSetBadIpCacheDurationTo(1);
-    await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
 
     await fillInput("crowdsec_trust_ip_forward_list", PROXY_IP);
     await selectByName("crowdsec_fallback_remediation", "captcha");
@@ -257,20 +269,40 @@ const setDefaultConfig = async () => {
     // Geolocation
     await setToggle("crowdsec_geolocation_enabled", false);
 
+    // AppSec
+    await setToggle("crowdsec_use_appsec", false);
+
     // Tests
     await fillInput("crowdsec_forced_test_ip", "");
     await fillInput("crowdsec_forced_test_forwarded_ip", "");
 
+    // Do not set auto_prepend_file mode to false as it will make auto_prepend_file tests fail
+
     await onAdminSaveSettings();
 };
-
 
 const enableAutoPrependFileMode = async () => {
     await onAdminGoToSettingsPage();
     await onAdminGoToAdvancedPage();
     await setToggle("crowdsec_auto_prepend_file_mode", true);
     await onAdminSaveSettings();
-}
+};
+
+const disableAutoPrependFileMode = async () => {
+    await onAdminGoToSettingsPage();
+    await onAdminGoToAdvancedPage();
+    await setToggle("crowdsec_auto_prepend_file_mode", false);
+    await onAdminSaveSettings();
+};
+
+const enableAppSec = async () => {
+    await onAdminGoToSettingsPage();
+    await onAdminGoToAdvancedPage();
+    await setToggle("crowdsec_use_appsec", true);
+    await fillInput("crowdsec_appsec_url", APPSEC_URL);
+    await selectByName("crowdsec_appsec_fallback_remediation", "captcha");
+    await onAdminSaveSettings();
+};
 
 module.exports = {
     addDecision,
@@ -298,10 +330,16 @@ module.exports = {
     onCaptchaPageRefreshCaptchaImage,
     forceCronRun,
     fillInput,
+    fillById,
     setDefaultConfig,
     selectElement,
     selectByName,
     runCacheAction,
     fillByName,
-    enableAutoPrependFileMode
+    enableAutoPrependFileMode,
+    enableAppSec,
+    clickById,
+    getTextById,
+    computeCurrentPageRemediation,
+    disableAutoPrependFileMode,
 };

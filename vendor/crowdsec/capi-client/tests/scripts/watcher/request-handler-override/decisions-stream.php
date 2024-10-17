@@ -24,10 +24,11 @@ $configs = [
     'machine_id_prefix' => 'capiclienttest',
     'user_agent_suffix' => 'CapiClientTest',
     'scenarios' => $scenarios,
-    ];
+    'env' => 'dev',
+];
 echo \PHP_EOL . 'Instantiate custom request handler ...' . \PHP_EOL;
 $customRequestHandler = new FileGetContents($configs);
-$client = new Watcher($configs, new FileStorage(), $customRequestHandler);
+$client = new Watcher($configs, new FileStorage(__DIR__ . '/../../../../src/Storage', $configs['env']), $customRequestHandler);
 echo 'Watcher instantiated' . \PHP_EOL;
 
 echo 'Calling ' . $client->getConfig('api_url') . ' for decisions stream ...' . \PHP_EOL;

@@ -27,7 +27,7 @@ class CapiRemediation extends AbstractRemediation
         array $configs,
         Watcher $client,
         AbstractCache $cacheStorage,
-        LoggerInterface $logger = null
+        ?LoggerInterface $logger = null
     ) {
         // Force stream mode for CAPI remediation
         $configs['stream_mode'] = true;
@@ -62,13 +62,7 @@ class CapiRemediation extends AbstractRemediation
             return Constants::REMEDIATION_BYPASS;
         }
 
-        $remediationData = $this->handleRemediationFromDecisions($cachedDecisions);
-
-        if (!empty($remediationData[self::INDEX_ORIGIN])) {
-            $this->updateRemediationOriginCount((string) $remediationData[self::INDEX_ORIGIN]);
-        }
-
-        return $remediationData[self::INDEX_REM];
+        return $this->processCachedDecisions($cachedDecisions);
     }
 
     private function convertRawCapiDecisionsToDecisions(array $rawDecisions): array

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CrowdSecWordPressBouncer;
 
+use CrowdSec\LapiClient\Constants as LapiConstants;
 use CrowdSec\RemediationEngine\CacheStorage\CacheStorageException;
 use CrowdSec\RemediationEngine\LapiRemediation;
 use CrowdSec\Common\Logger\FileLog;
@@ -26,9 +27,8 @@ require_once __DIR__ . '/Constants.php';
 class Bouncer extends AbstractBouncer
 {
 
-    protected $shouldNotBounceWpAdmin = true;
-
     protected $baseFilesPath;
+    protected $shouldNotBounceWpAdmin = true;
 
     /**
      * @throws BouncerException
@@ -48,70 +48,99 @@ class Bouncer extends AbstractBouncer
         parent::__construct($configs, $remediation, $this->logger);
     }
 
-    private function renderTemplate(string $templatePath,array $configs = []): string
+    /**
+     * @return string The current IP, even if it's the IP of a proxy
+     */
+    public function getHttpMethod(): string
     {
-        ob_start();
-        $config = array_merge($this->configs, $configs);
-        include __DIR__ . '/templates/' . $templatePath;
-        $html = ob_get_contents();
-        ob_end_clean();
-        return $html;
+        return $_SERVER['REQUEST_METHOD'];
     }
 
-    protected function getBanHtml(): string
+    /**
+     * @return string Ex: "X-Forwarded-For"
+     */
+    public function getHttpRequestHeader(string $name): ?string
     {
-        return $this->renderTemplate('ban-wall.php');
-    }
-
-    protected function getCaptchaHtml(
-        bool $error,
-        string $captchaImageSrc,
-        string $captchaResolutionFormUrl
-    ): string {
-        $configs = [
-            'error' => $error,
-            'captcha_img' => $captchaImageSrc,
-            'captcha_resolution_url' => $captchaResolutionFormUrl,
-        ];
-
-
-        return $this->renderTemplate('captcha-wall.php', $configs);
-    }
-
-    protected function escape(string $value): string
-    {
-        return htmlspecialchars($value, \ENT_QUOTES, 'UTF-8');
-    }
-
-    protected function specialcharsDecodeEntQuotes(string $value): string
-    {
-        return htmlspecialchars_decode($value, \ENT_QUOTES);
-    }
-
-    private function getBaseFilesPath(): string
-    {
-        if ($this->baseFilesPath === null) {
-            $result = Constants::DEFAULT_BASE_FILE_PATH;
-
-            if (function_exists('wp_upload_dir')) {
-                if(is_multisite()){
-                    $mainSiteId = get_main_site_id();
-                    switch_to_blog($mainSiteId);
-                }
-                $dir = wp_upload_dir(null, false);
-                if (is_array($dir) && array_key_exists('basedir', $dir)) {
-                    $result = $dir['basedir'] . '/crowdsec/';
-                } elseif (defined('WP_CONTENT_DIR')) {
-                    $result = WP_CONTENT_DIR . '/uploads/crowdsec/';
-                }
-                if(is_multisite()) {
-                    restore_current_blog();
-                }
-            }
-            $this->baseFilesPath = $result;
+        $headerName = 'HTTP_' . str_replace('-', '_', strtoupper($name));
+        if (!array_key_exists($headerName, $_SERVER)) {
+            return null;
         }
 
-        return $this->baseFilesPath;
+        return $_SERVER[$headerName];
+    }
+
+    /**
+     * Get the value of a posted field.
+     */
+    public function getPostedVariable(string $name): ?string
+    {
+        if (!isset($_POST[$name])) {
+            return null;
+        }
+
+        return $_POST[$name];
+    }
+
+    /**
+     * @return string The current IP, even if it's the IP of a proxy
+     */
+    public function getRemoteIp(): string
+    {
+        return $_SERVER['REMOTE_ADDR'];
+    }
+
+    public function getRequestHeaders(): array
+    {
+        $allHeaders = [];
+
+        if (function_exists('getallheaders')) {
+            $allHeaders = getallheaders();
+        } else {
+            foreach ($_SERVER as $name => $value) {
+                if ('HTTP_' == substr($name, 0, 5)) {
+                    $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
+                    $allHeaders[$name] = $value;
+                } elseif ('CONTENT_TYPE' == $name) {
+                    $allHeaders['Content-Type'] = $value;
+                }
+            }
+        }
+        // Remove Content-Length header for AppSec
+        unset($allHeaders['Content-Length']);
+
+        return $allHeaders;
+    }
+
+    /**
+     * Get current request host.
+     */
+    public function getRequestHost(): string
+    {
+        return $_SERVER['HTTP_HOST'] ?? '';
+    }
+
+    /**
+     * Get current request raw body.
+     */
+    public function getRequestRawBody(): string
+    {
+        return file_get_contents('php://input');
+    }
+
+    /**
+     * The current URI.
+     */
+    public function getRequestUri(): string
+    {
+        return $_SERVER['REQUEST_URI'] ?? "";
+    }
+
+    /**
+     * Get current request user agent.
+     */
+    public function getRequestUserAgent(): string
+    {
+        return $_SERVER['HTTP_USER_AGENT'] ?? '';
     }
 
     /**
@@ -121,6 +150,9 @@ class Bouncer extends AbstractBouncer
      */
     public function handleRawConfigs(array $rawConfigs): array
     {
+        $apiUrl = (string)$this->handleRawConfig($rawConfigs, 'crowdsec_api_url', LapiConstants::DEFAULT_LAPI_URL);
+        $appSecUrl = (string)$this->handleRawConfig($rawConfigs, 'crowdsec_appsec_url', LapiConstants::DEFAULT_APPSEC_URL);
+
         return [
             // LAPI connection
             'api_key' => $this->escape((string)$rawConfigs['crowdsec_api_key'] ?? ''),
@@ -133,7 +165,7 @@ class Bouncer extends AbstractBouncer
             'tls_key_path' => (string)($this->handleRawConfig($rawConfigs, 'crowdsec_tls_key_path', '/')),
             'tls_verify_peer' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_tls_verify_peer', false)),
             'tls_ca_cert_path' => (string)($this->handleRawConfig($rawConfigs, 'crowdsec_tls_ca_cert_path', '/')),
-            'api_url' => $this->escape((string)$rawConfigs['crowdsec_api_url'] ?? ''),
+            'api_url' => $this->escape($apiUrl),
             'use_curl' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_use_curl', false)),
             'api_timeout' => (int)($this->handleRawConfig(
                 $rawConfigs,
@@ -141,6 +173,19 @@ class Bouncer extends AbstractBouncer
                 Constants::API_TIMEOUT
             )),
             'user_agent_suffix' => 'WordPress' . $this->handleRawConfig($rawConfigs, 'crowdsec_custom_user_agent', ''),
+            // AppSec
+            'use_appsec' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_use_appsec', false)),
+            'appsec_url' => $this->escape($appSecUrl),
+            'appsec_timeout_ms' => (int)($this->handleRawConfig(
+                $rawConfigs,
+                'crowdsec_appsec_timeout_ms',
+                Constants::APPSEC_TIMEOUT_MS
+            )),
+            'appsec_fallback_remediation' => (string)($this->handleRawConfig(
+                $rawConfigs,
+                'crowdsec_appsec_fallback_remediation',
+                Constants::REMEDIATION_BYPASS
+            )),
             // Debug
             'debug_mode' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_debug_mode', false)),
             'disable_prod_log' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_disable_prod_log', false)),
@@ -290,64 +335,6 @@ class Bouncer extends AbstractBouncer
         ];
     }
 
-    private function handleRawConfig(array $rawConfigs, string $key, $defaultValue)
-    {
-        if (!empty($rawConfigs[$key])) {
-            return $rawConfigs[$key];
-        }
-
-        return $defaultValue;
-    }
-
-    /**
-     * @return string Ex: "X-Forwarded-For"
-     */
-    public function getHttpRequestHeader(string $name): ?string
-    {
-        $headerName = 'HTTP_' . str_replace('-', '_', strtoupper($name));
-        if (!array_key_exists($headerName, $_SERVER)) {
-            return null;
-        }
-
-        return $_SERVER[$headerName];
-    }
-
-    /**
-     * @return string The current IP, even if it's the IP of a proxy
-     */
-    public function getRemoteIp(): string
-    {
-        return $_SERVER['REMOTE_ADDR'];
-    }
-
-    /**
-     * The current URI.
-     */
-    public function getRequestUri(): string
-    {
-        return $_SERVER['REQUEST_URI'] ?? "";
-    }
-
-    /**
-     * @return string The current IP, even if it's the IP of a proxy
-     */
-    public function getHttpMethod(): string
-    {
-        return $_SERVER['REQUEST_METHOD'];
-    }
-
-    /**
-     * Get the value of a posted field.
-     */
-    public function getPostedVariable(string $name): ?string
-    {
-        if (!isset($_POST[$name])) {
-            return null;
-        }
-
-        return $_POST[$name];
-    }
-
     /**
      * If the current IP should be bounced or not, matching custom business rules.
      */
@@ -405,5 +392,80 @@ class Bouncer extends AbstractBouncer
         }
 
         return true;
+    }
+
+    protected function escape(string $value): string
+    {
+        return htmlspecialchars($value, \ENT_QUOTES, 'UTF-8');
+    }
+
+    protected function getBanHtml(): string
+    {
+        return $this->renderTemplate('ban-wall.php');
+    }
+
+    protected function getCaptchaHtml(
+        bool $error,
+        string $captchaImageSrc,
+        string $captchaResolutionFormUrl
+    ): string {
+        $configs = [
+            'error' => $error,
+            'captcha_img' => $captchaImageSrc,
+            'captcha_resolution_url' => $captchaResolutionFormUrl,
+        ];
+
+        return $this->renderTemplate('captcha-wall.php', $configs);
+    }
+
+    protected function specialcharsDecodeEntQuotes(string $value): string
+    {
+        return htmlspecialchars_decode($value, \ENT_QUOTES);
+    }
+
+    private function getBaseFilesPath(): string
+    {
+        if ($this->baseFilesPath === null) {
+            $result = Constants::DEFAULT_BASE_FILE_PATH;
+
+            if (function_exists('wp_upload_dir')) {
+                if (is_multisite()) {
+                    $mainSiteId = get_main_site_id();
+                    switch_to_blog($mainSiteId);
+                }
+                $dir = wp_upload_dir(null, false);
+                if (is_array($dir) && array_key_exists('basedir', $dir)) {
+                    $result = $dir['basedir'] . '/crowdsec/';
+                } elseif (defined('WP_CONTENT_DIR')) {
+                    $result = WP_CONTENT_DIR . '/uploads/crowdsec/';
+                }
+                if (is_multisite()) {
+                    restore_current_blog();
+                }
+            }
+            $this->baseFilesPath = $result;
+        }
+
+        return $this->baseFilesPath;
+    }
+
+    private function handleRawConfig(array $rawConfigs, string $key, $defaultValue)
+    {
+        if (!empty($rawConfigs[$key])) {
+            return $rawConfigs[$key];
+        }
+
+        return $defaultValue;
+    }
+
+    private function renderTemplate(string $templatePath, array $configs = []): string
+    {
+        ob_start();
+        $config = array_merge($this->configs, $configs);
+        include __DIR__ . '/templates/' . $templatePath;
+        $html = ob_get_contents();
+        ob_end_clean();
+
+        return $html;
     }
 }

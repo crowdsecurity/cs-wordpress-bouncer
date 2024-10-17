@@ -97,7 +97,7 @@ class WatcherClient extends AbstractClient
     {
         if (!$this->token) {
             $data = [
-               'scenarios' => [],
+                'scenarios' => [],
             ];
             $credentials = $this->manageRequest(
                 'POST',

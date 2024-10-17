@@ -10,7 +10,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 The [public API](https://semver.org/spec/v2.0.0.html#spec-item-1)  of this library consists of all public or protected methods, properties and constants belonging to the `src` folder.
 
+As far as possible, we try to adhere to [Symfony guidelines](https://symfony.com/doc/current/contributing/code/bc.html#working-on-symfony-code) when deciding whether a change is a breaking change or not.
+
+
 ---
+
+## [3.4.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.4.0) - 2024-10-04
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.3.0...v3.4.0)
+
+### Added
+
+- Add AppSec requests support with `getAppSecRemediation` public method in `LapiRemediation` class
+- Add `appsec_fallback_remediation` configuration for Lapi remediation
+ 
+
+### Changed
+
+- Update `crowdsec/common` dependency to `v2.3.0`
+- Update `crowdsec/capi-client` dependency to `v3.2.0`
+- Update `crowdsec/lapi-client` dependency to `v3.3.0`
+
+
+---
+
 
 ## [3.3.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.3.0) - 2023-12-14
 [_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.2.0...v3.3.0)

@@ -25,6 +25,14 @@ class Constants
      */
     public const API_TIMEOUT = 120;
     /**
+     * @var int the default connection timeout (time of connection phase in milliseconds) when calling AppSec endpoints
+     */
+    public const APPSEC_CONNECT_TIMEOUT_MS = 150;
+    /**
+     * @var int the default timeout (total time of transfer operation in milliseconds) when calling AppSec endpoints
+     */
+    public const APPSEC_TIMEOUT_MS = 400;
+    /**
      * @var string The API-KEY auth type
      */
     public const AUTH_KEY = 'api_key';
@@ -41,6 +49,38 @@ class Constants
      */
     public const DURATION = 86400;
     /**
+     * @var string The AppSec API key header name
+     */
+    public const HEADER_APPSEC_API_KEY = 'X-Crowdsec-Appsec-Api-Key';
+    /**
+     * @var string The AppSec host header name
+     */
+    public const HEADER_APPSEC_HOST = 'X-Crowdsec-Appsec-Host';
+    /**
+     * @var string The AppSec IP header name
+     */
+    public const HEADER_APPSEC_IP = 'X-Crowdsec-Appsec-Ip';
+    /**
+     * @var string The AppSec URI header name
+     */
+    public const HEADER_APPSEC_URI = 'X-Crowdsec-Appsec-Uri';
+    /**
+     * @var string The AppSec User-Agent header name
+     */
+    public const HEADER_APPSEC_USER_AGENT = 'X-Crowdsec-Appsec-User-Agent';
+    /**
+     * @var string The AppSec verb header name
+     */
+    public const HEADER_APPSEC_VERB = 'X-Crowdsec-Appsec-Verb';
+    /**
+     * @var string The LAPI API key header name
+     */
+    public const HEADER_LAPI_API_KEY = 'X-Api-Key';
+    /**
+     * @var string The LAPI User-Agent header name
+     */
+    public const HEADER_LAPI_USER_AGENT = 'User-Agent';
+    /**
      * @var string The ISO8601 date regex
      */
     public const ISO8601_REGEX = '#^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.\d{6})?Z$#';
@@ -48,6 +88,10 @@ class Constants
      * @var string The CrowdSec origin for decisions
      */
     public const ORIGIN = 'crowdsec';
+    /**
+     * @var string The AppSec origin for decisions
+     */
+    public const ORIGIN_APPSEC = 'appsec';
     /**
      * @var string The CAPI origin for decisions
      */
@@ -87,7 +131,7 @@ class Constants
     /**
      * @var string The current version of this library
      */
-    public const VERSION = 'v2.2.0';
+    public const VERSION = 'v2.3.1';
     /**
      * @var string The version regex
      */

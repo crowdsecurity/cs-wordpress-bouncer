@@ -13,6 +13,7 @@ use CrowdSec\RemediationEngine\CacheStorage\CacheStorageException;
 use CrowdSec\RemediationEngine\CacheStorage\Memcached;
 use CrowdSec\RemediationEngine\CacheStorage\PhpFiles;
 use CrowdSec\RemediationEngine\CacheStorage\Redis;
+use CrowdSec\RemediationEngine\LapiRemediation;
 use Gregwar\Captcha\CaptchaBuilder;
 use Gregwar\Captcha\PhraseBuilder;
 use IPLib\Factory;
@@ -54,9 +55,8 @@ abstract class AbstractBouncer
         }
         // @codeCoverageIgnoreEnd
         $this->logger = $logger;
-        $this->configure($configs);
         $this->remediationEngine = $remediationEngine;
-
+        $this->configure($configs);
         $configs = $this->getConfigs();
         // Clean configs for lighter log
         unset($configs['text'], $configs['color']);
@@ -86,7 +86,7 @@ abstract class AbstractBouncer
         $this->logger->info('Bouncing current IP', [
             'ip' => $ip,
         ]);
-        $remediation = $this->getRemediationForIp($ip);
+        $remediation = $this->getRemediation($ip);
         $this->handleRemediation($remediation, $ip);
     }
 
@@ -103,6 +103,23 @@ abstract class AbstractBouncer
             return $this->getRemediationEngine()->clearCache();
         } catch (\Exception $e) {
             throw new BouncerException('Error while clearing cache: ' . $e->getMessage(), (int) $e->getCode(), $e);
+        }
+    }
+
+    /**
+     * Get the remediation for the specified IP using AppSec.
+     *
+     * @throws BouncerException
+     * @throws InvalidArgumentException|CacheException
+     */
+    public function getAppSecRemediationForIp(string $ip, LapiRemediation $remediationEngine): string
+    {
+        try {
+            return $this->capRemediationLevel(
+                $remediationEngine->getAppSecRemediation($this->getAppSecHeaders($ip), $this->getRequestRawBody())
+            );
+        } catch (\Exception $e) {
+            throw new BouncerException($e->getMessage(), (int) $e->getCode(), $e);
         }
     }
 
@@ -174,9 +191,29 @@ abstract class AbstractBouncer
     abstract public function getRemoteIp(): string;
 
     /**
+     * Get current request headers.
+     */
+    abstract public function getRequestHeaders(): array;
+
+    /**
+     * Get current request host.
+     */
+    abstract public function getRequestHost(): string;
+
+    /**
+     * Get current request raw body.
+     */
+    abstract public function getRequestRawBody(): string;
+
+    /**
      * Get current request uri.
      */
     abstract public function getRequestUri(): string;
+
+    /**
+     * Get current request user agent.
+     */
+    abstract public function getRequestUserAgent(): string;
 
     /**
      * This method prune the cache: it removes all the expired cache items.
@@ -287,6 +324,39 @@ abstract class AbstractBouncer
             $message = 'Error while testing cache connection: ' . $e->getMessage();
             throw new BouncerException($message, (int) $e->getCode(), $e);
         }
+    }
+
+    /**
+     * Returns a default "CrowdSec 403" HTML template.
+     * The input $config should match the TemplateConfiguration input format.
+     *
+     * @return string The HTML compiled template
+     */
+    protected function getBanHtml(): string
+    {
+        $template = new Template('ban.html.twig');
+
+        return $template->render($this->configs);
+    }
+
+    /**
+     * Returns a default "CrowdSec Captcha (401)" HTML template.
+     */
+    protected function getCaptchaHtml(
+        bool $error,
+        string $captchaImageSrc,
+        string $captchaResolutionFormUrl
+    ): string {
+        $template = new Template('captcha.html.twig');
+
+        return $template->render(array_merge(
+            $this->configs,
+            [
+                'error' => $error,
+                'captcha_img' => $captchaImageSrc,
+                'captcha_resolution_url' => $captchaResolutionFormUrl,
+            ]
+        ));
     }
 
     /**
@@ -507,17 +577,21 @@ abstract class AbstractBouncer
         $this->sendResponse($body, 401);
     }
 
-    /**
-     * Returns a default "CrowdSec 403" HTML template.
-     * The input $config should match the TemplateConfiguration input format.
-     *
-     * @return string The HTML compiled template
-     */
-    protected function getBanHtml(): string
+    private function getAppSecHeaders(string $ip): array
     {
-        $template = new Template('ban.html.twig');
+        $requestHeaders = $this->getRequestHeaders();
 
-        return $template->render($this->configs);
+        return array_merge(
+            $requestHeaders,
+            [
+                Constants::HEADER_APPSEC_IP => $ip,
+                Constants::HEADER_APPSEC_URI => $this->getRequestUri(),
+                Constants::HEADER_APPSEC_HOST => $this->getRequestHost(),
+                Constants::HEADER_APPSEC_VERB => $this->getHttpMethod(),
+                Constants::HEADER_APPSEC_API_KEY => $this->remediationEngine->getClient()->getConfig('api_key'),
+                Constants::HEADER_APPSEC_USER_AGENT => $this->getRequestUserAgent(),
+            ]
+        );
     }
 
     private function getCache(): AbstractCache
@@ -526,23 +600,17 @@ abstract class AbstractBouncer
     }
 
     /**
-     * Returns a default "CrowdSec Captcha (401)" HTML template.
+     * @throws CacheException
+     * @throws InvalidArgumentException
      */
-    protected function getCaptchaHtml(
-        bool $error,
-        string $captchaImageSrc,
-        string $captchaResolutionFormUrl
-    ): string {
-        $template = new Template('captcha.html.twig');
+    private function getRemediation(string $ip): string
+    {
+        $remediation = $this->getRemediationForIp($ip);
+        if ($this->shouldUseAppSec($remediation)) {
+            $remediation = $this->getAppSecRemediationForIp($ip, $this->remediationEngine);
+        }
 
-        return $template->render(array_merge(
-            $this->configs,
-            [
-                'error' => $error,
-                'captcha_img' => $captchaImageSrc,
-                'captcha_resolution_url' => $captchaResolutionFormUrl,
-            ]
-        ));
+        return $remediation;
     }
 
     /**
@@ -815,5 +883,35 @@ abstract class AbstractBouncer
         }
 
         return false;
+    }
+
+    private function shouldUseAppSec(string $remediation): bool
+    {
+        $useAppSec = $this->getConfig('use_appsec');
+        if (!$useAppSec || Constants::REMEDIATION_BYPASS !== $remediation) {
+            return false;
+        }
+        if (!($this->remediationEngine instanceof LapiRemediation)) {
+            $this->logger->warning('Calling AppSec is only supported with Lapi remediation engine.', [
+                'type' => 'APPSEC_LAPI_REMEDIATION_ONLY_SUPPORTED',
+                'message' => 'Please use Lapi remediation for calling AppSec.',
+            ]);
+
+            return false;
+        }
+
+        $authType = $this->remediationEngine->getClient()->getConfig('auth_type');
+        if (Constants::AUTH_TLS === $authType) {
+            $this->logger->warning('Calling AppSec with a TLS-authenticated bouncer is not supported.', [
+                'type' => 'APPSEC_LAPI_TLS_AUTH_UNSUPPORTED',
+                'auth_type_config' => $authType,
+                'use_appsec_config' => $useAppSec,
+                'message' => 'Please use API key authentication for calling AppSec.',
+            ]);
+
+            return false;
+        }
+
+        return true;
     }
 }

@@ -21,6 +21,7 @@ const {
     runCacheAction,
     publicHomepageShouldBeCaptchaWall,
     fillByName,
+    wait,
 } = require("../utils/helpers");
 
 const { CURRENT_IP } = require("../utils/constants");
@@ -51,6 +52,7 @@ describe(`Run in Live mode`, () => {
         await onAdminGoToAdvancedPage();
         await setToggle("crowdsec_hide_mentions", true);
         await onAdminSaveSettings();
+        await wait(1000);
         await publicHomepageShouldBeCaptchaWallWithoutMentions();
 
         // Play with colors and texts

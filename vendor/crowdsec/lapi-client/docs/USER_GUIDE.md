@@ -14,10 +14,9 @@
   - [Installation](#installation)
   - [Bouncer client instantiation](#bouncer-client-instantiation)
     - [LAPI calls](#lapi-calls)
-      - [Get Decisions stream list](#get-decisions-stream-list)
-      - [Get filtered Decisions](#get-filtered-decisions)
 - [Bouncer client configurations](#bouncer-client-configurations)
   - [LAPI url](#lapi-url)
+  - [AppSec url](#appsec-url)
   - [Authorization type for connection](#authorization-type-for-connection)
   - [Settings for Api key authorization](#settings-for-api-key-authorization)
     - [Api key](#api-key)
@@ -26,7 +25,12 @@
     - [Bouncer key path](#bouncer-key-path)
     - [Peer verification](#peer-verification)
     - [CA certificate path](#ca-certificate-path)
-  - [LAPI timeout](#lapi-timeout)
+  - [Settings for LAPI timeout](#settings-for-lapi-timeout)
+    - [LAPI timeout](#lapi-timeout)
+    - [LAPI connect timeout](#lapi-connect-timeout)
+  - [Settings for AppSec timeout](#settings-for-appsec-timeout)
+    - [AppSec timeout](#appsec-timeout)
+    - [AppSec connect timeout](#appsec-connect-timeout)
   - [User Agent suffix](#user-agent-suffix)
   - [User Agent version](#user-agent-version)
 - [Override the curl request handler](#override-the-curl-request-handler)
@@ -36,9 +40,12 @@
   - [Get decisions stream](#get-decisions-stream)
     - [Command usage](#command-usage)
     - [Example usage](#example-usage)
-  - [Get filtered decisions](#get-filtered-decisions-1)
+  - [Get filtered decisions](#get-filtered-decisions)
     - [Command usage](#command-usage-1)
     - [Example](#example)
+  - [Get AppSec decision](#get-appsec-decision)
+    - [Command usage](#command-usage-2)
+    - [Example](#example-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -52,6 +59,7 @@ This client allows you to interact with the CrowdSec Local API (LAPI).
 - CrowdSec LAPI Bouncer available endpoints
   - Retrieve decisions stream list
   - Retrieve decisions for some filter
+  - Retrieve AppSec decision
 - Overridable request handler (`curl` by default, `file_get_contents` also available)
 
 
@@ -60,6 +68,7 @@ This client allows you to interact with the CrowdSec Local API (LAPI).
 ### Installation
 
 First, install CrowdSec LAPI PHP Client via the [composer](https://getcomposer.org/) package manager:
+
 ```bash
 composer require crowdsec/lapi-client
 ```
@@ -90,6 +99,7 @@ use Crowdsec\LapiClient\Storage\FileStorage;
 $configs = [
     'auth_type' => 'api_key',
     'api_url' => 'https://your-crowdsec-lapi-url:8080',
+    'appsec_url' => 'https://your-crowdsec-app-sec-url:7422',
     'api_key' => '**************************',
 ];
 $client = new Bouncer($configs);
@@ -127,6 +137,20 @@ $client->getFilteredDecisions($filter);
 The `$filter` parameter is an array. Please see the [CrowdSec LAPI documentation](https://crowdsecurity.github.io/api_doc/index.html?urls.primaryName=LAPI#/bouncers/getDecisions) for more details about available filters (scope, value, type, etc.).
 
 
+##### Get AppSec decision
+
+To retrieve an AppSec decision, you can do the following call:
+
+```php
+$client->getAppSecDecision($headers, $rawBody);
+```
+
+The `$headers` parameter is an array containing the headers of the forwarded request and some required headers for the AppSec decision.
+
+The `$rawBody` parameter is optional and must be used if the forwarded request contains a body. It must be a string.
+
+Please see the [CrowdSec AppSec documentation](https://docs.crowdsec.net/docs/appsec/intro/) for more details.
+
 
 ## Bouncer client configurations
 
@@ -144,6 +168,18 @@ $configs = [
 ```
 
 Define the URL to your LAPI server, default to `http://localhost:8080`.
+
+### AppSec url
+
+```php
+$configs = [
+        ... 
+        'appsec_url' => 'http://your-crowdsec-app-sec-url:7422'
+        ...
+];
+```
+
+Define the AppSec URL to your LAPI server, default to `http://localhost:7422`.
 
 ### Authorization type for connection
 
@@ -249,8 +285,9 @@ Absolute path to the CA used to process peer verification.
 
 Only required if you choose `tls` as `auth_type` and `tls_verify_peer` is `true`.
 
+### Settings for LAPI timeout
 
-### LAPI timeout
+#### LAPI timeout
 
 ```php
 $configs = [
@@ -265,6 +302,59 @@ This setting is not required.
 This is the maximum number of seconds allowed to execute a LAPI request.
 
 It must be an integer. If you don't set any value, default value is 120. If you set a negative value, timeout is unlimited.
+
+#### LAPI connect timeout
+
+```php
+$configs = [
+        ... 
+        'api_connect_timeout' => 5
+        ...
+];
+```
+
+This setting is not required and will only be used for the `Curl` request handler.
+
+This is the maximum number of seconds allowed to connect to a LAPI server.
+
+It must be an integer. If you don't set any value, default value is 300. If you set a negative value, timeout is unlimited.
+
+
+### Settings for AppSec timeout
+
+#### AppSec timeout
+
+```php
+$configs = [
+        ... 
+        'appsec_timeout_ms' => 300
+        ...
+];
+```
+
+This setting is not required.
+
+This is the maximum number of milliseconds allowed to execute an AppSec request.
+
+It must be an integer. If you don't set any value, default value is 400. If you set a negative value, timeout is unlimited.
+
+
+#### AppSec connect timeout
+
+```php
+$configs = [
+        ... 
+        'appsec_connect_timeout_ms' => 100
+        ...
+];
+```
+
+This setting is not required and will only be used for the `Curl` request handler.
+
+This is the maximum number of milliseconds allowed to connect to an AppSec server.
+
+It must be an integer. If you don't set any value, default value is 150. If you set a negative value, timeout is unlimited.
+
 
 ### User Agent suffix
 
@@ -401,7 +491,7 @@ php tests/scripts/bouncer/request-handler-override/decisions-stream.php 1 '{"sco
 
 #### Command usage
 
-```php
+```bash
 php tests/scripts/bouncer/decisions-filter.php <FILTER_JSON> <BOUNCER_KEY> <LAPI_URL>
 ```
 
@@ -417,3 +507,17 @@ Or, with the `file_get_contents` handler:
 php tests/scripts/bouncer/request-handler-override/decisions-filter.php '{"scopes":"Ip"}' 92d3de1dde6d354b771d63035cf5ef83 https://crowdsec:8080
 ```
 
+### Get AppSec decision
+
+#### Command usage
+
+```bash
+php tests/scripts/bouncer/appsec-decision.php <BOUNCER_KEY> <HEADERS_JSON> <APPSEC_URL> 
+[<RAW_BODY_STRING>]
+```
+
+#### Example
+
+```bash
+php tests/scripts/bouncer/appsec-decision.php 'KWurslwIaE2aZSZjYU9mQAWTFb6AHiPTFNTsYTZvoAU' '{"X-Crowdsec-Appsec-Ip":"1.2.3.4","X-Crowdsec-Appsec-Uri":"/login","X-Crowdsec-Appsec-Host":"example.com","X-Crowdsec-Appsec-Verb":"POST","X-Crowdsec-Appsec-User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0"}' http://crowdsec:7422 'class.module.classLoader.resources.'
+```

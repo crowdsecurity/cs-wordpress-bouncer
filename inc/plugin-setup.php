@@ -2,9 +2,7 @@
 
 use CrowdSecWordPressBouncer\Constants;
 
-require_once __DIR__.'/options-config.php';
-require_once __DIR__ . '/Constants.php';
-
+require_once __DIR__ . '/options-config.php';
 
 function writeStaticConfigFile($name = null, $newValue = null)
 {
@@ -16,9 +14,17 @@ function writeStaticConfigFile($name = null, $newValue = null)
     if ($name) {
         $data[$name] = $newValue;
     }
-    if (!empty($data['crowdsec_auto_prepend_file_mode'])) {
+
+    if (!empty($data['crowdsec_auto_prepend_file_mode']) || @file_exists(Constants::STANDALONE_CONFIG_PATH)) {
         $json = json_encode($data);
-        file_put_contents(Constants::STANDALONE_CONFIG_PATH, "<?php return '$json';");
+        if( false === $json){
+            error_log('[CrowdSec Plugin] Failed to encode JSON data in writeStaticConfigFile');
+            return;
+        }
+        if( false === @file_put_contents(Constants::STANDALONE_CONFIG_PATH, "<?php return '$json';"))
+        {
+            error_log('[CrowdSec Plugin] Failed to write settings in writeStaticConfigFile');
+        }
     }
 }
 
@@ -30,13 +36,13 @@ function writeStaticConfigFile($name = null, $newValue = null)
  * @param $options
  * @return void
  */
-function crowdsec_update_completed( $upgrader_object, $options ) {
-
+function crowdsec_update_completed($upgrader_object, $options)
+{
     // If an update has taken place and the updated type is plugins and the plugins element exists
-    if ( $options['action'] == 'update' && $options['type'] == 'plugin' && isset( $options['plugins'] ) ) {
-        foreach( $options['plugins'] as $plugin ) {
+    if ($options['action'] == 'update' && $options['type'] == 'plugin' && isset($options['plugins'])) {
+        foreach ($options['plugins'] as $plugin) {
             // Check to ensure it is the CrowdSec Plugin
-            if( $plugin == plugin_basename(dirname( dirname(__FILE__) ). '/crowdsec.php')) {
+            if ($plugin == plugin_basename(dirname(dirname(__FILE__)) . '/crowdsec.php')) {
                 writeStaticConfigFile();
             }
         }
@@ -55,7 +61,7 @@ function activate_crowdsec_plugin()
     $crowdSecWpPluginOptions = getCrowdSecOptionsConfig();
     foreach ($crowdSecWpPluginOptions as $crowdSecWpPluginOption) {
         if ($crowdSecWpPluginOption['autoInit']) {
-            if(is_multisite()){
+            if (is_multisite()) {
                 update_site_option($crowdSecWpPluginOption['name'], $crowdSecWpPluginOption['default']);
             } else {
                 update_option($crowdSecWpPluginOption['name'], $crowdSecWpPluginOption['default']);
@@ -87,7 +93,7 @@ function deactivate_crowdsec_plugin()
     $crowdSecWpPluginOptions = getCrowdSecOptionsConfig();
     foreach ($crowdSecWpPluginOptions as $crowdSecWpPluginOption) {
         if ($crowdSecWpPluginOption['autoInit']) {
-            if(is_multisite()){
+            if (is_multisite()) {
                 delete_site_option($crowdSecWpPluginOption['name']);
             } else {
                 delete_option($crowdSecWpPluginOption['name']);

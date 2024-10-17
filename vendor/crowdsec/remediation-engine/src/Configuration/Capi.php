@@ -46,7 +46,7 @@ class Capi extends AbstractRemediation
     }
 
     /**
-     * Common remediation settings.
+     * CAPI remediation settings.
      *
      * @return void
      */

@@ -6,6 +6,11 @@ on:
     paths-ignore:
       - '**.md'
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: Debug with tmate
+        default: false
   schedule:
     - cron: '15 3 * * 4'
 
@@ -36,8 +41,6 @@ jobs:
             php-version: '8.0'
           - wp-version: '6.6'
             php-version: '7.2'
-          - wp-version: '6.6'
-            php-version: '8.0'
           - wp-version: '6.6'
             php-version: '8.3'
 
@@ -109,6 +112,9 @@ jobs:
 
       - name: Prepare for playwright test
         run: |
+          ddev exec -s crowdsec apk add iproute2
+          cat .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/html/appsec-post.html | ddev wp post create --post_type=page --post_status=publish --post_title="AppSec" - 
+          ddev wp rewrite structure "/%postname%/"
           mkdir -p crowdsec/tls
           mkdir -p crowdsec/geolocation
           cp .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/cache-actions-with-wordpress-load.php cache-actions.php
@@ -189,6 +195,22 @@ jobs:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 8-geolocation.js
 
+      - name: Run AppSec tests
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
+        with:
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          file_path: 11-appsec.js
+
+
+      - name: Prepare CrowdSec for AppSec timeout tests
+        run: ddev exec -s crowdsec tc qdisc add dev eth0 root netem delay 500ms
+
+      - name: Run AppSec timeout tests
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
+        with:
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          file_path: 12-appsec-timeout.js
+
       - name: Check tested version
         run: |
           CURRENT_VERSION=$(ddev wp core version)
@@ -201,4 +223,12 @@ jobs:
               echo ${{ matrix.wp-version }}
               exit 1
           fi
+          
+      - name: tmate debugging session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        timeout-minutes: 15
+        if: failure() && github.event.inputs.debug_enabled == 'true'
 

@@ -17,14 +17,9 @@
     - [Unit test](#unit-test)
     - [Integration test](#integration-test)
     - [Coding standards](#coding-standards)
-      - [PHPCS Fixer](#phpcs-fixer)
-      - [PHPSTAN](#phpstan)
-      - [PHP Mess Detector](#php-mess-detector)
-      - [PHPCS and PHPCBF](#phpcs-and-phpcbf)
-      - [PSALM](#psalm)
-      - [PHP Unit Code coverage](#php-unit-code-coverage)
 - [Commit message](#commit-message)
   - [Allowed message `type` values](#allowed-message-type-values)
+- [Update documentation table of contents](#update-documentation-table-of-contents)
 - [Release process](#release-process)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -118,6 +113,13 @@ Run:
 ddev composer update --working-dir ./my-code/remediation-engine
 ```
 
+For advanced usage, you can create a `composer-dev.json` file in the `my-code/remediation-engine` folder and run:
+
+```bash
+ddev exec COMPOSER=composer-dev.json composer update --working-dir ./my-code/remediation-engine
+```
+
+
 #### Unit test
 
 ```bash
@@ -142,6 +144,12 @@ In order to use these, you will need to work with a PHP version >= 7.4 and run f
 
 ```bash
 ddev composer update --working-dir=./my-code/remediation-engine/tools/coding-standards
+```
+
+For advanced usage, you can create a `composer-dev.json` file in the `my-code/remediation-engine/tools/coding-standards` folder and run:
+
+```bash
+ddev exec COMPOSER=composer-dev.json composer update --working-dir ./my-code/remediation-engine/tools/coding-standards 
 ```
 
 ##### PHPCS Fixer
@@ -263,6 +271,23 @@ chmod +x .git/hooks/commit-msg
 - style (formatting; no production code change)
 - test (adding missing tests, refactoring tests; no production code change)
 
+## Update documentation table of contents
+
+To update the table of contents in the documentation, you can use [the `doctoc` tool](https://github.com/thlorenz/doctoc).
+
+First, install it:
+
+```bash
+npm install -g doctoc
+```
+
+Then, run it in the documentation folder:
+
+```bash
+doctoc docs/* --maxlevel 4  
+```
+
+
 ## Release process
 
 We are using [semantic versioning](https://semver.org/) to determine a version number. To verify the current tag, 
@@ -280,14 +305,7 @@ Then, you have to [run the action manually from the GitHub repository](https://g
 
 
 Alternatively, you could use the [GitHub CLI](https://github.com/cli/cli): 
-- create a draft release: 
-```
-gh workflow run release.yml -f tag_name=vx.y.z -f draft=true
-```
-- publish a prerelease:  
-```
-gh workflow run release.yml -f tag_name=vx.y.z -f prerelease=true
-```
+
 - publish a release: 
 ```
 gh workflow run release.yml -f tag_name=vx.y.z

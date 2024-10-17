@@ -39,7 +39,7 @@ jobs:
           echo "VERSION_NUMBER=$(echo ${{ github.event.inputs.tag_name }} | sed 's/v//g' )" >> $GITHUB_ENV
 
       - name: Clone sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Check version ${{ env.VERSION_NUMBER }} consistency in files
         # Check src/Constants.php and CHANGELOG.md

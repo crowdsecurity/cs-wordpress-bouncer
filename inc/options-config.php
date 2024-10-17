@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . '/Constants.php';
 use CrowdSecWordPressBouncer\Constants;
 
 
@@ -63,6 +62,11 @@ function getCrowdSecOptionsConfig(): array
         ['name' => 'crowdsec_geolocation_maxmind_database_type', 'default' => Constants::MAXMIND_COUNTRY, 'autoInit' => true],
         ['name' => 'crowdsec_geolocation_maxmind_database_path', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_auto_prepend_file_mode', 'default' => '', 'autoInit' => true],
+        ['name' => 'crowdsec_use_appsec', 'default' => '', 'autoInit' => true],
+        ['name' => 'crowdsec_appsec_url', 'default' => '', 'autoInit' => true],
+        ['name' => 'crowdsec_appsec_timeout_ms', 'default' => Constants::APPSEC_TIMEOUT_MS, 'autoInit' => true],
+        ['name' => 'crowdsec_appsec_fallback_remediation', 'default' => Constants::REMEDIATION_CAPTCHA,
+            'autoInit' => true]
     ];
 }
 

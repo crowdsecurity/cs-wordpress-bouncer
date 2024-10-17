@@ -1,0 +1,26 @@
+name: Keep Alive
+on:
+
+  schedule:
+    - cron: '0 3 * * 4'
+
+permissions:
+  actions: write
+
+jobs:
+  keep-alive:
+
+    name: Keep Alive
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Clone project files
+        uses: actions/checkout@v4
+
+      # keepalive-workflow keeps GitHub from turning off tests after 60 days
+      - uses: gautamkrishnar/keepalive-workflow@v2
+        with:
+          time_elapsed: 45
+          workflow_files: "unit-and-integration-test.yml"
+

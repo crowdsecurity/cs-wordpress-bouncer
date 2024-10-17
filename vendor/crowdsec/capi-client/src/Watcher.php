@@ -69,8 +69,8 @@ class Watcher extends AbstractClient
     public function __construct(
         array $configs,
         StorageInterface $storage,
-        CapiHandlerInterface $capiHandler = null,
-        LoggerInterface $logger = null
+        ?CapiHandlerInterface $capiHandler = null,
+        ?LoggerInterface $logger = null
     ) {
         $this->configure($configs);
         $this->headers = ['User-Agent' => $this->formatUserAgent($this->configs)];
@@ -135,6 +135,7 @@ class Watcher extends AbstractClient
         $scenarioVersion = $properties['scenario_version'] ?? '';
         $message = $properties['message'] ?? '';
         $uuid = $properties['uuid'] ?? Uuid::v4()->toRfc4122();
+        $context = $properties['context'] ?? [];
 
         $properties = [
             'scenario' => $scenario,
@@ -147,6 +148,7 @@ class Watcher extends AbstractClient
             'start_at' => $startAt,
             'stop_at' => $stopAt,
             'uuid' => $uuid,
+            'context' => $context,
         ];
 
         $sourceScope = $source['scope'] ?? Constants::SCOPE_IP;
@@ -407,7 +409,7 @@ class Watcher extends AbstractClient
     /**
      * Generate a random machine_id.
      *
-     * @throws ClientException
+     * @throws ClientException|\Exception
      */
     private function generateMachineId(array $configs = []): string
     {
@@ -422,7 +424,7 @@ class Watcher extends AbstractClient
     /**
      * Generate a random password.
      *
-     * @throws ClientException
+     * @throws ClientException|\Exception
      */
     private function generatePassword(): string
     {
@@ -437,14 +439,14 @@ class Watcher extends AbstractClient
      */
     private function generateRandomString(int $length, string $chars): string
     {
+        $res = '';
         if ($length < 1) {
-            throw new ClientException('Length must be greater than zero.');
+            return $res;
         }
         $chLen = strlen($chars);
         if ($chLen < 1) {
             throw new ClientException('There must be at least one allowed character.');
         }
-        $res = '';
         for ($i = 0; $i < $length; ++$i) {
             $res .= $chars[random_int(0, $chLen - 1)];
         }
@@ -638,7 +640,7 @@ class Watcher extends AbstractClient
     /**
      * Generate and store new machine_id/password pair.
      *
-     * @throws ClientException
+     * @throws ClientException|\Exception
      */
     private function refreshCredentials(): void
     {
@@ -653,7 +655,7 @@ class Watcher extends AbstractClient
      *
      * @see https://crowdsecurity.github.io/api_doc/index.html?urls.primaryName=CAPI#/watchers/post_watchers
      *
-     * @throws ClientException
+     * @throws ClientException|\Exception
      */
     private function register(): void
     {

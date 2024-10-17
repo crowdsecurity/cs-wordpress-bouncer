@@ -64,7 +64,6 @@ else
 fi
 
 JEST_PARAMS="--bail=true  --runInBand --verbose"
-TLS_PATH="tls" # Relative to var path
 # If FAIL_FAST, will exit on first individual test fail
 # @see CustomEnvironment.js
 FAIL_FAST=true
@@ -72,16 +71,20 @@ FAIL_FAST=true
 
 case $TYPE in
   "host")
-    CROWDSEC_URL_FROM_HOST=$(ddev describe | grep -A 1 "crowdsec" | sed 's/Host: //g' |  sed -e 's|│||g' | sed s/'\s'//g |  sed -e 's|,.*||g' | tail -1)
+    # Following line is not working anymore
+    # To make it work on host:
+    # 1) update your/etc/hosts (ddev find-ip crowdsec) crowdsec
+    # Example: 172.19.0.5     crowdsec
+    #CROWDSEC_URL_FROM_HOST=$(ddev describe | grep -A 1 "crowdsec" | sed 's/Host: //g' |  sed -e 's|│||g' | sed s/'\s'//g |  sed -e 's|,.*||g' | tail -1)
     cd "../"
     DEBUG_STRING="PWDEBUG=1"
     YARN_PATH="./"
     COMMAND="yarn --cwd ${YARN_PATH} cross-env"
-    LAPI_URL_FROM_PLAYWRIGHT=https://${CROWDSEC_URL_FROM_HOST}
+    LAPI_URL_FROM_PLAYWRIGHT=https://crowdsec:8080
     CURRENT_IP=$(ddev find-ip host)
-    TIMEOUT=60000
+    TIMEOUT=30000
     HEADLESS=false
-    SLOWMO=150
+    SLOWMO=0
     VARHTML_PATH="../../../../../"
     ;;
 
@@ -121,14 +124,14 @@ esac
 # Run command
 
 $COMMAND \
-WORDPRESS_ADMIN_URL=$WORDPRESS_ADMIN_URL \
-WORDPRESS_FRONT_URL=$WORDPRESS_FRONT_URL \
-WORDPRESS_VERSION=$WORDPRESS_VERSION \
+WORDPRESS_ADMIN_URL="$WORDPRESS_ADMIN_URL" \
+WORDPRESS_FRONT_URL="$WORDPRESS_FRONT_URL" \
+WORDPRESS_VERSION="$WORDPRESS_VERSION" \
 $DEBUG_STRING \
-BOUNCER_KEY=$BOUNCER_KEY \
-PROXY_IP=$PROXY_IP  \
+BOUNCER_KEY="$BOUNCER_KEY" \
+PROXY_IP="$PROXY_IP"  \
 LAPI_URL_FROM_PLAYWRIGHT=$LAPI_URL_FROM_PLAYWRIGHT \
-CURRENT_IP=$CURRENT_IP \
+CURRENT_IP="$CURRENT_IP" \
 TIMEOUT=$TIMEOUT \
 HEADLESS=$HEADLESS \
 FAIL_FAST=$FAIL_FAST \
@@ -136,7 +139,7 @@ SLOWMO=$SLOWMO \
 VARHTML_PATH=$VARHTML_PATH \
 MULTISITE=$MULTISITE \
 yarn --cwd $YARN_PATH test \
-    $JEST_PARAMS \
+    "$JEST_PARAMS" \
     --json \
     --outputFile=./.test-results.json \
-    $FILE_LIST
+    "$FILE_LIST"
