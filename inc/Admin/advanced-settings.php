@@ -130,7 +130,7 @@ function adminAdvancedSettings()
             $refresh = $bouncer->refreshBlocklistCache();
             $new = $refresh['new']??0;
             $deleted = $refresh['deleted']??0;
-            $message = __('As the stream mode refresh duration changed, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
+            $message = __('Settings saved.<br>As the stream mode refresh duration changed, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
             AdminNotice::displaySuccess($message);
             scheduleBlocklistRefresh();
         }
