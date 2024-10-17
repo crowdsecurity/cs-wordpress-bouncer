@@ -81,7 +81,7 @@ function adminAdvancedSettings()
      **************************/
     $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
     add_settings_section('crowdsec_admin_advanced_stream_mode', 'Communication mode to the API', function () {
-    }, 'crowdsec_advanced_settings');
+    }, 'crowdsec_advanced_settings',['after_section' => '<hr>']);
 
     // Field "crowdsec_stream_mode"
     addFieldCheckbox('crowdsec_stream_mode', 'Enable the "Stream" mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_stream_mode', function () {
@@ -147,11 +147,12 @@ function adminAdvancedSettings()
      ** Section "Cache" **
      ********************/
 
+
     add_settings_section('crowdsec_admin_advanced_cache', 'Caching configuration <input id="crowdsec_clear_cache" style="margin-left: 7px;margin-top: -3px;" type="button" value="Clear now" class="button button-secondary button-small" onclick="if (confirm(\'Are you sure you want to completely clear the cache?\')) document.getElementById(\'crowdsec_action_clear_cache\').submit();">', function () {
         ?>
         <p>Polish the decisions cache settings by selecting the best technology or the cache durations best suited to your use.</p>
 <?php
-    }, 'crowdsec_advanced_settings');
+    }, 'crowdsec_advanced_settings',['after_section' => '<hr>']);
 
     // Field "crowdsec_redis_dsn"
     addFieldString('crowdsec_redis_dsn', 'Redis DSN<br>(if applicable)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
@@ -336,19 +337,73 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
 
     /***************************
-     ** Section "Remediation" **
+     ** Section "AppSec" **
      **************************/
-
-    add_settings_section('crowdsec_admin_advanced_remediations', 'Remediations', function () {
-        echo 'Configure some details about remediations.';
-    }, 'crowdsec_advanced_settings');
-
-    // Field "crowdsec_fallback_remediation"
     $choice = [];
     $remediations = [Constants::REMEDIATION_BYPASS, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BAN,];
     foreach ($remediations as $remediation) {
         $choice[$remediation] = $remediation;
     }
+
+    add_settings_section('crowdsec_admin_advanced_appsec', 'AppSec component', function () {
+        echo 'Configure bouncer interaction with AppSec component';
+    }, 'crowdsec_advanced_settings', ['after_section' => '<hr>']);
+
+    // Field "AppSec enabled"
+    addFieldCheckbox('crowdsec_use_appsec', 'Enable AppSec', 'crowdsec_plugin_advanced_settings',
+        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_appsec', function () {}, function () {}, '
+    <p>Enable if you want to ask the AppSec component for a remediation based on the current request, in case the initial LAPI remediation is a bypass.</p>
+    <p>For more information on the AppSec component, please refer to the <a href="https://docs.crowdsec.net/docs/appsec/intro" target="_blank">documentation</a>.</p>
+    <p>This AppSec feature is not available when using TLS certificates for authentication.</p>');
+
+    addFieldString('crowdsec_appsec_url', 'AppSec Url', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_appsec', function ($input, $default = '') {
+        if(empty($input) && $default){
+            add_settings_error('AppSec URL', 'crowdsec_error', 'AppSec URL: Can not be empty. Default value used: '.$default);
+            $input = $default;
+        }
+
+        return $input;
+    }, '', 'Your AppSec URL (e.g. http://localhost:7422)', '');
+
+    // Field "timeout"
+    addFieldString('crowdsec_appsec_timeout_ms', 'AppSec request timeout', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
+        'crowdsec_admin_advanced_appsec', function ($input) {
+            if ((int) $input === 0) {
+                add_settings_error('AppSec timeout', 'crowdsec_error', 'AppSec timeout: Must be different than 0.');
+
+                return Constants::APPSEC_TIMEOUT_MS;
+            }
+
+            return $input ;
+        }, ' milliseconds. <p>Maximum execution time (in milliseconds) for an AppSec request.<br> Set a negative value (e.g. -1) to allow unlimited request timeout.<br>Default to ' . Constants::APPSEC_TIMEOUT_MS .'.',
+        Constants::APPSEC_TIMEOUT_MS, 'width: 115px;', 'number');
+
+    addFieldSelect('crowdsec_appsec_fallback_remediation', 'AppSec Fallback to', 'crowdsec_plugin_advanced_settings',
+        'crowdsec_advanced_settings',
+        'crowdsec_admin_advanced_appsec', function ($input) {
+            $remediations = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BYPASS];
+            if (!in_array($input, $remediations)) {
+                $input = Constants::REMEDIATION_BYPASS;
+                $message = 'Fallback to: Incorrect Fallback selected.';
+                if(is_multisite()){
+                    AdminNotice::displayError($message);
+                }else{
+                    add_settings_error('AppSec Fallback to', 'crowdsec_error', $message);
+                }
+            }
+
+            return $input;
+        }, '<p>What remediation to apply when the AppSec call has failed due to a timeout.</p>', $choice);
+
+    /***************************
+     ** Section "Remediation" **
+     **************************/
+
+    add_settings_section('crowdsec_admin_advanced_remediations', 'Remediation', function () {
+        echo 'Configure some details about remediation.';
+    }, 'crowdsec_advanced_settings', ['after_section' => '<hr>']);
+
+    // Field "crowdsec_fallback_remediation"
     addFieldSelect('crowdsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
     'crowdsec_admin_advanced_remediations', function ($input) {
         $remediations = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BYPASS];
@@ -363,7 +418,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
         }
 
         return $input;
-    }, '<p>Which remediation to apply when CrowdSec advises unhandled remediation.</p>', $choice);
+    }, '<p>What remediation to apply when CrowdSec advises unmanaged remediation.</p>', $choice);
 
     function convertInlineIpRangesToComparableIpBounds(string $inlineIpRanges): array
     {
@@ -448,7 +503,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
         echo 'Configure some details about geolocation.<br>
 <b>Important note: </b> If you use this feature, make sure the geolocation database is not publicly accessible.<br>
 Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a>';
-    }, 'crowdsec_advanced_settings');
+    }, 'crowdsec_advanced_settings', ['after_section' => '<hr>']);
 
     // Field "Geolocation enabled"
     addFieldCheckbox('crowdsec_geolocation_enabled', 'Enable geolocation feature', 'crowdsec_plugin_advanced_settings',
@@ -511,60 +566,6 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
         'width: 115px;', 'number');
 
 
-    /***************************
-     ** Section "AppSec" **
-     **************************/
-    $useAppSec = is_multisite() ? get_site_option('crowdsec_use_appsec') : get_option('crowdsec_use_appsec');
-
-    add_settings_section('crowdsec_admin_advanced_appsec', 'AppSec', function () {
-        echo 'Configure some details about AppSec';
-    }, 'crowdsec_advanced_settings');
-
-    // Field "AppSec enabled"
-    addFieldCheckbox('crowdsec_use_appsec', 'Enable AppSec feature', 'crowdsec_plugin_advanced_settings',
-        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_appsec', function () {}, function () {}, '
-    <p>Enable if you want to use also CrowdSec AppSec decisions.<br>If enabled, bounced IP will be TODO.</p>');
-
-    addFieldString('crowdsec_appsec_url', 'AppSec Url', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_appsec', function ($input, $default = '') {
-        if(empty($input) && $default){
-            add_settings_error('AppSec URL', 'crowdsec_error', 'AppSec URL: Can not be empty. Default value used: '.$default);
-            $input = $default;
-        }
-
-        return $input;
-    }, '', 'Your AppSec URL (e.g. http://localhost:7422)', '');
-
-    // Field "timeout"
-    addFieldString('crowdsec_appsec_timeout_ms', 'AppSec request timeout', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
-        'crowdsec_admin_advanced_appsec', function ($input) {
-            if ((int) $input === 0) {
-                add_settings_error('AppSec timeout', 'crowdsec_error', 'AppSec timeout: Must be different than 0.');
-
-                return Constants::APPSEC_TIMEOUT_MS;
-            }
-
-            return $input ;
-        }, ' milliseconds. <p>Maximum execution time (in milliseconds) for a AppSec request.<br> Set a negative value (e.g. -1) to allow unlimited request timeout.<br>Default to ' . Constants::APPSEC_TIMEOUT_MS .'.',
-        Constants::APPSEC_TIMEOUT_MS, 'width: 115px;', 'number');
-
-    addFieldSelect('crowdsec_appsec_fallback_remediation', 'AppSec Fallback to', 'crowdsec_plugin_advanced_settings',
-        'crowdsec_advanced_settings',
-        'crowdsec_admin_advanced_appsec', function ($input) {
-            $remediations = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BYPASS];
-            if (!in_array($input, $remediations)) {
-                $input = Constants::REMEDIATION_BYPASS;
-                $message = 'Fallback to: Incorrect Fallback selected.';
-                if(is_multisite()){
-                    AdminNotice::displayError($message);
-                }else{
-                    add_settings_error('AppSec Fallback to', 'crowdsec_error', $message);
-                }
-            }
-
-            return $input;
-        }, '<p>Which remediation to apply when AppSec call failed due to timeout.</p>', $choice);
-
-
     /*******************************
      ** Section "Debug mode" **
      ******************************/
@@ -573,7 +574,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
         echo 'Configure the debug mode.<br>
 <b>Important note: </b> Make sure the <i>wp-content/uploads/crowdsec/logs</i> path is not publicly accessible.<br>
 Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a>';
-    }, 'crowdsec_advanced_settings');
+    }, 'crowdsec_advanced_settings', ['after_section' => '<hr>']);
 
     // Field "crowdsec_debug_mode"
     addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
@@ -606,7 +607,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
 	add_settings_section('crowdsec_admin_advanced_display_errors', 'Display errors', function () {
 		echo 'Configure the errors display.';
-	}, 'crowdsec_advanced_settings');
+	}, 'crowdsec_advanced_settings', ['after_section' => '<hr>']);
 
 	// Field "crowdsec_display_errors"
 	addFieldCheckbox('crowdsec_display_errors', 'Enable errors display', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_display_errors', function () {}, function () {}, '
@@ -619,11 +620,13 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
     add_settings_section('crowdsec_admin_advanced_auto_prepend_file_mode', 'Auto prepend file mode', function () {
         echo '';
-    }, 'crowdsec_advanced_settings');
+    }, 'crowdsec_advanced_settings', ['after_section' => '<hr>']);
 
     // Field "crowdsec_standalone_mode"
     addFieldCheckbox('crowdsec_auto_prepend_file_mode', 'Enable auto_prepend_file mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_auto_prepend_file_mode', function () {}, function () {}, '
-    <p>This setting allows the bouncer to bounce IPs before running any PHP script in the project. <a href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#auto-prepend-file-mode" target="_blank">Discover how to setup with this guide</a>.</p><p>Enable this option <b>before</b> adding the "<em>auto_prepend_file</em>" directive for your PHP setup.</p>');
+    <p>This setting allows the bouncer to bounce IPs before running any PHP script in the project. <a href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#auto-prepend-file-mode" target="_blank">Discover how to setup with this guide</a>.</p><p>Enable this option <b>before</b> adding the "<em>auto_prepend_file</em>" directive for your PHP setup.</p>
+    <p><b>Important note: </b> If you use this feature, make sure the <em>"standalone-settings"</em> file is not publicly accessible.<br>
+Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this file.</a></p>');
 
 
     /*******************************
@@ -632,7 +635,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
     add_settings_section('crowdsec_admin_advanced_test', 'Test settings', function () {
         echo 'Configure some test parameters.';
-    }, 'crowdsec_advanced_settings');
+    }, 'crowdsec_advanced_settings', ['after_section' => '<hr>']);
 
     // Field "test ip"
     addFieldString('crowdsec_forced_test_ip', 'Forced test IP', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_test', function ($input) {

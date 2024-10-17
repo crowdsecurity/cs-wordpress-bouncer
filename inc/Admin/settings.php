@@ -60,7 +60,7 @@ function adminSettings()
 
     add_settings_section('crowdsec_admin_connection', 'Connection details', function () {
         echo 'Connect WordPress to your CrowdSec Local API.';
-    }, 'crowdsec_settings');
+    }, 'crowdsec_settings', ['after_section' => '<hr>']);
 
     // Field "crowdsec_api_url"
     addFieldString('crowdsec_api_url', 'Local API URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input, $default = '') {
@@ -144,7 +144,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
      ***********************************/
     add_settings_section('crowdsec_admin_bouncing', 'Bouncing', function () {
         echo 'Refine bouncing according to your needs.';
-    }, 'crowdsec_settings');
+    }, 'crowdsec_settings', ['after_section' => '<hr>']);
 
     // Field "crowdsec_bouncing_level"
     addFieldSelect('crowdsec_bouncing_level', 'Bouncing level', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_bouncing', function ($input) {

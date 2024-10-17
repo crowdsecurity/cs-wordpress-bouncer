@@ -3,9 +3,9 @@
 
 ## User Guide
 
+**Table of Contents**
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
 
 - [Description](#description)
 - [Prerequisites](#prerequisites)
@@ -83,6 +83,8 @@ also be able to test your settings.
 Url to join your CrowdSec Local API.
 
 If the CrowdSec Agent is installed on this server, you could set this field to `http://localhost:8080`.
+
+Default to `http://localhost:8080`
 
 ***
 
@@ -289,22 +291,60 @@ Example of DSN: memcached://localhost:11211.
 
 ***
 
-![Remediations](images/screenshots/config-remediations.jpg)
+![AppSec](./images/screenshots/config-appsec.png)
+
+---
+
+`AppSec component → Enable AppSec`
+
+Enable if you want to ask the AppSec component for a remediation based on the current request, in case the initial LAPI remediation is a bypass.
+
+Not available if you use TLS certficates as authentication type.
+
+For more information on the AppSec component, please refer to the [documentation](https://docs.crowdsec.net/docs/appsec/intro).
+
+---
+
+`AppSec component → AppSec Url `
+
+Your AppSec component url. Default to `http://localhost:7422`
+
+---
+
+`AppSec component → AppSec request timeout`
+
+Maximum execution time (in milliseconds) for an AppSec request.
+
+Set a negative value to allow unlimited timeout
+
+Default to 400. 
+
+---
+
+`AppSec component → AppSec Fallback to`
+
+What remediation to apply when AppSec call has failed due to a timeout.
+
+Recommended: `captcha`. Default: `bypass`.
+
+---
+
+![Remediation](images/screenshots/config-remediations.jpg)
 
 ***
 
-`Remediations → Fallback to`
+`Remediation → Fallback to`
 
 Choose which remediation to apply when CrowdSec advises unhandled remediation.
 
 ***
 
-`Remediations → Trust these CDN IPs (or Load Balancer, HTTP Proxy)`
+`Remediation → Trust these CDN IPs (or Load Balancer, HTTP Proxy)`
 
 If you use a CDN, a reverse proxy or a load balancer, it is possible to indicate in the bouncer settings the IP ranges of these devices in order to be able to check the IP of your users. For other IPs, the bouncer will not trust the X-Forwarded-For header.
 ***
 
-`Remediations → Hide CrowdSec mentions`
+`Remediation → Hide CrowdSec mentions`
 
 Enable if you want to hide CrowdSec mentions on the Ban and Captcha walls.
 
@@ -407,6 +447,8 @@ Should be disabled in production.
 
 This setting allows the bouncer to bounce IPs before running any PHP script in the project.
 
+**Make sure the generated `standalone-settings.php` file is not publicly accessible.** [See security note below](#security).
+
 
 ***
 
@@ -484,7 +526,12 @@ Here are some examples of how to set options with the `WP-CLI` tool.
 | `Captcha flow cache lifetime`                                | `wp option set crowdsec_captcha_cache_duration 86400`        |
 | `Redis DSN (if applicable)`:warning:                         | <code>echo -n "redis://localhost:6379" \| wp option set crowdsec_redis_dsn</code> |
 | `Memcached DSN (if applicable)`:warning:                     | <code>echo -n &quot;memcached://localhost:11211&quot; \| wp option set crowdsec_memcached_dsn</code> |
-| **Advanced settings** → *Remediations*                       |                                                              |
+| **Advanced settings** → *AppSec component*                   |                                                              |
+| `Enable AppSec`                                              | - <code>wp option set crowdsec_use_appsec on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_use_appsec</code> |
+| `AppSec Url`                                                 | `wp option set crowdsec_appsec_url http://localhost:7422`    |
+| `AppSec request timeout`                                     | `wp option set crowdsec_appsec_timeout_ms 150`               |
+| `AppSec Fallback to`                                         | - <code>wp option set crowdsec_appsec_fallback_remediation ban</code><br />- <code>wp option set crowdsec_appsec_fallback_remediation captcha</code><br />- <code>wp option set crowdsec_appsec_fallback_remediation bypass</code> |
+| **Advanced settings** → *Remediation*                        |                                                              |
 | `Fallback to`                                                | - <code>wp option set crowdsec_fallback_remediation ban</code><br />- <code>wp option set crowdsec_fallback_remediation captcha</code><br />- <code>wp option set crowdsec_fallback_remediation bypass</code> |
 | `Trust these CDN IPs (or Load Balancer, HTTP Proxy)`         | When the `crowdsec_trust_ip_forward` is set, the `crowdsec_trust_ip_forward_array` is populated with a serialized array of comparable IPs.<br />Thus, to maintain consistency between admin display and database data, you should update the 2 options: <br />`wp option set crowdsec_trust_ip_forward 1.2.3.4`<br />`wp option set crowdsec_trust_ip_forward_array --format=json '[["001.002.003.004","001.002.003.004"]]'` |
 | `Hide CrowdSec mentions`                                     | - <code>wp option set crowdsec_hide_mentions on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_hide_mentions</code> |
