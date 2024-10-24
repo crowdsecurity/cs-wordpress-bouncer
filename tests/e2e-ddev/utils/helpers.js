@@ -138,6 +138,10 @@ const getTextById = async (id) => {
     return page.locator(`#${id}`).innerText();
 };
 
+const getHtmlById = async (id) => {
+    return page.locator(`#${id}`).innerHTML();
+};
+
 const onAdvancedPageEnableStreamMode = async () => {
     await setToggle("crowdsec_stream_mode", true);
     await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
@@ -301,6 +305,11 @@ const enableAppSec = async () => {
     await setToggle("crowdsec_use_appsec", true);
     await fillInput("crowdsec_appsec_url", APPSEC_URL);
     await selectByName("crowdsec_appsec_fallback_remediation", "captcha");
+    await selectByName(
+        "crowdsec_appsec_body_size_exceeded_action",
+        "headers_only",
+    );
+    await fillInput("crowdsec_appsec_max_body_size_kb", 100);
     await onAdminSaveSettings();
 };
 
@@ -342,4 +351,5 @@ module.exports = {
     getTextById,
     computeCurrentPageRemediation,
     disableAutoPrependFileMode,
+    getHtmlById,
 };

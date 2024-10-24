@@ -131,6 +131,7 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @covers \CrowdSec\RemediationEngine\Configuration\Lapi::validateAppSec
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::parseAppSecDecision
  * @covers \CrowdSec\RemediationEngine\LapiRemediation::validateAppSecHeaders
+ * @covers \CrowdSec\RemediationEngine\LapiRemediation::validateRawBody
  */
 final class AppSecLapiRemediationTest extends AbstractRemediation
 {
@@ -245,7 +246,8 @@ final class AppSecLapiRemediationTest extends AbstractRemediation
 
         $this->bouncer->method('getAppSecDecision')->will(
             $this->onConsecutiveCalls(
-                ['action' => 'allow', 'http_status' => 202],  // Test 1 : clean request
+                ['action' => 'allow', 'http_status' => 200],  // Test 0.4 : request with no body (headers only test)
+                ['action' => 'allow', 'http_status' => 200],  // Test 1 : clean request
                 ['action' => 'ban', 'http_status' => 403],  // Test 2 : ban request
                 ['action' => 'unknown', 'http_status' => 403], // Test 3 : unknown request
                 ['action' => 'unknown', 'http_status' => 403], // Test 4 : unknown request with captcha fallback
@@ -269,7 +271,7 @@ final class AppSecLapiRemediationTest extends AbstractRemediation
             'Default ordered remediation should be as expected'
         );
 
-        // Test 0: bad header
+        // Test 0.1: bad header
         unset($appSecHeaders[Constants::HEADER_APPSEC_IP]);
         $result = $remediation->getAppSecRemediation($appSecHeaders, '');
         $this->assertEquals(
@@ -279,24 +281,57 @@ final class AppSecLapiRemediationTest extends AbstractRemediation
         );
         $appSecHeaders[Constants::HEADER_APPSEC_IP] = '1.2.3.4';
 
-        // Test 1 (AppSec response: clean request)
+        // Test 0.2: exceeded body and allow action
+        $remediationConfigs = ['appsec_body_size_exceeded_action' => 'allow', 'appsec_max_body_size_kb' => 1024];
+        $remediation = new LapiRemediation($remediationConfigs, $this->bouncer, $this->cacheStorage, null);
+        $result = $remediation->getAppSecRemediation($appSecHeaders, str_repeat('a', 1024*1024+1));
+        $this->assertEquals(
+            Constants::REMEDIATION_BYPASS,
+            $result,
+            'Exceeded body size should return a bypass remediation'
+        );
+        // Test 0.3: exceeded body and block action
+        $remediationConfigs = ['appsec_body_size_exceeded_action' => 'block', 'appsec_max_body_size_kb' => 12];
+        $remediation = new LapiRemediation($remediationConfigs, $this->bouncer, $this->cacheStorage, null);
+        $result = $remediation->getAppSecRemediation($appSecHeaders, str_repeat('a', 12*1024+1));
+        $this->assertEquals(
+            Constants::REMEDIATION_BAN,
+            $result,
+            'Exceeded body size should return a ban remediation'
+        );
+        // Test 0.4: exceeded body and headers only action
+        $remediationConfigs = ['appsec_body_size_exceeded_action' => 'headers_only', 'appsec_max_body_size_kb' => 1024];
+        $remediation = new LapiRemediation($remediationConfigs, $this->bouncer, $this->cacheStorage, null);
         $originsCount = $remediation->getOriginsCount();
         $this->assertEquals(
             [],
             $originsCount,
             'Origins count should be empty'
         );
-        $result = $remediation->getAppSecRemediation($appSecHeaders, '');
-
+        $result = $remediation->getAppSecRemediation($appSecHeaders, str_repeat('a', 1024*1024+1));
+        $this->assertEquals(
+            Constants::REMEDIATION_BYPASS,
+            $result,
+            'Request with headers only should return a bypass remediation here'
+        );
+        $originsCount = $remediation->getOriginsCount();
+        $this->assertEquals(
+            ['clean_appsec' => 1],
+            $originsCount,
+            'Origin count should be cached'
+        );
+        // Test 1 (AppSec response: clean request)
+        $remediationConfigs = [];
+        $remediation = new LapiRemediation($remediationConfigs, $this->bouncer, $this->cacheStorage, null);
+        $result = $remediation->getAppSecRemediation($appSecHeaders, str_repeat('a', 256));
         $this->assertEquals(
             Constants::REMEDIATION_BYPASS,
             $result,
             'Clean request should return a bypass remediation'
         );
-
         $originsCount = $remediation->getOriginsCount();
         $this->assertEquals(
-            ['clean_appsec' => 1],
+            ['clean_appsec' => 2],
             $originsCount,
             'Origin count should be cached'
         );
@@ -309,7 +344,7 @@ final class AppSecLapiRemediationTest extends AbstractRemediation
         );
         $originsCount = $remediation->getOriginsCount();
         $this->assertEquals(
-            ['clean_appsec' => 1, 'appsec' => 1],
+            ['clean_appsec' => 2, 'appsec' => 1],
             $originsCount,
             'Origin count should be cached'
         );
@@ -322,7 +357,7 @@ final class AppSecLapiRemediationTest extends AbstractRemediation
         );
         $originsCount = $remediation->getOriginsCount();
         $this->assertEquals(
-            ['clean_appsec' => 1, 'appsec' => 2],
+            ['clean_appsec' => 2, 'appsec' => 2],
             $originsCount,
             'Origin count should be cached (original appsec response was not a bypass, so it does not increase clean_appsec counter)'
         );
@@ -337,7 +372,7 @@ final class AppSecLapiRemediationTest extends AbstractRemediation
         );
         $originsCount = $remediation->getOriginsCount();
         $this->assertEquals(
-            ['clean_appsec' => 1, 'appsec' => 3],
+            ['clean_appsec' => 2, 'appsec' => 3],
             $originsCount,
             'Origin count should be cached (original appsec response was not a bypass, so it does not increase clean_appsec counter)'
         );

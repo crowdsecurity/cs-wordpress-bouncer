@@ -28,6 +28,7 @@ use CrowdSec\LapiClient\TimeoutException;
  * @uses \CrowdSec\LapiClient\Configuration::validate
  * @uses \CrowdSec\LapiClient\Configuration::addAppSecNodes
  * @uses \CrowdSec\LapiClient\Bouncer::cleanHeadersForLog
+ * @uses \CrowdSec\LapiClient\Bouncer::cleanRawBodyForLog()
  *
  * @covers \CrowdSec\LapiClient\Bouncer::getStreamDecisions
  * @covers \CrowdSec\LapiClient\Bouncer::getFilteredDecisions

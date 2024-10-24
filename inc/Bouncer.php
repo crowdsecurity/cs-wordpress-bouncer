@@ -96,6 +96,13 @@ class Bouncer extends AbstractBouncer
         if (function_exists('getallheaders')) {
             $allHeaders = getallheaders();
         } else {
+            $this->logger->warning(
+                'getallheaders() function is not available',
+                [
+                    'type' => 'GETALLHEADERS_NOT_AVAILABLE',
+                    'message' => 'Resulting headers may not be accurate',
+                ]
+            );
             foreach ($_SERVER as $name => $value) {
                 if ('HTTP_' == substr($name, 0, 5)) {
                     $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
@@ -105,8 +112,6 @@ class Bouncer extends AbstractBouncer
                 }
             }
         }
-        // Remove Content-Length header for AppSec
-        unset($allHeaders['Content-Length']);
 
         return $allHeaders;
     }
@@ -124,7 +129,7 @@ class Bouncer extends AbstractBouncer
      */
     public function getRequestRawBody(): string
     {
-        return file_get_contents('php://input');
+        return $this->buildRequestRawBody(fopen('php://input', 'rb'));
     }
 
     /**
@@ -185,6 +190,16 @@ class Bouncer extends AbstractBouncer
                 $rawConfigs,
                 'crowdsec_appsec_fallback_remediation',
                 Constants::REMEDIATION_BYPASS
+            )),
+            'appsec_max_body_size_kb' => (int)($this->handleRawConfig(
+                $rawConfigs,
+                'crowdsec_appsec_max_body_size_kb',
+                Constants::APPSEC_DEFAULT_MAX_BODY_SIZE
+            )),
+            'appsec_body_size_exceeded_action' => (string)($this->handleRawConfig(
+                $rawConfigs,
+                'crowdsec_appsec_body_size_exceeded_action',
+                Constants::APPSEC_ACTION_HEADERS_ONLY
             )),
             // Debug
             'debug_mode' => (bool)($this->handleRawConfig($rawConfigs, 'crowdsec_debug_mode', false)),

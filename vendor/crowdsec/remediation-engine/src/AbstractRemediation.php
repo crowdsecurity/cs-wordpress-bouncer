@@ -243,6 +243,9 @@ abstract class AbstractRemediation
     }
 
     /**
+     * Retrieve only the remediation with the highest priority from decisions.
+     * It also updates the origin count if needed.
+     *
      * @throws CacheException
      * @throws InvalidArgumentException
      */

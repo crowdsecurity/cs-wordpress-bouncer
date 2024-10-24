@@ -81,22 +81,22 @@
         },
         {
             "name": "crowdsec/bouncer",
-            "version": "v3.0.0",
-            "version_normalized": "3.0.0.0",
+            "version": "v3.2.0",
+            "version_normalized": "3.2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "caa5509bb7aac9176c4a049dd83797fd6e57309c"
+                "reference": "68e0c83e50f2f0b4af6116e0aa82c6961b37bba4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/caa5509bb7aac9176c4a049dd83797fd6e57309c",
-                "reference": "caa5509bb7aac9176c4a049dd83797fd6e57309c",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/68e0c83e50f2f0b4af6116e0aa82c6961b37bba4",
+                "reference": "68e0c83e50f2f0b4af6116e0aa82c6961b37bba4",
                 "shasum": ""
             },
             "require": {
-                "crowdsec/common": "^2.3.0",
-                "crowdsec/remediation-engine": "^3.4.0",
+                "crowdsec/common": "^2.3.2",
+                "crowdsec/remediation-engine": "^3.5.0",
                 "ext-gd": "*",
                 "ext-json": "*",
                 "gregwar/captcha": "^1.2.1",
@@ -109,7 +109,7 @@
                 "mikey179/vfsstream": "^1.6.11",
                 "phpunit/phpunit": "^8.5.30 || ^9.3"
             },
-            "time": "2024-10-04T04:57:41+00:00",
+            "time": "2024-10-23T05:36:45+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -149,7 +149,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v3.0.0"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v3.2.0"
             },
             "install-path": "../crowdsec/bouncer"
         },
@@ -225,17 +225,17 @@
         },
         {
             "name": "crowdsec/common",
-            "version": "v2.3.1",
-            "version_normalized": "2.3.1.0",
+            "version": "v2.3.2",
+            "version_normalized": "2.3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-common.git",
-                "reference": "639afd34daa36a14c4f47e1d70a9ac5f038541d5"
+                "reference": "dd63ec228a0038986fd37903e06029c49cd3b613"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-common/zipball/639afd34daa36a14c4f47e1d70a9ac5f038541d5",
-                "reference": "639afd34daa36a14c4f47e1d70a9ac5f038541d5",
+                "url": "https://api.github.com/repos/crowdsecurity/php-common/zipball/dd63ec228a0038986fd37903e06029c49cd3b613",
+                "reference": "dd63ec228a0038986fd37903e06029c49cd3b613",
                 "shasum": ""
             },
             "require": {
@@ -252,7 +252,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2024-10-16T05:12:27+00:00",
+            "time": "2024-10-18T00:26:02+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -289,23 +289,23 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-common/issues",
-                "source": "https://github.com/crowdsecurity/php-common/tree/v2.3.1"
+                "source": "https://github.com/crowdsecurity/php-common/tree/v2.3.2"
             },
             "install-path": "../crowdsec/common"
         },
         {
             "name": "crowdsec/lapi-client",
-            "version": "v3.3.1",
-            "version_normalized": "3.3.1.0",
+            "version": "v3.3.2",
+            "version_normalized": "3.3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-lapi-client.git",
-                "reference": "d2a27f4eab5d82ca8c75684881c8c0a3d9c4ea39"
+                "reference": "77f8703d5f54833751664c2ac0aec0b479be6287"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-lapi-client/zipball/d2a27f4eab5d82ca8c75684881c8c0a3d9c4ea39",
-                "reference": "d2a27f4eab5d82ca8c75684881c8c0a3d9c4ea39",
+                "url": "https://api.github.com/repos/crowdsecurity/php-lapi-client/zipball/77f8703d5f54833751664c2ac0aec0b479be6287",
+                "reference": "77f8703d5f54833751664c2ac0aec0b479be6287",
                 "shasum": ""
             },
             "require": {
@@ -323,7 +323,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2024-10-10T09:56:15+00:00",
+            "time": "2024-10-21T08:18:50+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -359,28 +359,28 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-lapi-client/issues",
-                "source": "https://github.com/crowdsecurity/php-lapi-client/tree/v3.3.1"
+                "source": "https://github.com/crowdsecurity/php-lapi-client/tree/v3.3.2"
             },
             "install-path": "../crowdsec/lapi-client"
         },
         {
             "name": "crowdsec/remediation-engine",
-            "version": "v3.4.0",
-            "version_normalized": "3.4.0.0",
+            "version": "v3.5.0",
+            "version_normalized": "3.5.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-remediation-engine.git",
-                "reference": "ea92f7a86b51b91938768e64293187979dbab438"
+                "reference": "f9332611299665f2c3c89b49c1c4cecd14093480"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/ea92f7a86b51b91938768e64293187979dbab438",
-                "reference": "ea92f7a86b51b91938768e64293187979dbab438",
+                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/f9332611299665f2c3c89b49c1c4cecd14093480",
+                "reference": "f9332611299665f2c3c89b49c1c4cecd14093480",
                 "shasum": ""
             },
             "require": {
                 "crowdsec/capi-client": "^3.2.0",
-                "crowdsec/common": "^2.3.0",
+                "crowdsec/common": "^2.3.2",
                 "crowdsec/lapi-client": "^3.3.0",
                 "ext-json": "*",
                 "geoip2/geoip2": "^2.13.0",
@@ -401,7 +401,7 @@
             "suggest": {
                 "ext-curl": "*"
             },
-            "time": "2024-10-04T02:46:52+00:00",
+            "time": "2024-10-18T05:40:39+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -442,7 +442,7 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-remediation-engine/issues",
-                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v3.4.0"
+                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v3.5.0"
             },
             "install-path": "../crowdsec/remediation-engine"
         },

@@ -204,6 +204,7 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
         'CrowdSecBouncer\\BouncerException' => __DIR__ . '/..' . '/crowdsec/bouncer/src/BouncerException.php',
         'CrowdSecBouncer\\Configuration' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Configuration.php',
         'CrowdSecBouncer\\Constants' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Constants.php',
+        'CrowdSecBouncer\\Helper' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Helper.php',
         'CrowdSecBouncer\\Template' => __DIR__ . '/..' . '/crowdsec/bouncer/src/Template.php',
         'CrowdSecWordPressBouncer\\Admin\\AdminNotice' => __DIR__ . '/../..' . '/inc/Admin/AdminNotice.php',
         'CrowdSecWordPressBouncer\\Bouncer' => __DIR__ . '/../..' . '/inc/Bouncer.php',

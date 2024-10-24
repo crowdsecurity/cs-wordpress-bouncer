@@ -17,6 +17,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+  DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   test-suite:
     strategy:
@@ -45,7 +49,7 @@ jobs:
         run: ddev config --project-type=php --project-name=crowdsec-php-common  --php-version=${{ matrix.php-version }}
 
       - name: Add-ons install
-        run: ddev get julienloizelet/ddev-tools
+        run: ddev add-on get julienloizelet/ddev-tools
 
       - name: Start DDEV
         uses: nick-fields/retry@v3

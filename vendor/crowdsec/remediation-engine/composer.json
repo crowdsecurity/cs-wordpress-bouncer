@@ -45,7 +45,7 @@
         "ext-json": "*",
         "symfony/config": "^4.4.27 || ^5.2 || ^6.0",
         "symfony/cache": "^5.4.11|| ^6.0.11",
-        "crowdsec/common": "^2.3.0",
+        "crowdsec/common": "^2.3.2",
         "crowdsec/capi-client": "^3.2.0",
         "crowdsec/lapi-client": "^3.3.0",
         "monolog/monolog": "^1.17 || ^2.1",

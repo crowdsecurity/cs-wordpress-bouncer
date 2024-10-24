@@ -15,6 +15,17 @@ As far as possible, we try to adhere to [Symfony guidelines](https://symfony.com
 
 ---
 
+## [3.5.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.5.0) - 2024-10-18
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.4.0...v3.5.0)
+
+### Added
+
+- Add AppSec settings to manage maximum size of the request body
+    - Add `appsec_max_body_size_kb` setting
+    - Add `appsec_body_size_exceeded_action` setting
+
+---
+
 ## [3.4.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.4.0) - 2024-10-04
 [_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.3.0...v3.4.0)
 

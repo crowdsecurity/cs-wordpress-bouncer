@@ -17,6 +17,8 @@
         const $appSecUrlTr = $appSecUrl.parent().parent();
         const $appSecTimeoutTr = jQuery('[name=crowdsec_appsec_timeout_ms]').parent().parent();
         const $appSecFallback = jQuery('[name=crowdsec_appsec_fallback_remediation]').parent().parent();
+        const $appSecMaxBodyAction = jQuery('[name=crowdsec_appsec_body_size_exceeded_action]').parent().parent();
+        const $appSecMaxBodySizeTr = jQuery('[name=crowdsec_appsec_max_body_size_kb]').parent().parent();
         // Geolocation
         const $geolocationEnabled = jQuery('[name=crowdsec_geolocation_enabled]');
         const $geolocationTypeTr = jQuery('[name=crowdsec_geolocation_type]').parent().parent();
@@ -59,11 +61,15 @@
                 $appSecUrlTr.show("slow");
                 $appSecTimeoutTr.show("slow");
                 $appSecFallback.show("slow");
+                $appSecMaxBodyAction.show("slow");
+                $appSecMaxBodySizeTr.show("slow");
             } else {
                 $appSecUrl.removeAttr('required');
                 $appSecUrlTr.hide();
                 $appSecTimeoutTr.hide();
                 $appSecFallback.hide();
+                $appSecMaxBodyAction.hide();
+                $appSecMaxBodySizeTr.hide();
             }
         }
 

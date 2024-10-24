@@ -306,6 +306,8 @@ final class CurlTest extends AbstractClient
             'X-Crowdsec-Appsec-Method' => 'test-value',
             'X-Crowdsec-Appsec-Uri' => 'test-value',
             'X-Crowdsec-Appsec-Api-Key' => 'test-value',
+            'Host' => 'test-value.com',
+            'Content-Length' => '123',
         ];
         $rawBody = 'this is raw body';
         $configs = $this->tlsConfigs;
@@ -329,6 +331,8 @@ final class CurlTest extends AbstractClient
                 'X-Crowdsec-Appsec-Method:test-value',
                 'X-Crowdsec-Appsec-Uri:test-value',
                 'X-Crowdsec-Appsec-Api-Key:test-value',
+                'Host:test-value.com',
+                'Content-Length:123',
             ],
             \CURLOPT_POST => true,
             \CURLOPT_POSTFIELDS => 'this is raw body',
@@ -369,6 +373,8 @@ final class CurlTest extends AbstractClient
                 'X-Crowdsec-Appsec-Method:test-value',
                 'X-Crowdsec-Appsec-Uri:test-value',
                 'X-Crowdsec-Appsec-Api-Key:test-value',
+                'Host:test-value.com',
+                'Content-Length:123',
                 'User-Agent:' . TestConstants::USER_AGENT_SUFFIX,
             ],
             \CURLOPT_POST => false,
