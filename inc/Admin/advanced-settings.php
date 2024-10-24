@@ -51,6 +51,8 @@ function adminAdvancedSettings()
                 'crowdsec_appsec_url',
                 'crowdsec_appsec_fallback_remediation',
                 'crowdsec_appsec_timeout_ms',
+                'crowdsec_appsec_max_body_size_kb',
+                'crowdsec_appsec_body_size_exceeded_action',
             ];
 
         foreach ( $options as $option ) {
