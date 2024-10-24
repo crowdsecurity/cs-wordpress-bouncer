@@ -31,6 +31,8 @@ class Lapi extends AbstractRemediation
         'bad_ip_cache_duration',
         'geolocation',
         'appsec_fallback_remediation',
+        'appsec_max_body_size_kb',
+        'appsec_body_size_exceeded_action',
     ];
 
     public function getConfigTreeBuilder(): TreeBuilder
@@ -56,6 +58,17 @@ class Lapi extends AbstractRemediation
         $rootNode->children()
             ->scalarNode('appsec_fallback_remediation')
                 ->defaultValue(Constants::REMEDIATION_CAPTCHA)
+            ->end()
+            ->integerNode('appsec_max_body_size_kb')
+                ->min(1)->defaultValue(Constants::APPSEC_DEFAULT_MAX_BODY_SIZE)
+            ->end()
+            ->enumNode('appsec_body_size_exceeded_action')
+                ->defaultValue(Constants::APPSEC_ACTION_HEADERS_ONLY)
+                ->values([
+                    Constants::APPSEC_ACTION_HEADERS_ONLY,
+                    Constants::APPSEC_ACTION_BLOCK,
+                    Constants::APPSEC_ACTION_ALLOW,
+                ])
             ->end()
         ->end();
     }

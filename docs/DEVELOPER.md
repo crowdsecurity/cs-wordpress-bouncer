@@ -161,11 +161,14 @@ tar -xf GeoLite2-Country.tar.gz
 tar -xf GeoLite2-City.tar.gz
 ```
 
-For AppSec post request test, we are using a custom page. You have to create this page in your WordPress site: 
+For AppSec post request test, we are using a custom pages. You have to create these page in your WordPress site: 
 
 ```bash
 cd wp-sources
-cat .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/html/appsec-post.html | ddev wp post create --post_type=page --post_status=publish --post_title="AppSec" -   
+cp .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/wp_appsec_custom_upload.php wp_appsec_custom_upload.php
+cat .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/html/appsec-upload.html | ddev wp post create --post_type=page --post_status=publish --post_title="AppSec Upload" -
+cat .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/html/appsec-post.html | ddev wp post create --post_type=page --post_status=publish --post_title="AppSec" -
+ddev wp rewrite structure "/%postname%/"
 ```  
 
 

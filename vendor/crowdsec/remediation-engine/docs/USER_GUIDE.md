@@ -29,7 +29,10 @@
   - [Stream mode](#stream-mode)
   - [Clean IP cache duration](#clean-ip-cache-duration)
   - [Bad IP cache duration](#bad-ip-cache-duration)
-  - [AppSec fallback remediation](#appsec-fallback-remediation)
+  - [AppSec settings](#appsec-settings)
+    - [AppSec fallback remediation](#appsec-fallback-remediation)
+    - [AppSec maximum body size](#appsec-maximum-body-size)
+    - [AppSec body size exceeded action](#appsec-body-size-exceeded-action)
 - [Cache configurations](#cache-configurations)
   - [PhpFiles cache files directory](#phpfiles-cache-files-directory)
   - [Redis cache DSN](#redis-cache-dsn)
@@ -597,7 +600,9 @@ This is only useful in live mode. In stream mode, the cache duration depends onl
 
 In seconds. Must be greater or equal than 1. Default to 120 seconds if not set.
 
-### AppSec fallback remediation
+### AppSec settings
+
+#### AppSec fallback remediation
 
 ```php
 $configs = [
@@ -613,6 +618,38 @@ Select from `bypass` (minimum remediation), `captcha` (recommended) or `ban` (ma
 This setting is not required. If you don't set any value, `captcha` will be used by default.
 
 If you set some value, be aware to include this value in the `ordered_remediations` setting too.
+
+#### AppSec maximum body size
+
+```php
+$configs = [
+        ... 
+        'appsec_max_body_size_kb' => 1024
+        ...
+];
+```
+
+Maximum size of request body (in kilobytes) which, if exceeded, will trigger the "AppSec body size exceeded" action defined below.
+
+This setting is not required. If you don't set any value, `1024` will be used by default.
+
+#### AppSec body size exceeded action
+
+```php
+$configs = [
+        ... 
+        'appsec_body_size_exceeded_action' => 'headers_only'
+        ...
+];
+```
+
+Action to take when the request body size exceeds the maximum size defined above.
+
+Select from:
+ - `headers_only` (recommended and default value): only the headers of the original request are forwarded to AppSec, 
+   not the body.
+ - `allow` (not recommended): the request is considered as safe and a bypass remediation is returned, without calling AppSec.
+ - `block`: the request is considered as malicious and a ban remediation is returned, without calling AppSec.
 
 
 ## Cache configurations

@@ -5,7 +5,6 @@ use CrowdSecWordPressBouncer\Constants;
 use CrowdSecWordPressBouncer\Bouncer;
 use CrowdSecBouncer\BouncerException;
 use CrowdSec\RemediationEngine\Constants as RemConstants;
-use CrowdSec\LapiClient\Constants as LapiConstants;
 use IPLib\Factory;
 
 require_once __DIR__ . '/../options-config.php';
@@ -52,6 +51,8 @@ function adminAdvancedSettings()
                 'crowdsec_appsec_url',
                 'crowdsec_appsec_fallback_remediation',
                 'crowdsec_appsec_timeout_ms',
+                'crowdsec_appsec_max_body_size_kb',
+                'crowdsec_appsec_body_size_exceeded_action',
             ];
 
         foreach ( $options as $option ) {
@@ -210,7 +211,6 @@ function adminAdvancedSettings()
             }
         }
         $error = false;
-        $message = '';
 
         try {
             $configs = getDatabaseConfigs();
@@ -247,7 +247,7 @@ function adminAdvancedSettings()
 
         try {
             $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
-            if ($streamMode && !$error) {
+            if ($streamMode && !$error && isset($bouncer)) {
                 // system
                 $bouncer->clearCache();
                 $result = $bouncer->refreshBlocklistCache();
@@ -281,8 +281,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
                 if(is_multisite()){
                     AdminNotice::displayError($message);
                 }else{
-                    add_settings_error($message);
-
+                    add_settings_error('Recheck clean IPs each', 'crowdsec_error', $message);
                 }
 
                 return '1';
@@ -299,13 +298,12 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     addFieldString('crowdsec_bad_ip_cache_duration', 'Recheck bad IPs each<br>(live mode only)', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_cache', function ($input) {
         if(!empty($input)) {
             $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
-            if (!$streamMode && !empty($input) && (int)$input <= 0) {
+            if (!$streamMode && (int)$input <= 0) {
                 $message = 'Recheck bad IPs each: Minimum is 1 second.';
                 if(is_multisite()){
                     AdminNotice::displayError($message);
                 }else{
-                    add_settings_error($message);
-
+                    add_settings_error('Recheck bad IPs each', 'crowdsec_error', $message);
                 }
 
                 return '1';
@@ -325,8 +323,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
             if(is_multisite()){
                 AdminNotice::displayError($message);
             }else{
-                add_settings_error($message);
-
+                add_settings_error('Captcha flow cache lifetime', 'crowdsec_error', $message);
             }
 
             return Constants::CACHE_EXPIRATION_FOR_CAPTCHA;
@@ -356,17 +353,17 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     <p>For more information on the AppSec component, please refer to the <a href="https://docs.crowdsec.net/docs/appsec/intro" target="_blank">documentation</a>.</p>
     <p>This AppSec feature is not available when using TLS certificates for authentication.</p>');
 
-    addFieldString('crowdsec_appsec_url', 'AppSec Url', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_appsec', function ($input, $default = '') {
+    addFieldString('crowdsec_appsec_url', 'Url', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_appsec', function ($input, $default = '') {
         if(empty($input) && $default){
             add_settings_error('AppSec URL', 'crowdsec_error', 'AppSec URL: Can not be empty. Default value used: '.$default);
             $input = $default;
         }
 
         return $input;
-    }, '', 'Your AppSec URL (e.g. http://localhost:7422)', '');
+    }, '<p>The AppSec Url</p>', 'Your AppSec URL (e.g. http://localhost:7422)', '');
 
     // Field "timeout"
-    addFieldString('crowdsec_appsec_timeout_ms', 'AppSec request timeout', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
+    addFieldString('crowdsec_appsec_timeout_ms', 'Request timeout', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
         'crowdsec_admin_advanced_appsec', function ($input) {
             if ((int) $input === 0) {
                 add_settings_error('AppSec timeout', 'crowdsec_error', 'AppSec timeout: Must be different than 0.');
@@ -378,7 +375,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
         }, ' milliseconds. <p>Maximum execution time (in milliseconds) for an AppSec request.<br> Set a negative value (e.g. -1) to allow unlimited request timeout.<br>Default to ' . Constants::APPSEC_TIMEOUT_MS .'.',
         Constants::APPSEC_TIMEOUT_MS, 'width: 115px;', 'number');
 
-    addFieldSelect('crowdsec_appsec_fallback_remediation', 'AppSec Fallback to', 'crowdsec_plugin_advanced_settings',
+    addFieldSelect('crowdsec_appsec_fallback_remediation', 'Fallback to', 'crowdsec_plugin_advanced_settings',
         'crowdsec_advanced_settings',
         'crowdsec_admin_advanced_appsec', function ($input) {
             $remediations = [Constants::REMEDIATION_BAN, Constants::REMEDIATION_CAPTCHA, Constants::REMEDIATION_BYPASS];
@@ -394,6 +391,45 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
             return $input;
         }, '<p>What remediation to apply when the AppSec call has failed due to a timeout.</p>', $choice);
+
+
+    // Field "max_body_size_kb"
+    addFieldString('crowdsec_appsec_max_body_size_kb', 'Maximum body size', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings',
+        'crowdsec_admin_advanced_appsec', function ($input) {
+            if ((int) $input <= 0) {
+                add_settings_error('AppSec Max body size', 'crowdsec_error', 'AppSec Max body size: Must be different greater than 1 KB.');
+
+                return Constants::APPSEC_DEFAULT_MAX_BODY_SIZE;
+            }
+
+            return $input ;
+        }, ' kilobytes. <p>Maximum size of request body (in KB). Default to ' . Constants::APPSEC_DEFAULT_MAX_BODY_SIZE .'.<br> If exceeded, the action defined below will be applied.',
+        Constants::APPSEC_DEFAULT_MAX_BODY_SIZE, 'width: 115px;', 'number');
+
+    $actions = [
+            Constants::APPSEC_ACTION_HEADERS_ONLY => 'Headers Only (recommended)',
+            Constants::APPSEC_ACTION_BLOCK => 'Block', Constants::APPSEC_ACTION_ALLOW => 'Allow (not recommended)'];
+    addFieldSelect('crowdsec_appsec_body_size_exceeded_action', 'Body size exceeded action', 'crowdsec_plugin_advanced_settings',
+        'crowdsec_advanced_settings',
+        'crowdsec_admin_advanced_appsec', function ($input) {
+            $actions = [Constants::APPSEC_ACTION_HEADERS_ONLY, Constants::APPSEC_ACTION_BLOCK, Constants::APPSEC_ACTION_ALLOW ];
+            if (!in_array($input, $actions)) {
+                $input = Constants::APPSEC_ACTION_HEADERS_ONLY;
+                $message = 'Body size exceeded action: Incorrect action selected.';
+                if(is_multisite()){
+                    AdminNotice::displayError($message);
+                } else{
+                    add_settings_error('AppSec Body size exceeded action', 'crowdsec_error', $message);
+                }
+            }
+
+            return $input;
+        }, '<p>Action to take when the request body size exceeds the maximum body size value. Default to Headers Only.</p><ul>
+<li><b>Headers Only</b>: only the headers of the original request are forwarded to AppSec, not the body.</li>
+<li><b>Block</b>: the request is considered as malicious and a ban remediation is returned, without calling AppSec.</li>
+<li><b>Allow</b>: the request is considered as safe and a bypass remediation is returned, without calling AppSec.</li>
+</ul>', $actions);
+
 
     /***************************
      ** Section "Remediation" **

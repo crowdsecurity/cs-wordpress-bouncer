@@ -109,6 +109,11 @@ class Bouncer extends AbstractClient
         return $cleanedHeaders;
     }
 
+    private function cleanRawBodyForLog(string $rawBody, int $maxLength): string
+    {
+        return strlen($rawBody) > $maxLength ? substr($rawBody, 0, $maxLength) . '...[TRUNCATED]' : $rawBody;
+    }
+
     /**
      * Process and validate input configurations.
      */
@@ -145,7 +150,8 @@ class Bouncer extends AbstractClient
             $this->logger->debug('Now processing a bouncer AppSec request', [
                 'type' => 'BOUNCER_CLIENT_APPSEC_REQUEST',
                 'method' => $method,
-                'rawBody' => $rawBody,
+                'raw body' => $this->cleanRawBodyForLog($rawBody, 200),
+                'raw body length' => strlen($rawBody),
                 'headers' => $this->cleanHeadersForLog($headers),
             ]);
 

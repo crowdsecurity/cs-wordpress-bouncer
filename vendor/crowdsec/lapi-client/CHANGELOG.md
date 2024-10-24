@@ -13,6 +13,15 @@ As far as possible, we try to adhere to [Symfony guidelines](https://symfony.com
 
 ---
 
+## [3.3.2](https://github.com/crowdsecurity/php-lapi-client/releases/tag/v3.3.2) - 2024-10-21
+[_Compare with previous release_](https://github.com/crowdsecurity/php-lapi-client/compare/v3.3.1...v3.3.2)
+
+### Fixed
+
+- Truncate long raw body in logs
+
+---
+
 ## [3.3.1](https://github.com/crowdsecurity/php-lapi-client/releases/tag/v3.3.1) - 2024-10-11
 [_Compare with previous release_](https://github.com/crowdsecurity/php-lapi-client/compare/v3.3.0...v3.3.1)
 

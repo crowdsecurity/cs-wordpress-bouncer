@@ -19,6 +19,22 @@ use CrowdSec\Common\Constants as CommonConstants;
 class Constants extends CommonConstants
 {
     /**
+     * @var string The AppSec action name to allow the request
+     */
+    public const APPSEC_ACTION_ALLOW = 'allow';
+    /**
+     * @var string The AppSec action name to block the request
+     */
+    public const APPSEC_ACTION_BLOCK = 'block';
+    /**
+     * @var string The AppSec action name to send only the headers
+     */
+    public const APPSEC_ACTION_HEADERS_ONLY = 'headers_only';
+    /**
+     * @var int The default maximum body size for AppSec requests (in KB)
+     */
+    public const APPSEC_DEFAULT_MAX_BODY_SIZE = 1024;
+    /**
      * @var int The default duration we keep a bad IP in cache (in seconds)
      */
     public const CACHE_EXPIRATION_FOR_BAD_IP = 120;
@@ -49,5 +65,5 @@ class Constants extends CommonConstants
     /**
      * @var string The current version of this library
      */
-    public const VERSION = 'v3.4.0';
+    public const VERSION = 'v3.5.0';
 }

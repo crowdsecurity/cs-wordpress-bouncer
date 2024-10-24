@@ -36,6 +36,8 @@ use Symfony\Component\Config\Definition\Processor;
  */
 abstract class AbstractBouncer
 {
+    use Helper;
+
     /** @var array */
     protected $configs = [];
     /** @var LoggerInterface */
@@ -323,6 +325,41 @@ abstract class AbstractBouncer
         } catch (\Exception $e) {
             $message = 'Error while testing cache connection: ' . $e->getMessage();
             throw new BouncerException($message, (int) $e->getCode(), $e);
+        }
+    }
+
+    /**
+     * Method based on superglobals to retrieve the raw body of the request.
+     * If the body is too big (greater than the "appsec_max_body_size_kb" configuration),
+     * it will be truncated to the maximum size + 1 kB.
+     * In case of error, an empty string is returned.
+     *
+     * @param resource $stream The stream to read the body from
+     *
+     * @see https://www.php.net/manual/en/language.variables.superglobals.php
+     */
+    protected function buildRequestRawBody($stream): string
+    {
+        if (!is_resource($stream)) {
+            $this->logger->error('Invalid stream resource', [
+                'type' => 'BUILD_RAW_BODY',
+            ]);
+
+            return '';
+        }
+        $maxBodySize = $this->getRemediationEngine()->getConfig('appsec_max_body_size_kb') ??
+                       Constants::APPSEC_DEFAULT_MAX_BODY_SIZE;
+
+        try {
+            return $this->buildRawBodyFromSuperglobals($maxBodySize, $stream, $_SERVER, $_POST, $_FILES);
+        } catch (BouncerException $e) {
+            $this->logger->error('Error while building raw body', [
+                'type' => 'BUILD_RAW_BODY',
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+            ]);
+
+            return '';
         }
     }
 

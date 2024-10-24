@@ -305,13 +305,13 @@ For more information on the AppSec component, please refer to the [documentation
 
 ---
 
-`AppSec component → AppSec Url `
+`AppSec component → Url `
 
 Your AppSec component url. Default to `http://localhost:7422`
 
 ---
 
-`AppSec component → AppSec request timeout`
+`AppSec component → Request timeout`
 
 Maximum execution time (in milliseconds) for an AppSec request.
 
@@ -321,13 +321,35 @@ Default to 400.
 
 ---
 
-`AppSec component → AppSec Fallback to`
+`AppSec component → Fallback to`
 
 What remediation to apply when AppSec call has failed due to a timeout.
 
 Recommended: `captcha`. Default: `bypass`.
 
 ---
+
+`AppSec component → Maximum body size`
+
+Maximum size of the request body (in KB). Default to 1024.
+
+If exceeded, the action defined below will be applied.
+
+---
+
+`AppSec component → Body size exceeded action`
+
+Action to take when the request body size exceeds the maximum body size.
+
+Default to `headers_only`.
+
+- `Headers Only`: (recommended) Only headers of the original request are sent to the AppSec component. The body is not sent.
+- `Block`: The request is considered as malicious and a ban remediation is returned, without calling AppSec.
+- `Allow`: (not recommended): The request is considered as clean and a bypass remediation is returned, without calling AppSec.
+
+---
+
+
 
 ![Remediation](images/screenshots/config-remediations.jpg)
 
@@ -528,9 +550,11 @@ Here are some examples of how to set options with the `WP-CLI` tool.
 | `Memcached DSN (if applicable)`:warning:                     | <code>echo -n &quot;memcached://localhost:11211&quot; \| wp option set crowdsec_memcached_dsn</code> |
 | **Advanced settings** → *AppSec component*                   |                                                              |
 | `Enable AppSec`                                              | - <code>wp option set crowdsec_use_appsec on</code><br />- <code>echo -n &quot;&quot; \| wp option set crowdsec_use_appsec</code> |
-| `AppSec Url`                                                 | `wp option set crowdsec_appsec_url http://localhost:7422`    |
-| `AppSec request timeout`                                     | `wp option set crowdsec_appsec_timeout_ms 150`               |
-| `AppSec Fallback to`                                         | - <code>wp option set crowdsec_appsec_fallback_remediation ban</code><br />- <code>wp option set crowdsec_appsec_fallback_remediation captcha</code><br />- <code>wp option set crowdsec_appsec_fallback_remediation bypass</code> |
+| `Url`                                                        | `wp option set crowdsec_appsec_url http://localhost:7422`    |
+| `Request timeout`                                            | `wp option set crowdsec_appsec_timeout_ms 150`               |
+| `Fallback to`                                                | - <code>wp option set crowdsec_appsec_fallback_remediation ban</code><br />- <code>wp option set crowdsec_appsec_fallback_remediation captcha</code><br />- <code>wp option set crowdsec_appsec_fallback_remediation bypass</code> |
+| `Maximum body size`                                          | `wp option set crowdsec_appsec_max_body_size_kb 2048`        |
+| `Body size exceeded action`                                  | - <code>wp option set crowdsec_appsec_body_size_exceeded_action headers_only</code><br />- <code>wp option set crowdsec_appsec_body_size_exceeded_action block</code><br />- <code>wp option set crowdsec_appsec_body_size_exceeded_action allow</code> |
 | **Advanced settings** → *Remediation*                        |                                                              |
 | `Fallback to`                                                | - <code>wp option set crowdsec_fallback_remediation ban</code><br />- <code>wp option set crowdsec_fallback_remediation captcha</code><br />- <code>wp option set crowdsec_fallback_remediation bypass</code> |
 | `Trust these CDN IPs (or Load Balancer, HTTP Proxy)`         | When the `crowdsec_trust_ip_forward` is set, the `crowdsec_trust_ip_forward_array` is populated with a serialized array of comparable IPs.<br />Thus, to maintain consistency between admin display and database data, you should update the 2 options: <br />`wp option set crowdsec_trust_ip_forward 1.2.3.4`<br />`wp option set crowdsec_trust_ip_forward_array --format=json '[["001.002.003.004","001.002.003.004"]]'` |

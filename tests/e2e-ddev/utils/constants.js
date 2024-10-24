@@ -13,6 +13,7 @@ const APPSEC_URL = "http://crowdsec:7422";
 const APPSEC_TEST_URL = "?test=testappsec.php";
 const APPSEC_MALICIOUS_BODY = "class.module.classLoader.resources.";
 const APPSEC_WP_PAGE = "/appsec";
+const APPSEC_UPLOAD_WP_PAGE = "/appsec-upload";
 const { LAPI_URL_FROM_PLAYWRIGHT } = process.env;
 const { DEBUG } = process.env;
 const { TIMEOUT } = process.env;
@@ -53,6 +54,7 @@ module.exports = {
     APPSEC_URL,
     APPSEC_TEST_URL,
     APPSEC_WP_PAGE,
+    APPSEC_UPLOAD_WP_PAGE,
     APPSEC_MALICIOUS_BODY,
     LAPI_URL_FROM_PLAYWRIGHT,
     OTHER_IP,

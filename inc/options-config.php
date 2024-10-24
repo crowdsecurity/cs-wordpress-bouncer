@@ -66,7 +66,11 @@ function getCrowdSecOptionsConfig(): array
         ['name' => 'crowdsec_appsec_url', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_appsec_timeout_ms', 'default' => Constants::APPSEC_TIMEOUT_MS, 'autoInit' => true],
         ['name' => 'crowdsec_appsec_fallback_remediation', 'default' => Constants::REMEDIATION_CAPTCHA,
-            'autoInit' => true]
+            'autoInit' => true],
+        ['name' => 'crowdsec_appsec_max_body_size_kb', 'default' => Constants::APPSEC_DEFAULT_MAX_BODY_SIZE,
+            'autoInit' => true],
+        ['name' => 'crowdsec_appsec_body_size_exceeded_action', 'default' => Constants::APPSEC_ACTION_HEADERS_ONLY,
+            'autoInit' => true],
     ];
 }
 

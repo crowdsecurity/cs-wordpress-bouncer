@@ -109,6 +109,9 @@ jobs:
       - name: Prepare for playwright test
         run: |
           ddev exec -s crowdsec apk add iproute2
+          cp .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/php/wp_appsec_custom_upload.php wp_appsec_custom_upload.php
+          cat .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/html/appsec-upload.html | ddev wp post create --url='https://${{ env.WP_VERSION_CODE }}.ddev.site/site1' --post_type=page --post_status=publish --post_title="AppSec Upload" -
+          cat .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/html/appsec-upload.html | ddev wp post create --url='https://${{ env.WP_VERSION_CODE }}.ddev.site/site2' --post_type=page --post_status=publish --post_title="AppSec Upload" -
           cat .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/html/appsec-post.html | ddev wp post create --url='https://${{ env.WP_VERSION_CODE }}.ddev.site/site1' --post_type=page --post_status=publish --post_title="AppSec" - 
           cat .ddev/okaeli-add-on/wordpress/custom_files/crowdsec/html/appsec-post.html | ddev wp post create --url='https://${{ env.WP_VERSION_CODE }}.ddev.site/site2' --post_type=page --post_status=publish --post_title="AppSec" - 
           ddev wp rewrite structure "/%postname%/" --url='https://${{ env.WP_VERSION_CODE }}.ddev.site/site1'

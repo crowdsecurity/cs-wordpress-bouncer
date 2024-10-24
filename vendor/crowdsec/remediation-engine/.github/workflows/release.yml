@@ -2,8 +2,6 @@ name: Create Release
 # example: gh workflow run release.yml -f tag_name=v1.1.4
 on:
   workflow_dispatch:
-    branches:
-      - main
     inputs:
       tag_name:
         type: string
@@ -98,5 +96,5 @@ jobs:
           body_path: CHANGELOG.txt
           name: ${{ env.VERSION_NUMBER }}
           tag_name: ${{ github.event.inputs.tag_name }}
-          draft: ${{ github.event.inputs.draft }}
-          prerelease: ${{ github.event.inputs.prerelease }}
+          draft: false
+          prerelease: false

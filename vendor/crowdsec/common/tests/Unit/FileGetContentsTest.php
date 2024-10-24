@@ -173,6 +173,7 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
             'X-Crowdsec-Appsec-Uri' => 'test-value',
             'X-Crowdsec-Appsec-Api-Key' => 'test-value',
             'Host' => 'test-value-should-be-removed',
+            'Content-Length' => 'test-value-should-be-removed',
             'Custom-Header' => 'test-value-should-be-kept',
         ];
         $rawBody = 'This is a raw body';

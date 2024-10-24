@@ -14,6 +14,7 @@ return array(
     'CrowdSecBouncer\\BouncerException' => $vendorDir . '/crowdsec/bouncer/src/BouncerException.php',
     'CrowdSecBouncer\\Configuration' => $vendorDir . '/crowdsec/bouncer/src/Configuration.php',
     'CrowdSecBouncer\\Constants' => $vendorDir . '/crowdsec/bouncer/src/Constants.php',
+    'CrowdSecBouncer\\Helper' => $vendorDir . '/crowdsec/bouncer/src/Helper.php',
     'CrowdSecBouncer\\Template' => $vendorDir . '/crowdsec/bouncer/src/Template.php',
     'CrowdSecWordPressBouncer\\Admin\\AdminNotice' => $baseDir . '/inc/Admin/AdminNotice.php',
     'CrowdSecWordPressBouncer\\Bouncer' => $baseDir . '/inc/Bouncer.php',
