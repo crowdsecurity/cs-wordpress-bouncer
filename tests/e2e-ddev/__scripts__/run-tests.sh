@@ -101,7 +101,7 @@ case $TYPE in
     ;;
 
   "ci")
-    DEBUG_STRING="DEBUG=pw:api"
+    DEBUG_STRING=""
     YARN_PATH="./wp-content/plugins/crowdsec/tests/e2e-ddev"
     COMMAND="ddev exec -s playwright xvfb-run --auto-servernum -- yarn --cwd ${YARN_PATH} cross-env"
     LAPI_URL_FROM_PLAYWRIGHT=https://crowdsec:8080
