@@ -18,14 +18,26 @@ jobs:
   end-to-end-auto-prepend-file-mode-test-suite:
     strategy:
       fail-fast: false
+      # First and last minor versions of each major version
+      # Highest compatible PHP version
       matrix:
-        wp-version: [ "4.9", "5.0", "5.9", "6.0", "6.5", "6.6" ]
-        php-version: [ "7.2", "7.4", "8.0" ]
-        exclude:
-          - { php-version: "7.4", wp-version: "4.9" }
-          - { php-version: "7.4", wp-version: "5.0" }
-          - { php-version: "8.0", wp-version: "4.9" }
-          - { php-version: "8.0", wp-version: "5.0" }
+        include:
+          - wp-version: '4.9'
+            php-version: '7.2'
+          - wp-version: '5.0'
+            php-version: '7.2'
+          - wp-version: '5.9'
+            php-version: '7.2'
+          - wp-version: '5.9'
+            php-version: '8.0'
+          - wp-version: '6.0'
+            php-version: '7.2'
+          - wp-version: '6.0'
+            php-version: '8.0'
+          - wp-version: '6.7'
+            php-version: '7.2'
+          - wp-version: '6.7'
+            php-version: '8.3'
 
     name: End-to-end auto-prepend-file mode test suite
     runs-on: ubuntu-latest

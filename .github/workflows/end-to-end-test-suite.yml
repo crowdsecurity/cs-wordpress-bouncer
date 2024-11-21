@@ -25,6 +25,8 @@ jobs:
   end-to-end-test-suite:
     strategy:
       fail-fast: false
+      # First and last minor versions of each major version
+      # Highest compatible PHP version
       matrix:
         include:
           - wp-version: '4.9'
@@ -39,9 +41,9 @@ jobs:
             php-version: '7.2'
           - wp-version: '6.0'
             php-version: '8.0'
-          - wp-version: '6.6'
+          - wp-version: '6.7'
             php-version: '7.2'
-          - wp-version: '6.6'
+          - wp-version: '6.7'
             php-version: '8.3'
 
     name: End-to-end test suite
