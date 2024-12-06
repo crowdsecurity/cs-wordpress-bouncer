@@ -44,6 +44,10 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 
 == Changelog ==
 
+= 2.7 (2024-12-12) =
+
+- Add AppSec component support
+
 = 2.6 (2024-03-14) =
 
 - Move logs and cache folders to `wp-content/uploads/crowdsec` folder
