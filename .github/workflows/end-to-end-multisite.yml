@@ -23,8 +23,10 @@ jobs:
   end-to-end-multisite:
     strategy:
       fail-fast: false
+      # Last minor version of each major version
+      # Minimum PHP version compatible with all WordPress versions
       matrix:
-        wp-version: [ "4.9", "5.9", "6.6" ]
+        wp-version: [ "4.9", "5.9", "6.7" ]
         php-version: [ "7.2" ]
         subsite: ["site1", "site2"]
 
