@@ -92,7 +92,7 @@ const onAdminSaveSettings = async (check = true) => {
         }
     }
 
-    await wait(2000);
+    await wait(2500);
 };
 
 const selectElement = async (selectId, valueToSelect) => {
