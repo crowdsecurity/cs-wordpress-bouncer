@@ -11,6 +11,7 @@
 - [Prerequisites](#prerequisites)
 - [Usage](#usage)
   - [Features](#features)
+    - [Understanding the limitations of the bouncer](#understanding-the-limitations-of-the-bouncer)
   - [Configurations](#configurations)
     - [General settings](#general-settings)
     - [Theme customization](#theme-customization)
@@ -32,8 +33,11 @@
 
 ## Description
 
-The `CrowdSec Bouncer` plugin for WordPress has been designed to protect WordPress websites from all kinds of 
-attacks by using [CrowdSec](https://www.crowdsec.net/) technology.
+The `CrowdSec Bouncer` plugin for WordPress has been designed to protect WordPress websites from various malicious activities
+by using [CrowdSec](https://www.crowdsec.net/) technology.
+
+**N.B.:**
+it’s important to understand the scope and limitations of this bouncer, as described in the [Understanding the limitations of the bouncer](#understanding-the-limitations-of-the-bouncer) section.
 
 ## Prerequisites
 
@@ -51,6 +55,7 @@ Please note that first and foremost CrowdSec must be installed on a server that 
 When a user is suspected by CrowdSec to be malevolent, this bouncer will either send him/her a captcha to resolve or
 simply a page notifying that access is denied. If the user is considered as a clean user, he will access the page as normal.
 
+
 By default, the ban wall is displayed as below:
 
 ![Ban wall](images/screenshots/front-ban.jpg)
@@ -62,6 +67,42 @@ By default, the captcha wall is displayed as below:
 Please note that it is possible to customize all the colors of these pages in a few clicks so that they integrate best with your design.
 
 On the other hand, all texts are also fully customizable. This will allow you, for example, to present translated pages in your users’ language.
+
+#### Understanding the limitations of the bouncer
+
+While this plugin provides effective protection for most scenarios by intercepting and bouncing web requests that go through the [WordPress loading process](https://medium.com/@dendeffe/wordpress-loading-sequence-a-guided-tour-e077c7dbd119), there are inherent limitations to this approach. These limitations can create potential gaps in coverage, which you should be aware of:
+
+1. Requests to PHP files outside of the WordPress Core loading process
+
+   Since this plugin is loaded as part of the WordPress core process, it will not attempt to retrieve or apply a remediation if a custom public PHP script is accessed directly.
+
+   To ensure all PHP scripts are covered, consider enabling the [auto_prepend_file mode](#auto-prepend-file-mode). 
+   
+
+2. Requests to Non-PHP Files (e.g., .env or other static files)
+
+   Requests for non-PHP files, such as `.env` or other static files, are not handled by this plugin.
+   As this limitation is tied to the nature of PHP itself, you may need to implement additional server-level protections (e.g., strict file permissions or blocking access to sensitive files through server configuration) to secure such files.
+
+   For example, you can deny access to hidden files, using the Nginx directive 
+   ```nginx
+   location ~ /\. {
+       deny all;
+   }
+   ```
+
+   or the Apache one: 
+
+   ```htaccess
+   <FilesMatch "^\.">
+       Require all denied
+   </FilesMatch>
+   
+   ```
+
+
+
+By understanding these limitations, you can take additional steps to secure your site comprehensively and complement the protection offered by the `CrowdSec Bouncer` plugin.
 
 ### Configurations
 
