@@ -178,5 +178,5 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     }, function () {
         // Stream mode just deactivated.
         unscheduleBlocklistRefresh();
-    }, '<p>If checked, the wp-admin is not bounced, only the public website</p><p><strong>Important note:</strong> the login page is a common page to both sections. If you want to bounce it, you have to disable "Public website only".</p>');
+    }, '<p>If checked, Admin related requests are not protected.</p><p><strong>Important notes:</strong> We recommend to leave this setting to OFF in order to apply protection to your WordPress admin:<ol><li>WordPress admin is a frequent target of cyberattack.</li><li>Also, some critical public endpoints are considered "admin" and would be unprotected If this setting was ON.</li></ol></p>');
 }

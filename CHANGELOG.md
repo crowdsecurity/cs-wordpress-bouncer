@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+
+## [2.8.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.8.0) - 2024-12-13
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.7.0...v2.8.0)
+
+
+### Changed
+
+- Set the "Public website only" setting to OFF by default
+
+### Fixed
+
+- Fix deprecated warning in PHP 8.4 for Captcha
+
+---
+
+
 ## [2.7.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.7.0) - 2024-12-12
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.6.7...v2.7.0)
 
