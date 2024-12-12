@@ -105,13 +105,9 @@ trait RedisTrait
             throw new CacheException('Cannot find the "redis" extension nor the "predis/predis" package.');
         }
 
-        $params = preg_replace_callback('#^'.$scheme.':(//)?(?:(?:(?<user>[^:@]*+):)?(?<password>[^@]*+)@)?#', function ($m) use (&$auth) {
-            if (isset($m['password'])) {
-                if (\in_array($m['user'], ['', 'default'], true)) {
-                    $auth = $m['password'];
-                } else {
-                    $auth = [$m['user'], $m['password']];
-                }
+        $params = preg_replace_callback('#^'.$scheme.':(//)?(?:(?:[^:@]*+:)?([^@]*+)@)?#', function ($m) use (&$auth) {
+            if (isset($m[2])) {
+                $auth = rawurldecode($m[2]);
 
                 if ('' === $auth) {
                     $auth = null;
@@ -380,13 +376,7 @@ trait RedisTrait
                 $params['parameters']['database'] = $params['dbindex'];
             }
             if (null !== $auth) {
-                if (\is_array($auth)) {
-                    // ACL
-                    $params['parameters']['username'] = $auth[0];
-                    $params['parameters']['password'] = $auth[1];
-                } else {
-                    $params['parameters']['password'] = $auth;
-                }
+                $params['parameters']['password'] = $auth;
             }
 
             if (isset($params['ssl'])) {

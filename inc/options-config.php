@@ -15,7 +15,7 @@ function getCrowdSecOptionsConfig(): array
         ['name' => 'crowdsec_use_curl', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_api_timeout', 'default' => Constants::API_TIMEOUT, 'autoInit' => true],
         ['name' => 'crowdsec_bouncing_level', 'default' => Constants::BOUNCING_LEVEL_DISABLED, 'autoInit' => true],
-        ['name' => 'crowdsec_public_website_only', 'default' => 'on', 'autoInit' => true],
+        ['name' => 'crowdsec_public_website_only', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_stream_mode', 'default' => '', 'autoInit' => true],
         ['name' => 'crowdsec_stream_mode_refresh_frequency', 'default' => 60, 'autoInit' => true],
         ['name' => 'crowdsec_cache_system', 'default' => Constants::CACHE_SYSTEM_PHPFS, 'autoInit' => true],

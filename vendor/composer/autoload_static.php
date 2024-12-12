@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
+class ComposerStaticInit736dd03e0c646515fc0f7d62cc50f074
 {
     public static $files = array (
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
@@ -17,6 +17,10 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
     );
 
     public static $prefixLengthsPsr4 = array (
+        'c' => 
+        array (
+            'cweagans\\Composer\\' => 18,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Uuid\\' => 22,
@@ -69,6 +73,10 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
     );
 
     public static $prefixDirsPsr4 = array (
+        'cweagans\\Composer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/cweagans/composer-patches/src',
+        ),
         'Symfony\\Polyfill\\Uuid\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-uuid',
@@ -691,14 +699,17 @@ class ComposerStaticInit4b873ba8e7b65775adbfceed536a1658
         'Symfony\\Polyfill\\Uuid\\Uuid' => __DIR__ . '/..' . '/symfony/polyfill-uuid/Uuid.php',
         'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
         'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
+        'cweagans\\Composer\\PatchEvent' => __DIR__ . '/..' . '/cweagans/composer-patches/src/PatchEvent.php',
+        'cweagans\\Composer\\PatchEvents' => __DIR__ . '/..' . '/cweagans/composer-patches/src/PatchEvents.php',
+        'cweagans\\Composer\\Patches' => __DIR__ . '/..' . '/cweagans/composer-patches/src/Patches.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit4b873ba8e7b65775adbfceed536a1658::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit4b873ba8e7b65775adbfceed536a1658::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit4b873ba8e7b65775adbfceed536a1658::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit736dd03e0c646515fc0f7d62cc50f074::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit736dd03e0c646515fc0f7d62cc50f074::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit736dd03e0c646515fc0f7d62cc50f074::$classMap;
 
         }, null, ClassLoader::class);
     }

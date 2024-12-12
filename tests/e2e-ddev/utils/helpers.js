@@ -253,6 +253,7 @@ const setDefaultConfig = async () => {
     await setToggle("crowdsec_use_curl", false);
     await setToggle("crowdsec_api_timeout", 120);
     await selectByName("crowdsec_bouncing_level", "normal_bouncing");
+    await setToggle("crowdsec_public_website_only", true);
     await onAdminSaveSettings(false);
 
     await onAdminGoToAdvancedPage();

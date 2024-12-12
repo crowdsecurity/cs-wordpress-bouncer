@@ -214,7 +214,13 @@ With the `Flex mode`, it is impossible to accidentally block access to your site
 
 `Bouncing → Public website only`
 
-If enabled, the admin view is not bounced.
+If enabled, Admin related requests are not protected.
+
+**Important notes**:
+- Admin is a frequently attacked section, and we recommend not enabling this setting to protect it.
+- In addition, note that WordPress considers certain critical public endpoints to be admin endpoints. As it's 
+  preferable to protect them as well, we also recommend not enabling this setting.
+
 
 ***
 
