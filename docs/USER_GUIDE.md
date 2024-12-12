@@ -37,7 +37,7 @@ The `CrowdSec Bouncer` plugin for WordPress has been designed to protect WordPre
 by using [CrowdSec](https://www.crowdsec.net/) technology.
 
 **N.B.:**
-it’s important to understand the scope and limitations of this bouncer, as described in the [Understanding the limitations of the bouncer](#understanding-the-limitations-of-the-bouncer) section.
+it's important to understand the scope and limitations of this bouncer, as described in the [Understanding the limitations of the bouncer](#understanding-the-limitations-of-the-bouncer) section.
 
 ## Prerequisites
 
@@ -72,14 +72,14 @@ On the other hand, all texts are also fully customizable. This will allow you, f
 
 While this plugin provides effective protection for most scenarios by intercepting and bouncing web requests that go through the [WordPress loading process](https://medium.com/@dendeffe/wordpress-loading-sequence-a-guided-tour-e077c7dbd119), there are inherent limitations to this approach. These limitations can create potential gaps in coverage, which you should be aware of:
 
-1. Requests to PHP files outside of the WordPress Core loading process
+1. Requests to PHP files outside the WordPress Core loading process
 
    Since this plugin is loaded as part of the WordPress core process, it will not attempt to retrieve or apply a remediation if a custom public PHP script is accessed directly.
 
    To ensure all PHP scripts are covered, consider enabling the [auto_prepend_file mode](#auto-prepend-file-mode). 
    
 
-2. Requests to Non-PHP Files (e.g., .env or other static files)
+2. Requests to Non-PHP Files (e.g. `.env` or other static files)
 
    Requests for non-PHP files, such as `.env` or other static files, are not handled by this plugin.
    As this limitation is tied to the nature of PHP itself, you may need to implement additional server-level protections (e.g., strict file permissions or blocking access to sensitive files through server configuration) to secure such files.
