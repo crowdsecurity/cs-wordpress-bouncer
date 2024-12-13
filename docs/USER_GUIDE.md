@@ -199,7 +199,7 @@ Here, you can choose to use `cURL` requests instead. Beware that in this case, y
 
 By default, the maximum allowed time to perform a Local API request is 120 seconds. You can change this setting here. If you set a negative value, request timeout will be unlimited. 
 
-![Connection details](images/screenshots/config-bouncing.jpg)
+![Connection details](images/screenshots/config-bouncing.png)
 
 ***
 
@@ -217,9 +217,10 @@ With the `Flex mode`, it is impossible to accidentally block access to your site
 If enabled, Admin related requests are not protected.
 
 **Important notes**:
-- Admin is a frequently attacked section, and we recommend not enabling this setting to protect it.
-- In addition, note that WordPress considers certain critical public endpoints to be admin endpoints. As it's 
-  preferable to protect them as well, we also recommend not enabling this setting.
+We recommend to leave this setting to OFF in order to apply protection to your WordPress admin:
+
+- WordPress admin is a frequent target of cyber attacks.
+- Also, some critical public endpoints are considered "admin" and would be unprotected If this setting was ON.
 
 
 ***
