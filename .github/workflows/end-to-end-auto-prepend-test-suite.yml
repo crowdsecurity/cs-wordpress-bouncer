@@ -229,6 +229,21 @@ jobs:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 12-appsec-timeout.js
 
+      - name: Prepare Redis ACL tests
+        run: |
+          ddev exec -s crowdsec tc qdisc del dev eth0 root netem
+          # Allow ACL tests
+          echo "requirepass ddev" >> .ddev/redis/redis.conf
+          echo "user redis_user allcommands allkeys on >redis_password" >> .ddev/redis/redis.conf
+          docker restart ddev-${{ env.WP_VERSION_CODE }}-redis
+
+      - name: Run Redis ACL tests
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
+        with:
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          file_path:
+            13-redis-acl.js
+
       - name: Check tested version
         run: |
           CURRENT_VERSION=$(ddev wp core version)

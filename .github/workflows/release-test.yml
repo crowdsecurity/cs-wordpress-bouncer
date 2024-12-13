@@ -89,6 +89,7 @@ jobs:
           ddev get julienloizelet/ddev-tools
           ddev get julienloizelet/ddev-crowdsec-php
 
+
       - name: Start DDEV
         uses: nick-fields/retry@v3
         with:
@@ -233,6 +234,42 @@ jobs:
         with:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 11-appsec.js
+
+      - name: Prepare CrowdSec for AppSec timeout tests
+        run: ddev exec -s crowdsec tc qdisc add dev eth0 root netem delay 500ms
+
+      - name: Run AppSec timeout tests
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
+        with:
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          file_path: 12-appsec-timeout.js
+
+      - name: Prepare Redis ACL tests
+        run: |
+          ddev exec -s crowdsec tc qdisc del dev eth0 root netem
+          # Allow ACL tests
+          echo "requirepass ddev" >> .ddev/redis/redis.conf
+          echo "user redis_user allcommands allkeys on >redis_password" >> .ddev/redis/redis.conf
+          docker restart ddev-${{ env.WP_VERSION_CODE }}-redis
+
+      - name: Run Redis ACL tests
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
+        with:
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          file_path: 13-redis-acl.js
+
+      - name: Check tested version
+        run: |
+          CURRENT_VERSION=$(ddev wp core version)
+          if [[ ${{ matrix.wp-version }} == $CURRENT_VERSION ]]
+          then
+              echo "Tested version was as expected"
+          else
+              echo "Tested version was not as expected"
+              echo $CURRENT_VERSION
+              echo ${{ matrix.wp-version }}
+              exit 1
+          fi    
 
       - name: tmate debugging session
         uses: mxschmitt/action-tmate@v3
