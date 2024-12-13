@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/crowdsecurity/cs-wordpress-bouncer
  * Description: Safer Together. Protect your WordPress application with CrowdSec.
  * Tags: security, captcha, ip-blocker, crowdsec, hacker-protection, appsec
- * Version: 2.8.0
+ * Version: 2.8.1
  * Author: CrowdSec
  * Author URI: https://www.crowdsec.net/
  * Github: https://github.com/crowdsecurity/cs-wordpress-bouncer
@@ -13,7 +13,7 @@
  * Requires PHP: 7.2
  * Requires at least: 4.9
  * Tested up to: 6.7
- * Stable tag: 2.8.0
+ * Stable tag: 2.8.1
  * Text Domain: crowdsec-wp
  * First release: 2021.
  */
