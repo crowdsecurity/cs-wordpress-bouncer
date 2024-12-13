@@ -3,7 +3,7 @@
         'name' => 'crowdsec/wordpress-bouncer',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'e3507c08812edc1e02c0e4af672299f68cb9ad5a',
+        'reference' => '4b43c4688a1c0cf4dbaa5aa269fe3ba9416bddf5',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -67,7 +67,7 @@
         'crowdsec/wordpress-bouncer' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'e3507c08812edc1e02c0e4af672299f68cb9ad5a',
+            'reference' => '4b43c4688a1c0cf4dbaa5aa269fe3ba9416bddf5',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

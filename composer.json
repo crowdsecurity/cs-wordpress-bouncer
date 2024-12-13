@@ -40,6 +40,9 @@
 		"patches": {
 			"gregwar/captcha": {
 				"Fix deprecation in CaptchaBuilder constructor": "patches/gregwar-captcha-constructor.patch"
+			},
+			"symfony/cache": {
+				"Fix auth connection in RedisTrait": "patches/symfony-redis-cache-auth.patch"
 			}
 		}
 	}
