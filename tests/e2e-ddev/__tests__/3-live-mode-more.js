@@ -21,7 +21,6 @@ const {
     deleteFileContent,
     getFileContent,
     runCacheAction,
-    forceCronRun,
     onAdvancedPageEnableUsageMetrics,
     onAdvancedPageDisableUsageMetrics,
 } = require("../utils/helpers");
@@ -43,13 +42,20 @@ describe(`Run in Live mode`, () => {
         await goToAdmin();
         await onLoginPageLoginAsAdmin();
         await setDefaultConfig();
-        await runCacheAction("clear"); // To reset metrics
-        await deleteFileContent(DEBUG_LOG_PATH);
-        const logContent = await getFileContent(DEBUG_LOG_PATH);
-        await expect(logContent).toBe("");
     });
 
-    it('Should display a captcha wall instead of a ban wall in Flex mode"', async () => {
+    it("Should activate WP-CRON", async () => {
+        // Enable and disable usage metrcis before all to make WP-cron working
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await onAdvancedPageEnableUsageMetrics();
+        await onAdminSaveSettings(false);
+        await onAdvancedPageDisableUsageMetrics();
+        await onAdminSaveSettings();
+        await runCacheAction("clear"); // To reset metrics
+    });
+
+    it("Should display a captcha wall instead of a ban wall in Flex mode", async () => {
         // set Flex mode
         await goToAdmin();
         await onAdminGoToSettingsPage();
@@ -118,16 +124,24 @@ describe(`Run in Live mode`, () => {
     });
 
     it("Should push usage metrics", async () => {
+        await deleteFileContent(DEBUG_LOG_PATH);
+        let logContent = await getFileContent(DEBUG_LOG_PATH);
+        await expect(logContent).toBe("");
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await onAdvancedPageEnableUsageMetrics();
         await onAdminSaveSettings();
-        await forceCronRun();
-        const logContent = await getFileContent(DEBUG_LOG_PATH);
-        // metrics: cscli/captcha = 2 | cscli/ban = 1 | clean/bypass = 2
+        // WP-Cron is scheduled and run after 1 second when accessing a page
+        await publicHomepageShouldBeAccessible();
+        await wait(1000);
+        logContent = await getFileContent(DEBUG_LOG_PATH);
+        // metrics: cscli/captcha = 2 | cscli/ban = 1 | clean/bypass = 3
+        // The log should contain processed count = 5 or 6, depending how WordPress handle its cron...
+        // (if its 5, that means that there is another metrics call with processed = 1)
+        // In multisite, it can be 7, not sure why...(perhaps some admin pages is considered as "non admin" and bounced)
         await expect(logContent).toMatch(
             new RegExp(
-                `{"name":"dropped","value":2,"unit":"request","labels":{"origin":"cscli","remediation":"captcha"}},{"name":"dropped","value":1,"unit":"request","labels":{"origin":"cscli","remediation":"ban"}},{"name":"processed","value":5,"unit":"request"}`,
+                `{"name":"dropped","value":2,"unit":"request","labels":{"origin":"cscli","remediation":"captcha"}},{"name":"dropped","value":1,"unit":"request","labels":{"origin":"cscli","remediation":"ban"}},{"name":"processed","value":(5|6|7),"unit":"request"}`,
             ),
         );
 

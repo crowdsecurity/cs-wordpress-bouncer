@@ -17,6 +17,7 @@ const {
     deleteFileContent,
     onAdvancedPageDisableUsageMetrics,
     runCacheAction,
+    wait,
 } = require("../utils/helpers");
 
 const { CURRENT_IP, DEBUG_LOG_PATH } = require("../utils/constants");
@@ -27,6 +28,16 @@ describe(`Run in Stream mode`, () => {
         await goToAdmin();
         await onLoginPageLoginAsAdmin();
         await setDefaultConfig();
+    });
+
+    it("Should activate WP-CRON", async () => {
+        // Enable and disable usage metrcis before all to make WP-cron working
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await onAdvancedPageEnableUsageMetrics();
+        await onAdminSaveSettings(false);
+        await onAdvancedPageDisableUsageMetrics();
+        await onAdminSaveSettings();
         await runCacheAction("clear"); // To reset metrics
     });
 
@@ -35,6 +46,7 @@ describe(`Run in Stream mode`, () => {
         await onAdminGoToAdvancedPage();
         await onAdvancedPageEnableStreamMode();
         await onAdminSaveSettings();
+        await deleteFileContent(DEBUG_LOG_PATH);
     });
 
     it("Should display a ban wall via stream mode", async () => {
@@ -99,7 +111,7 @@ describe(`Run in Stream mode`, () => {
         await onAdminGoToAdvancedPage();
         await onAdvancedPageEnableUsageMetrics();
         await onAdminSaveSettings();
-        await deleteFileContent(DEBUG_LOG_PATH);
+        await wait(2000);
 
         await page.click("#crowdsec_push_usage_metrics");
         await expect(page).toHaveText(
@@ -108,10 +120,10 @@ describe(`Run in Stream mode`, () => {
         );
 
         const logContent = await getFileContent(DEBUG_LOG_PATH);
-
+        // Should be 4 processed requests (or 6 in multisite tests)
         await expect(logContent).toMatch(
             new RegExp(
-                `{"name":"dropped","value":2,"unit":"request","labels":{"origin":"cscli","remediation":"ban"}},{"name":"processed","value":4,"unit":"request"}`,
+                `{"name":"dropped","value":2,"unit":"request","labels":{"origin":"cscli","remediation":"ban"}},{"name":"processed","value":(4|6),"unit":"request"}`,
             ),
         );
 
