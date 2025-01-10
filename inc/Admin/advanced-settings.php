@@ -83,7 +83,7 @@ function adminAdvancedSettings()
      ** Section "Stream mode" **
      **************************/
     $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
-    add_settings_section('crowdsec_admin_advanced_stream_mode', 'Communication mode with Local API', function () {
+    add_settings_section('crowdsec_admin_advanced_stream_mode', 'Communication mode with the Local API', function () {
     }, 'crowdsec_advanced_settings',['after_section' => '<hr>']);
 
     // Field "crowdsec_stream_mode"
@@ -151,7 +151,7 @@ function adminAdvancedSettings()
      ** Section "Usage Metrics" **
      **************************/
     $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics_enabled') : get_option('crowdsec_usage_metrics_enabled');
-    add_settings_section('crowdsec_admin_advanced_usage_metrics', 'Usage metrics', function () {
+    add_settings_section('crowdsec_admin_advanced_usage_metrics', 'Usage Metrics', function () {
     }, 'crowdsec_advanced_settings',['after_section' => '<hr>']);
 
     // Field "crowdsec_usage_metrics_enabled"

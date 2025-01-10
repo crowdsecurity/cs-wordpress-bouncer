@@ -11,6 +11,8 @@
 - [Prerequisites](#prerequisites)
 - [Usage](#usage)
   - [Features](#features)
+    - [Apply a remediation: captcha or ban](#apply-a-remediation-captcha-or-ban)
+    - [Usage metrics](#usage-metrics)
     - [Understanding the limitations of the bouncer](#understanding-the-limitations-of-the-bouncer)
   - [Configurations](#configurations)
     - [General settings](#general-settings)
@@ -52,9 +54,10 @@ Please note that first and foremost CrowdSec must be installed on a server that 
 
 ### Features
 
+#### Apply a remediation: captcha or ban
+
 When a user is suspected by CrowdSec to be malevolent, this bouncer will either send him/her a captcha to resolve or
 simply a page notifying that access is denied. If the user is considered as a clean user, he will access the page as normal.
-
 
 By default, the ban wall is displayed as below:
 
@@ -67,6 +70,12 @@ By default, the captcha wall is displayed as below:
 Please note that it is possible to customize all the colors of these pages in a few clicks so that they integrate best with your design.
 
 On the other hand, all texts are also fully customizable. This will allow you, for example, to present translated pages in your users’ language.
+
+#### Usage metrics
+
+If you activate usage metrics push, the bouncer will provide usage data to the Local API, allowing for a unified view of its behavior and insights.
+
+Please see [below setting](#advanced-settings) and [CrowdSec documentation](https://doc.crowdsec.net/docs/next/observability/usage_metrics/) for more information.
 
 #### Understanding the limitations of the bouncer
 
@@ -255,14 +264,14 @@ In the `Theme customization` part, you can modify texts and colors of ban and ca
 
 #### Advanced settings
 
-In the `Advanced` part, you can enable/disable the stream mode, choose your cache system for your CrowdSec Local API, handle your remediation policy, manage geolocation feature, adjust some debug parameters and testing parameters. 
+In the `Advanced` part, you can enable/disable the stream mode, enable/disable usage metrics, choose your cache system for your CrowdSec Local API, handle your remediation policy, manage geolocation feature, adjust some debug parameters and testing parameters. 
 
-![Communication mode](images/screenshots/config-communication-mode.jpg)
+![Communication mode](images/screenshots/config-communication-mode.png)
 
 
 ***
 
-`Communication mode to the API → Enable the "Stream mode"`
+`Communication mode with the Local API → Enable the "Stream mode"`
 
 Choose if you want to enable the `stream mode` or stay in `live mode`.
 
@@ -273,11 +282,32 @@ But you can also activate the `stream mode`. This mode allows you to constantly 
 
 ***
 
-`Communication mode to the API → Resync decisions each (stream mode only)`
+`Communication mode with the Local API → Resync decisions each`
 
 With the stream mode, every decision is retrieved in an asynchronous way. Here you can define the frequency of this cache refresh.
 
 **N.B** : There is also a refresh button if you want to refresh the cache manually.
+
+***
+
+![Usage Metrics](images/screenshots/config-usage-metrics.png)
+
+***
+
+`Usage Metrics → Enable the Usage Metrics`
+
+Enable usage metrics to gain visibility: monitor incoming traffic and blocked threats for better security insights.
+
+***
+
+`Usage Metrics → Push usage metrics each`
+
+Metrics are pushed to the Local API every X seconds (depending on the WordPress cron management).
+
+As metrics are saved in cache, bouncer will also push metrics before cache is cleared.
+
+
+**N.B** : There is also a push button if you want to push usage metrics manually.
 
 ***
 
