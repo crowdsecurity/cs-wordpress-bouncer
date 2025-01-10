@@ -42,7 +42,7 @@ if (is_admin()) {
         try {
             $configs = getDatabaseConfigs();
             // If usage metrics are enabled, we need to push them before clearing the cache.
-            $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics_enabled') : get_option('crowdsec_usage_metrics_enabled');
+            $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics') : get_option('crowdsec_usage_metrics');
             $bouncer = new Bouncer($configs);
             if ($isUsageMetricsEnabled) {
                 $bouncer->pushUsageMetrics(Constants::BOUNCER_NAME, Constants::VERSION);

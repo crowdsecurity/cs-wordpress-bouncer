@@ -31,8 +31,8 @@
         const $streamModeRefreshFrequency = jQuery('[name=crowdsec_stream_mode_refresh_frequency]');
         const $streamModeRefreshFrequencyTr = $streamModeRefreshFrequency.parent().parent();
         // Usage Metrics
-        const $usageMetricsEnabled = jQuery('[name=crowdsec_usage_metrics_enabled]');
-        const $pushUsageMetricsFrequency = jQuery('[name=crowdsec_push_usage_metrics_frequency]');
+        const $usageMetricsEnabled = jQuery('[name=crowdsec_usage_metrics]');
+        const $pushUsageMetricsFrequency = jQuery('[name=crowdsec_usage_metrics_push_frequency]');
         const $pushUsageMetricsFrequencyTr = $pushUsageMetricsFrequency.parent().parent();
 
         function updateUsageMetricsDisplay () {

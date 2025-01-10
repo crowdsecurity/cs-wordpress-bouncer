@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 const {
     goToAdmin,
     onAdminGoToAdvancedPage,
@@ -13,9 +12,14 @@ const {
     onLoginPageLoginAsAdmin,
     setDefaultConfig,
     setToggle,
+    onAdvancedPageEnableUsageMetrics,
+    getFileContent,
+    deleteFileContent,
+    onAdvancedPageDisableUsageMetrics,
+    runCacheAction,
 } = require("../utils/helpers");
 
-const { CURRENT_IP } = require("../utils/constants");
+const { CURRENT_IP, DEBUG_LOG_PATH } = require("../utils/constants");
 
 describe(`Run in Stream mode`, () => {
     beforeAll(async () => {
@@ -23,6 +27,7 @@ describe(`Run in Stream mode`, () => {
         await goToAdmin();
         await onLoginPageLoginAsAdmin();
         await setDefaultConfig();
+        await runCacheAction("clear"); // To reset metrics
     });
 
     it('Should enable the stream mode"', async () => {
@@ -36,12 +41,14 @@ describe(`Run in Stream mode`, () => {
         await banOwnIpForSeconds(15 * 60, CURRENT_IP);
         await forceCronRun();
         await publicHomepageShouldBeBanWall();
+        // metrics: cscli/ban = 1
     });
 
     it("Should display back the homepage with no remediation via stream mode", async () => {
         await removeAllDecisions();
         await forceCronRun();
         await publicHomepageShouldBeAccessible();
+        // metrics: cscli/ban = 1, clean/bypass = 1
     });
 
     it("Should refresh the cache", async () => {
@@ -66,12 +73,14 @@ describe(`Run in Stream mode`, () => {
         await banOwnIpForSeconds(15 * 60, CURRENT_IP);
         await forceCronRun();
         await publicHomepageShouldBeBanWall();
+        // metrics: cscli/ban = 2, clean/bypass = 1
     });
 
     it("Should display back the homepage with no remediation via stream mode", async () => {
         await removeAllDecisions();
         await forceCronRun();
         await publicHomepageShouldBeAccessible();
+        // metrics: cscli/ban = 2, clean/bypass = 2
     });
 
     it("Should refresh the cache", async () => {
@@ -83,5 +92,33 @@ describe(`Run in Stream mode`, () => {
             "#wpbody-content > div.wrap > div.notice.notice-success",
             "The cache has just been refreshed",
         );
+    });
+
+    it("Should push usage metrics", async () => {
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await onAdvancedPageEnableUsageMetrics();
+        await onAdminSaveSettings();
+        await deleteFileContent(DEBUG_LOG_PATH);
+
+        await page.click("#crowdsec_push_usage_metrics");
+        await expect(page).toHaveText(
+            "#wpbody-content > div.wrap > div.notice.notice-success",
+            "CrowdSec usage metrics have just been pushed.",
+        );
+
+        const logContent = await getFileContent(DEBUG_LOG_PATH);
+
+        await expect(logContent).toMatch(
+            new RegExp(
+                `{"name":"dropped","value":2,"unit":"request","labels":{"origin":"cscli","remediation":"ban"}},{"name":"processed","value":4,"unit":"request"}`,
+            ),
+        );
+
+        // Disable usage metrics for future tests
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await onAdvancedPageDisableUsageMetrics();
+        await onAdminSaveSettings();
     });
 });

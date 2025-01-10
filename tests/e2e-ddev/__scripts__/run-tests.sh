@@ -71,16 +71,11 @@ FAIL_FAST=true
 
 case $TYPE in
   "host")
-    # Following line is not working anymore
-    # To make it work on host:
-    # 1) update your/etc/hosts (ddev find-ip crowdsec) crowdsec
-    # Example: 172.19.0.5     crowdsec
-    #CROWDSEC_URL_FROM_HOST=$(ddev describe | grep -A 1 "crowdsec" | sed 's/Host: //g' |  sed -e 's|│||g' | sed s/'\s'//g |  sed -e 's|,.*||g' | tail -1)
     cd "../"
     DEBUG_STRING="PWDEBUG=1"
     YARN_PATH="./"
     COMMAND="yarn --cwd ${YARN_PATH} cross-env"
-    LAPI_URL_FROM_PLAYWRIGHT=https://crowdsec:8080
+    LAPI_URL_FROM_PLAYWRIGHT=https://localhost:8080
     CURRENT_IP=$(ddev find-ip host)
     TIMEOUT=30000
     HEADLESS=false

@@ -26,8 +26,8 @@ function adminAdvancedSettings()
             [
                 'crowdsec_stream_mode',
                 'crowdsec_stream_mode_refresh_frequency',
-                'crowdsec_usage_metrics_enabled',
-                'crowdsec_push_usage_metrics_frequency',
+                'crowdsec_usage_metrics',
+                'crowdsec_usage_metrics_push_frequency',
                 'crowdsec_redis_dsn',
                 'crowdsec_memcached_dsn',
                 'crowdsec_cache_system',
@@ -150,12 +150,12 @@ function adminAdvancedSettings()
     /***************************
      ** Section "Usage Metrics" **
      **************************/
-    $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics_enabled') : get_option('crowdsec_usage_metrics_enabled');
+    $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics') : get_option('crowdsec_usage_metrics');
     add_settings_section('crowdsec_admin_advanced_usage_metrics', 'Usage Metrics', function () {
     }, 'crowdsec_advanced_settings',['after_section' => '<hr>']);
 
-    // Field "crowdsec_usage_metrics_enabled"
-    addFieldCheckbox('crowdsec_usage_metrics_enabled', 'Enable Usage Metrics', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_usage_metrics', function () {
+    // Field "crowdsec_usage_metrics"
+    addFieldCheckbox('crowdsec_usage_metrics', 'Enable Usage Metrics', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_usage_metrics', function () {
         // Usage metrics just activated.
         scheduleUsageMetricsPush();
     }, function () {
@@ -170,8 +170,8 @@ function adminAdvancedSettings()
            '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push usage metrics now" class="button button-secondary button-small"></p>'));
 
 
-    // Field "crowdsec_push_usage_metrics_frequency"
-    addFieldString('crowdsec_push_usage_metrics_frequency', 'Push usage metrics each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_usage_metrics', function ($input) {
+    // Field "crowdsec_usage_metrics_push_frequency"
+    addFieldString('crowdsec_usage_metrics_push_frequency', 'Push usage metrics each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_usage_metrics', function ($input) {
         $input = (int) $input;
         if ($input < 1) {
             $input = 1;
@@ -184,7 +184,7 @@ function adminAdvancedSettings()
 
             return $input;
         }
-        $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics_enabled') : get_option('crowdsec_usage_metrics_enabled');
+        $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics') : get_option('crowdsec_usage_metrics');
         // Update wp-cron schedule.
         if ($isUsageMetricsEnabled) {
             scheduleUsageMetricsPush();
@@ -269,7 +269,7 @@ function adminAdvancedSettings()
 
         try {
             $configs = getDatabaseConfigs();
-            $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics_enabled') : get_option('crowdsec_usage_metrics_enabled');
+            $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics') : get_option('crowdsec_usage_metrics');
             $oldCacheSystem = $configs['crowdsec_cache_system'] ?? Constants::CACHE_SYSTEM_PHPFS;
             $bouncer = new Bouncer($configs);
             if ($isUsageMetricsEnabled) {

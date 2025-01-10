@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+const fs = require("fs");
 const { addDecision, deleteAllDecisions } = require("./watcherClient");
 const {
     ADMIN_URL,
@@ -142,9 +143,31 @@ const getHtmlById = async (id) => {
     return page.locator(`#${id}`).innerHTML();
 };
 
+const getFileContent = async (filePath) => {
+    if (fs.existsSync(filePath)) {
+        return fs.readFileSync(filePath, "utf8");
+    }
+    return "";
+};
+
+const deleteFileContent = async (filePath) => {
+    if (fs.existsSync(filePath)) {
+        return fs.writeFileSync(filePath, "");
+    }
+    return false;
+};
+
 const onAdvancedPageEnableStreamMode = async () => {
     await setToggle("crowdsec_stream_mode", true);
     await fillInput("crowdsec_stream_mode_refresh_frequency", 1);
+};
+
+const onAdvancedPageEnableUsageMetrics = async () => {
+    await setToggle("crowdsec_usage_metrics", true);
+    await fillInput("crowdsec_usage_metrics_push_frequency", 1);
+};
+const onAdvancedPageDisableUsageMetrics = async () => {
+    await setToggle("crowdsec_usage_metrics", false);
 };
 
 const onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo = async (
@@ -263,6 +286,8 @@ const setDefaultConfig = async () => {
     await setToggle("crowdsec_hide_mentions", false);
     await selectByName("crowdsec_cache_system", "phpfs");
     await setToggle("crowdsec_stream_mode", false);
+    await setToggle("crowdsec_usage_metrics", false);
+
     // We have to save in order that cache duration fields to be visible (not disabled)
     await onAdminSaveSettings(false);
     await onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo(1);
@@ -280,6 +305,8 @@ const setDefaultConfig = async () => {
     // Tests
     await fillInput("crowdsec_forced_test_ip", "");
     await fillInput("crowdsec_forced_test_forwarded_ip", "");
+    // Logs
+    await setToggle("crowdsec_debug_mode", true);
 
     // Do not set auto_prepend_file mode to false as it will make auto_prepend_file tests fail
 
@@ -353,4 +380,8 @@ module.exports = {
     computeCurrentPageRemediation,
     disableAutoPrependFileMode,
     getHtmlById,
+    getFileContent,
+    deleteFileContent,
+    onAdvancedPageEnableUsageMetrics,
+    onAdvancedPageDisableUsageMetrics,
 };

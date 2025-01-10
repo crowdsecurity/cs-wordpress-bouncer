@@ -17,8 +17,8 @@ add_filter('cron_schedules', function ($schedules) {
         (int) get_site_option('crowdsec_stream_mode_refresh_frequency') :
         (int) get_option('crowdsec_stream_mode_refresh_frequency');
     $pushUsageMetricsFrequency = is_multisite() ?
-        (int) get_site_option('crowdsec_push_usage_metrics_frequency') :
-        (int) get_option('crowdsec_push_usage_metrics_frequency');
+        (int) get_site_option('crowdsec_usage_metrics_push_frequency') :
+        (int) get_option('crowdsec_usage_metrics_push_frequency');
     if ($refreshFrequency > 0) {
         $schedules[CROWDSEC_REFRESH_BLOCKLIST_CRON_INTERVAL] = [
             'interval' => $refreshFrequency,
@@ -59,7 +59,9 @@ function crowdSecPushUsageMetrics()
     try {
         $configs = getDatabaseConfigs();
         $bouncer = new Bouncer($configs);
-        $bouncer->pushUsageMetrics(Constants::BOUNCER_NAME, Constants::VERSION);
+        if(!empty($configs['crowdsec_usage_metrics'])) {
+            $bouncer->pushUsageMetrics(Constants::BOUNCER_NAME, Constants::VERSION);
+        }
     } catch (BouncerException $e) {
         if(isset($bouncer) && $bouncer->getLogger()) {
             $bouncer->getLogger()->error('', [

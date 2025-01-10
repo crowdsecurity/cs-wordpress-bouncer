@@ -40,12 +40,14 @@ const AGENT_KEY_FILE = `crowdsec/tls/agent-key.pem`;
 const CA_CERT_FILE = `crowdsec/tls/ca-chain.pem`;
 const BOUNCER_CERT_FILE = `crowdsec/tls/bouncer.pem`;
 const BOUNCER_KEY_FILE = `crowdsec/tls/bouncer-key.pem`;
+const DEBUG_LOG_PATH = `${VARHTML_PATH}wp-content/uploads/crowdsec/logs/debug.log`;
 
 module.exports = {
     ADMIN_URL,
     BASE_URL,
     BASE_ADMIN_URL,
     BOUNCER_KEY,
+    DEBUG_LOG_PATH,
     CURRENT_IP,
     PROXY_IP,
     ADMIN_LOGIN,
