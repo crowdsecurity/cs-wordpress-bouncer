@@ -59,7 +59,7 @@ function activate_crowdsec_plugin()
     // Set default options.
     $crowdSecWpPluginOptions = getCrowdSecOptionsConfig();
     foreach ($crowdSecWpPluginOptions as $crowdSecWpPluginOption) {
-        if ($crowdSecWpPluginOption['autoInit']) {
+        if (isset($crowdSecWpPluginOption['autoInit'])) {
             if (is_multisite()) {
                 update_site_option($crowdSecWpPluginOption['name'], $crowdSecWpPluginOption['default']);
             } else {

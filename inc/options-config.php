@@ -72,7 +72,7 @@ function getCrowdSecOptionsConfig(): array
         ['name' => 'crowdsec_appsec_body_size_exceeded_action', 'default' => Constants::APPSEC_ACTION_HEADERS_ONLY,
             'autoInit' => true],
         ['name' => 'crowdsec_usage_metrics', 'default' => ''],
-        ['name' => 'crowdsec_usage_metrics_push_frequency', 'default' => 60],
+        ['name' => 'crowdsec_usage_metrics_push_frequency', 'default' => 60]
     ];
 }
 
