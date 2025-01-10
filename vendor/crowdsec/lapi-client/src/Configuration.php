@@ -68,7 +68,7 @@ class Configuration extends AbstractConfiguration
                     })
                     ->thenInvalid('Invalid user agent version. Must match vX.Y.Z format')
                 ->end()
-                ->defaultValue(Constants::VERSION)
+            ->defaultValue(Constants::VERSION)
             ->end()
         ->end()
         ;
@@ -77,6 +77,24 @@ class Configuration extends AbstractConfiguration
         $this->validate($rootNode);
 
         return $treeBuilder;
+    }
+
+    /**
+     * AppSec settings.
+     *
+     * @param NodeDefinition|ArrayNodeDefinition $rootNode
+     *
+     * @return void
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function addAppSecNodes($rootNode)
+    {
+        $rootNode->children()
+            ->scalarNode('appsec_url')->cannotBeEmpty()->defaultValue(Constants::DEFAULT_APPSEC_URL)->end()
+            ->integerNode('appsec_timeout_ms')->defaultValue(Constants::APPSEC_TIMEOUT_MS)->end()
+            ->integerNode('appsec_connect_timeout_ms')->defaultValue(Constants::APPSEC_CONNECT_TIMEOUT_MS)->end()
+        ->end();
     }
 
     /**
@@ -114,24 +132,6 @@ class Configuration extends AbstractConfiguration
             ->booleanNode('tls_verify_peer')->defaultValue(false)->end()
             ->integerNode('api_timeout')->defaultValue(Constants::API_TIMEOUT)->end()
             ->integerNode('api_connect_timeout')->defaultValue(Constants::API_CONNECT_TIMEOUT)->end()
-        ->end();
-    }
-
-    /**
-     * AppSec settings.
-     *
-     * @param NodeDefinition|ArrayNodeDefinition $rootNode
-     *
-     * @return void
-     *
-     * @throws \InvalidArgumentException
-     */
-    private function addAppSecNodes($rootNode)
-    {
-        $rootNode->children()
-            ->scalarNode('appsec_url')->cannotBeEmpty()->defaultValue(Constants::DEFAULT_APPSEC_URL)->end()
-            ->integerNode('appsec_timeout_ms')->defaultValue(Constants::APPSEC_TIMEOUT_MS)->end()
-            ->integerNode('appsec_connect_timeout_ms')->defaultValue(Constants::APPSEC_CONNECT_TIMEOUT_MS)->end()
         ->end();
     }
 
@@ -177,6 +177,6 @@ class Configuration extends AbstractConfiguration
                     return false;
                 })
                 ->thenInvalid('CA path is required for tls authentification with verify_peer.')
-            ->end();
+        ->end();
     }
 }

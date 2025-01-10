@@ -1,0 +1,51 @@
+name: SDK chain tests
+
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+
+permissions:
+  contents: read
+
+env:
+  # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+  DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  test-standalone-bouncer:
+    name: Run Standalone Bouncer tests
+    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
+    uses: crowdsecurity/cs-standalone-php-bouncer/.github/workflows/php-sdk-development-tests.yml@main
+    with:
+      php_common_json: '["main"]'
+      lapi_client_json: '["main"]'
+      capi_client_json: '["main"]'
+      remediation_engine_json: '["${{ github.ref_name }}"]'
+      bouncer_lib_json: '["main"]'
+
+  test-bouncer-lib:
+    name: Run Bouncer lib tests
+    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
+    uses: crowdsecurity/php-cs-bouncer/.github/workflows/php-sdk-development-tests.yml@main
+    with:
+      php_common_json: '["main"]'
+      lapi_client_json: '["main"]'
+      capi_client_json: '["main"]'
+      remediation_engine_json: '["${{ github.ref_name }}"]'
+
+  test-magento-engine:
+    name: Run Magento 2 Engine module tests
+    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
+    uses: crowdsecurity/magento-cs-extension/.github/workflows/php-sdk-development-tests.yml@main
+    with:
+      php_common_json: '["main"]'
+      lapi_client_json: '["main"]'
+      capi_client_json: '["main"]'
+      remediation_engine_json: '["${{ github.ref_name }}"]'
+      bouncer_lib_json: '["main"]'
+    secrets:
+      MACHINE_ID: ${{ secrets.TEST_MACHINE_ID }}
+      MACHINE_PASSWORD: ${{ secrets.TEST_MACHINE_PWD }}
+      ENROLL_KEY: ${{ secrets.ENROLLMENT_KEY }}
+      M2_COMPOSER_AUTH: ${{ secrets.M2_AUTH }}

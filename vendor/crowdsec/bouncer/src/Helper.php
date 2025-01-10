@@ -49,7 +49,7 @@ trait Helper
 
     private function appendFileData(
         array $fileArray,
-        ?int $index,
+        int $index,
         string $fileKey,
         string $boundary,
         int $threshold,

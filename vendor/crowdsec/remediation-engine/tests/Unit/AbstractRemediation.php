@@ -61,7 +61,7 @@ abstract class AbstractRemediation extends TestCase
     {
         return $this->getMockBuilder('CrowdSec\LapiClient\Bouncer')
             ->disableOriginalConstructor()
-            ->onlyMethods(['getStreamDecisions', 'getFilteredDecisions', 'getAppSecDecision'])
+            ->onlyMethods(['getStreamDecisions', 'getFilteredDecisions', 'getAppSecDecision', 'pushUsageMetrics'])
             ->getMock();
     }
 

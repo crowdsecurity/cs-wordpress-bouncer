@@ -46,6 +46,9 @@
   - [Get AppSec decision](#get-appsec-decision)
     - [Command usage](#command-usage-2)
     - [Example](#example-1)
+  - [Push usage metrics](#push-usage-metrics)
+    - [Command usage](#command-usage-3)
+    - [Example](#example-2)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -60,6 +63,7 @@ This client allows you to interact with the CrowdSec Local API (LAPI).
   - Retrieve decisions stream list
   - Retrieve decisions for some filter
   - Retrieve AppSec decision
+  - Push usage metrics
 - Overridable request handler (`curl` by default, `file_get_contents` also available)
 
 
@@ -150,6 +154,18 @@ The `$headers` parameter is an array containing the headers of the forwarded req
 The `$rawBody` parameter is optional and must be used if the forwarded request contains a body. It must be a string.
 
 Please see the [CrowdSec AppSec documentation](https://docs.crowdsec.net/docs/appsec/intro/) for more details.
+
+##### Push usage metrics
+
+To push usage metrics, you can do the following call:
+
+```php
+$client->pushUsageMetrics($usageMetrics);
+```
+
+The `$usageMetrics` parameter is an array containing the usage metrics to push. Please see the [CrowdSec LAPI documentation](https://crowdsecurity.github.io/api_doc/index.html?urls.primaryName=LAPI#/bouncers/postUsageMetrics) for more details.
+
+We provide a `buildUsageMetrics` method to help you build the `$usageMetrics` array.
 
 
 ## Bouncer client configurations
@@ -520,4 +536,18 @@ php tests/scripts/bouncer/appsec-decision.php <BOUNCER_KEY> <HEADERS_JSON> <APPS
 
 ```bash
 php tests/scripts/bouncer/appsec-decision.php 'KWurslwIaE2aZSZjYU9mQAWTFb6AHiPTFNTsYTZvoAU' '{"X-Crowdsec-Appsec-Ip":"1.2.3.4","X-Crowdsec-Appsec-Uri":"/login","X-Crowdsec-Appsec-Host":"example.com","X-Crowdsec-Appsec-Verb":"POST","X-Crowdsec-Appsec-User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0"}' http://crowdsec:7422 'class.module.classLoader.resources.'
+```
+
+### Push usage metrics
+
+#### Command usage
+
+```bash
+php tests/scripts/bouncer/build-and-push-metrics.php <METRICS_JSON> <BOUNCER_KEY> <LAPI_URL>
+```
+
+#### Example
+
+```bash
+php tests/scripts/bouncer/build-and-push-metrics.php '{"name":"TEST BOUNCER","type":"crowdsec-test-php-bouncer","version":"v0.0.0","items":[{"name":"dropped","value":12,"unit":"request","labels":{"origin":"CAPI"}}],"meta":{"window_size_seconds":900,"utc_now_timestamp":12}}' 92d3de1dde6d354b771d63035cf5ef83 https://crowdsec:8080
 ```

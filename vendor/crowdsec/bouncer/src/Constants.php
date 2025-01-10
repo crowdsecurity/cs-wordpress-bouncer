@@ -18,12 +18,6 @@ use CrowdSec\RemediationEngine\Constants as RemConstants;
  */
 class Constants extends RemConstants
 {
-    /** @var string The "disabled" bouncing level */
-    public const BOUNCING_LEVEL_DISABLED = 'bouncing_disabled';
-    /** @var string The "flex" bouncing level */
-    public const BOUNCING_LEVEL_FLEX = 'flex_bouncing';
-    /** @var string The "normal" bouncing level */
-    public const BOUNCING_LEVEL_NORMAL = 'normal_bouncing';
     /** @var int The duration we keep a captcha flow in cache */
     public const CACHE_EXPIRATION_FOR_CAPTCHA = 86400;
     /** @var string The "MEMCACHED" cache system */
@@ -37,7 +31,7 @@ class Constants extends RemConstants
     /** @var string Path for html templates folder (e.g. ban and captcha wall) */
     public const TEMPLATES_DIR = __DIR__ . '/templates';
     /** @var string The last version of this library */
-    public const VERSION = 'v3.2.0';
+    public const VERSION = 'v4.1.0';
     /** @var string The "disabled" x-forwarded-for setting */
     public const X_FORWARDED_DISABLED = 'no_forward';
 }

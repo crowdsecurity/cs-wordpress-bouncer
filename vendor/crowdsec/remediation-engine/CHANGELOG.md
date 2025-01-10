@@ -15,6 +15,29 @@ As far as possible, we try to adhere to [Symfony guidelines](https://symfony.com
 
 ---
 
+## [4.0.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v4.0.0) - 2025-01-09
+[_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.5.0...v4.0.0)
+
+
+### Added
+
+- Add `LapiRemediation::pushUsageMetrics` method to push usage metrics to LAPI
+- Add `bouncing_level` configuration to cap maximum remediation level
+
+### Changed
+
+- **Breaking change**: `getIpRemediation` method now returns an array with `remediation` and `origin` keys
+- **Breaking change**: Change protected `AbstractRemediation::updateRemediationOriginCount` method to public
+  `updateMetricsOriginsCount` with new `$remediation` and `$delta` parameters.
+- **Breaking change**: Do not store origins count in cache as it should be managed by the bouncer
+- Update `crowdsec/lapi-client` dependency to `v3.4.0`
+
+### Removed
+
+- Removed deprecated methods
+
+---
+
 ## [3.5.0](https://github.com/crowdsecurity/php-remediation-engine/releases/tag/v3.5.0) - 2024-10-18
 [_Compare with previous release_](https://github.com/crowdsecurity/php-remediation-engine/compare/v3.4.0...v3.5.0)
 

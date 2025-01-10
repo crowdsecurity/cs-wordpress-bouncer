@@ -73,6 +73,7 @@ final class ConfigurationTest extends TestCase
                     ],
                 ],
                 'refresh_frequency_indicator' => 14400,
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should set default config'
@@ -98,6 +99,7 @@ final class ConfigurationTest extends TestCase
                     ],
                 ],
                 'refresh_frequency_indicator' => 7200,
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should set passed config'
@@ -121,6 +123,7 @@ final class ConfigurationTest extends TestCase
                     ],
                 ],
                 'refresh_frequency_indicator' => 14400,
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should add bypass with the lowest priority'
@@ -143,6 +146,7 @@ final class ConfigurationTest extends TestCase
                     ],
                 ],
                 'refresh_frequency_indicator' => 14400,
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should add bypass with the lowest priority'
@@ -166,6 +170,7 @@ final class ConfigurationTest extends TestCase
                     ],
                 ],
                 'refresh_frequency_indicator' => 14400,
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should normalize config'
@@ -230,6 +235,7 @@ final class ConfigurationTest extends TestCase
                 'appsec_fallback_remediation' => 'captcha',
                 'appsec_max_body_size_kb' => 1024,
                 'appsec_body_size_exceeded_action' => 'headers_only',
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should set default config'
@@ -257,6 +263,7 @@ final class ConfigurationTest extends TestCase
                 'appsec_fallback_remediation' => 'captcha',
                 'appsec_max_body_size_kb' => 1024,
                 'appsec_body_size_exceeded_action' => 'headers_only',
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should set stream mode false'
@@ -283,6 +290,7 @@ final class ConfigurationTest extends TestCase
                 'appsec_fallback_remediation' => 'rem1',
                 'appsec_max_body_size_kb' => 1024,
                 'appsec_body_size_exceeded_action' => 'headers_only',
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should add bypass with the lowest priority'
@@ -307,6 +315,7 @@ final class ConfigurationTest extends TestCase
                 'appsec_fallback_remediation' => 'rem4',
                 'appsec_max_body_size_kb' => 1024,
                 'appsec_body_size_exceeded_action' => 'headers_only',
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should add bypass with the lowest priority'
@@ -332,6 +341,7 @@ final class ConfigurationTest extends TestCase
                 'appsec_fallback_remediation' => 'captcha',
                 'appsec_max_body_size_kb' => 1024,
                 'appsec_body_size_exceeded_action' => 'headers_only',
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should normalize config'
@@ -405,6 +415,7 @@ final class ConfigurationTest extends TestCase
                 'appsec_fallback_remediation' => 'bar',
                 'appsec_max_body_size_kb' => 2048,
                 'appsec_body_size_exceeded_action' => 'block',
+                'bouncing_level' => 'normal_bouncing',
             ],
             $result,
             'Should set custom config'

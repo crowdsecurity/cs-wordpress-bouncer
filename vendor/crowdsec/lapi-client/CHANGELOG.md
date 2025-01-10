@@ -13,6 +13,16 @@ As far as possible, we try to adhere to [Symfony guidelines](https://symfony.com
 
 ---
 
+## [3.4.0](https://github.com/crowdsecurity/php-lapi-client/releases/tag/v3.4.0) - 2025-01-09
+[_Compare with previous release_](https://github.com/crowdsecurity/php-lapi-client/compare/v3.3.2...v3.4.0)
+
+### Added
+
+- Add `pushUsageMetrics` method to `Bouncer` class
+
+
+---
+
 ## [3.3.2](https://github.com/crowdsecurity/php-lapi-client/releases/tag/v3.3.2) - 2024-10-21
 [_Compare with previous release_](https://github.com/crowdsecurity/php-lapi-client/compare/v3.3.1...v3.3.2)
 

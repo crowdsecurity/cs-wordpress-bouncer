@@ -46,20 +46,21 @@ class CapiRemediation extends AbstractRemediation
      * @throws InvalidArgumentException
      * @throws RemediationException|CacheException
      */
-    public function getIpRemediation(string $ip): string
+    public function getIpRemediation(string $ip): array
     {
+        $clean = [
+            Constants::REMEDIATION_KEY => Constants::REMEDIATION_BYPASS,
+            Constants::ORIGIN_KEY => AbstractCache::CLEAN,
+        ];
         $cachedDecisions = $this->getAllCachedDecisions($ip, $this->getCountryForIp($ip));
-
         if (!$cachedDecisions) {
             $this->logger->debug('There is no cached decision', [
                 'type' => 'CAPI_REM_NO_CACHED_DECISIONS',
                 'ip' => $ip,
             ]);
-
-            $this->updateRemediationOriginCount(AbstractCache::CLEAN);
-
             // As CAPI is always in stream_mode, we do not store this bypass
-            return Constants::REMEDIATION_BYPASS;
+
+            return $clean;
         }
 
         return $this->processCachedDecisions($cachedDecisions);
@@ -83,7 +84,7 @@ class CapiRemediation extends AbstractRemediation
                 }
                 $capiDecision['scope'] = $scope;
                 $capiDecision['type'] = Constants::REMEDIATION_BAN;
-                $capiDecision['origin'] = Constants::ORIGIN_CAPI;
+                $capiDecision['origin'] = strtoupper(Constants::ORIGIN_CAPI); // CrowdSec convention is CAPI
                 $decision = $this->convertRawDecision($capiDecision);
                 if ($decision) {
                     $decisions[] = $decision;
@@ -154,6 +155,7 @@ class CapiRemediation extends AbstractRemediation
                         'type' => $type,
                         'origin' => $origin,
                         'duration' => $duration,
+                        'scenario' => $listName,
                     ];
 
                     $lastPullCacheKey = $this->getCacheStorage()->getCacheKey(

@@ -41,17 +41,26 @@ if (is_admin()) {
     {
         try {
             $configs = getDatabaseConfigs();
+            // If usage metrics are enabled, we need to push them before clearing the cache.
+            $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics_enabled') : get_option('crowdsec_usage_metrics_enabled');
             $bouncer = new Bouncer($configs);
+            if ($isUsageMetricsEnabled) {
+                $bouncer->pushUsageMetrics(Constants::BOUNCER_NAME, Constants::VERSION);
+            }
+
             $bouncer->clearCache();
             $message = __('CrowdSec cache has just been cleared.');
-
-            // In stream mode, immediatelly warm the cache up.
+            if ($isUsageMetricsEnabled){
+                $message .= __('<br>As usage metrics push is enabled, metrics have been pushed before clearing the cache.');
+            }
+            // In stream mode, immediately warm the cache up.
             $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
             if ($streamMode) {
                 $refresh = $bouncer->refreshBlocklistCache();
                 $new = $refresh['new']??0;
                 $deleted = $refresh['deleted']??0;
-                $message .= __(' As the stream mode is enabled, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
+                $message .= __('<br>As the stream mode is enabled, the cache has just been refreshed. New decision(s): '
+                               .$new.'. Deleted decision(s): '. $deleted);
             }
 
             AdminNotice::displaySuccess($message);
@@ -100,6 +109,27 @@ if (is_admin()) {
         }
     }
 
+    function pushBouncerMetricsInAdminPage()
+    {
+        try {
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
+            $bouncer->pushUsageMetrics(Constants::BOUNCER_NAME, Constants::VERSION);
+            AdminNotice::displaySuccess(__('CrowdSec usage metrics have just been pushed.'));
+        } catch (Exception $e) {
+            if(isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type' => 'WP_EXCEPTION_WHILE_PUSHING_USAGE_METRICS',
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            }
+            AdminNotice::displayError('Technical error while pushing usage metrics: '.$e->getMessage());
+        }
+    }
+
     function pruneBouncerCacheInAdminPage()
     {
         try {
@@ -127,7 +157,7 @@ if (is_admin()) {
         try {
             $configs = getDatabaseConfigs();
             $bouncer = new Bouncer($configs);
-            $remediation = $bouncer->getRemediationForIp($ip);
+            $remediation = $bouncer->getRemediationForIp($ip)[Constants::REMEDIATION_KEY];
             $message = __("Bouncing has been successfully tested for IP: $ip. Result is: $remediation.");
 
             AdminNotice::displaySuccess($message);
@@ -203,6 +233,15 @@ if (is_admin()) {
             die('This link expired.');
         }
         refreshBouncerCacheInAdminPage();
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
+    add_action('admin_post_crowdsec_push_usage_metrics', function () {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_push_usage_metrics')) {
+            die('This link expired.');
+        }
+        pushBouncerMetricsInAdminPage();
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
     });

@@ -22,6 +22,7 @@
     - [Example scripts](#example-scripts)
 - [CAPI remediation engine configurations](#capi-remediation-engine-configurations)
   - [Remediation priorities](#remediation-priorities)
+  - [Bouncing level](#bouncing-level)
   - [Remediation fallback](#remediation-fallback)
   - [Geolocation](#geolocation)
   - [Refresh frequency indicator](#refresh-frequency-indicator)
@@ -67,12 +68,14 @@ This kind of action is called a remediation and can be:
     - Use the cached decisions for CAPI and for LAPI in stream mode
     - For LAPI in live mode, call LAPI if there is no cached decision
     - Use customizable remediation priorities
-  - Determine AppSec (LAPI) remediation for a given request 
+  - Determine AppSec (LAPI) remediation for a given request
+  
+- CrowdSec metrics
+  - Push usage metrics to LAPI
   
 - Overridable cache handler (built-in support for `Redis`, `Memcached` and `PhpFiles` caches)
 
-
-- Large PHP matrix compatibility: 7.2, 7.3, 7.4, 8.0, 8.1, 8.2 and 8.3
+- Large PHP matrix compatibility: from 7.2 to 8.4
 
 
 ## Quick start
@@ -341,6 +344,16 @@ The `$rawBody` parameter is optional and must be used if the forwarded request c
 
 Please see the [CrowdSec AppSec documentation](https://docs.crowdsec.net/docs/appsec/intro) for more details.
 
+##### Push usage metrics to LAPI
+
+To push usage metrics to LAPI, you can do the following call:
+
+```php
+    $remediationEngine->pushUsageMetrics($bouncerName, $bouncerVersion, $bouncerType);
+```
+
+Metrics are retrieved from the cache and sent to LAPI.
+
 
 #### Example scripts
 
@@ -437,6 +450,20 @@ php tests/scripts/get-remediation-appsec.php <APPSEC_URL> <IP> <URI> <HOST> <VER
 php tests/scripts/get-appsec-remediation http://crowdsec:7422  172.0.0.24 /login example.com POST c580eb*********de541 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0' '{"Content-Type":"application/x-www-form-urlencoded","Accept-Language":"en-US,en;q=0.5"}' 'class.module.classLoader.resources.'
 ```
 
+##### Push usage metrics to LAPI
+
+###### Command usage
+
+```php
+php tests/scripts/push-lapi-usage-metrics.php <BOUNCER_KEY> <LAPI_URL>
+```
+
+###### Example usage
+
+```bash
+  php tests/scripts/push-lapi-usage-metrics.php 68c2b479830c89bfd48926f9d764da39  https://crowdsec:8080
+```
+
 
 ## CAPI remediation engine configurations
 
@@ -464,6 +491,18 @@ This setting is not required. If you don't set any value, `['ban']` will be used
 
 
 In the example above, priorities can be summarized as `ban > captcha > bypass`.
+
+### Bouncing level
+
+```php
+$configs = [
+        ... 
+        'bouncing_level' => 'normal_bouncing'
+        ...
+];
+```
+
+- `bouncing_level`:  Select from `bouncing_disabled`, `normal_bouncing` or `flex_bouncing`. Choose if you want to apply CrowdSec directives (Normal bouncing) or be more permissive (Flex bouncing). With the `Flex mode`, it is impossible to accidentally block access to your site to people who don’t deserve it. This mode makes it possible to never ban an IP but only to offer a captcha, in the worst-case scenario.
 
 
 ### Remediation fallback
@@ -539,8 +578,7 @@ This setting is not required. If you don't set any value, `14400` (4h) will be u
 
 The first parameter `$configs` of the `LapiRemediation` constructor can be used to pass some settings.
 
-As for the CAPI remediation engine above, you can pass `ordered_remediations`, `fallback_remediation` and 
-`geolocation` settings.
+As for the CAPI remediation engine above, you can pass `ordered_remediations`, `bouncing_level`, `fallback_remediation` and `geolocation` settings.
 
 In addition, LAPI remediation engine handles the following settings:
 
@@ -744,10 +782,11 @@ the origin. When the retrieved remediation is a `bypass` (i.e. no active decisio
 $originsCount = $remediation->getOriginsCount();
 
 /*$originsCount = [
-    'appsec' => 6,
-    'clean' => 150,
-    'clean_appsec' => 2, 
-    'capi' => 28,
-    'lists' => 16,
+    'appsec' => ['ban' => 10],
+    'clean' => ['bypass' =>150],
+    'clean_appsec' => ['bypass' =>2], 
+    'CAPI' => ['ban' => 28],
+    'cscli' => ['ban' => 5, 'captcha' => 3],
+    'lists:tor' => ['custom' => 16],
 ]*/
 ```

@@ -13,17 +13,16 @@ $ip = $argv[1] ?? null;
 
 if (!$ip) {
     exit(
-        'Usage: php get-remediation-lapi.php <IP> <BOUNCER_KEY> <LAPI_URL> <STREAM_MODE>' . \PHP_EOL .
-        'Example: php get-remediation-lapi.php 172.0.0.24 c580ebdff45da6e01415ed0e9bc9c06b  https://crowdsec:8080 0' .
+        'Usage: php push-lapi-usage-metrics.php <BOUNCER_KEY> <LAPI_URL>' . \PHP_EOL .
+        'Example: php push-lapi-usage-metrics.php c580ebdff45da6e01415ed0e9bc9c06b  https://crowdsec:8080' .
         \PHP_EOL
     );
 }
 $bouncerKey = $argv[2] ?? false;
 $lapiUrl = $argv[3] ?? false;
-$streamMode = isset($argv[4]) ? (bool) $argv[4] : true;
 if (!$bouncerKey || !$lapiUrl) {
     exit('Params <BOUNCER_KEY> and <LAPI_URL> are required' . \PHP_EOL
-         . 'Usage: php get-remediation-lapi.php <IP> <BOUNCER_KEY> <LAPI_URL> <STREAM_MODE>'
+         . 'Usage: php push-lapi-usage-metrics.php <BOUNCER_KEY> <LAPI_URL>'
          . \PHP_EOL);
 }
 
@@ -53,10 +52,9 @@ $cacheRedisConfigs = [
 ];
 $redisCache = new Redis($cacheRedisConfigs, $logger);
 // Init LAPI remediation
-$remediationConfigs = [
-    'stream_mode' => $streamMode,
-];
+$remediationConfigs = [];
 $remediationEngine = new LapiRemediation($remediationConfigs, $lapiClient, $phpFileCache, $logger);
-// Determine the remediation for the given IP
-echo 'Remediation: ' . $remediationEngine->getIpRemediation($ip) . \PHP_EOL;
-echo 'Origins count: ' . json_encode($remediationEngine->getOriginsCount()) . \PHP_EOL;
+
+// Send usage metrics
+$sentMetrics = $remediationEngine->pushUsageMetrics('test-remediation-php', 'v0.0.0', 'crowdsec-php-bouncer-test');
+echo 'Sent metrics: ' . json_encode($sentMetrics) . \PHP_EOL;

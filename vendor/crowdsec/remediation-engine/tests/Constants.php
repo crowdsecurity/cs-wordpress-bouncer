@@ -23,6 +23,8 @@ class Constants
     public const IP_V4 = '1.2.3.4';
     public const IP_V4_2 = '5.6.7.8';
     public const IP_V4_3 = '9.10.11.12';
+    public const IP_V4_4 = '12.13.14.15';
+    public const IP_V4_5 = '16.17.18.19';
     public const IP_V4_2_CACHE_KEY = RemConstants::SCOPE_IP . AbstractCache::SEP . self::IP_V4_2;
     /*
      * 66051 = intdiv(ip2long(IP_V4),256)
