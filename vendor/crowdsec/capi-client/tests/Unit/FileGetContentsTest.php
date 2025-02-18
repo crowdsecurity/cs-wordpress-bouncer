@@ -280,7 +280,7 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
         }
 
         $this->assertEquals(
-            'User agent is required',
+            'Header "User-Agent" is required',
             $error,
             'Should failed and throw if no user agent'
         );
@@ -305,7 +305,7 @@ User-Agent: ' . TestConstants::USER_AGENT_SUFFIX . '
         $this->assertEquals(500, $code);
 
         $this->assertEquals(
-            'Unexpected HTTP call failure.',
+            'Unexpected file_get_contents call failure: ',
             $error,
             'Should failed and throw if no response'
         );

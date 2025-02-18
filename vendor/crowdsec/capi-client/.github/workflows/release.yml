@@ -8,14 +8,6 @@ on:
       tag_name:
         type: string
         required: true
-      draft:
-        type: boolean
-        description: Draft release
-        default: false
-      prerelease:
-        type: boolean
-        description: Prerelease
-        default: false
 
 jobs:
   prepare-release:
@@ -104,5 +96,5 @@ jobs:
           body_path: CHANGELOG.txt
           name: ${{ env.VERSION_NUMBER }}
           tag_name: ${{ github.event.inputs.tag_name }}
-          draft: ${{ github.event.inputs.draft }}
-          prerelease: ${{ github.event.inputs.prerelease }}
+          draft: false
+          prerelease: false

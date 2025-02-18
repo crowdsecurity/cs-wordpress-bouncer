@@ -54,6 +54,9 @@ use Monolog\Logger;
  * @uses \CrowdSec\Common\Client\HttpMessage\AppSecRequest::__construct
  * @uses \CrowdSec\Common\Logger\AbstractLog::__construct
  * @uses \CrowdSec\Common\Logger\FileLog::buildFileHandler
+ * @uses \CrowdSec\Common\Logger\AbstractLog::getMonologLogger
+ *
+ * @covers \CrowdSec\Common\Logger\AbstractLog::debug
  */
 final class AbstractClientTest extends TestAbstractClient
 {

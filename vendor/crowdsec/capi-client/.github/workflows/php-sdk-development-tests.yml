@@ -1,0 +1,165 @@
+name: PHP SDK development tests
+on:
+  workflow_dispatch:
+    inputs:
+      php_common_json:
+        type: string
+        description: The PHP common json to use
+        required: true
+        default: '["main","crowdsecurity/php-common"]'
+
+  workflow_call:
+    # For workflow_call, we don't allow passing a repository as input
+    inputs:
+      is_call:
+        type: boolean
+        description: "Flag to indicate if the workflow is called"
+        # @see https://github.com/actions/runner/discussions/1884
+        required: false
+        default: true
+      php_common_json:
+        type: string
+        description: The PHP common json to use
+        required: true
+    secrets:
+      TEST_MACHINE_ID:
+        description: "Test machine ID"
+        required: true
+      TEST_MACHINE_PWD:
+        description: "Test machine password"
+        required: true
+      ENROLLMENT_KEY:
+        description: "Enrollment key"
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+  DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  PHP_COMMON_JSON: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.php_common_json || inputs.php_common_json }}
+  CAPI_CLIENT_REPO: crowdsecurity/php-capi-client
+  PHP_COMMON_REPO: crowdsecurity/php-common
+
+jobs:
+  test-suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["7.2", "7.3", "7.4", "8.0", "8.1", "8.2", "8.3", "8.4"]
+
+    name: Unit and integration test
+    runs-on: ubuntu-20.04
+    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
+    env:
+      EXTENSION_PATH: "my-code/php-capi-client"
+      PHP_COMMON_PATH: "my-code/php-common"
+      DDEV_PROJECT: "crowdsec-capi-client"
+
+    steps:
+      - name: Set PHP common variables
+        id: set-common-data
+        run: |
+          echo "branch=${{ fromJson(env.PHP_COMMON_JSON)[0] }}" >> $GITHUB_OUTPUT
+          if [ "${{ inputs.is_call }}" = "true" ]; then
+              echo "repo=${{env.PHP_COMMON_REPO}}" >> $GITHUB_OUTPUT
+          else
+              echo "repo=${{ fromJson(env.PHP_COMMON_JSON)[1] }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install DDEV
+        # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
+        run: |
+          curl -fsSL https://apt.fury.io/drud/gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ddev.gpg > /dev/null
+          echo "deb [signed-by=/etc/apt/trusted.gpg.d/ddev.gpg] https://apt.fury.io/drud/ * *" | sudo tee /etc/apt/sources.list.d/ddev.list
+          sudo apt-get -q update
+          sudo apt-get -q -y install libnss3-tools ddev
+          mkcert -install
+          ddev config global --instrumentation-opt-in=false --omit-containers=ddev-ssh-agent
+
+      - name: Create empty PHP DDEV project
+        run: ddev config --project-type=php --project-name=${{env.DDEV_PROJECT}}  --php-version=${{ matrix.php-version }}
+
+      - name: Add ddev-tools add-on
+        run: |
+          ddev add-on  get julienloizelet/ddev-tools
+
+      - name: Start DDEV
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          shell: bash
+          command: ddev start
+
+      - name: Some DEBUG information
+        run: |
+          ddev --version
+          ddev exec php -v
+
+      - name: Clone Capi Client files
+        if: inputs.is_call != true
+        uses: actions/checkout@v4
+        with:
+          path: ${{env.EXTENSION_PATH}}
+
+      - name: Clone Capi Client files
+        if: inputs.is_call == true
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CAPI_CLIENT_REPO }}
+          path: ${{env.EXTENSION_PATH}}
+          ref: "main"
+
+      - name: Clone PHP common files
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.set-common-data.outputs.repo}}
+          ref: ${{ steps.set-common-data.outputs.branch  }}
+          path: ${{env.PHP_COMMON_PATH}}
+
+      - name: Add local repositories to composer
+        run: |
+          # CAPI client
+          ddev exec --raw composer config repositories.0 '{"type": "path", "url": "../php-common", "options": {"symlink": true}}' --working-dir ./${{ env.EXTENSION_PATH }}
+
+      - name: Modify dependencies to use development aliases
+        run: |
+          # CAPI client
+          ddev exec --raw composer require crowdsec/common:"dev-${{ steps.set-common-data.outputs.branch }}" --no-update --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Validate composer.json
+        run: |
+          # CAPI client
+          cat ./${{env.EXTENSION_PATH}}/composer.json
+          ddev composer validate --strict --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Install CrowdSec lib dependencies
+        run: |
+          ddev composer update --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Check installed packages versions
+        run: |
+
+          PHP_COMMON_VERSION=$(ddev composer show crowdsec/common --working-dir ./${{env.EXTENSION_PATH}} | grep -oP "versions : \* \K(.*)") 
+          if [[ $PHP_COMMON_VERSION == "dev-${{ steps.set-common-data.outputs.branch  }}" ]]
+          then
+            echo "PHP_COMMON_VERSION COMPARISON OK"
+          else
+            echo "PHP_COMMON_VERSION COMPARISON KO"
+            echo $PHP_COMMON_VERSION
+            exit 1
+          fi
+
+      - name: Run Unit tests
+        run: ddev php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --debug ./${{env.EXTENSION_PATH}}/tests/Unit --testdox
+
+      - name: Prepare integration tests
+        run: |
+          echo -n ${{ secrets.ENROLLMENT_KEY }} > ${{env.EXTENSION_PATH}}/tests/Integration/.enrollment_key.txt
+          echo -n "{\"machine_id\":\"${{ secrets.TEST_MACHINE_ID }}\"}" > ${{env.EXTENSION_PATH}}/src/Storage/dev-machine-id.json
+          echo -n "{\"password\":\"${{ secrets.TEST_MACHINE_PWD }}\"}" > ${{env.EXTENSION_PATH}}/src/Storage/dev-password.json
+
+      - name: Run Integration tests
+        run: ddev php  ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit  ./${{env.EXTENSION_PATH}}/tests/Integration --testdox

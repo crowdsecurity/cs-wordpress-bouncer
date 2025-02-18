@@ -86,6 +86,7 @@ jobs:
         run: ddev phpstan /var/www/html/${{env.EXTENSION_PATH}}/tools/coding-standards phpstan/phpstan.neon /var/www/html/${{env.EXTENSION_PATH}}/src
 
       - name: Run PSALM
+        if: contains(fromJson('["7.4","8.0","8.1","8.2","8.3"]'),matrix.php-version)
         run: ddev psalm ./${{env.EXTENSION_PATH}}/tools/coding-standards /var/www/html/${{env.EXTENSION_PATH}}/tools/coding-standards/psalm
 
       - name: Run PHPUNIT Code Coverage

@@ -67,7 +67,7 @@ final class CapiRemediationTest extends TestCase
         $currentDate = date('Y-m-d');
         $this->debugFile = 'debug-' . $currentDate . '.log';
         $this->prodFile = 'prod-' . $currentDate . '.log';
-        $this->logger = new FileLog(['log_directory_path' => $this->root->url(), 'debug_mode' => true]);
+        $this->logger = new FileLog(['log_directory_path' => $this->root->url(), 'debug_mode' => true, 'log_rotator' => true]);
         // Init PhpFiles cache storage
         $cacheFileConfigs = [
             'fs_cache_path' => __DIR__ . '/.cache/capi',

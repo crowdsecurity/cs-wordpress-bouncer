@@ -22,7 +22,7 @@
 		}
 	},
 	"require": {
-		"crowdsec/bouncer": "^4.1.0",
+		"crowdsec/bouncer": "^4.2.0",
 		"symfony/cache": "5.4.40",
 		"symfony/polyfill-mbstring": "^1.31.0",
 		"symfony/service-contracts": "^2.5.3",

@@ -204,7 +204,8 @@ final class LapiRemediationTest extends AbstractRemediation
         $currentDate = date('Y-m-d');
         $this->debugFile = 'debug-' . $currentDate . '.log';
         $this->prodFile = 'prod-' . $currentDate . '.log';
-        $this->logger = new FileLog(['log_directory_path' => $this->root->url(), 'debug_mode' => true]);
+        $this->logger = new FileLog(['log_directory_path' => $this->root->url(), 'debug_mode' => true, 'log_rotator'
+            => true]);
         $this->bouncer = $this->getBouncerMock();
 
         $cachePhpfilesConfigs = ['fs_cache_path' => $this->root->url()];

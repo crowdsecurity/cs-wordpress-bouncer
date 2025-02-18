@@ -1434,7 +1434,7 @@ final class WatcherTest extends AbstractClient
         );
 
         // Test 3
-        $startTime = new \DateTime('1979-03-06 10:55:28');
+        $startTime = (new \DateTime('1979-03-06 10:55:28'))->setTimezone(new \DateTimeZone('UTC'));
         $signal = $client->buildSimpleSignalForIp('1.2.3.4', TestConstants::SCENARIOS[0], $startTime);
         $signalCreated = new \DateTime($signal['created_at']);
         $signalCreatedTimestamp = $signalCreated->getTimestamp();

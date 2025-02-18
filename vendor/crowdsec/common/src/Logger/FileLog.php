@@ -21,9 +21,6 @@ use Monolog\Logger;
  * @license   MIT License
  */
 
-/**
- * @todo in 3.0.0, log rotation should be default to false
- */
 class FileLog extends AbstractLog
 {
     /**
@@ -45,20 +42,22 @@ class FileLog extends AbstractLog
         $logDir = $configs['log_directory_path'] ?? __DIR__ . '/.logs';
         if (empty($configs['disable_prod_log'])) {
             $prodLogPath = $logDir . '/' . self::PROD_FILE;
-            $fileHandler = $this->buildFileHandler($prodLogPath, Logger::INFO, $configs);
-            $this->pushHandler($fileHandler);
+            $logLevel = Logger::API >= 3 ? constant('Monolog\Level::Info')->value : AbstractLog::INFO;
+            $fileHandler = $this->buildFileHandler($prodLogPath, $logLevel, $configs);
+            $this->getMonologLogger()->pushHandler($fileHandler);
         }
 
         if (!empty($configs['debug_mode'])) {
             $debugLogPath = $logDir . '/' . self::DEBUG_FILE;
-            $debugFileHandler = $this->buildFileHandler($debugLogPath, Logger::DEBUG, $configs);
-            $this->pushHandler($debugFileHandler);
+            $logLevel = Logger::API >= 3 ? constant('Monolog\Level::Debug')->value : AbstractLog::DEBUG;
+            $debugFileHandler = $this->buildFileHandler($debugLogPath, $logLevel, $configs);
+            $this->getMonologLogger()->pushHandler($debugFileHandler);
         }
     }
 
     private function buildFileHandler(string $logFilePath, int $logLevel, array $configs = []): HandlerInterface
     {
-        $fileHandler = empty($configs['no_rotation']) ?
+        $fileHandler = !empty($configs['log_rotator']) ?
             new RotatingFileHandler($logFilePath, 0, $logLevel) :
             new StreamHandler($logFilePath, $logLevel);
 

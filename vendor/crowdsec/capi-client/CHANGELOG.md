@@ -13,6 +13,26 @@ As far as possible, we try to adhere to [Symfony guidelines](https://symfony.com
 
 ---
 
+## [3.4.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v3.4.0) - 2025-01-31
+[_Compare with previous release_](https://github.com/crowdsecurity/php-capi-client/compare/v3.3.0...v3.4.0)
+
+
+### Changed
+
+- Allow Monolog 3 package (Use `crowdsec/common` `^3.0.0` dependency)
+
+---
+
+## [3.3.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v3.3.0) - 2025-01-16
+[_Compare with previous release_](https://github.com/crowdsecurity/php-capi-client/compare/v3.2.0...v3.3.0)
+
+
+### Changed
+
+- Allow Symfony 7 packages
+
+---
+
 ## [3.2.0](https://github.com/crowdsecurity/php-capi-client/releases/tag/v3.2.0) - 2024-09-12
 [_Compare with previous release_](https://github.com/crowdsecurity/php-capi-client/compare/v3.1.0...v3.2.0)
 
