@@ -23,6 +23,7 @@ const {
     runCacheAction,
     onAdvancedPageEnableUsageMetrics,
     onAdvancedPageDisableUsageMetrics,
+    forceCronRun,
 } = require("../utils/helpers");
 
 const {
@@ -44,14 +45,8 @@ describe(`Run in Live mode`, () => {
         await setDefaultConfig();
     });
 
-    it("Should activate WP-CRON", async () => {
+    it("Should clear cache", async () => {
         // Enable and disable usage metrcis before all to make WP-cron working
-        await goToAdmin();
-        await onAdminGoToAdvancedPage();
-        await onAdvancedPageEnableUsageMetrics();
-        await onAdminSaveSettings(false);
-        await onAdvancedPageDisableUsageMetrics();
-        await onAdminSaveSettings();
         await runCacheAction("clear"); // To reset metrics
     });
 
@@ -131,9 +126,8 @@ describe(`Run in Live mode`, () => {
         await onAdminGoToAdvancedPage();
         await onAdvancedPageEnableUsageMetrics();
         await onAdminSaveSettings();
-        // WP-Cron is scheduled and run after 1 second when accessing a page
-        await publicHomepageShouldBeAccessible();
-        await wait(1000);
+        // Cron is set to 15 minutes, so we need to force execution
+        await forceCronRun();
         logContent = await getFileContent(DEBUG_LOG_PATH);
         // metrics: cscli/captcha = 2 | cscli/ban = 1 | clean/bypass = 3
         // The log should contain processed count = 5 or 6, depending how WordPress handle its cron...

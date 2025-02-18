@@ -30,20 +30,6 @@
         const $streamMode = jQuery('[name=crowdsec_stream_mode]');
         const $streamModeRefreshFrequency = jQuery('[name=crowdsec_stream_mode_refresh_frequency]');
         const $streamModeRefreshFrequencyTr = $streamModeRefreshFrequency.parent().parent();
-        // Usage Metrics
-        const $usageMetricsEnabled = jQuery('[name=crowdsec_usage_metrics]');
-        const $pushUsageMetricsFrequency = jQuery('[name=crowdsec_usage_metrics_push_frequency]');
-        const $pushUsageMetricsFrequencyTr = $pushUsageMetricsFrequency.parent().parent();
-
-        function updateUsageMetricsDisplay () {
-            if($usageMetricsEnabled.is(":checked")) {
-                $pushUsageMetricsFrequency.attr('required', 'required');
-                $pushUsageMetricsFrequencyTr.show("slow");
-            } else {
-                $pushUsageMetricsFrequency.removeAttr('required');
-                $pushUsageMetricsFrequencyTr.hide();
-            }
-        }
 
         function updateStreamModeDisplay () {
             if($streamMode.is(":checked")) {
@@ -112,12 +98,10 @@
 		updateDsnDisplay();
         updateAppSecDisplay();
         updateGeolocationDisplay();
-        updateUsageMetricsDisplay();
         $streamMode.change(updateStreamModeDisplay);
 		$cacheTechno.change(updateDsnDisplay);
         $useAppSec.change(updateAppSecDisplay);
         $geolocationEnabled.change(updateGeolocationDisplay);
-        $usageMetricsEnabled.change(updateUsageMetricsDisplay);
 	});
 	</script>
 	<?php settings_errors(); ?>

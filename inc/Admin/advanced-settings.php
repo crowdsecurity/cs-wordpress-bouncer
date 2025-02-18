@@ -27,7 +27,6 @@ function adminAdvancedSettings()
                 'crowdsec_stream_mode',
                 'crowdsec_stream_mode_refresh_frequency',
                 'crowdsec_usage_metrics',
-                'crowdsec_usage_metrics_push_frequency',
                 'crowdsec_redis_dsn',
                 'crowdsec_memcached_dsn',
                 'crowdsec_cache_system',
@@ -163,41 +162,12 @@ function adminAdvancedSettings()
         unscheduleUsageMetricsPush();
     }, '
     <p>Enable usage metrics to gain visibility: monitor incoming traffic and blocked threats for better security insights.</p>
+    <p>If this option is enabled, a cron job will push usage metrics to the Local API every 15 minutes.</p>
     <p>For more information about usage metrics, please refer to the <a href="https://doc.crowdsec.net/docs/next/observability/usage_metrics/" target="_blank">documentation</a>.</p>
     '.
        ($isUsageMetricsEnabled ?
            '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>' :
            '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push usage metrics now" class="button button-secondary button-small"></p>'));
-
-
-    // Field "crowdsec_usage_metrics_push_frequency"
-    addFieldString('crowdsec_usage_metrics_push_frequency', 'Push usage metrics each', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_usage_metrics', function ($input) {
-        $input = (int) $input;
-        if ($input < 1) {
-            $input = 1;
-            $message = 'The "Push usage metrics each" value should be more than 1 sec (WP_CRON_LOCK_TIMEOUT). We just reset the frequency to 1 seconds.';
-            if(is_multisite()){
-                AdminNotice::displayError($message);
-            }else{
-                add_settings_error('Push usage metrics each', 'crowdsec_error', $message);
-            }
-
-            return $input;
-        }
-        $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics') : get_option('crowdsec_usage_metrics');
-        // Update wp-cron schedule.
-        if ($isUsageMetricsEnabled) {
-            scheduleUsageMetricsPush();
-        }
-
-        return $input;
-    }, ' seconds. <p>Our advice is 60 seconds (as WordPress ignores durations under this value <a href="https://wordpress.stackexchange.com/questions/100104/better-handling-of-wp-cron-server-load-abuse" target="_blank">see WP_CRON_LOCK_TIMEOUT</a>).<br>'.
-       ' If you prefer a shorter delay between each push, you can <strong>go down to 1 sec</strong>.<br>'.
-       ' But as mentionned is the WordPress Developer Documentation, you should considere hooking WP-Cron Into the System Task Scheduler'.
-       ' by yourself and reduce the WP_CRON_LOCK_TIMEOUT value to the same value as you set here. '.
-       '<a href="https://developer.wordpress.org/plugins/cron/hooking-wp-cron-into-the-system-task-scheduler/" target="_blank">'.
-       'Here is explained how</a>.</p>', '...', 'width: 115px;', 'number');
-
 
 
     /*********************

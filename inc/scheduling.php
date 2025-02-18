@@ -16,21 +16,17 @@ add_filter('cron_schedules', function ($schedules) {
     $refreshFrequency = is_multisite() ?
         (int) get_site_option('crowdsec_stream_mode_refresh_frequency') :
         (int) get_option('crowdsec_stream_mode_refresh_frequency');
-    $pushUsageMetricsFrequency = is_multisite() ?
-        (int) get_site_option('crowdsec_usage_metrics_push_frequency') :
-        (int) get_option('crowdsec_usage_metrics_push_frequency');
+
     if ($refreshFrequency > 0) {
         $schedules[CROWDSEC_REFRESH_BLOCKLIST_CRON_INTERVAL] = [
             'interval' => $refreshFrequency,
             'display' => esc_html__('Every '.$refreshFrequency.' second(s)'),
         ];
     }
-    if ($pushUsageMetricsFrequency > 0) {
-        $schedules[CROWDSEC_PUSH_USAGE_METRICS_CRON_INTERVAL] = [
-            'interval' => $pushUsageMetricsFrequency,
-            'display' => esc_html__('Every '.$pushUsageMetricsFrequency.' second(s)'),
-        ];
-    }
+    $schedules[CROWDSEC_PUSH_USAGE_METRICS_CRON_INTERVAL] = [
+        'interval' => 900,
+        'display' => esc_html__('Every 900 seconds'),
+    ];
 
     return $schedules;
 });
@@ -107,4 +103,6 @@ function scheduleUsageMetricsPush()
 
     // Schedule "usage metrics push" each <push interval>, the first execution starting now.
     wp_schedule_event(time(), CROWDSEC_PUSH_USAGE_METRICS_CRON_INTERVAL, CROWDSEC_PUSH_USAGE_METRICS_CRON_HOOK);
+
+
 }

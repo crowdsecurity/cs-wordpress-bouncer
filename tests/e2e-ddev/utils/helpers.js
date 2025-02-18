@@ -164,7 +164,6 @@ const onAdvancedPageEnableStreamMode = async () => {
 
 const onAdvancedPageEnableUsageMetrics = async () => {
     await setToggle("crowdsec_usage_metrics", true);
-    await fillInput("crowdsec_usage_metrics_push_frequency", 1);
 };
 const onAdvancedPageDisableUsageMetrics = async () => {
     await setToggle("crowdsec_usage_metrics", false);

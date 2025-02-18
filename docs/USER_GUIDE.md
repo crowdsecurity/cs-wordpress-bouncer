@@ -298,14 +298,7 @@ With the stream mode, every decision is retrieved in an asynchronous way. Here y
 
 Enable usage metrics to gain visibility: monitor incoming traffic and blocked threats for better security insights.
 
-***
-
-`Usage Metrics → Push usage metrics each`
-
-Metrics are pushed to the Local API every X seconds (depending on the WordPress cron management).
-
-As metrics are saved in cache, bouncer will also push metrics before cache is cleared.
-
+If this option is enabled, a cron job will push usage metrics to the Local API every 15 minutes.
 
 **N.B** : There is also a push button if you want to push usage metrics manually.
 
