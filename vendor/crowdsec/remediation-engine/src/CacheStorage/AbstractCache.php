@@ -28,6 +28,8 @@ abstract class AbstractCache
     public const DEFER = 'deferred';
     /** @var string Internal name for effective saved cache item (not deferred) */
     public const DONE = 'done';
+    /** @var string Internal name for first lapi call config item */
+    public const FIRST_LAPI_CALL = 'first_lapi_call';
     /** @var string The cache key prefix or tag for a geolocation */
     public const GEOLOCATION = 'geolocation';
     /** @var int Cache item content array expiration index */
@@ -40,6 +42,8 @@ abstract class AbstractCache
     public const INDEX_ORIGIN = 3;
     /** @var string The cache key prefix for a IPV4 range bucket */
     public const IPV4_BUCKET_KEY = 'range_bucket_ipv4';
+    /** @var string Internal name for last metrics sent timestamp */
+    public const LAST_METRICS_SENT = 'last_metrics_sent';
     /** @var string Internal name for last pull */
     public const LAST_PULL = 'last_pull';
     /** @var string Internal name for list */
@@ -360,6 +364,7 @@ abstract class AbstractCache
 
     /**
      * Create or update an item; Only passed content is updated.
+     * With this method, we can only add or update keys to the content, not remove them.
      *
      * @throws InvalidArgumentException|CacheException
      */

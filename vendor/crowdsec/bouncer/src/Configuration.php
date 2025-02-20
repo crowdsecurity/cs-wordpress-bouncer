@@ -37,7 +37,6 @@ class Configuration extends AbstractConfiguration
         'captcha_cache_duration',
         'excluded_uris',
         'trust_ip_forward_array',
-        'bouncing_level',
         'hide_mentions',
         'custom_css',
         'color',
@@ -67,22 +66,10 @@ class Configuration extends AbstractConfiguration
      * @param NodeDefinition|ArrayNodeDefinition $rootNode
      *
      * @return void
-     *
-     * @throws \InvalidArgumentException
      */
     private function addBouncerNodes($rootNode)
     {
         $rootNode->children()
-            ->enumNode('bouncing_level')
-                ->values(
-                    [
-                        Constants::BOUNCING_LEVEL_DISABLED,
-                        Constants::BOUNCING_LEVEL_NORMAL,
-                        Constants::BOUNCING_LEVEL_FLEX,
-                    ]
-                )
-                ->defaultValue(Constants::BOUNCING_LEVEL_NORMAL)
-            ->end()
             ->arrayNode('trust_ip_forward_array')
                 ->arrayPrototype()
                     ->scalarPrototype()->end()

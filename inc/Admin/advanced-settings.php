@@ -26,6 +26,7 @@ function adminAdvancedSettings()
             [
                 'crowdsec_stream_mode',
                 'crowdsec_stream_mode_refresh_frequency',
+                'crowdsec_usage_metrics',
                 'crowdsec_redis_dsn',
                 'crowdsec_memcached_dsn',
                 'crowdsec_cache_system',
@@ -81,7 +82,7 @@ function adminAdvancedSettings()
      ** Section "Stream mode" **
      **************************/
     $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
-    add_settings_section('crowdsec_admin_advanced_stream_mode', 'Communication mode to the API', function () {
+    add_settings_section('crowdsec_admin_advanced_stream_mode', 'Communication mode with the Local API', function () {
     }, 'crowdsec_advanced_settings',['after_section' => '<hr>']);
 
     // Field "crowdsec_stream_mode"
@@ -144,6 +145,31 @@ function adminAdvancedSettings()
     '<a href="https://developer.wordpress.org/plugins/cron/hooking-wp-cron-into-the-system-task-scheduler/" target="_blank">'.
     'Here is explained how</a>.</p>', '...', 'width: 115px;', 'number');
 
+
+    /***************************
+     ** Section "Usage Metrics" **
+     **************************/
+    $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics') : get_option('crowdsec_usage_metrics');
+    add_settings_section('crowdsec_admin_advanced_usage_metrics', 'Usage Metrics', function () {
+    }, 'crowdsec_advanced_settings',['after_section' => '<hr>']);
+
+    // Field "crowdsec_usage_metrics"
+    addFieldCheckbox('crowdsec_usage_metrics', 'Enable Usage Metrics', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_usage_metrics', function () {
+        // Usage metrics just activated.
+        scheduleUsageMetricsPush();
+    }, function () {
+        // Stream mode just deactivated.
+        unscheduleUsageMetricsPush();
+    }, '
+    <p>Enable usage metrics to gain visibility: monitor incoming traffic and blocked threats for better security insights.</p>
+    <p>If this option is enabled, a cron job will push usage metrics to the Local API every 15 minutes.</p>
+    <p>For more information about usage metrics, please refer to the <a href="https://doc.crowdsec.net/docs/next/observability/usage_metrics/" target="_blank">documentation</a>.</p>
+    '.
+       ($isUsageMetricsEnabled ?
+           '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>' :
+           '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push usage metrics now" class="button button-secondary button-small"></p>'));
+
+
     /*********************
      ** Section "Cache" **
      ********************/
@@ -205,20 +231,26 @@ function adminAdvancedSettings()
             $message = 'Technology: Incorrect cache technology selected.';
             if(is_multisite()){
                 AdminNotice::displayError($message);
-            }else{
+            } else{
                 add_settings_error('Technology', 'crowdsec_error', $message);
-
             }
         }
         $error = false;
 
         try {
             $configs = getDatabaseConfigs();
+            $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics') : get_option('crowdsec_usage_metrics');
             $oldCacheSystem = $configs['crowdsec_cache_system'] ?? Constants::CACHE_SYSTEM_PHPFS;
             $bouncer = new Bouncer($configs);
+            if ($isUsageMetricsEnabled) {
+                $bouncer->pushUsageMetrics(Constants::BOUNCER_NAME, Constants::VERSION);
+            }
             $bouncer->clearCache();
             $message =
-                __('Cache system changed. Previous cache (' . $oldCacheSystem . ') data has been cleared. ');
+                __('Cache system changed.<br>Previous cache (' . $oldCacheSystem . ') data has been cleared. ');
+            if($isUsageMetricsEnabled){
+                $message .= '<br>As usage metrics push is enabled, metrics have been pushed before clearing cache.';
+            }
             AdminNotice::displaySuccess($message);
         } catch (Exception $e) {
             if (isset($configs['crowdsec_cache_system'])) {

@@ -27,6 +27,7 @@ abstract class AbstractRemediation extends AbstractConfiguration
     protected $keys = [
         'fallback_remediation',
         'ordered_remediations',
+        'bouncing_level',
         'stream_mode',
         'clean_ip_cache_duration',
         'bad_ip_cache_duration',
@@ -52,6 +53,16 @@ abstract class AbstractRemediation extends AbstractConfiguration
         $rootNode->children()
             ->scalarNode('fallback_remediation')
                 ->defaultValue(Constants::REMEDIATION_BYPASS)
+            ->end()
+            ->enumNode('bouncing_level')
+                ->values(
+                    [
+                        Constants::BOUNCING_LEVEL_DISABLED,
+                        Constants::BOUNCING_LEVEL_NORMAL,
+                        Constants::BOUNCING_LEVEL_FLEX,
+                    ]
+                )
+                ->defaultValue(Constants::BOUNCING_LEVEL_NORMAL)
             ->end()
             ->arrayNode('ordered_remediations')->cannotBeEmpty()
                 ->validate()

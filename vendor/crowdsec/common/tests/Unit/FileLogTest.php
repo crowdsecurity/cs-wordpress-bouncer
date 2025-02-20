@@ -25,6 +25,16 @@ use PHPUnit\Framework\TestCase;
  * @covers \CrowdSec\Common\Logger\FileLog::__construct
  * @covers \CrowdSec\Common\Logger\AbstractLog::__construct
  * @covers \CrowdSec\Common\Logger\FileLog::buildFileHandler
+ * @covers \CrowdSec\Common\Logger\AbstractLog::getMonologLogger
+ * @covers \CrowdSec\Common\Logger\AbstractLog::info
+ * @covers \CrowdSec\Common\Logger\AbstractLog::error
+ * @covers \CrowdSec\Common\Logger\AbstractLog::emergency
+ * @covers \CrowdSec\Common\Logger\AbstractLog::alert
+ * @covers \CrowdSec\Common\Logger\AbstractLog::critical
+ * @covers \CrowdSec\Common\Logger\AbstractLog::warning
+ * @covers \CrowdSec\Common\Logger\AbstractLog::notice
+ * @covers \CrowdSec\Common\Logger\AbstractLog::debug
+ * @covers \CrowdSec\Common\Logger\AbstractLog::log
  */
 final class FileLogTest extends TestCase
 {
@@ -78,9 +88,9 @@ final class FileLogTest extends TestCase
             'Prod File should not exist'
         );
 
-        $logger = new FileLog(['log_directory_path' => $this->root->url(), 'no_rotation' => true]);
+        $logger = new FileLog(['log_directory_path' => $this->root->url()]);
 
-        $handlers = $logger->getHandlers();
+        $handlers = $logger->getMonologLogger()->getHandlers();
         $this->assertCount(1, $handlers, 'Should have one handler');
 
         // Test prod log
@@ -122,9 +132,9 @@ final class FileLogTest extends TestCase
             'Prod File should not exist'
         );
 
-        $logger = new FileLog(['log_directory_path' => $this->root->url()]);
+        $logger = new FileLog(['log_directory_path' => $this->root->url(), 'log_rotator' => true]);
 
-        $handlers = $logger->getHandlers();
+        $handlers = $logger->getMonologLogger()->getHandlers();
         $this->assertCount(1, $handlers, 'Should have one handler');
 
         // Test prod log
@@ -156,11 +166,10 @@ final class FileLogTest extends TestCase
     {
         $logger = new FileLog([
             'log_directory_path' => $this->root->url(),
-            'debug_mode' => true,
-            'no_rotation' => true,
+            'debug_mode' => true
         ]);
 
-        $handlers = $logger->getHandlers();
+        $handlers = $logger->getMonologLogger()->getHandlers();
         $this->assertCount(2, $handlers, 'Should have 2 handlers');
 
         $logger->info('', [
@@ -192,6 +201,98 @@ final class FileLogTest extends TestCase
             file_get_contents($this->root->url() . '/' . $this->debugFile),
             'Debug log content should be correct'
         );
+
+        $logger->emergency('', [
+            'type' => 'EMERGENCY',
+        ]);
+        $logger->alert('', [
+            'type' => 'ALERT',
+        ]);
+        $logger->critical('', [
+            'type' => 'CRITICAL',
+        ]);
+        $logger->error('', [
+            'type' => 'ERROR',
+        ]);
+        $logger->warning('', [
+            'type' => 'WARNING',
+        ]);
+        $logger->notice('', [
+            'type' => 'NOTICE',
+        ]);
+        $logger->info('', [
+            'type' => 'INFO',
+        ]);
+        $logger->debug('', [
+            'type' => 'DEBUG',
+        ]);
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*100.*"type":"DEBUG"/',
+            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            'Debug log content should be correct'
+        );
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*200.*"type":"INFO"/',
+            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            'Debug log content should be correct'
+        );
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*250.*"type":"NOTICE"/',
+            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            'Debug log content should be correct'
+        );
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*300.*"type":"WARNING"/',
+            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            'Debug log content should be correct'
+        );
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*400.*"type":"ERROR"/',
+            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            'Debug log content should be correct'
+        );
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*500.*"type":"CRITICAL"/',
+            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            'Debug log content should be correct'
+        );
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*550.*"type":"ALERT"/',
+            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            'Debug log content should be correct'
+        );
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*600.*"type":"EMERGENCY"/',
+            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            'Debug log content should be correct'
+        );
+
+        $logger->log(100, '', [
+            'type' => 'LOG WITH LEVEL',
+        ]);
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*100.*"type":"LOG WITH LEVEL"/',
+            file_get_contents($this->root->url() . '/' . $this->debugFile),
+            'Debug log content should be correct'
+        );
     }
 
     public function testDebugLogRotate()
@@ -199,9 +300,10 @@ final class FileLogTest extends TestCase
         $logger = new FileLog([
             'log_directory_path' => $this->root->url(),
             'debug_mode' => true,
+            'log_rotator' => true,
         ]);
 
-        $handlers = $logger->getHandlers();
+        $handlers = $logger->getMonologLogger()->getHandlers();
         $this->assertCount(2, $handlers, 'Should have 2 handlers');
 
         $logger->info('', [
@@ -241,6 +343,7 @@ final class FileLogTest extends TestCase
             'log_directory_path' => $this->root->url(),
             'debug_mode' => true,
             'disable_prod_log' => true,
+            'log_rotator' => true,
         ]);
         $logger->info('', [
             'type' => 'TEST3',
@@ -270,6 +373,7 @@ final class FileLogTest extends TestCase
     {
         $logger = new FileLog([
             'log_directory_path' => $this->root->url(),
+            'log_rotator' => true,
         ]);
         $this->assertEquals(
             false,
@@ -300,6 +404,7 @@ final class FileLogTest extends TestCase
         $logger = new FileLog([
             'log_directory_path' => $this->root->url(),
             'format' => '%message%|%level%|%message%|%level%',
+            'log_rotator' => true,
         ]);
         $logger->error('error-message', [
             'type' => 'TEST3',
@@ -317,6 +422,7 @@ final class FileLogTest extends TestCase
             new FileLog([
                 'log_directory_path' => $this->root->url(),
                 'format' => ['bad-config' => true],
+                'log_rotator' => true,
             ]);
         } catch (\TypeError $e) {
             $error = $e->getMessage();

@@ -13,5 +13,18 @@
             <directory name="../vendor" />
         </ignoreFiles>
     </projectFiles>
+    <issueHandlers>
+        <UndefinedInterfaceMethod>
+            <errorLevel type="suppress">
+                <referencedMethod name="Symfony\Component\Config\Definition\Builder\NodeParentInterface::integerNode"/>
+                <referencedMethod name="Symfony\Component\Config\Definition\Builder\NodeParentInterface::scalarNode"/>
+            </errorLevel>
+        </UndefinedInterfaceMethod>
+        <UndefinedMethod>
+            <errorLevel type="suppress">
+                <referencedMethod name="Symfony\Component\Config\Definition\Builder\NodeDefinition::children"/>
+            </errorLevel>
+        </UndefinedMethod>
+    </issueHandlers>
     
 </psalm>

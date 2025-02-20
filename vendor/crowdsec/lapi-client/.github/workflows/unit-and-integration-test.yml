@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - '**.md'
+      - "**.md"
   workflow_dispatch:
     inputs:
       unit_tests:
@@ -16,7 +16,7 @@ on:
         description: Run Integration tests
         default: true
   schedule:
-    - cron: '15 3 * * 4'
+    - cron: "15 3 * * 4"
 
 permissions:
   contents: read
@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.2','7.3','7.4','8.0','8.1', '8.2', '8.3']
+        php-version: ["7.2", "7.3", "7.4", "8.0", "8.1", "8.2", "8.3", "8.4"]
 
     name: Unit and integration test
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
       - name: Prepare for TLS tests
         run: |
           mkdir ${{ github.workspace }}/cfssl
-          cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* ${{ github.workspace }}/cfssl    
+          cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* ${{ github.workspace }}/cfssl
 
       - name: Start DDEV
         uses: nick-fields/retry@v3
@@ -86,7 +86,7 @@ jobs:
           path: ${{env.EXTENSION_PATH}}
 
       - name: Validate composer.json
-        run: | 
+        run: |
           ddev composer validate --strict --working-dir ./${{env.EXTENSION_PATH}}
 
       - name: Install dependencies
@@ -97,22 +97,28 @@ jobs:
         if: |
           github.event.inputs.unit_tests == 'true' ||
           github.event_name == 'push'
-        run:  ddev php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --debug ./${{env.EXTENSION_PATH}}/tests/Unit --testdox
-
+        run: ddev php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --debug ./${{env.EXTENSION_PATH}}/tests/Unit --testdox
 
       - name: Run Integration tests (without TLS)
         if: |
           github.event.inputs.integration_tests == 'true' ||
           github.event_name == 'push'
-        run:  ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group timeout ./${{env.EXTENSION_PATH}}/tests/Integration
+        run: ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group timeout,appsec ./${{env.EXTENSION_PATH}}/tests/Integration
 
       - name: Run Integration tests (with TLS)
         if: |
           github.event.inputs.integration_tests == 'true' ||
           github.event_name == 'push'
-        run: ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl BOUNCER_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group timeout ./${{env.EXTENSION_PATH}}/tests/Integration
+        run: ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl BOUNCER_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group timeout,appsec ./${{env.EXTENSION_PATH}}/tests/Integration
 
-      - name: Run Integration tests with timeout
+      - name: Run AppSec tests
+        if: |
+          github.event.inputs.integration_tests == 'true' ||
+          github.event_name == 'push'
+        run: |
+          ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --group appsec ./${{env.EXTENSION_PATH}}/tests/Integration
+
+      - name: Run AppSec tests with timeout
         if: |
           github.event.inputs.integration_tests == 'true' ||
           github.event_name == 'push'

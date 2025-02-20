@@ -18,6 +18,12 @@ const {
     selectByName,
     setToggle,
     goToPublicPage,
+    deleteFileContent,
+    getFileContent,
+    runCacheAction,
+    onAdvancedPageEnableUsageMetrics,
+    onAdvancedPageDisableUsageMetrics,
+    forceCronRun,
 } = require("../utils/helpers");
 
 const {
@@ -27,7 +33,8 @@ const {
     BOUNCER_KEY_FILE,
     BOUNCER_CERT_FILE,
     AGENT_CERT_FILE,
-    CA_CERT_FILE
+    CA_CERT_FILE,
+    DEBUG_LOG_PATH,
 } = require("../utils/constants");
 
 describe(`Run in Live mode`, () => {
@@ -38,7 +45,12 @@ describe(`Run in Live mode`, () => {
         await setDefaultConfig();
     });
 
-    it('Should display a captcha wall instead of a ban wall in Flex mode"', async () => {
+    it("Should clear cache", async () => {
+        // Enable and disable usage metrcis before all to make WP-cron working
+        await runCacheAction("clear"); // To reset metrics
+    });
+
+    it("Should display a captcha wall instead of a ban wall in Flex mode", async () => {
         // set Flex mode
         await goToAdmin();
         await onAdminGoToSettingsPage();
@@ -52,6 +64,7 @@ describe(`Run in Live mode`, () => {
 
         // Should be a captcha wall
         await publicHomepageShouldBeCaptchaWall();
+        // metrics: cscli/captcha = 1
     });
 
     it('Should be accessible in Disabled mode"', async () => {
@@ -66,6 +79,7 @@ describe(`Run in Live mode`, () => {
 
         // Should be accessible
         await publicHomepageShouldBeAccessible();
+        // metrics: cscli/captcha = 1
 
         // Go back to normal mode
         await goToAdmin();
@@ -78,11 +92,13 @@ describe(`Run in Live mode`, () => {
 
         // Should be a ban wall
         await publicHomepageShouldBeBanWall();
+        // metrics: cscli/captcha = 1 | cscli/ban = 1
     });
 
     it('Should display back the homepage with no remediation"', async () => {
         await removeAllDecisions();
         await publicHomepageShouldBeAccessible();
+        // metrics: cscli/captcha = 1 | cscli/ban = 1 | clean/bypass = 1
     });
 
     it("Should fallback to the selected remediation for unknown remediation", async () => {
@@ -90,6 +106,7 @@ describe(`Run in Live mode`, () => {
         await addDecision(CURRENT_IP, "mfa", 15 * 60);
         await wait(1000);
         await publicHomepageShouldBeCaptchaWall();
+        // metrics: cscli/captcha = 2 | cscli/ban = 1 | clean/bypass = 1
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await page.selectOption(
@@ -98,6 +115,45 @@ describe(`Run in Live mode`, () => {
         );
         await onAdminSaveSettings();
         await publicHomepageShouldBeAccessible();
+        // metrics: cscli/captcha = 2 | cscli/ban = 1 | clean/bypass = 2
+    });
+
+    it("Should push usage metrics", async () => {
+        await deleteFileContent(DEBUG_LOG_PATH);
+        let logContent = await getFileContent(DEBUG_LOG_PATH);
+        await expect(logContent).toBe("");
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await onAdvancedPageEnableUsageMetrics();
+        await onAdminSaveSettings();
+        // Cron is set to 15 minutes, so we need to force execution
+        await forceCronRun();
+        logContent = await getFileContent(DEBUG_LOG_PATH);
+        // metrics: cscli/captcha = 2 | cscli/ban = 1 | clean/bypass = 3
+        // The log should contain processed count = 5 or 6, depending how WordPress handle its cron...
+        // (if its 5, that means that there is another metrics call with processed = 1)
+        // In multisite, it can be 7, not sure why...(perhaps some admin pages is considered as "non admin" and bounced)
+        await expect(logContent).toMatch(
+            new RegExp(
+                `{"name":"dropped","value":2,"unit":"request","labels":{"origin":"cscli","remediation":"captcha"}},{"name":"dropped","value":1,"unit":"request","labels":{"origin":"cscli","remediation":"ban"}},{"name":"processed","value":(5|6|7),"unit":"request"}`,
+            ),
+        );
+
+        await expect(logContent).not.toContain("No metrics to send");
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await page.click("#crowdsec_push_usage_metrics");
+
+        await expect(page).toHaveText(
+            "#wpbody-content > div.wrap > div.notice.notice-success",
+            "CrowdSec usage metrics have just been pushed.",
+        );
+
+        // Disable usage metrics for future tests
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+        await onAdvancedPageDisableUsageMetrics();
+        await onAdminSaveSettings();
     });
 
     it('Should handle X-Forwarded-For header for whitelisted IPs only"', async () => {
@@ -158,9 +214,15 @@ describe(`Test TLS auth in Live mode`, () => {
         await setToggle("crowdsec_use_curl", true);
         await selectByName("crowdsec_auth_type", "tls");
 
-        await fillInput("crowdsec_tls_key_path", `/var/www/html/${BOUNCER_KEY_FILE}`);
+        await fillInput(
+            "crowdsec_tls_key_path",
+            `/var/www/html/${BOUNCER_KEY_FILE}`,
+        );
         await setToggle("crowdsec_tls_verify_peer", true);
-        await fillInput("crowdsec_tls_ca_cert_path", `/var/www/html/${CA_CERT_FILE}`);
+        await fillInput(
+            "crowdsec_tls_ca_cert_path",
+            `/var/www/html/${CA_CERT_FILE}`,
+        );
         // Bad path
         await fillInput("crowdsec_tls_cert_path", "bad-path");
         await onAdminSaveSettings();
@@ -172,7 +234,10 @@ describe(`Test TLS auth in Live mode`, () => {
             /Technical error.*could not load PEM client certificate/,
         );
         // Bad cert
-        await fillInput("crowdsec_tls_cert_path", `/var/www/html/${AGENT_CERT_FILE}`);
+        await fillInput(
+            "crowdsec_tls_cert_path",
+            `/var/www/html/${AGENT_CERT_FILE}`,
+        );
         await onAdminSaveSettings();
         await page.click("#crowdsec_action_test_connection #submit");
         await wait(2000);
@@ -182,8 +247,14 @@ describe(`Test TLS auth in Live mode`, () => {
         );
 
         // Bad CA with verify peer
-        await fillInput("crowdsec_tls_cert_path", `/var/www/html/${BOUNCER_CERT_FILE}`);
-        await fillInput("crowdsec_tls_ca_cert_path", `/var/www/html/${AGENT_CERT_FILE}`);
+        await fillInput(
+            "crowdsec_tls_cert_path",
+            `/var/www/html/${BOUNCER_CERT_FILE}`,
+        );
+        await fillInput(
+            "crowdsec_tls_ca_cert_path",
+            `/var/www/html/${AGENT_CERT_FILE}`,
+        );
         await onAdminSaveSettings();
         await page.click("#crowdsec_action_test_connection #submit");
         await wait(2000);
@@ -205,8 +276,14 @@ describe(`Test TLS auth in Live mode`, () => {
         // Good settings with curl
         await setToggle("crowdsec_tls_verify_peer", true);
 
-        await fillInput("crowdsec_tls_ca_cert_path", `/var/www/html/${CA_CERT_FILE}`);
-        await fillInput("crowdsec_tls_cert_path", `/var/www/html/${BOUNCER_CERT_FILE}`);
+        await fillInput(
+            "crowdsec_tls_ca_cert_path",
+            `/var/www/html/${CA_CERT_FILE}`,
+        );
+        await fillInput(
+            "crowdsec_tls_cert_path",
+            `/var/www/html/${BOUNCER_CERT_FILE}`,
+        );
 
         await onAdminSaveSettings();
         await page.click("#crowdsec_action_test_connection #submit");

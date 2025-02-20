@@ -28,9 +28,10 @@ class ConsoleLog extends AbstractLog
     public function __construct(array $configs = [], string $name = self::LOGGER_NAME)
     {
         parent::__construct($configs, $name);
-        $level = $configs['level'] ?? Logger::DEBUG;
+        $levelFallback = Logger::API >= 3 ? constant('Monolog\Level::Debug')->value : AbstractLog::DEBUG;
+        $level = $configs['level'] ?? $levelFallback;
         $handler = new StreamHandler('php://stdout', $level);
         $handler->setFormatter(new LineFormatter($this->format));
-        $this->pushHandler($handler);
+        $this->getMonologLogger()->pushHandler($handler);
     }
 }

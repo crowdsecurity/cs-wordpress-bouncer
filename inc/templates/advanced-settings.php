@@ -134,6 +134,10 @@
 			<input type="hidden" name="action" value="crowdsec_prune_cache">
 			<input type="hidden" name="nonce" value="<?php echo wp_create_nonce('crowdsec_prune_cache'); ?>">
 		</form>
+        <form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="crowdsec_action_push_usage_metrics">
+            <input type="hidden" name="action" value="crowdsec_push_usage_metrics">
+            <input type="hidden" name="nonce" value="<?php echo wp_create_nonce('crowdsec_push_usage_metrics'); ?>">
+        </form>
 		</div>
 		<p style="padding-top:15px">
 			Feel free to ask any questions about this plugin, make your suggestions or raise issues on the <a href="https://wordpress.org/support/plugin/crowdsec/">plugin support page</a> or directly on <a href="https://github.com/crowdsecurity/cs-wordpress-bouncer/issues/new">Github</a>.

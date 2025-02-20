@@ -313,11 +313,7 @@ doctoc docs/* --maxlevel 4
 
 ## Release process
 
-We are using [semantic versioning](https://semver.org/) to determine a version number. To verify the current tag, 
-you should run: 
-```
-git describe --tags `git rev-list --tags --max-count=1`
-```
+We are using [semantic versioning](https://semver.org/) to determine a version number. 
 
 Before publishing a new release, there are some manual steps to take:
 
@@ -327,16 +323,8 @@ Before publishing a new release, there are some manual steps to take:
 Then, you have to [run the action manually from the GitHub repository](https://github.com/crowdsecurity/php-lapi-client/actions/workflows/release.yml)
 
 
-Alternatively, you could use the [GitHub CLI](https://github.com/cli/cli): 
-- create a draft release: 
-```
-gh workflow run release.yml -f tag_name=vx.y.z -f draft=true
-```
-- publish a prerelease:  
-```
-gh workflow run release.yml -f tag_name=vx.y.z -f prerelease=true
-```
-- publish a release: 
+Alternatively, you could use the [GitHub CLI](https://github.com/cli/cli) to publish a release: 
+
 ```
 gh workflow run release.yml -f tag_name=vx.y.z
 ```

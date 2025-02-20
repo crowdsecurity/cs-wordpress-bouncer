@@ -34,6 +34,7 @@
         <UndefinedInterfaceMethod>
             <errorLevel type="info">
                 <referencedMethod name="Psr\Cache\CacheItemInterface::tag"/>
+                <referencedMethod name="Symfony\Component\Config\Definition\Builder\NodeParentInterface::end"/>
             </errorLevel>
         </UndefinedInterfaceMethod>
         <PossiblyUndefinedMethod>

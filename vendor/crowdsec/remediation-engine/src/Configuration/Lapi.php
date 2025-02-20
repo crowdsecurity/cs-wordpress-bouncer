@@ -27,6 +27,7 @@ class Lapi extends AbstractRemediation
         'fallback_remediation',
         'ordered_remediations',
         'stream_mode',
+        'bouncing_level',
         'clean_ip_cache_duration',
         'bad_ip_cache_duration',
         'geolocation',

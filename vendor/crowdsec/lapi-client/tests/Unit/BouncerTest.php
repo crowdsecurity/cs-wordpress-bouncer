@@ -36,6 +36,17 @@ use CrowdSec\LapiClient\Tests\PHPUnitUtil;
  * @covers \CrowdSec\LapiClient\Configuration::addConnectionNodes
  * @covers \CrowdSec\LapiClient\Configuration::addAppSecNodes
  * @covers \CrowdSec\LapiClient\Configuration::validate
+ * @covers \CrowdSec\LapiClient\Bouncer::buildUsageMetrics
+ * @covers \CrowdSec\LapiClient\Bouncer::getOs
+ * @covers \CrowdSec\LapiClient\Configuration\Metrics::getConfigTreeBuilder
+ * @covers \CrowdSec\LapiClient\Configuration\Metrics\Items::cleanConfigs
+ * @covers \CrowdSec\LapiClient\Configuration\Metrics\Items::getConfigTreeBuilder
+ * @covers \CrowdSec\LapiClient\Configuration\Metrics\Meta::getConfigTreeBuilder
+ * @covers \CrowdSec\LapiClient\Metrics::__construct
+ * @covers \CrowdSec\LapiClient\Metrics::configureItems
+ * @covers \CrowdSec\LapiClient\Metrics::configureMeta
+ * @covers \CrowdSec\LapiClient\Metrics::configureProperties
+ * @covers \CrowdSec\LapiClient\Metrics::toArray
  *
  * @uses \CrowdSec\LapiClient\Bouncer::cleanHeadersForLog
  * @uses \CrowdSec\LapiClient\Bouncer::cleanRawBodyForLog()
@@ -88,6 +99,162 @@ final class BouncerTest extends AbstractClient
                 ]
             );
         $mockClient->getFilteredDecisions(['ip' => '1.2.3.4']);
+    }
+
+    public function testBuildUsageMetrics()
+    {
+        $osName = php_uname('s');
+        $osVersion = php_uname('v');
+
+        $client = new Bouncer($this->configs);
+        // Test 1: basic
+        $properties = [
+            'name' => 'test',
+            'version' => '1.0.0',
+            'type' => 'test',
+            'utc_startup_timestamp' => 1234567890,
+        ];
+        $meta = [
+            'window_size_seconds' => 60,
+        ];
+        $items = [
+            [
+                'name' => 'dropped',
+                'value' => 1,
+                'unit' => 'test',
+                'labels' => [
+                    'origin' => 'CAPI',
+                ],
+            ],
+        ];
+
+        $metrics = $client->buildUsageMetrics($properties, $meta, $items);
+
+        $this->assertEquals(
+            [
+                'remediation_components' => [
+                    [
+                        'name' => 'test',
+                        'version' => '1.0.0',
+                        'type' => 'test',
+                        'feature_flags' => [],
+                        'utc_startup_timestamp' => 1234567890,
+                        'os' => [
+                            'name' => $osName,
+                            'version' => $osVersion,
+                        ],
+                    ] + [
+                        'metrics' => [
+                            [
+                                'meta' => [
+                                    'window_size_seconds' => 60,
+                                    'utc_now_timestamp' => time(),
+                                ],
+                                'items' => $items,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            $metrics,
+            'Should format metrics as expected'
+        );
+
+        // Test 2: with last pull
+
+        $properties = [
+            'name' => 'test',
+            'version' => '1.0.0',
+            'type' => 'test',
+            'utc_startup_timestamp' => 1234567890,
+            'last_pull' => 123456747,
+        ];
+
+        $metrics = $client->buildUsageMetrics($properties, $meta, $items);
+
+        $this->assertEquals(
+            [
+                'remediation_components' => [
+                    [
+                        'name' => 'test',
+                        'version' => '1.0.0',
+                        'type' => 'test',
+                        'feature_flags' => [],
+                        'utc_startup_timestamp' => 1234567890,
+                        'os' => [
+                            'name' => $osName,
+                            'version' => $osVersion,
+                        ],
+                        'last_pull' => 123456747,
+                    ] + [
+                        'metrics' => [
+                            [
+                                'meta' => [
+                                    'window_size_seconds' => 60,
+                                    'utc_now_timestamp' => time(),
+                                ],
+                                'items' => $items,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            $metrics,
+            'Should format metrics as expected'
+        );
+
+        // Test 3 : labels exception
+
+        $items = [
+            [
+                'name' => 'dropped',
+                'value' => 1,
+                'unit' => 'test',
+                'labels' => [
+                    'origin' => 22,
+                    'test' => 'test',
+                ],
+            ],
+        ];
+
+        $error = '';
+        try {
+            $client->buildUsageMetrics($properties, $meta, $items);
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/Labels must be an array of key-value pairs with string values/',
+            $error,
+            'Labels must be strings'
+        );
+
+        // Test 4 : labels exception 2
+
+        $items = [
+            [
+                'name' => 'dropped',
+                'value' => 1,
+                'unit' => 'test',
+                'labels' => 'origin',
+            ],
+        ];
+
+        $error = '';
+        try {
+            $client->buildUsageMetrics($properties, $meta, $items);
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/Labels must be an array of key-value pairs with string values/',
+            $error,
+            'Labels must be an array'
+        );
     }
 
     public function testAppSecDecisionParams()

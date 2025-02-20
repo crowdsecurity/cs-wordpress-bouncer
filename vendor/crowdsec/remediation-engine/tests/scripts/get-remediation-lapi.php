@@ -28,7 +28,7 @@ if (!$bouncerKey || !$lapiUrl) {
 }
 
 // Init  logger
-$logger = new FileLog(['debug_mode' => true], 'remediation-engine-logger');
+$logger = new FileLog(['debug_mode' => true, 'log_directory_path' => __DIR__ . '/.logs'], 'remediation-engine-logger');
 // Init client
 $clientConfigs = [
     'auth_type' => 'api_key',

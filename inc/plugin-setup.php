@@ -57,10 +57,9 @@ function activate_crowdsec_plugin()
     flush_rewrite_rules();
 
     // Set default options.
-
     $crowdSecWpPluginOptions = getCrowdSecOptionsConfig();
     foreach ($crowdSecWpPluginOptions as $crowdSecWpPluginOption) {
-        if ($crowdSecWpPluginOption['autoInit']) {
+        if (isset($crowdSecWpPluginOption['autoInit'])) {
             if (is_multisite()) {
                 update_site_option($crowdSecWpPluginOption['name'], $crowdSecWpPluginOption['default']);
             } else {
@@ -81,6 +80,8 @@ function deactivate_crowdsec_plugin()
 
     // Unschedule existing "refresh cache" wp-cron.
     unscheduleBlocklistRefresh();
+    // Unschedule existing "push usage metrics" wp-cron.
+    unscheduleUsageMetricsPush();
 
     $apiUrl = is_multisite() ? esc_attr(get_site_option('crowdsec_api_url')) : esc_attr(get_option('crowdsec_api_url'));
     $apiKey = is_multisite() ? esc_attr(get_site_option('crowdsec_api_key')) : esc_attr(get_option('crowdsec_api_key'));

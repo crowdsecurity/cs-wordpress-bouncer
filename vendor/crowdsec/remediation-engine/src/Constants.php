@@ -35,6 +35,18 @@ class Constants extends CommonConstants
      */
     public const APPSEC_DEFAULT_MAX_BODY_SIZE = 1024;
     /**
+     * @var string The "disabled" bouncing level
+     */
+    public const BOUNCING_LEVEL_DISABLED = 'bouncing_disabled';
+    /**
+     * @var string The "flex" bouncing level
+     */
+    public const BOUNCING_LEVEL_FLEX = 'flex_bouncing';
+    /**
+     * @var string The "normal" bouncing level
+     */
+    public const BOUNCING_LEVEL_NORMAL = 'normal_bouncing';
+    /**
      * @var int The default duration we keep a bad IP in cache (in seconds)
      */
     public const CACHE_EXPIRATION_FOR_BAD_IP = 120;
@@ -59,11 +71,23 @@ class Constants extends CommonConstants
      */
     public const MAXMIND_COUNTRY = 'country';
     /**
+     * @var string The key to get the origin from getIpRemediation
+     */
+    public const ORIGIN_KEY = 'origin';
+    /**
+     * @var string The separator between the origin and scenario for the stored origin
+     */
+    public const ORIGIN_LISTS_SEPARATOR = ':';
+    /**
      * @var int The default refresh frequency (in seconds)
      */
     public const REFRESH_FREQUENCY = 14400;
     /**
+     * @var string The key to get the remediation from getIpRemediation
+     */
+    public const REMEDIATION_KEY = 'remediation';
+    /**
      * @var string The current version of this library
      */
-    public const VERSION = 'v3.5.0';
+    public const VERSION = 'v4.2.0';
 }

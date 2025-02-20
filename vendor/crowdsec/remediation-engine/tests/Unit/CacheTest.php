@@ -133,7 +133,7 @@ final class CacheTest extends TestCase
         $currentDate = date('Y-m-d');
         $this->debugFile = 'debug-' . $currentDate . '.log';
         $this->prodFile = 'prod-' . $currentDate . '.log';
-        $this->logger = new FileLog(['log_directory_path' => $this->root->url(), 'debug_mode' => true]);
+        $this->logger = new FileLog(['log_directory_path' => $this->root->url(), 'debug_mode' => true, 'log_rotator' => true]);
 
         $cachePhpfilesConfigs = ['fs_cache_path' => $this->root->url()];
         $this->phpFileStorage = new PhpFiles($cachePhpfilesConfigs, $this->logger);

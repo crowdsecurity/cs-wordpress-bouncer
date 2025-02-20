@@ -1,0 +1,174 @@
+name: PHP SDK development tests
+on:
+  workflow_dispatch:
+    inputs:
+      php_common_json:
+        type: string
+        description: The PHP common json to use
+        required: true
+        default: '["main","crowdsecurity/php-common"]'
+
+  workflow_call:
+    # For workflow_call, we don't allow passing a repository as input
+    inputs:
+      is_call:
+        type: boolean
+        description: "Flag to indicate if the workflow is called"
+        # @see https://github.com/actions/runner/discussions/1884
+        required: false
+        default: true
+      php_common_json:
+        type: string
+        description: The PHP common json to use
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+  DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  PHP_COMMON_JSON: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.php_common_json || inputs.php_common_json }}
+  LAPI_CLIENT_REPO: crowdsecurity/php-lapi-client
+  PHP_COMMON_REPO: crowdsecurity/php-common
+
+jobs:
+  test-suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["7.2", "7.3", "7.4", "8.0", "8.1", "8.2", "8.3", "8.4"]
+
+    name: Unit and integration test
+    runs-on: ubuntu-20.04
+    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
+    env:
+      EXTENSION_PATH: "my-code/php-lapi-client"
+      PHP_COMMON_PATH: "my-code/php-common"
+      DDEV_PROJECT: "crowdsec-lapi-client"
+
+    steps:
+      - name: Set PHP common variables
+        id: set-common-data
+        run: |
+          echo "branch=${{ fromJson(env.PHP_COMMON_JSON)[0] }}" >> $GITHUB_OUTPUT
+          if [ "${{ inputs.is_call }}" = "true" ]; then
+              echo "repo=${{env.PHP_COMMON_REPO}}" >> $GITHUB_OUTPUT
+          else
+              echo "repo=${{ fromJson(env.PHP_COMMON_JSON)[1] }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install DDEV
+        # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
+        run: |
+          curl -fsSL https://apt.fury.io/drud/gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ddev.gpg > /dev/null
+          echo "deb [signed-by=/etc/apt/trusted.gpg.d/ddev.gpg] https://apt.fury.io/drud/ * *" | sudo tee /etc/apt/sources.list.d/ddev.list
+          sudo apt-get -q update
+          sudo apt-get -q -y install libnss3-tools ddev
+          mkcert -install
+          ddev config global --instrumentation-opt-in=false --omit-containers=ddev-ssh-agent
+
+      - name: Create empty PHP DDEV project
+        run: ddev config --project-type=php --project-name=${{env.DDEV_PROJECT}}  --php-version=${{ matrix.php-version }}
+
+      - name: Add Redis, Memcached and Crowdsec
+        run: |
+          ddev add-on  get julienloizelet/ddev-tools
+          ddev add-on  get julienloizelet/ddev-crowdsec-php
+
+      - name: Prepare for TLS tests
+        run: |
+          mkdir ${{ github.workspace }}/cfssl
+          cp -r .ddev/okaeli-add-on/custom_files/crowdsec/cfssl/* ${{ github.workspace }}/cfssl
+
+      - name: Start DDEV
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          shell: bash
+          command: ddev start
+
+      - name: Some DEBUG information
+        run: |
+          ddev --version
+          ddev exec php -v
+          ddev exec -s crowdsec crowdsec -version
+          ddev php -r "echo phpversion('memcached');"
+
+      - name: Set BOUNCER_KEY env
+        run: |
+          echo "BOUNCER_KEY=$(ddev create-bouncer)" >> $GITHUB_ENV
+
+      - name: Clone Lapi Client files
+        if: inputs.is_call != true
+        uses: actions/checkout@v4
+        with:
+          path: ${{env.EXTENSION_PATH}}
+
+      - name: Clone Lapi Client files
+        if: inputs.is_call == true
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.LAPI_CLIENT_REPO }}
+          path: ${{env.EXTENSION_PATH}}
+          ref: "main"
+
+      - name: Clone PHP common files
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.set-common-data.outputs.repo}}
+          ref: ${{ steps.set-common-data.outputs.branch  }}
+          path: ${{env.PHP_COMMON_PATH}}
+
+      - name: Add local repositories to composer
+        run: |
+          # LAPI client
+          ddev exec --raw composer config repositories.0 '{"type": "path", "url": "../php-common", "options": {"symlink": true}}' --working-dir ./${{ env.EXTENSION_PATH }}
+
+      - name: Modify dependencies to use development aliases
+        run: |
+          # LAPI client
+          ddev exec --raw composer require crowdsec/common:"dev-${{ steps.set-common-data.outputs.branch }}" --no-update --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Validate composer.json
+        run: |
+          # LAPI client
+          cat ./${{env.EXTENSION_PATH}}/composer.json
+          ddev composer validate --strict --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Install CrowdSec lib dependencies
+        run: |
+          ddev composer update --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Check installed packages versions
+        run: |
+
+          PHP_COMMON_VERSION=$(ddev composer show crowdsec/common --working-dir ./${{env.EXTENSION_PATH}} | grep -oP "versions : \* \K(.*)") 
+          if [[ $PHP_COMMON_VERSION == "dev-${{ steps.set-common-data.outputs.branch  }}" ]]
+          then
+            echo "PHP_COMMON_VERSION COMPARISON OK"
+          else
+            echo "PHP_COMMON_VERSION COMPARISON KO"
+            echo $PHP_COMMON_VERSION
+            exit 1
+          fi
+
+      - name: Run Unit tests
+        run: ddev php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --debug ./${{env.EXTENSION_PATH}}/tests/Unit --testdox
+
+      - name: Run Integration tests (without TLS)
+        run: ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group timeout,appsec ./${{env.EXTENSION_PATH}}/tests/Integration
+
+      - name: Run Integration tests (with TLS)
+        run: ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl BOUNCER_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --exclude-group timeout,appsec ./${{env.EXTENSION_PATH}}/tests/Integration
+
+      - name: Run AppSec tests
+        run: |
+          ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --group appsec ./${{env.EXTENSION_PATH}}/tests/Integration
+
+      - name: Run AppSec tests with timeout
+        run: |
+          ddev exec -s crowdsec apk add iproute2
+          ddev exec -s crowdsec tc qdisc add dev eth0 root netem delay 500ms
+          ddev exec BOUNCER_KEY=${{ env.BOUNCER_KEY }} AGENT_TLS_PATH=/var/www/html/cfssl APPSEC_URL=http://crowdsec:7422 LAPI_URL=https://crowdsec:8080 /usr/bin/php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --testdox --colors --group timeout ./${{env.EXTENSION_PATH}}/tests/Integration

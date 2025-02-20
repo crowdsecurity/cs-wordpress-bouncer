@@ -1,0 +1,270 @@
+name: PHP SDK development tests
+on:
+  workflow_dispatch:
+    inputs:
+      php_common_json:
+        type: string
+        description: The PHP common json to use
+        required: true
+        default: '["main","crowdsecurity/php-common"]'
+      lapi_client_json:
+        type: string
+        description: The LAPI client json to use
+        required: true
+        default: '["main","crowdsecurity/php-lapi-client"]'
+      capi_client_json:
+        type: string
+        description: The CAPI client json to use
+        required: true
+        default: '["main","crowdsecurity/php-capi-client"]'
+
+  workflow_call:
+    # For workflow_call, we don't allow passing a repository as input
+    inputs:
+      is_call:
+        type: boolean
+        description: "Flag to indicate if the workflow is called"
+        # @see https://github.com/actions/runner/discussions/1884
+        required: false
+        default: true
+      php_common_json:
+        type: string
+        description: The PHP common json to use
+        required: true
+      lapi_client_json:
+        type: string
+        description: The LAPI client json to use
+        required: true
+      capi_client_json:
+        type: string
+        description: The CAPI client json to use
+        required: true
+    secrets:
+      TEST_MACHINE_ID:
+        required: true
+      TEST_MACHINE_PWD:
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  # Allow ddev get to use a GitHub token to prevent rate limiting by tests
+  DDEV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  PHP_COMMON_JSON: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.php_common_json || inputs.php_common_json }}
+  LAPI_CLIENT_JSON: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.lapi_client_json || inputs.lapi_client_json }}
+  CAPI_CLIENT_JSON: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.capi_client_json || inputs.capi_client_json }}
+  CAPI_CLIENT_REPO: crowdsecurity/php-capi-client
+  LAPI_CLIENT_REPO: crowdsecurity/php-lapi-client
+  PHP_COMMON_REPO: crowdsecurity/php-common
+  REMEDIATION_REPO: "crowdsecurity/php-remediation-engine"
+
+jobs:
+  test-suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["7.2", "7.3", "7.4", "8.0", "8.1", "8.2", "8.3", "8.4"]
+
+    name: Unit and integration test
+    runs-on: ubuntu-20.04
+    if: ${{ !contains(github.event.head_commit.message, 'chore(') }}
+    env:
+      EXTENSION_PATH: "my-code/remediation-engine"
+      DDEV_PROJECT: "remediation-engine"
+      CAPI_CLIENT_PATH: "my-code/php-capi-client"
+      LAPI_CLIENT_PATH: "my-code/php-lapi-client"
+      PHP_COMMON_PATH: "my-code/php-common"
+
+    steps:
+      - name: Set PHP common variables
+        id: set-common-data
+        run: |
+          echo "branch=${{ fromJson(env.PHP_COMMON_JSON)[0] }}" >> $GITHUB_OUTPUT
+          if [ "${{ inputs.is_call }}" = "true" ]; then
+              echo "repo=${{env.PHP_COMMON_REPO}}" >> $GITHUB_OUTPUT
+          else
+              echo "repo=${{ fromJson(env.PHP_COMMON_JSON)[1] }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set LAPI client variables
+        id: set-lapi-client-data
+        run: |
+          echo "branch=${{ fromJson(env.LAPI_CLIENT_JSON)[0] }}" >> $GITHUB_OUTPUT
+          if [ "${{ inputs.is_call }}" = "true" ]; then
+              echo "repo=${{env.LAPI_CLIENT_REPO}}" >> $GITHUB_OUTPUT
+          else
+              echo "repo=${{ fromJson(env.LAPI_CLIENT_JSON)[1] }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set CAPI client variables
+        id: set-capi-client-data
+        run: |
+          echo "branch=${{ fromJson(env.CAPI_CLIENT_JSON)[0] }}" >> $GITHUB_OUTPUT
+          if [ "${{ inputs.is_call }}" = "true" ]; then
+              echo "repo=${{env.CAPI_CLIENT_REPO}}" >> $GITHUB_OUTPUT
+          else
+              echo "repo=${{ fromJson(env.CAPI_CLIENT_JSON)[1] }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install DDEV
+        # @see https://ddev.readthedocs.io/en/stable/#installationupgrade-script-linux-and-macos-armarm64-and-amd64-architectures
+        run: |
+          curl -fsSL https://apt.fury.io/drud/gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ddev.gpg > /dev/null
+          echo "deb [signed-by=/etc/apt/trusted.gpg.d/ddev.gpg] https://apt.fury.io/drud/ * *" | sudo tee /etc/apt/sources.list.d/ddev.list
+          sudo apt-get -q update
+          sudo apt-get -q -y install libnss3-tools ddev
+          mkcert -install
+          ddev config global --instrumentation-opt-in=false --omit-containers=ddev-ssh-agent
+
+      - name: Create empty PHP DDEV project
+        run: ddev config --project-type=php --project-name=${{env.DDEV_PROJECT}}  --php-version=${{ matrix.php-version }}
+
+      - name: Add Redis, Memcached and Crowdsec
+        run: |
+          ddev add-on get ddev/ddev-redis
+          ddev add-on  get ddev/ddev-memcached
+          # override redis.conf
+          ddev add-on  get julienloizelet/ddev-tools
+          ddev add-on  get julienloizelet/ddev-crowdsec-php
+
+      - name: Start DDEV
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          shell: bash
+          command: ddev start
+
+      - name: Some DEBUG information
+        run: |
+          ddev --version
+          ddev exec php -v
+          ddev exec -s crowdsec crowdsec -version
+          ddev php -r "echo phpversion('memcached');"
+
+      - name: Clone Remediation Engine files
+        if: inputs.is_call != true
+        uses: actions/checkout@v4
+        with:
+          path: ${{env.EXTENSION_PATH}}
+
+      - name: Clone Remediation Engine files
+        if: inputs.is_call == true
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.REMEDIATION_REPO }}
+          path: ${{env.EXTENSION_PATH}}
+          ref: "main"
+
+      - name: Clone PHP common files
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.set-common-data.outputs.repo}}
+          ref: ${{ steps.set-common-data.outputs.branch  }}
+          path: ${{env.PHP_COMMON_PATH}}
+
+      - name: Clone LAPI client
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.set-lapi-client-data.outputs.repo }}
+          ref: ${{ steps.set-lapi-client-data.outputs.branch }}
+          path: ${{env.LAPI_CLIENT_PATH}}
+
+      - name: Clone CAPI client
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.set-capi-client-data.outputs.repo }}
+          ref: ${{ steps.set-capi-client-data.outputs.branch }}
+          path: ${{env.CAPI_CLIENT_PATH}}
+
+      - name: Add local repositories to composer
+        run: |
+          # Remediation Engine
+          ddev exec --raw composer config repositories.0 '{"type": "path", "url": "../php-common", "options": {"symlink": true}}' --working-dir ./${{ env.EXTENSION_PATH }}
+          ddev exec --raw composer config repositories.1 '{"type": "path", "url": "../php-lapi-client", "options": {"symlink": true}}' --working-dir ./${{ env.EXTENSION_PATH }}
+          ddev exec --raw composer config repositories.2 '{"type": "path", "url": "../php-capi-client", "options": {"symlink": true}}' --working-dir ./${{ env.EXTENSION_PATH }}
+          # CAPI client
+          ddev exec --raw composer config repositories.0 '{"type": "path", "url": "../php-common", "options": {"symlink": true}}' --working-dir ./${{ env.CAPI_CLIENT_PATH }}
+          # LAPI client
+          ddev exec --raw composer config repositories.0 '{"type": "path", "url": "../php-common", "options": {"symlink": true}}' --working-dir ./${{ env.LAPI_CLIENT_PATH }}
+
+      - name: Modify dependencies to use development aliases
+        run: |
+          # Remediation Engine
+          ddev exec --raw composer require crowdsec/common:"dev-${{  steps.set-common-data.outputs.branch }}" --no-update --working-dir ./${{env.EXTENSION_PATH}}
+          ddev exec --raw composer require crowdsec/lapi-client:"dev-${{ steps.set-lapi-client-data.outputs.branch }}" --no-update --working-dir ./${{env.EXTENSION_PATH}}
+          ddev exec --raw composer require crowdsec/capi-client:"dev-${{ steps.set-capi-client-data.outputs.branch }}" --no-update --working-dir ./${{env.EXTENSION_PATH}}
+          # CAPI client
+          ddev exec --raw composer require crowdsec/common:"dev-${{ steps.set-common-data.outputs.branch }}" --no-update --working-dir ./${{env.CAPI_CLIENT_PATH}}
+          # LAPI client
+          ddev exec --raw composer require crowdsec/common:"dev-${{ steps.set-common-data.outputs.branch }}" --no-update --working-dir ./${{env.LAPI_CLIENT_PATH}}
+
+      - name: Validate composer.json
+        run: |
+          # Remediation Engine
+          cat ./${{env.EXTENSION_PATH}}/composer.json
+          ddev composer validate --strict --working-dir ./${{env.EXTENSION_PATH}}
+          # CAPI client
+          cat ./${{env.CAPI_CLIENT_PATH}}/composer.json
+          ddev composer validate --strict --working-dir ./${{env.CAPI_CLIENT_PATH}}
+          # LAPI client
+          cat ./${{env.LAPI_CLIENT_PATH}}/composer.json
+          ddev composer validate --strict --working-dir ./${{env.LAPI_CLIENT_PATH}}
+
+      - name: Install CrowdSec lib dependencies
+        run: |
+          ddev composer update --working-dir ./${{env.EXTENSION_PATH}}
+
+      - name: Check installed packages versions
+        run: |
+
+          PHP_COMMON_VERSION=$(ddev composer show crowdsec/common --working-dir ./${{env.EXTENSION_PATH}} | grep -oP "versions : \* \K(.*)") 
+          if [[ $PHP_COMMON_VERSION == "dev-${{ steps.set-common-data.outputs.branch  }}" ]]
+          then
+            echo "PHP_COMMON_VERSION COMPARISON OK"
+          else
+            echo "PHP_COMMON_VERSION COMPARISON KO"
+            echo $PHP_COMMON_VERSION
+            exit 1
+          fi
+          LAPI_CLIENT_VERSION=$(ddev composer show crowdsec/lapi-client --working-dir ./${{env.EXTENSION_PATH}} | grep -oP "versions : \* \K(.*)")
+          if [[ $LAPI_CLIENT_VERSION == "dev-${{ steps.set-lapi-client-data.outputs.branch  }}" ]]
+          then
+            echo "LAPI_CLIENT_VERSION COMPARISON OK"
+          else
+            echo "LAPI_CLIENT_VERSION COMPARISON KO"
+            echo $LAPI_CLIENT_VERSION
+            exit 1
+          fi
+          CAPI_CLIENT_VERSION=$(ddev composer show crowdsec/capi-client --working-dir ./${{env.EXTENSION_PATH}} | grep -oP "versions : \* \K(.*)")
+          if [[ $CAPI_CLIENT_VERSION == "dev-${{ steps.set-capi-client-data.outputs.branch  }}" ]]
+          then
+            echo "CAPI_CLIENT_VERSION COMPARISON OK"
+          else
+            echo "CAPI_CLIENT_VERSION COMPARISON KO"
+            echo $CAPI_CLIENT_VERSION
+            exit 1
+          fi
+
+      - name: Prepare PHP UNIT tests
+        run: |
+          ddev maxmind-download DEFAULT GeoLite2-City /var/www/html/${{env.EXTENSION_PATH}}/tests/geolocation
+          ddev maxmind-download DEFAULT GeoLite2-Country /var/www/html/${{env.EXTENSION_PATH}}/tests/geolocation
+          cd ${{env.EXTENSION_PATH}}/tests/geolocation
+          sha256sum -c GeoLite2-Country.tar.gz.sha256.txt
+          sha256sum -c GeoLite2-City.tar.gz.sha256.txt
+          tar -xf GeoLite2-Country.tar.gz
+          tar -xf GeoLite2-City.tar.gz
+          rm GeoLite2-Country.tar.gz GeoLite2-Country.tar.gz.sha256.txt GeoLite2-City.tar.gz GeoLite2-City.tar.gz.sha256.txt
+
+      - name: Run Unit tests
+        run: ddev php ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit --debug ./${{env.EXTENSION_PATH}}/tests/Unit --testdox
+
+      - name: Prepare integration tests
+        run: |
+          echo -n "{\"machine_id\":\"${{ secrets.TEST_MACHINE_ID }}\"}" > ${{env.EXTENSION_PATH}}/tests/Integration/dev-machine-id.json
+          echo -n "{\"password\":\"${{ secrets.TEST_MACHINE_PWD }}\"}" > ${{env.EXTENSION_PATH}}/tests/Integration/dev-password.json
+
+      - name: Run Integration tests
+        run: ddev php  ./${{env.EXTENSION_PATH}}/vendor/bin/phpunit  ./${{env.EXTENSION_PATH}}/tests/Integration --testdox

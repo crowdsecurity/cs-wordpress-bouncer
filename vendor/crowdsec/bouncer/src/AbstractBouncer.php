@@ -7,7 +7,7 @@ namespace CrowdSecBouncer;
 use CrowdSec\Common\Client\RequestHandler\Curl;
 use CrowdSec\Common\Client\RequestHandler\FileGetContents;
 use CrowdSec\LapiClient\Bouncer as BouncerClient;
-use CrowdSec\RemediationEngine\AbstractRemediation;
+use CrowdSec\LapiClient\Constants as LapiConstants;
 use CrowdSec\RemediationEngine\CacheStorage\AbstractCache;
 use CrowdSec\RemediationEngine\CacheStorage\CacheStorageException;
 use CrowdSec\RemediationEngine\CacheStorage\Memcached;
@@ -42,12 +42,12 @@ abstract class AbstractBouncer
     protected $configs = [];
     /** @var LoggerInterface */
     protected $logger;
-    /** @var AbstractRemediation */
+    /** @var LapiRemediation */
     protected $remediationEngine;
 
     public function __construct(
         array $configs,
-        AbstractRemediation $remediationEngine,
+        LapiRemediation $remediationEngine,
         ?LoggerInterface $logger = null
     ) {
         // @codeCoverageIgnoreStart
@@ -74,10 +74,8 @@ abstract class AbstractBouncer
      * Apply a bounce for current IP depending on remediation associated to this IP
      * (e.g. display a ban wall, captcha wall or do nothing in case of a bypass).
      *
-     * @throws BouncerException
      * @throws CacheException
      * @throws InvalidArgumentException
-     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
      */
     public function bounceCurrentIp(): void
     {
@@ -88,8 +86,12 @@ abstract class AbstractBouncer
         $this->logger->info('Bouncing current IP', [
             'ip' => $ip,
         ]);
-        $remediation = $this->getRemediation($ip);
-        $this->handleRemediation($remediation, $ip);
+        $remediationData = $this->getRemediation($ip);
+        $this->handleRemediation(
+            $remediationData[Constants::REMEDIATION_KEY],
+            $ip,
+            $remediationData[Constants::ORIGIN_KEY]
+        );
     }
 
     /**
@@ -103,7 +105,7 @@ abstract class AbstractBouncer
     {
         try {
             return $this->getRemediationEngine()->clearCache();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new BouncerException('Error while clearing cache: ' . $e->getMessage(), (int) $e->getCode(), $e);
         }
     }
@@ -112,15 +114,16 @@ abstract class AbstractBouncer
      * Get the remediation for the specified IP using AppSec.
      *
      * @throws BouncerException
-     * @throws InvalidArgumentException|CacheException
+     * @throws CacheException
      */
-    public function getAppSecRemediationForIp(string $ip, LapiRemediation $remediationEngine): string
+    public function getAppSecRemediationForIp(string $ip): array
     {
         try {
-            return $this->capRemediationLevel(
-                $remediationEngine->getAppSecRemediation($this->getAppSecHeaders($ip), $this->getRequestRawBody())
+            return $this->remediationEngine->getAppSecRemediation(
+                $this->getAppSecHeaders($ip),
+                $this->getRequestRawBody()
             );
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new BouncerException($e->getMessage(), (int) $e->getCode(), $e);
         }
     }
@@ -166,7 +169,7 @@ abstract class AbstractBouncer
      */
     abstract public function getPostedVariable(string $name): ?string;
 
-    public function getRemediationEngine(): AbstractRemediation
+    public function getRemediationEngine(): LapiRemediation
     {
         return $this->remediationEngine;
     }
@@ -174,15 +177,20 @@ abstract class AbstractBouncer
     /**
      * Get the remediation for the specified IP.
      *
-     * @return string the remediation to apply (ex: 'ban', 'captcha', 'bypass')
+     * @return array
+     *               [
+     *               'remediation': the remediation to apply (ex: 'ban', 'captcha', 'bypass')
+     *               'origin': the origin of the remediation (ex: 'cscli', 'CAPI')
+     *               ]
      *
      * @throws BouncerException
+     * @throws CacheException
      */
-    public function getRemediationForIp(string $ip): string
+    public function getRemediationForIp(string $ip): array
     {
         try {
-            return $this->capRemediationLevel($this->getRemediationEngine()->getIpRemediation($ip));
-        } catch (\Exception $e) {
+            return $this->getRemediationEngine()->getIpRemediation($ip);
+        } catch (\Throwable $e) {
             throw new BouncerException($e->getMessage(), (int) $e->getCode(), $e);
         }
     }
@@ -228,8 +236,24 @@ abstract class AbstractBouncer
     {
         try {
             return $this->getRemediationEngine()->pruneCache();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new BouncerException('Error while pruning cache: ' . $e->getMessage(), (int) $e->getCode(), $e);
+        }
+    }
+
+    /**
+     * @throws BouncerException
+     * @throws CacheException
+     */
+    public function pushUsageMetrics(
+        string $bouncerName,
+        string $bouncerVersion,
+        string $bouncerType = LapiConstants::METRICS_TYPE
+    ): array {
+        try {
+            return $this->remediationEngine->pushUsageMetrics($bouncerName, $bouncerVersion, $bouncerType);
+        } catch (\Throwable $e) {
+            throw new BouncerException($e->getMessage(), (int) $e->getCode(), $e);
         }
     }
 
@@ -240,12 +264,13 @@ abstract class AbstractBouncer
      * @return array Number of deleted and new decisions
      *
      * @throws BouncerException
+     * @throws CacheException
      */
     public function refreshBlocklistCache(): array
     {
         try {
             return $this->getRemediationEngine()->refreshDecisions();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $message = 'Error while refreshing decisions: ' . $e->getMessage();
             throw new BouncerException($message, (int) $e->getCode(), $e);
         }
@@ -254,10 +279,9 @@ abstract class AbstractBouncer
     /**
      * Handle a bounce for current IP.
      *
-     * @throws BouncerException
      * @throws CacheException
      * @throws InvalidArgumentException
-     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
+     * @throws BouncerException
      */
     public function run(): bool
     {
@@ -267,7 +291,7 @@ abstract class AbstractBouncer
                 $this->bounceCurrentIp();
                 $result = true;
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Something went wrong during bouncing', [
                 'type' => 'EXCEPTION_WHILE_BOUNCING',
                 'message' => $e->getMessage(),
@@ -285,27 +309,20 @@ abstract class AbstractBouncer
 
     /**
      * If the current IP should be bounced or not, matching custom business rules.
+     * Must be called before trying to get remediation for the current IP, so that origins count is not already updated.
+     *
+     * @throws CacheException
+     * @throws InvalidArgumentException
      */
     public function shouldBounceCurrentIp(): bool
     {
         $excludedURIs = $this->getConfig('excluded_uris') ?? [];
         $uri = $this->getRequestUri();
         if ($uri && \in_array($uri, $excludedURIs)) {
-            $this->logger->debug('Will not bounce as URI is excluded', [
-                'type' => 'SHOULD_NOT_BOUNCE',
-                'message' => 'This URI is excluded from bouncing: ' . $uri,
-            ]);
-
-            return false;
+            return $this->handleBounceExclusion('This URI is excluded from bouncing: ' . $uri);
         }
-        $bouncingDisabled = (Constants::BOUNCING_LEVEL_DISABLED === $this->getConfig('bouncing_level'));
-        if ($bouncingDisabled) {
-            $this->logger->debug('Will not bounce as bouncing is disabled', [
-                'type' => 'SHOULD_NOT_BOUNCE',
-                'message' => Constants::BOUNCING_LEVEL_DISABLED,
-            ]);
-
-            return false;
+        if (Constants::BOUNCING_LEVEL_DISABLED === $this->getRemediationEngine()->getConfig('bouncing_level')) {
+            return $this->handleBounceExclusion('Bouncing is disabled by bouncing_level configuration');
         }
 
         return true;
@@ -315,14 +332,15 @@ abstract class AbstractBouncer
      * Process a simple cache test.
      *
      * @throws BouncerException
-     * @throws InvalidArgumentException
+     * @throws CacheStorageException
+     * @throws CacheException
      */
     public function testCacheConnection(): void
     {
         try {
             $cache = $this->getRemediationEngine()->getCacheStorage();
             $cache->getItem(AbstractCache::CONFIG);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $message = 'Error while testing cache connection: ' . $e->getMessage();
             throw new BouncerException($message, (int) $e->getCode(), $e);
         }
@@ -428,27 +446,40 @@ abstract class AbstractBouncer
     }
 
     /**
-     * Handle remediation for some IP.
+     * Handle remediation for a given IP and origin.
      *
      * @throws CacheException
      * @throws InvalidArgumentException
-     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
      * @throws BouncerException
      */
-    protected function handleRemediation(string $remediation, string $ip): void
+    protected function handleRemediation(string $remediation, string $ip, string $origin): void
     {
         switch ($remediation) {
             case Constants::REMEDIATION_CAPTCHA:
-                $this->handleCaptchaRemediation($ip);
+                $this->handleCaptchaRemediation($ip, $origin);
                 break;
             case Constants::REMEDIATION_BAN:
                 $this->logger->debug('Will display a ban wall', [
                     'ip' => $ip,
                 ]);
+                // Increment ban origin count
+                $this->getRemediationEngine()->updateMetricsOriginsCount(
+                    $origin,
+                    $remediation
+                );
                 $this->handleBanRemediation();
                 break;
             case Constants::REMEDIATION_BYPASS:
             default:
+                // Increment clean origin count
+                $finalOrigin = AbstractCache::CLEAN_APPSEC === $origin ?
+                    AbstractCache::CLEAN_APPSEC :
+                    AbstractCache::CLEAN;
+                $this->getRemediationEngine()->updateMetricsOriginsCount(
+                    $finalOrigin,
+                    Constants::REMEDIATION_BYPASS
+                );
+                break;
         }
     }
 
@@ -506,52 +537,6 @@ abstract class AbstractBouncer
             'phrase' => $captchaBuilder->getPhrase(),
             'inlineImage' => $captchaBuilder->build()->inline(),
         ];
-    }
-
-    /**
-     * Cap the remediation to a fixed value given by the bouncing level configuration.
-     *
-     * @param string $remediation (ex: 'ban', 'captcha', 'bypass')
-     *
-     * @return string $remediation The resulting remediation to use (ex: 'ban', 'captcha', 'bypass')
-     */
-    private function capRemediationLevel(string $remediation): string
-    {
-        $orderedRemediations = $this->getRemediationEngine()->getConfig('ordered_remediations') ?? [];
-
-        $bouncingLevel = $this->getConfig('bouncing_level') ?? Constants::BOUNCING_LEVEL_NORMAL;
-        // Compute max remediation level
-        switch ($bouncingLevel) {
-            case Constants::BOUNCING_LEVEL_DISABLED:
-                $maxRemediationLevel = Constants::REMEDIATION_BYPASS;
-                break;
-            case Constants::BOUNCING_LEVEL_FLEX:
-                $maxRemediationLevel = Constants::REMEDIATION_CAPTCHA;
-                break;
-            case Constants::BOUNCING_LEVEL_NORMAL:
-            default:
-                $maxRemediationLevel = Constants::REMEDIATION_BAN;
-                break;
-        }
-
-        $currentIndex = (int) array_search($remediation, $orderedRemediations);
-        $maxIndex = (int) array_search(
-            $maxRemediationLevel,
-            $orderedRemediations
-        );
-        $finalRemediation = $remediation;
-        if ($currentIndex < $maxIndex) {
-            $finalRemediation = $orderedRemediations[$maxIndex];
-            $this->logger->debug('Original remediation has been capped', [
-                'origin' => $remediation,
-                'final' => $finalRemediation,
-            ]);
-        }
-        $this->logger->info('Final remediation', [
-            'remediation' => $finalRemediation,
-        ]);
-
-        return $finalRemediation;
     }
 
     /**
@@ -637,17 +622,18 @@ abstract class AbstractBouncer
     }
 
     /**
+     * @throws BouncerException
      * @throws CacheException
-     * @throws InvalidArgumentException
      */
-    private function getRemediation(string $ip): string
+    private function getRemediation(string $ip): array
     {
-        $remediation = $this->getRemediationForIp($ip);
+        $remediationData = $this->getRemediationForIp($ip);
+        $remediation = $remediationData[Constants::REMEDIATION_KEY];
         if ($this->shouldUseAppSec($remediation)) {
-            $remediation = $this->getAppSecRemediationForIp($ip, $this->remediationEngine);
+            $remediationData = $this->getAppSecRemediationForIp($ip);
         }
 
-        return $remediation;
+        return $remediationData;
     }
 
     /**
@@ -660,7 +646,6 @@ abstract class AbstractBouncer
 
     /**
      * @throws BouncerException
-     * @throws BouncerException
      *
      * @codeCoverageIgnore
      */
@@ -671,12 +656,25 @@ abstract class AbstractBouncer
     }
 
     /**
+     * @throws CacheException
+     * @throws InvalidArgumentException
+     */
+    private function handleBounceExclusion(string $message): bool
+    {
+        $this->logger->debug('Will not bounce as exclusion criteria met', [
+            'type' => 'SHOULD_NOT_BOUNCE',
+            'message' => $message,
+        ]);
+
+        return false;
+    }
+
+    /**
      * @throws BouncerException
      * @throws CacheException
      * @throws InvalidArgumentException
-     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
      */
-    private function handleCaptchaRemediation(string $ip): void
+    private function handleCaptchaRemediation(string $ip, string $origin): void
     {
         // Check captcha resolution form
         $this->handleCaptchaResolutionForm($ip);
@@ -700,8 +698,19 @@ abstract class AbstractBouncer
             $this->logger->debug('Will display a captcha wall', [
                 'ip' => $ip,
             ]);
+            // Increment captcha origin count
+            $this->getRemediationEngine()->updateMetricsOriginsCount(
+                $origin,
+                Constants::REMEDIATION_CAPTCHA
+            );
             $this->displayCaptchaWall($ip);
         }
+        // Increment clean origin count
+        $finalOrigin = AbstractCache::CLEAN_APPSEC === $origin ? AbstractCache::CLEAN_APPSEC : AbstractCache::CLEAN;
+        $this->getRemediationEngine()->updateMetricsOriginsCount(
+            $finalOrigin,
+            Constants::REMEDIATION_BYPASS
+        );
         $this->logger->info('Captcha wall is not required (already solved)', [
             'ip' => $ip,
         ]);
@@ -710,7 +719,6 @@ abstract class AbstractBouncer
     /**
      * @throws CacheException
      * @throws InvalidArgumentException
-     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
      *
      * @SuppressWarnings(PHPMD.ElseExpression)
      */
@@ -829,7 +837,6 @@ abstract class AbstractBouncer
     /**
      * @throws CacheException
      * @throws InvalidArgumentException
-     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
      */
     private function initCaptchaResolution(string $ip): void
     {
@@ -856,7 +863,6 @@ abstract class AbstractBouncer
     /**
      * @throws CacheException
      * @throws InvalidArgumentException
-     * @throws \Symfony\Component\Cache\Exception\InvalidArgumentException
      */
     private function refreshCaptcha(string $ip): bool
     {
@@ -922,18 +928,15 @@ abstract class AbstractBouncer
         return false;
     }
 
+    /**
+     * Check if AppSec should be used for the current IP.
+     *
+     * If remediation is not bypass, it must always return false.
+     */
     private function shouldUseAppSec(string $remediation): bool
     {
         $useAppSec = $this->getConfig('use_appsec');
         if (!$useAppSec || Constants::REMEDIATION_BYPASS !== $remediation) {
-            return false;
-        }
-        if (!($this->remediationEngine instanceof LapiRemediation)) {
-            $this->logger->warning('Calling AppSec is only supported with Lapi remediation engine.', [
-                'type' => 'APPSEC_LAPI_REMEDIATION_ONLY_SUPPORTED',
-                'message' => 'Please use Lapi remediation for calling AppSec.',
-            ]);
-
             return false;
         }
 
