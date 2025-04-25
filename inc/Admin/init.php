@@ -141,6 +141,8 @@ if (is_admin()) {
                 : 'Not available';
 
             $totalCounts = [];
+            $totalCountsByOrigin = [];
+            $totalRemediations = 0;
 
             $html = '<h3 style="margin-bottom: 5px;">Current metrics</h3>';
 
@@ -160,10 +162,12 @@ if (is_admin()) {
                 // Always add to totalCounts
                 foreach ($remediations as $type => $count) {
                     $totalCounts[$type] = ($totalCounts[$type] ?? 0) + $count;
+                    $totalCountsByOrigin[$origin] = ($totalCountsByOrigin[$origin] ?? 0) + $count;
+                    $totalRemediations += $count;
                 }
 
-                if ($origin === AbstractCache::CLEAN) {
-                    continue; // Don't display "clean" origin
+                if ($origin === AbstractCache::CLEAN || $totalCountsByOrigin[$origin] <= 0) {
+                    continue; // Don't display "clean" origin or origin with 0 remediations
                 }
 
                 // Sort remediations by remediation type
@@ -175,12 +179,19 @@ if (is_admin()) {
                     <ul style="margin:0; padding-left:0px;">';
 
                 foreach ($remediations as $type => $count) {
-                    $html .= '<li>' . esc_html($type) . ': ' . intval($count) . '</li>';
+                    $html .= '<li id="metrics-'.$origin.'-'.$type.'">' . esc_html($type) . ': ' . intval($count) . '</li>';
                 }
 
                 $html .= '</ul>
                 </td>
             </tr>';
+            }
+
+            if ($totalRemediations === 0) {
+                $html .= '<tr>
+                    <td id="metrics-no-new" colspan=2 style="padding-left:10px;text-align:left;">No new metrics since the last push</td>
+                </tr>';
+
             }
 
             // Sort total counts
@@ -194,13 +205,14 @@ if (is_admin()) {
 
 
             foreach ($totalCounts as $type => $count) {
-                if ($type === Constants::REMEDIATION_BYPASS) {
+                if ($type === Constants::REMEDIATION_BYPASS || $count <= 0) {
                     continue; // Display "bypass" type after other types
                 }
-                $html .= '<li>' . esc_html($type) . ': ' . intval($count) . '</li>';
+                $html .= '<li id="metrics-total-'.$type.'">' . esc_html($type) . ': ' . intval($count) . '</li>';
             }
-            if (isset($totalCounts[Constants::REMEDIATION_BYPASS])) {
-                $html .= '<li>' . esc_html(Constants::REMEDIATION_BYPASS) . ': ' . intval($totalCounts[Constants::REMEDIATION_BYPASS]) . '</li>';
+            if (!empty($totalCounts[Constants::REMEDIATION_BYPASS])) {
+                $html .= '<li id="metrics-total-bypass">' . esc_html(Constants::REMEDIATION_BYPASS) . ': ' . intval
+                    ($totalCounts[Constants::REMEDIATION_BYPASS]) . '</li>';
             }
 
             $html .= '</ul>
