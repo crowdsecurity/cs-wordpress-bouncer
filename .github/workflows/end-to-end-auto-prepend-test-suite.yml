@@ -37,7 +37,7 @@ jobs:
           - wp-version: '6.8'
             php-version: '7.2'
           - wp-version: '6.8'
-            php-version: '8.4'
+            php-version: '8.3'
 
     name: End-to-end auto-prepend-file mode test suite
     runs-on: ubuntu-latest

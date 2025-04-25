@@ -1,5 +1,6 @@
 <?php
 
+use CrowdSec\RemediationEngine\CacheStorage\AbstractCache;
 use CrowdSecWordPressBouncer\Constants;
 use CrowdSecBouncer\BouncerException;
 use CrowdSec\RemediationEngine\Geolocation;
@@ -26,16 +27,6 @@ function crowdsec_option_update_callback($name, $oldValue, $newValue)
 
 if (is_admin()) {
     add_action('updated_option', 'crowdsec_option_update_callback', 10, 3);
-    function wrapErrorMessage(string $errorMessage)
-    {
-        return "CrowdSec: $errorMessage";
-    }
-
-    function wrapBlockingErrorMessage(string $errorMessage)
-    {
-        return wrapErrorMessage($errorMessage).
-    '<br>Important: Until you fix this problem, <strong>the website will not be protected against attacks</strong>.';
-    }
 
     function clearBouncerCacheInAdminPage()
     {
@@ -129,6 +120,121 @@ if (is_admin()) {
             AdminNotice::displayError('Technical error while pushing usage metrics: '.$e->getMessage());
         }
     }
+
+    function displayBouncerMetricsInAdminPage()
+    {
+        try {
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
+            $metrics = $bouncer->getRemediationEngine()->getOriginsCount();
+
+            if (empty($metrics)) {
+                return '<p>No usage metrics available.</p>';
+            }
+
+            $cacheItem = $bouncer->getRemediationEngine()->getCacheStorage()->getItem(AbstractCache::CONFIG);
+            $cacheConfig = $cacheItem->isHit() ? $cacheItem->get() : [];
+            $lastSent = $cacheConfig[AbstractCache::LAST_METRICS_SENT] ?? null;
+
+            $lastSentDate = $lastSent
+                ? (new DateTime("@$lastSent"))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s') . ' UTC'
+                : 'Not available';
+
+            $totalCounts = [];
+
+            $html = '<h3 style="margin-bottom: 5px;">Current metrics</h3>';
+
+            // Sort origins alphabetically by key
+            ksort($metrics);
+
+            $html .= '<table class="widefat striped" style="max-width:700px; margin-top:20px; margin-bottom:50px;">
+<thead>
+    <tr>
+        <th style="text-align:left; padding-left:10px;">Origin</th>
+        <th style="text-align:left; padding-left:10px;">Remediation</th>
+    </tr>
+</thead>
+<tbody>';
+
+            foreach ($metrics as $origin => $remediations) {
+                // Always add to totalCounts
+                foreach ($remediations as $type => $count) {
+                    $totalCounts[$type] = ($totalCounts[$type] ?? 0) + $count;
+                }
+
+                if ($origin === AbstractCache::CLEAN) {
+                    continue; // Don't display "clean" origin
+                }
+
+                // Sort remediations by remediation type
+                ksort($remediations);
+
+                $html .= '<tr>
+                <td style="padding-left:10px;">' . esc_html($origin) . '</td>
+                <td style="padding-left:10px;">
+                    <ul style="margin:0; padding-left:0px;">';
+
+                foreach ($remediations as $type => $count) {
+                    $html .= '<li>' . esc_html($type) . ': ' . intval($count) . '</li>';
+                }
+
+                $html .= '</ul>
+                </td>
+            </tr>';
+            }
+
+            // Sort total counts
+            ksort($totalCounts);
+
+            // Total row
+            $html .= '<tr style="font-weight:bold;">
+            <td style="padding-left:10px;">Total</td>
+            <td style="padding-left:10px;">
+                <ul style="margin:0; padding-left:0px;">';
+
+
+            foreach ($totalCounts as $type => $count) {
+                if ($type === Constants::REMEDIATION_BYPASS) {
+                    continue; // Display "bypass" type after other types
+                }
+                $html .= '<li>' . esc_html($type) . ': ' . intval($count) . '</li>';
+            }
+            if (isset($totalCounts[Constants::REMEDIATION_BYPASS])) {
+                $html .= '<li>' . esc_html(Constants::REMEDIATION_BYPASS) . ': ' . intval($totalCounts[Constants::REMEDIATION_BYPASS]) . '</li>';
+            }
+
+            $html .= '</ul>
+            </td>
+        </tr>';
+
+            // Last Push row
+            $html .= '<tr>
+            <td colspan="2" style="padding-left:10px;">
+                <strong>Last Push:</strong> ' . esc_html($lastSentDate) . '
+            </td>
+        </tr>';
+
+            $html .= '</tbody></table>';
+
+            return $html;
+        } catch (Exception $e) {
+            if (isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type'    => 'WP_EXCEPTION_WHILE_DISPLAYING_USAGE_METRICS',
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'file'    => $e->getFile(),
+                    'line'    => $e->getLine(),
+                ]);
+            }
+
+            AdminNotice::displayError('Technical error while displaying usage metrics: ' . esc_html($e->getMessage()));
+            return '';
+        }
+    }
+
+
+
 
     function pruneBouncerCacheInAdminPage()
     {

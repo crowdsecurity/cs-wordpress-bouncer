@@ -164,10 +164,15 @@ function adminAdvancedSettings()
     <p>Enable usage metrics to gain visibility: monitor incoming traffic and blocked threats for better security insights.</p>
     <p>If this option is enabled, a cron job will push usage metrics to the Local API every 15 minutes.</p>
     <p>For more information about usage metrics, please refer to the <a href="https://doc.crowdsec.net/docs/next/observability/usage_metrics/" target="_blank">documentation</a>.</p>
+    <div id="usage-metrics-report">
+            <p>'.displayBouncerMetricsInAdminPage().'</p> 
+            </div>
     '.
        ($isUsageMetricsEnabled ?
            '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>' :
-           '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push usage metrics now" class="button button-secondary button-small"></p>'));
+           '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push usage metrics now" class="button button-secondary button-small"></p>
+            
+'));
 
 
     /*********************
