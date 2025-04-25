@@ -23,7 +23,7 @@ jobs:
   end-to-end-release-zip-test:
     strategy:
       fail-fast: false
-      # First and last minor versions of each major version
+      # First and latest minor versions of each major version
       # Highest compatible PHP version
       matrix:
         include:
