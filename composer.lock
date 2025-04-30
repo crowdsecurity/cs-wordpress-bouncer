@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cc6337aca0fe554e1b7b06d51568db25",
+    "content-hash": "f66775f03f91adfc9c2fced2690c3622",
     "packages": [
         {
             "name": "composer/ca-bundle",
-            "version": "1.5.5",
+            "version": "1.5.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "08c50d5ec4c6ced7d0271d2862dec8c1033283e6"
+                "reference": "f65c239c970e7f072f067ab78646e9f0b2935175"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/08c50d5ec4c6ced7d0271d2862dec8c1033283e6",
-                "reference": "08c50d5ec4c6ced7d0271d2862dec8c1033283e6",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/f65c239c970e7f072f067ab78646e9f0b2935175",
+                "reference": "f65c239c970e7f072f067ab78646e9f0b2935175",
                 "shasum": ""
             },
             "require": {
@@ -64,7 +64,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/1.5.5"
+                "source": "https://github.com/composer/ca-bundle/tree/1.5.6"
             },
             "funding": [
                 {
@@ -80,20 +80,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-01-08T16:17:16+00:00"
+            "time": "2025-03-06T14:30:56+00:00"
         },
         {
             "name": "crowdsec/bouncer",
-            "version": "v4.2.0",
+            "version": "v4.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-cs-bouncer.git",
-                "reference": "9d5d1679edae3ca874d75153d92e3ca374098dd6"
+                "reference": "bc1fe9531619506e6ef1c2fd17360c3b30cf77aa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/9d5d1679edae3ca874d75153d92e3ca374098dd6",
-                "reference": "9d5d1679edae3ca874d75153d92e3ca374098dd6",
+                "url": "https://api.github.com/repos/crowdsecurity/php-cs-bouncer/zipball/bc1fe9531619506e6ef1c2fd17360c3b30cf77aa",
+                "reference": "bc1fe9531619506e6ef1c2fd17360c3b30cf77aa",
                 "shasum": ""
             },
             "require": {
@@ -157,9 +157,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-cs-bouncer/issues",
-                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v4.2.0"
+                "source": "https://github.com/crowdsecurity/php-cs-bouncer/tree/v4.3.0"
             },
-            "time": "2025-01-31T04:27:22+00:00"
+            "time": "2025-04-30T01:44:30+00:00"
         },
         {
             "name": "crowdsec/capi-client",
@@ -363,22 +363,22 @@
         },
         {
             "name": "crowdsec/remediation-engine",
-            "version": "v4.2.0",
+            "version": "v4.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crowdsecurity/php-remediation-engine.git",
-                "reference": "779724acdb8fb2b703d3faf45f563b17caf9fcf2"
+                "reference": "27abce725e25c4adefaf977614f69fe4fb52aa6a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/779724acdb8fb2b703d3faf45f563b17caf9fcf2",
-                "reference": "779724acdb8fb2b703d3faf45f563b17caf9fcf2",
+                "url": "https://api.github.com/repos/crowdsecurity/php-remediation-engine/zipball/27abce725e25c4adefaf977614f69fe4fb52aa6a",
+                "reference": "27abce725e25c4adefaf977614f69fe4fb52aa6a",
                 "shasum": ""
             },
             "require": {
-                "crowdsec/capi-client": "^3.3.0",
+                "crowdsec/capi-client": "^3.4.0",
                 "crowdsec/common": "^3.0.0",
-                "crowdsec/lapi-client": "^3.5.0",
+                "crowdsec/lapi-client": "^3.6.0",
                 "ext-json": "*",
                 "geoip2/geoip2": "^2.13.0",
                 "mlocati/ip-lib": "^1.18",
@@ -439,9 +439,9 @@
             ],
             "support": {
                 "issues": "https://github.com/crowdsecurity/php-remediation-engine/issues",
-                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v4.2.0"
+                "source": "https://github.com/crowdsecurity/php-remediation-engine/tree/v4.3.0"
             },
-            "time": "2025-01-31T02:50:02+00:00"
+            "time": "2025-04-11T01:49:32+00:00"
         },
         {
             "name": "cweagans/composer-patches",

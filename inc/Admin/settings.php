@@ -112,7 +112,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
     // Field "TLS verify peer"
     addFieldCheckbox('crowdsec_tls_verify_peer', 'Verify peer', 'crowdsec_plugin_settings',
-        'crowdsec_settings', 'crowdsec_admin_connection', function () {}, function () {}, '<p>This option determines whether request handler verifies the authenticity of the peer\'s certificate</p>');
+        'crowdsec_settings', 'crowdsec_admin_connection', function () {return true;}, function () {return false;}, '<p>This option determines whether request handler verifies the authenticity of the peer\'s certificate</p>');
 
     // Field "crowdsec_tls_ca_cert_path"
     addFieldString('crowdsec_tls_ca_cert_path', 'Path to the CA used to process peer verification', 'crowdsec_plugin_settings', 'crowdsec_settings',
@@ -123,7 +123,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
     // Field "Use cURL"
     addFieldCheckbox('crowdsec_use_curl', 'Use cURL to call Local API', 'crowdsec_plugin_settings',
-        'crowdsec_settings', 'crowdsec_admin_connection', function () {}, function () {}, '<p>If checked, calls to Local API will be done with <i>cURL</i> (be sure to have <i>cURL</i> enabled on your system before enabling).
+        'crowdsec_settings', 'crowdsec_admin_connection', function () {return true;}, function () {return false;}, '<p>If checked, calls to Local API will be done with <i>cURL</i> (be sure to have <i>cURL</i> enabled on your system before enabling).
 <br>If not checked, calls are done with <i>file_get_contents</i> method (<i>allow_url_fopen</i> is required for this).</p>');
 
     // Field "timeout"
@@ -173,10 +173,8 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     ]);
 
     addFieldCheckbox('crowdsec_public_website_only', 'Public website only', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_bouncing', function () {
-        // Stream mode just activated.
-        scheduleBlocklistRefresh();
+        return true;
     }, function () {
-        // Stream mode just deactivated.
-        unscheduleBlocklistRefresh();
+        return false;
     }, '<p>If checked, Admin related requests are not protected.</p><p><strong>Important notes:</strong> We recommend to leave this setting to OFF in order to apply protection to your WordPress admin:<ol><li>WordPress admin is a frequent target of cyberattack.</li><li>Also, some critical public endpoints are considered "admin" and would be unprotected If this setting was ON.</li></ol></p>');
 }

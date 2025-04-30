@@ -15,21 +15,21 @@ use Psr\Log\LoggerInterface;
 class Geolocation
 {
     /**
-     * @var array
-     */
-    private $configs;
-    /**
      * @var AbstractCache
      */
     private $cacheStorage;
     /**
-     * @var LoggerInterface
+     * @var array
      */
-    private $logger;
+    private $configs;
     /**
      * @var string[]
      */
     private $geolocTemplate = ['country' => '', 'not_found' => '', 'error' => ''];
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
     /**
      * @var array
      */

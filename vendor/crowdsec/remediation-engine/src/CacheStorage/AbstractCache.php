@@ -48,6 +48,8 @@ abstract class AbstractCache
     public const LAST_PULL = 'last_pull';
     /** @var string Internal name for list */
     public const LIST = 'list';
+    /** @var string Internal name for allow list */
+    public const ALLOW_LIST = 'allow_list';
     /** @var string Internal name for cache remediation origin count item */
     public const ORIGINS_COUNT = 'origins_count';
     /** @var string Internal name for cache clean item */
@@ -398,7 +400,7 @@ abstract class AbstractCache
      */
     private function format(Decision $decision, ?int $bucketInt = null): array
     {
-        $mainValue = $bucketInt ? $decision->getValue() : $decision->getType();
+        $mainValue = null !== $bucketInt ? $decision->getValue() : $decision->getType();
 
         return [
             self::INDEX_MAIN => $mainValue,
@@ -470,7 +472,7 @@ abstract class AbstractCache
      */
     private function getTags(Decision $decision, ?int $bucketInt = null): array
     {
-        return $bucketInt ? [self::RANGE_BUCKET_TAG] : [self::CACHE_TAG_REM, $decision->getScope()];
+        return null !== $bucketInt ? [self::RANGE_BUCKET_TAG] : [self::CACHE_TAG_REM, $decision->getScope()];
     }
 
     /**
@@ -529,7 +531,7 @@ abstract class AbstractCache
     private function remove(Decision $decision, ?int $bucketInt = null): array
     {
         $result = [self::DONE => 0, self::DEFER => 0, self::REMOVED => []];
-        $cacheKey = $bucketInt ? $this->getCacheKey(self::IPV4_BUCKET_KEY, (string) $bucketInt) :
+        $cacheKey = null !== $bucketInt ? $this->getCacheKey(self::IPV4_BUCKET_KEY, (string) $bucketInt) :
             $this->getCacheKey($decision->getScope(), $decision->getValue());
         $item = $this->getItem($cacheKey);
 
@@ -605,7 +607,7 @@ abstract class AbstractCache
      */
     private function store(Decision $decision, ?int $bucketInt = null): array
     {
-        $cacheKey = $bucketInt ? $this->getCacheKey(self::IPV4_BUCKET_KEY, (string) $bucketInt) :
+        $cacheKey = null !== $bucketInt ? $this->getCacheKey(self::IPV4_BUCKET_KEY, (string) $bucketInt) :
             $this->getCacheKey($decision->getScope(), $decision->getValue());
         $item = $this->getItem($cacheKey);
         $cachedValues = $item->isHit() ? $item->get() : [];

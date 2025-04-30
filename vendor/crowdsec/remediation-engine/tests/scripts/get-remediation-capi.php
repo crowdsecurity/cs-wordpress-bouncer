@@ -26,8 +26,9 @@ $logger = new ConsoleLog([], 'remediation-engine-logger');
 $clientConfigs = [
     'machine_id_prefix' => 'remediationtest',
     'scenarios' => ['crowdsecurity/http-sensitive-files'],
+    'env' => getenv('ENV') ?: 'dev',
 ];
-$capiClient = new Watcher($clientConfigs, new FileStorage(__DIR__), null, $logger);
+$capiClient = new Watcher($clientConfigs, new FileStorage(__DIR__, $clientConfigs['env']), null, $logger);
 
 // Init PhpFiles cache storage
 $cacheFileConfigs = [
@@ -46,7 +47,8 @@ $cacheRedisConfigs = [
 $redisCache = new Redis($cacheRedisConfigs, $logger);
 // Init CAPI remediation
 $remediationConfigs = [];
-$remediationEngine = new CapiRemediation($remediationConfigs, $capiClient, $phpFileCache, $logger);
+$remediationEngine = new CapiRemediation($remediationConfigs, $capiClient, $redisCache, $logger);
 // Determine the remediation for the given IP
-echo 'Remediation: ' . $remediationEngine->getIpRemediation($ip) . \PHP_EOL;
-echo 'Origins count: ' . json_encode($remediationEngine->getOriginsCount()) . \PHP_EOL;
+$remediationData = $remediationEngine->getIpRemediation($ip);
+echo 'Remediation: ' . $remediationData['remediation'] . \PHP_EOL;
+echo 'Remediation origin: ' . $remediationData['origin'] . \PHP_EOL;

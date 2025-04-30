@@ -19,6 +19,10 @@ use CrowdSec\Common\Constants as CommonConstants;
 class Constants extends CommonConstants
 {
     /**
+     * @var string The remediation related to the allow list
+     */
+    public const ALLOW_LIST_REMEDIATION = 'allow';
+    /**
      * @var string The AppSec action name to allow the request
      */
     public const APPSEC_ACTION_ALLOW = 'allow';
@@ -71,6 +75,10 @@ class Constants extends CommonConstants
      */
     public const MAXMIND_COUNTRY = 'country';
     /**
+     * @var int The duration (in seconds) to use to simulate an infinite TTL
+     */
+    public const MAX_DURATION = 631152000; // 20 years
+    /**
      * @var string The key to get the origin from getIpRemediation
      */
     public const ORIGIN_KEY = 'origin';
@@ -82,6 +90,7 @@ class Constants extends CommonConstants
      * @var int The default refresh frequency (in seconds)
      */
     public const REFRESH_FREQUENCY = 14400;
+
     /**
      * @var string The key to get the remediation from getIpRemediation
      */
@@ -89,5 +98,5 @@ class Constants extends CommonConstants
     /**
      * @var string The current version of this library
      */
-    public const VERSION = 'v4.2.0';
+    public const VERSION = 'v4.3.0';
 }

@@ -26,6 +26,11 @@ class Constants
     public const IP_V4_4 = '12.13.14.15';
     public const IP_V4_5 = '16.17.18.19';
     public const IP_V4_2_CACHE_KEY = RemConstants::SCOPE_IP . AbstractCache::SEP . self::IP_V4_2;
+    public const ALLOW_LIST = <<<EOT
+{"description": "Allow 1.2.3.4 and 5", "scope": "ip", "value": "1.2.3.4", "created_at": "2025-03-28T15:00:30.977000+00:00"}
+{"description": "Allow 1.2.3.4 and 5", "scope": "ip", "value": "1.2.3.5", "created_at": "2025-03-28T15:00:30.977000+00:00", "expiration": "2035-04-27T21:59:59.999000+00:00"}
+EOT;
+
     /*
      * 66051 = intdiv(ip2long(IP_V4),256)
      */

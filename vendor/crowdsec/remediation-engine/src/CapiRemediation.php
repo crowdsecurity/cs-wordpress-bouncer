@@ -66,6 +66,42 @@ class CapiRemediation extends AbstractRemediation
         return $this->processCachedDecisions($cachedDecisions);
     }
 
+    /**
+     * @throws CacheStorageException
+     * @throws InvalidArgumentException
+     * @throws CacheException|ClientException
+     */
+    public function refreshDecisions(): array
+    {
+        $rawDecisions = $this->client->getStreamDecisions();
+        $newDecisions = $this->convertRawCapiDecisionsToDecisions($rawDecisions[self::CS_NEW] ?? []);
+        $deletedDecisions = $this->convertRawCapiDecisionsToDecisions($rawDecisions[self::CS_DEL] ?? []);
+        $listDecisions = $this->handleListDecisions($rawDecisions[self::CS_LINK][self::CS_BLOCK] ?? []);
+        $allowListDecisions = $this->handleAllowListDecisions($rawDecisions[self::CS_LINK][self::CS_ALLOW] ?? []);
+
+        $stored = $this->storeDecisions(array_merge(
+            $newDecisions,
+            $listDecisions,
+            $allowListDecisions
+        ));
+        $removed = $this->removeDecisions($deletedDecisions);
+
+        return [
+            self::CS_NEW => $stored[AbstractCache::DONE] ?? 0,
+            self::CS_DEL => $removed[AbstractCache::DONE] ?? 0,
+        ];
+    }
+
+    /**
+     * Process and validate input configurations.
+     */
+    private function configure(array $configs): void
+    {
+        $configuration = new CapiRemediationConfig();
+        $processor = new Processor();
+        $this->configs = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($configs)]);
+    }
+
     private function convertRawCapiDecisionsToDecisions(array $rawDecisions): array
     {
         $decisions = [];
@@ -100,37 +136,128 @@ class CapiRemediation extends AbstractRemediation
         return gmdate('D, d M Y H:i:s \G\M\T', $timestamp);
     }
 
-    /**
-     * This method allows to know if the "If-Modified-Since" should be added when pulling list decisions.
-     *
-     * @param int $pullTime           // Moment when the list is pulled
-     * @param int $listExpirationTime // Expiration of the cached list decisions
-     * @param int $frequency          // Amount of time in seconds that represents the average decision pull frequency
-     */
-    private function shouldAddModifiedSince(int $pullTime, int $listExpirationTime, int $frequency): bool
+    private function getDurationInSeconds(string $futureDate): int
     {
-        return ($listExpirationTime - $frequency) > $pullTime;
+        try {
+            // Remove microseconds for better compatibility with older PHP versions
+            $cleanDate = preg_replace('/\.\d{3,6}/', '', $futureDate);
+
+            $expiration = new \DateTime($cleanDate, new \DateTimeZone('UTC'));
+            $now = new \DateTime('now', new \DateTimeZone('UTC'));
+
+            $duration = $expiration->getTimestamp() - $now->getTimestamp();
+
+            return max(0, $duration);
+        } catch (\Throwable $e) {
+            // If parsing fails, return 0 as a fallback
+            return 0;
+        }
     }
 
-    private function handleListPullHeaders(array $headers, array $lastPullContent, int $pullTime): array
+    /**
+     * @throws InvalidArgumentException|CacheException
+     */
+    private function handleAllowListDecisions(array $allowlists): array
     {
-        $shouldAddModifiedSince = false;
-        if (isset($lastPullContent[AbstractCache::INDEX_EXP])) {
-            $frequency = $this->getConfig('refresh_frequency_indicator') ?? Constants::REFRESH_FREQUENCY;
-            $shouldAddModifiedSince = $this->shouldAddModifiedSince(
-                $pullTime,
-                (int) $lastPullContent[AbstractCache::INDEX_EXP],
-                (int) $frequency
-            );
+        $decisions = [];
+        try {
+            foreach ($allowlists as $allowlist) {
+                $headers = [];
+                if ($this->validateAllowlist($allowlist)) {
+                    // The existence of the following indexes must be guaranteed by the validateAllowlist method
+                    $listName = strtolower((string) $allowlist['name']);
+                    $listId = (string) $allowlist['id'];
+                    $url = (string) $allowlist['url'];
+                    $origin = Constants::ORIGIN_LISTS;
+                    $allowDecision = [
+                        'type' => Constants::ALLOW_LIST_REMEDIATION,
+                        'origin' => $origin,
+                        'scenario' => $listName,
+                    ];
+
+                    $lastPullCacheKey = $this->getCacheStorage()->getCacheKey(
+                        AbstractCache::ALLOW_LIST,
+                        $listId
+                    );
+
+                    $lastPullItem = $this->getCacheStorage()->getItem($lastPullCacheKey);
+
+                    $pullTime = time();
+                    if ($lastPullItem->isHit()) {
+                        $lastPullContent = $lastPullItem->get();
+                        $headers = $this->handleAllowListPullHeaders($headers, $lastPullContent);
+                    }
+
+                    $listResponse = rtrim(
+                        $this->client->getCapiHandler()->getListDecisions($url, $headers),
+                        \PHP_EOL
+                    );
+
+                    if ($listResponse) {
+                        $this->cacheStorage->upsertItem(
+                            $lastPullCacheKey,
+                            [
+                                AbstractCache::LAST_PULL => $pullTime,
+                            ],
+                            0,
+                            [AbstractCache::ALLOW_LIST, $listName]
+                        );
+                        $decisions = $this->handleAllowListResponse($listResponse, $allowDecision);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            $this->logger->info('Something went wrong during allowlists decisions process', [
+                'type' => 'CAPI_REM_HANDLE_ALLOW_LIST_DECISIONS',
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+            ]);
         }
 
-        if ($shouldAddModifiedSince && isset($lastPullContent[AbstractCache::LAST_PULL])) {
+        return $decisions;
+    }
+
+    private function handleAllowListPullHeaders(array $headers, array $lastPullContent): array
+    {
+        if (isset($lastPullContent[AbstractCache::LAST_PULL])) {
             $headers['If-Modified-Since'] = $this->formatIfModifiedSinceHeader(
                 (int) $lastPullContent[AbstractCache::LAST_PULL]
             );
         }
 
         return $headers;
+    }
+
+    private function handleAllowListResponse(string $listResponse, array $allowDecision): array
+    {
+        $decisions = [];
+        $listedAllows = explode(\PHP_EOL, $listResponse);
+        $this->logger->debug('Handle allowlists decisions', [
+            'type' => 'CAPI_REM_HANDLE_ALLOW_LIST_DECISIONS',
+            'list_count' => count($listedAllows),
+        ]);
+        foreach ($listedAllows as $listedAllow) {
+            $decoded = json_decode($listedAllow, true);
+            $allowDecision['value'] = $decoded['value'];
+            $allowDecision['scope'] = $decoded['scope'];
+            /*
+             * This hardcoded value ill be overwritten below by the duration in the allowlist.
+             * We have to set it to avoid an exception from the convertRawDecision method.
+             */
+            $allowDecision['duration'] = '1s';
+            $decision = $this->convertRawDecision($allowDecision);
+
+            if ($decision) {
+                $durationInSeconds = isset($decoded['expiration']) ?
+                    $this->getDurationInSeconds($decoded['expiration']) :
+                    Constants::MAX_DURATION;
+
+                $decision->setExpiresAt(time() + $durationInSeconds);
+                $decisions[] = $decision;
+            }
+        }
+
+        return $decisions;
     }
 
     /**
@@ -168,7 +295,9 @@ class CapiRemediation extends AbstractRemediation
                     $pullTime = time();
                     if ($lastPullItem->isHit()) {
                         $lastPullContent = $lastPullItem->get();
-                        $headers = $this->handleListPullHeaders($headers, $lastPullContent, $pullTime);
+                        $frequency = $this->getConfig('refresh_frequency_indicator') ?? Constants::REFRESH_FREQUENCY;
+                        $headers = $this->handleListPullHeaders($headers, $lastPullContent, $pullTime, (int)
+                        $frequency);
                     }
 
                     $listResponse = rtrim(
@@ -192,7 +321,7 @@ class CapiRemediation extends AbstractRemediation
                 }
             }
         } catch (\Exception $e) {
-            $this->logger->info('Something went wrong during list decisions process', [
+            $this->logger->info('Something went wrong during blocklists decisions process', [
                 'type' => 'CAPI_REM_HANDLE_LIST_DECISIONS',
                 'message' => $e->getMessage(),
                 'code' => $e->getCode(),
@@ -202,11 +331,31 @@ class CapiRemediation extends AbstractRemediation
         return $decisions;
     }
 
+    private function handleListPullHeaders(array $headers, array $lastPullContent, int $pullTime, int $frequency): array
+    {
+        $shouldAddModifiedSince = false;
+        if (isset($lastPullContent[AbstractCache::INDEX_EXP])) {
+            $shouldAddModifiedSince = $this->shouldAddModifiedSince(
+                $pullTime,
+                (int) $lastPullContent[AbstractCache::INDEX_EXP],
+                $frequency
+            );
+        }
+
+        if ($shouldAddModifiedSince && isset($lastPullContent[AbstractCache::LAST_PULL])) {
+            $headers['If-Modified-Since'] = $this->formatIfModifiedSinceHeader(
+                (int) $lastPullContent[AbstractCache::LAST_PULL]
+            );
+        }
+
+        return $headers;
+    }
+
     private function handleListResponse(string $listResponse, array $blockDecision): array
     {
         $decisions = [];
         $listedIps = explode(\PHP_EOL, $listResponse);
-        $this->logger->debug('Handle list decisions', [
+        $this->logger->debug('Handle blocklist decisions', [
             'type' => 'CAPI_REM_HANDLE_LIST_DECISIONS',
             'list_count' => count($listedIps),
         ]);
@@ -219,6 +368,37 @@ class CapiRemediation extends AbstractRemediation
         }
 
         return $decisions;
+    }
+
+    /**
+     * This method allows to know if the "If-Modified-Since" should be added when pulling list decisions.
+     *
+     * @param int $pullTime           // Moment when the list is pulled
+     * @param int $listExpirationTime // Expiration of the cached list decisions
+     * @param int $frequency          // Amount of time in seconds that represents the average decision pull frequency
+     */
+    private function shouldAddModifiedSince(int $pullTime, int $listExpirationTime, int $frequency): bool
+    {
+        return ($listExpirationTime - $frequency) > $pullTime;
+    }
+
+    private function validateAllowlist(array $allowlist): bool
+    {
+        if (
+            !empty($allowlist['id'])
+            && !empty($allowlist['name'])
+            && !empty($allowlist['description'])
+            && !empty($allowlist['url'])
+        ) {
+            return true;
+        }
+
+        $this->logger->error('Retrieved allowlist is not as expected', [
+            'type' => 'REM_RAW_DECISION_NOT_AS_EXPECTED',
+            'raw_decision' => json_encode($allowlist),
+        ]);
+
+        return false;
     }
 
     private function validateBlocklist(array $blocklist): bool
@@ -239,36 +419,5 @@ class CapiRemediation extends AbstractRemediation
         ]);
 
         return false;
-    }
-
-    /**
-     * @throws CacheStorageException
-     * @throws InvalidArgumentException
-     * @throws CacheException|ClientException
-     */
-    public function refreshDecisions(): array
-    {
-        $rawDecisions = $this->client->getStreamDecisions();
-        $newDecisions = $this->convertRawCapiDecisionsToDecisions($rawDecisions[self::CS_NEW] ?? []);
-        $deletedDecisions = $this->convertRawCapiDecisionsToDecisions($rawDecisions[self::CS_DEL] ?? []);
-        $listDecisions = $this->handleListDecisions($rawDecisions[self::CS_LINK][self::CS_BLOCK] ?? []);
-
-        $stored = $this->storeDecisions(array_merge($newDecisions, $listDecisions));
-        $removed = $this->removeDecisions($deletedDecisions);
-
-        return [
-            self::CS_NEW => $stored[AbstractCache::DONE] ?? 0,
-            self::CS_DEL => $removed[AbstractCache::DONE] ?? 0,
-        ];
-    }
-
-    /**
-     * Process and validate input configurations.
-     */
-    private function configure(array $configs): void
-    {
-        $configuration = new CapiRemediationConfig();
-        $processor = new Processor();
-        $this->configs = $processor->processConfiguration($configuration, [$configuration->cleanConfigs($configs)]);
     }
 }

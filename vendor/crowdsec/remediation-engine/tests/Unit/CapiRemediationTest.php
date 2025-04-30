@@ -125,6 +125,12 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @covers \CrowdSec\RemediationEngine\AbstractRemediation::capRemediationLevel
  *
  * @uses \CrowdSec\RemediationEngine\AbstractRemediation::getOriginsCountItem
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::handleAllowListDecisions
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::getDurationInSeconds
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::handleAllowListPullHeaders
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::handleAllowListResponse
+ * @covers \CrowdSec\RemediationEngine\CapiRemediation::validateAllowlist
+ * @covers \CrowdSec\RemediationEngine\Decision::setExpiresAt
  */
 final class CapiRemediationTest extends AbstractRemediation
 {
@@ -367,7 +373,24 @@ final class CapiRemediationTest extends AbstractRemediation
                     'capi-ban-ip-1.2.3.4',
                     'capi',
                 ]]], // Test 4 : retrieve expired ban ip
-                [AbstractCache::STORED => []]  // Test 4 : retrieve empty range
+                [AbstractCache::STORED => []],  // Test 4 : retrieve empty range,
+                [AbstractCache::STORED =>
+                    [
+                        [
+                            'ban',
+                            9999999999999, //  never expires
+                            'capi-ban-ip-1.2.3.4',
+                            'capi',
+                        ],
+                        [
+                            'allow',
+                            9999999999999, //  never expires
+                            'lists:my-allow-list-allow-ip-1.2.3.4',
+                            'lists:my-allow-list',
+                        ],
+                    ]
+                ], // Test 5 : Allow list vs BAN
+                [AbstractCache::STORED => []]  // Test 5 : retrieve empty range,
             )
         );
         // Test 1
@@ -406,6 +429,18 @@ final class CapiRemediationTest extends AbstractRemediation
             Constants::REMEDIATION_BYPASS,
             $result['remediation'],
             'Expired cached remediations should have been cleaned'
+        );
+        // Test 5
+        $result = $remediation->getIpRemediation(TestConstants::IP_V4);
+        $this->assertEquals(
+            Constants::REMEDIATION_BYPASS,
+            $result['remediation'],
+            'Allow list should have priority over ban'
+        );
+        $this->assertEquals(
+            'lists:my-allow-list',
+            $result['origin'],
+            'Allow list should be the origin'
         );
     }
 
@@ -529,6 +564,40 @@ final class CapiRemediationTest extends AbstractRemediation
         $result = PHPUnitUtil::callMethod(
             $remediation,
             'validateBlocklist',
+            [$blocklist]
+        );
+
+        $this->assertEquals(
+            false,
+            $result
+        );
+
+        // validateAllowlist
+        $blocklist = [
+            'name' => 'my-list',
+            'url' => 'https://',
+            'id' => 'an-id',
+            'description' => 'hre is a description',
+        ];
+
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'validateAllowlist',
+            [$blocklist]
+        );
+
+        $this->assertEquals(
+            true,
+            $result
+        );
+        $blocklist = [
+            'name' => 'tor-exit-node',
+            'scope' => 'ip',
+            'duration' => '24h',
+        ];
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'validateAllowlist',
             [$blocklist]
         );
 
@@ -1017,10 +1086,11 @@ final class CapiRemediationTest extends AbstractRemediation
             AbstractCache::INDEX_EXP => 1677888000,
             AbstractCache::LAST_PULL => 1677801600];
         $pullTime = 1677884400;
+        $frequency = 14400;
         $result = PHPUnitUtil::callMethod(
             $remediation,
             'handleListPullHeaders',
-            [$headers, $lastPullContent, $pullTime]
+            [$headers, $lastPullContent, $pullTime, $frequency]
         );
 
         $this->assertEquals(
@@ -1041,7 +1111,22 @@ final class CapiRemediationTest extends AbstractRemediation
         $result = PHPUnitUtil::callMethod(
             $remediation,
             'handleListPullHeaders',
-            [$headers, $lastPullContent, $pullTime]
+            [$headers, $lastPullContent, $pullTime, $frequency]
+        );
+
+        $this->assertEquals(
+            ['If-Modified-Since' => 'Fri, 03 Mar 2023 00:00:00 GMT'],
+            $result
+        );
+
+        // handleAllowListPullHeaders
+        $headers = [];
+        $lastPullContent = [
+            AbstractCache::LAST_PULL => 1677801600];
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'handleAllowListPullHeaders',
+            [$headers, $lastPullContent]
         );
 
         $this->assertEquals(
@@ -1079,6 +1164,29 @@ final class CapiRemediationTest extends AbstractRemediation
             ['ban']
         );
         $this->assertEquals('captcha', $result, 'Remediation should be capped as captcha');
+        // getDurationInSeconds
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
+        $inOneHour = $now->add(new \DateInterval('PT1H'));
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'getDurationInSeconds',
+            [$inOneHour->format('Y-m-d H:i:s')]
+        );
+        $this->assertEquals(
+            3600,
+            $result,
+            'Should return the duration in seconds'
+        );
+        $result = PHPUnitUtil::callMethod(
+            $remediation,
+            'getDurationInSeconds',
+            ['bad-hour-exception']
+        );
+        $this->assertEquals(
+            0,
+            $result,
+            'Should return the 0 if error'
+        );
     }
 
     /**
@@ -1113,7 +1221,10 @@ final class CapiRemediationTest extends AbstractRemediation
                 MockedData::DECISIONS_CAPI_V3['new_ip_v4_and_list'], // Test 11: IPv4 and list
                 MockedData::DECISIONS_CAPI_V3['new_ip_v4_and_list'], // Test 12: IPv4 and list
                 MockedData::DECISIONS_CAPI_V3['new_ip_v4_and_list'], // Test 13: IPv4 and list but error is thrown
-                MockedData::DECISIONS_CAPI_V3['new_ip_v4_with_0_duration'] // Test 14: IPv4 and 0h duration
+                // for blocklist
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4_and_list'], // Test 13: IPv4 and list but error is thrown
+                // for allowlist
+                MockedData::DECISIONS_CAPI_V3['new_ip_v4_with_0_duration'] // Test 15: IPv4 and 0h duration
             )
         );
         $this->watcher->method('getCapiHandler')->will(
@@ -1124,9 +1235,15 @@ final class CapiRemediationTest extends AbstractRemediation
 
         $capiHandlerMock->method('getListDecisions')->will(
             $this->onConsecutiveCalls(
-                TestConstants::IP_V4_2, // Test 11 : new IP v4 + list
-                '', // Test 12 : new IP v4 + list again (not modified)
-                $this->throwException(new Exception('UNIT TEST EXCEPTION')) // Test 13 : will throw an error
+                TestConstants::IP_V4_2, // Test 11 : new IP v4 + list: blocklist,
+                TestConstants::ALLOW_LIST, // Test 11 : new IP v4 + list: allowlist,
+                '', // Test 12 : new IP v4 + list again (blocklist not modified),
+                '', // Test 12 : new IP v4 + list again (allowlist not modified),
+                $this->throwException(new Exception('UNIT TEST EXCEPTION')), // Test 13 : will throw an error
+                // (blocklist)
+                '',// Test 13: empty Allow list
+                '', // Test 14: empty blocklist list
+                $this->throwException(new Exception('UNIT TEST EXCEPTION FOR ALLOW')) // Test 14 : will throw an error
             )
         );
 
@@ -1322,21 +1439,21 @@ final class CapiRemediationTest extends AbstractRemediation
             'Prod log content should be correct'
         );
 
-        // Test 11 : new + list
+        // Test 11 : new + list + allowlist
         $result = $remediation->refreshDecisions();
         $time = time();
         $listExpiration = $time + 24 * 60 * 60;
         $this->assertEquals(
-            ['new' => 2, 'deleted' => 0],
+            ['new' => 4, 'deleted' => 0],
             $result,
             'Refresh count should be correct'
         );
 
+        // Last pull blocklist
         $lastPullCacheKey = $remediation->getCacheStorage()->getCacheKey(
             AbstractCache::LIST,
             'tor-exit-nodes'
         );
-
         $lastPullItem = $remediation->getCacheStorage()->getItem($lastPullCacheKey);
         $this->assertEquals(
             true,
@@ -1347,6 +1464,22 @@ final class CapiRemediationTest extends AbstractRemediation
         $this->assertTrue($lastPullItemContent[1] <= $listExpiration && $listExpiration - 1 <= $lastPullItemContent[1]);
         $this->assertTrue($lastPullItemContent['last_pull'] <= $time && $time - 1 <=
                                                                         $lastPullItemContent['last_pull']);
+
+        // Last pull allowlist
+        $lastPullCacheKeyAllow = $remediation->getCacheStorage()->getCacheKey(
+            AbstractCache::ALLOW_LIST,
+            'some-id'
+        );
+        $lastPullItemAllow = $remediation->getCacheStorage()->getItem($lastPullCacheKeyAllow);
+        $this->assertEquals(
+            true,
+            $lastPullItemAllow->isHit()
+        );
+        $lastPullItemContentAllow = $lastPullItemAllow->get();
+        // Avoid false positive with tme manipulation (strict equality sometimes leads to error of 1 second)
+        $this->assertTrue($lastPullItemContentAllow['last_pull'] <= $time && $time - 1 <=
+                                                                             $lastPullItemContentAllow['last_pull']);
+
 
         $item = $adapter->getItem(base64_encode(TestConstants::IP_V4_2_CACHE_KEY));
         $cachedValue = $item->get();
@@ -1364,7 +1497,7 @@ final class CapiRemediationTest extends AbstractRemediation
             'captcha',
             $cachedValue[1][0]
         );
-        // Test 12 : new + list again
+        // Test 12 : new + list + blocklist again
         // We wait to test that expiration and pull date won't change
         sleep(1);
         $result = $remediation->refreshDecisions();
@@ -1396,8 +1529,8 @@ final class CapiRemediationTest extends AbstractRemediation
         $this->assertTrue($lastPullItemContent[AbstractCache::INDEX_EXP] <= $listExpiration && $listExpiration - 1 <= $lastPullItemContent[1]);
         $this->assertTrue($lastPullItemContent[AbstractCache::LAST_PULL] <= $time && $time - 1 <=
                                                                         $lastPullItemContent['last_pull']);
-        // Test 13 : new + list again
-        // We wait to test that expiration and pull date won't change
+        // Test 13 : new + list + blocklist again
+        // Will throw error for blocklist
         $result = $remediation->refreshDecisions();
         PHPUnitUtil::assertRegExp(
             $this,
@@ -1406,7 +1539,17 @@ final class CapiRemediationTest extends AbstractRemediation
             'Prod log content should be correct'
         );
 
-        // Test 14 : new + 1 new with 0h duration
+        // Test 14 : new + list + blocklist again
+        // Will throw error for allowlist
+        $result = $remediation->refreshDecisions();
+        PHPUnitUtil::assertRegExp(
+            $this,
+            '/.*200.*"type":"CAPI_REM_HANDLE_ALLOW_LIST_DECISIONS.*UNIT TEST EXCEPTION FOR ALLOW"/',
+            file_get_contents($this->root->url() . '/' . $this->prodFile),
+            'Prod log content should be correct'
+        );
+
+        // Test 15 : new + 1 new with 0h duration
         $remediation->clearCache();
         $result = $remediation->refreshDecisions();
         $this->assertEquals(

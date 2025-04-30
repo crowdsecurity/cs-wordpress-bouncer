@@ -121,16 +121,35 @@ if (is_admin()) {
         }
     }
 
+    function resetBouncerMetricsInAdminPage()
+    {
+        try {
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
+            $bouncer->resetUsageMetrics();
+            AdminNotice::displaySuccess(__('CrowdSec usage metrics have been reset successfully.'));
+        } catch (Exception $e) {
+            if(isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type' => 'WP_EXCEPTION_WHILE_RESETTING_USAGE_METRICS',
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            }
+            AdminNotice::displayError('Technical error while resetting usage metrics: '.$e->getMessage());
+        }
+    }
+
     function displayBouncerMetricsInAdminPage()
     {
         try {
             $configs = getDatabaseConfigs();
             $bouncer = new Bouncer($configs);
             $metrics = $bouncer->getRemediationEngine()->getOriginsCount();
-
-            if (empty($metrics)) {
-                return '<p>No usage metrics available.</p>';
-            }
+            $html = '<h3 style="margin-bottom: 5px;">Current metrics</h3>';
+            $html .= '<p style="margin-top: 0px; margin-bottom: 10px;">Only metrics collected since last push or cache reset are displayed here.</p>';
 
             $cacheItem = $bouncer->getRemediationEngine()->getCacheStorage()->getItem(AbstractCache::CONFIG);
             $cacheConfig = $cacheItem->isHit() ? $cacheItem->get() : [];
@@ -143,8 +162,6 @@ if (is_admin()) {
             $totalCounts = [];
             $totalCountsByOrigin = [];
             $totalRemediations = 0;
-
-            $html = '<h3 style="margin-bottom: 5px;">Current metrics</h3>';
 
             // Sort origins alphabetically by key
             ksort($metrics);
@@ -166,7 +183,8 @@ if (is_admin()) {
                     $totalRemediations += $count;
                 }
 
-                if ($origin === AbstractCache::CLEAN || $totalCountsByOrigin[$origin] <= 0) {
+                if ($origin === AbstractCache::CLEAN || $origin === AbstractCache::CLEAN_APPSEC  ||
+                $totalCountsByOrigin[$origin] <= 0) {
                     continue; // Don't display "clean" origin or origin with 0 remediations
                 }
 
@@ -189,7 +207,7 @@ if (is_admin()) {
 
             if ($totalRemediations === 0) {
                 $html .= '<tr>
-                    <td id="metrics-no-new" colspan=2 style="padding-left:10px;text-align:left;">No new metrics since the last push</td>
+                    <td id="metrics-no-new" colspan=2 style="padding-left:10px;text-align:left;">No new metrics</td>
                 </tr>';
 
             }
@@ -245,6 +263,65 @@ if (is_admin()) {
         }
     }
 
+
+    function displayResetMetricsInAdminPage()
+    {
+        try {
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
+            if ($bouncer->hasBaasUri()) {
+                return '<p><input id="crowdsec_reset_usage_metrics" style="margin-right:10px" type="button" value="Reset usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_reset_usage_metrics\').submit();"></p>';
+            }
+
+            return '';
+        }
+        catch (Exception $e) {
+            if (isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type'    => 'WP_EXCEPTION_WHILE_DISPLAYING_RESET_METRICS',
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'file'    => $e->getFile(),
+                    'line'    => $e->getLine(),
+                ]);
+            }
+
+            AdminNotice::displayError('Technical error while displaying reset metrics button: ' . esc_html($e->getMessage()));
+            return '';
+        }
+
+    }
+
+    function displayPushMetricsInAdminPage($isPushEnabled = false)
+    {
+        try {
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
+            if($bouncer->hasBaasUri()) {
+                return '';
+            }
+            if( $isPushEnabled) {
+                return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>';
+            }
+            return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push usage metrics now" class="button button-secondary button-small"></p>';
+
+        }
+        catch (Exception $e) {
+            if (isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type'    => 'WP_EXCEPTION_WHILE_DISPLAYING_RESET_METRICS',
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'file'    => $e->getFile(),
+                    'line'    => $e->getLine(),
+                ]);
+            }
+
+            AdminNotice::displayError('Technical error while displaying reset metrics button: ' . esc_html($e->getMessage()));
+            return '';
+        }
+
+    }
 
 
 
@@ -363,6 +440,15 @@ if (is_admin()) {
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
     });
+    add_action('admin_post_crowdsec_reset_usage_metrics', function () {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_reset_usage_metrics')) {
+            die('This link expired.');
+        }
+        resetBouncerMetricsInAdminPage();
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
     add_action('admin_post_crowdsec_prune_cache', function () {
         if (
             !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_prune_cache')) {
@@ -427,14 +513,14 @@ if (is_admin()) {
 
                 if ($previousState !== $currentState) {
                     if (!$previousState && $currentState) {
-                        $onActivation();
+                        $currentState = $onActivation($currentState);
                     }
                     if ($previousState && !$currentState) {
-                        $onDeactivation();
+                        $currentState = $onDeactivation($currentState);
                     }
                 }
 
-                return $input;
+                return $currentState;
             });
             add_settings_field($optionName, $label, function ($args) use ($optionName, $descriptionHtml) {
                 $name = $args['label_for'];
