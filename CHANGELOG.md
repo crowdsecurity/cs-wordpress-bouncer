@@ -6,14 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.10.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.10.0) - 2025-05-??
+## [2.10.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.10.0) - 2025-05-09
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.9.0...v2.10.0)
 
 
+### Changed
+
+- Handle BLaaS (Blocklist as a Service) LAPI specific behavior:
+   - Block some settings if BLaaS URL is detected: Live Mode, TLS authentication, AppSec component, Usage Metrics Push.
+   - Show a new `Reset usage metrics now` button.
+
 ### Added
 
-- Add usage metrics preview in UI
+- Add Usage Metrics table in UI
 - Add compatibility with WordPress 6.8
+
 
 ---
 
