@@ -14,11 +14,9 @@ const {
     setToggle,
     fillInput,
     onAdvancedPageEnableUsageMetrics,
-    getFileContent,
     deleteFileContent,
     onAdvancedPageDisableUsageMetrics,
     runCacheAction,
-    wait,
     selectByName,
 } = require("../utils/helpers");
 
@@ -29,6 +27,7 @@ const {
     BOUNCER_KEY_FILE,
     CA_CERT_FILE,
     BOUNCER_CERT_FILE,
+    MULTISITE,
 } = require("../utils/constants");
 
 describe("Check BLaaS URL behavior", () => {
@@ -113,15 +112,21 @@ describe("Check BLaaS URL behavior", () => {
     });
 
     it("Should block Live Mode", async () => {
-        await goToAdmin();
-        await onAdminGoToAdvancedPage();
-        await setToggle("crowdsec_stream_mode", false);
+        if (MULTISITE) {
+            console.warn(
+                "In multisite mode, deactivation callback for checkboxes doesn't work, so we skip this test",
+            );
+        } else {
+            await goToAdmin();
+            await onAdminGoToAdvancedPage();
+            await setToggle("crowdsec_stream_mode", false);
 
-        await onAdminSaveSettings(false);
-        await expect(page).toHaveText(
-            ".notice-error",
-            "Rolling back to Stream mode.",
-        );
+            await onAdminSaveSettings(false);
+            await expect(page).toHaveText(
+                ".notice-error",
+                "Rolling back to Stream mode.",
+            );
+        }
     });
 
     it("Should block Usage Metrics", async () => {
