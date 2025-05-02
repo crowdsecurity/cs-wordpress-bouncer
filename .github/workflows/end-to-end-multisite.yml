@@ -236,6 +236,12 @@ jobs:
           test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
           file_path: 13-redis-acl.js
 
+      - name: Run BLaaS tests
+        uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
+        with:
+          test_path: ${{ github.workspace }}/${{ env.EXTENSION_PATH }}/tests/e2e-ddev
+          file_path: 14-blaas.js
+
       - name: Check tested version
         run: |
           CURRENT_VERSION=$(ddev wp core version)

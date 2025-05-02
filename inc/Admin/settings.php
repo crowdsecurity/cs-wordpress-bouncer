@@ -98,7 +98,7 @@ function adminSettings()
 
         $lapiUrl = is_multisite() ? get_site_option('crowdsec_api_url') : get_option('crowdsec_api_url');
         if ($input === Constants::AUTH_TLS && 0 === strpos($lapiUrl, Constants::BAAS_URL)) {
-            AdminNotice::displayError('Using TLS authentication with a Block As A Service LAPI is not supported. Rolling back to Bouncer API key authentication.');
+            AdminNotice::displayError("Using TLS authentication with a Block As A Service LAPI ($lapiUrl) is not supported. Rolling back to Bouncer API key authentication.");
             $input = Constants::AUTH_KEY;
         }
         return $input;

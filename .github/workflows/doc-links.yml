@@ -37,4 +37,4 @@ jobs:
           gem install awesome_bot
           cd extension
           awesome_bot --files README.md --allow-dupe --allow 401,429 --skip-save-results --white-list ddev.site --base-url http://localhost:8080/
-          awesome_bot docs/*.md --skip-save-results --allow-dupe --allow 401,429 --white-list ddev.site,your-wordpress-url,crowdsec:8080,localhost:7422 --base-url http://localhost:8080/docs/
+          awesome_bot docs/*.md --skip-save-results --allow-dupe --allow 401,429 --white-list ddev.site,your-wordpress-url,crowdsec:8080,localhost:7422,admin.api.crowdsec.net --base-url http://localhost:8080/docs/
