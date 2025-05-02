@@ -100,6 +100,11 @@ function adminAdvancedSettings()
         scheduleBlocklistRefresh();
         return true;
     }, function () {
+        $lapiUrl = is_multisite() ? get_site_option('crowdsec_api_url') : get_option('crowdsec_api_url');
+        if (0 === strpos($lapiUrl, Constants::BAAS_URL)) {
+            AdminNotice::displayError("Using Live mode with a Block As A Service LAPI ($lapiUrl) is not supported. Rolling back to Stream mode.");
+            return true;
+        }
         // Stream mode just deactivated.
         unscheduleBlocklistRefresh();
         return false;

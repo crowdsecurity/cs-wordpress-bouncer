@@ -1,6 +1,7 @@
 <?php
 use CrowdSecWordPressBouncer\Constants;
 use CrowdSec\LapiClient\Constants as LapiConstants;
+use CrowdSecWordPressBouncer\Admin\AdminNotice;
 
 
 function adminSettings()
@@ -63,18 +64,29 @@ function adminSettings()
     }, 'crowdsec_settings', ['after_section' => '<hr>']);
 
     // Field "crowdsec_api_url"
-    addFieldString('crowdsec_api_url', 'Local API URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input, $default = '') {
+    addFieldString('crowdsec_api_url', 'Local API URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input, $default ='') {
 
         if(empty($input) && $default){
             add_settings_error('Local API URL', 'crowdsec_error', 'Local API URL: Can not be empty. Default value used: ' . $default);
             $input = $default;
+        }
+        $baasUrl = \CrowdSecBouncer\Constants::BAAS_URL;
+        if( 0 === strpos($input, $baasUrl)) {
+            $message = __("You have just defined a \"Block As A Service\" URL (url starting with $baasUrl).");
+            $message .= '<br><b>Please note the following: </b><ul>';
+            $message .= '<li>- The Authentication type must be "Bouncer API key".</li>';
+            $message .= '<li>- Stream mode must be enabled (see Communication mode with the Local API in Advanced Settings).</li>';
+            $message .= '<li>- Usage Metrics cannot be sent (see Usage Metrics in Advanced Settings).</li>';
+            $message .= '<li>- AppSec component cannot be used (see Appsec Component in Advanced Settings).</li>';
+            $message .= '</ul>';
+            AdminNotice::displayWarning($message);
         }
 
         return $input;
     }, '',
         'Your Local API URL (e.g. http://localhost:8080)', '', 'text', false, LapiConstants::DEFAULT_LAPI_URL);
 
-    // Field "crowdsec_bouncing_level"
+    // Field "crowdsec_auth_type"
     addFieldSelect('crowdsec_auth_type', 'Authentication type', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input) {
         if (!in_array($input, [
             Constants::AUTH_KEY,
@@ -84,6 +96,11 @@ function adminSettings()
             add_settings_error('Bouncing auth type', 'crowdsec_error', 'Auth type: Incorrect authentication type selected.');
         }
 
+        $lapiUrl = is_multisite() ? get_site_option('crowdsec_api_url') : get_option('crowdsec_api_url');
+        if ($input === Constants::AUTH_TLS && 0 === strpos($lapiUrl, Constants::BAAS_URL)) {
+            AdminNotice::displayError('Using TLS authentication with a Block As A Service LAPI is not supported. Rolling back to Bouncer API key authentication.');
+            $input = Constants::AUTH_KEY;
+        }
         return $input;
     }, '<p class="crowdsec-tls"><b>Important note: </b> If you are using TLS authentication, make sure files are not publicly accessible.<br>
 Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this folder.</a></p>', [
