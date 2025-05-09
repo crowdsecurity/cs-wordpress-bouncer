@@ -134,7 +134,15 @@ Url to join your CrowdSec Local API.
 
 If the CrowdSec Agent is installed on this server, you could set this field to `http://localhost:8080`.
 
-Default to `http://localhost:8080`
+Default to `http://localhost:8080`.
+
+If you are using a Block as a Service (BLaaS) LAPI URL (i.e. starting with `https://admin.api.crowdsec.net`), please 
+note the following:
+
+- The Authentication type must be "Bouncer API key"
+- Stream mode must be enabled (see Communication mode with the Local API in Advanced Settings)
+- Usage Metrics cannot be sent (see Usage Metrics in [Advanced settings](#advanced-settings)).
+- AppSec component cannot be used (see Appsec Component in [Advanced settings](#advanced-settings))
 
 ***
 

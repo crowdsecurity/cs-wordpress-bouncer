@@ -226,6 +226,16 @@ abstract class AbstractBouncer
     abstract public function getRequestUserAgent(): string;
 
     /**
+     * Check if the bouncer is connected to a "Blocklist as a service" Lapi.
+     */
+    public function hasBaasUri(): bool
+    {
+        $url = $this->getRemediationEngine()->getClient()->getConfig('api_url');
+
+        return 0 === strpos($url, Constants::BAAS_URL);
+    }
+
+    /**
      * This method prune the cache: it removes all the expired cache items.
      *
      * @return bool If the cache has been successfully pruned or not
@@ -273,6 +283,20 @@ abstract class AbstractBouncer
         } catch (\Throwable $e) {
             $message = 'Error while refreshing decisions: ' . $e->getMessage();
             throw new BouncerException($message, (int) $e->getCode(), $e);
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function resetUsageMetrics(): void
+    {
+        // Retrieve metrics cache item
+        $metricsItem = $this->getRemediationEngine()->getCacheStorage()->getItem(AbstractCache::ORIGINS_COUNT);
+        if ($metricsItem->isHit()) {
+            // Reset the metrics
+            $metricsItem->set([]);
+            $this->getRemediationEngine()->getCacheStorage()->getAdapter()->save($metricsItem);
         }
     }
 

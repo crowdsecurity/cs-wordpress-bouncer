@@ -287,7 +287,7 @@ final class AppSecLapiRemediationTest extends AbstractRemediation
         $this->assertEquals(
             ['clean_appsec' => ['bypass' => 1]],
             $originsCount,
-            'Origins count should be empty'
+            'Origins count should not be empty'
         );
         $appSecHeaders[Constants::HEADER_APPSEC_IP] = '1.2.3.4';
 

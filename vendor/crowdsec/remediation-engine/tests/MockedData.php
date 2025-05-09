@@ -283,6 +283,16 @@ class MockedData
                         'duration' => '24h',
                     ],
                 ],
+                'allowlists' => [
+                    [
+                        'id' => 'some-id',
+                        'name' => 'some-allow-list-name',
+                        'url' => 'some-url',
+                        'description' => 'some-description',
+                        'scope' => 'ip',
+                    ],
+                ],
+
             ],
         ],
         'new_ip_v4_other' => [

@@ -204,8 +204,7 @@ final class LapiRemediationTest extends AbstractRemediation
         $currentDate = date('Y-m-d');
         $this->debugFile = 'debug-' . $currentDate . '.log';
         $this->prodFile = 'prod-' . $currentDate . '.log';
-        $this->logger = new FileLog(['log_directory_path' => $this->root->url(), 'debug_mode' => true, 'log_rotator'
-            => true]);
+        $this->logger = new FileLog(['log_directory_path' => $this->root->url(), 'debug_mode' => true, 'log_rotator' => true]);
         $this->bouncer = $this->getBouncerMock();
 
         $cachePhpfilesConfigs = ['fs_cache_path' => $this->root->url()];
@@ -788,7 +787,7 @@ final class LapiRemediationTest extends AbstractRemediation
                     'remediation' => 'ban',
                 ],
             ],
-            'Should have CAPI/ban metrics'. json_encode($items[0])
+            'Should have CAPI/ban metrics' . json_encode($items[0])
         );
         $this->assertEquals(
             $items[1],
@@ -801,7 +800,7 @@ final class LapiRemediationTest extends AbstractRemediation
                     'remediation' => 'captcha',
                 ],
             ],
-            'Should have lists:tor/captcha metrics'. json_encode($items[1])
+            'Should have lists:tor/captcha metrics' . json_encode($items[1])
         );
         $this->assertEquals(
             $items[2],
@@ -810,7 +809,7 @@ final class LapiRemediationTest extends AbstractRemediation
                 'value' => 3,
                 'unit' => 'request',
             ],
-            'Should have processed metrics'. json_encode($items[2])
+            'Should have processed metrics' . json_encode($items[2])
         );
         $firstPushTime = time();
         $item = $this->cacheStorage->getItem(AbstractCache::CONFIG);
@@ -1106,7 +1105,7 @@ final class LapiRemediationTest extends AbstractRemediation
         $this->assertEquals(
             true,
             $item->isHit(),
-            'Remediation for country should have not been cached'
+            'Remediation for country should have been cached'
         );
 
         $cachedItem = $item->get();

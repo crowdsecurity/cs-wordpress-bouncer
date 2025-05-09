@@ -41,6 +41,7 @@ const CA_CERT_FILE = `crowdsec/tls/ca-chain.pem`;
 const BOUNCER_CERT_FILE = `crowdsec/tls/bouncer.pem`;
 const BOUNCER_KEY_FILE = `crowdsec/tls/bouncer-key.pem`;
 const DEBUG_LOG_PATH = `${VARHTML_PATH}wp-content/uploads/crowdsec/logs/debug.log`;
+const FAKE_BLAAS_URL = "https://admin.api.crowdsec.net/v1/integrations/1234567";
 
 module.exports = {
     ADMIN_URL,
@@ -85,4 +86,5 @@ module.exports = {
     BOUNCER_KEY_FILE,
     VARHTML_PATH,
     MULTISITE,
+    FAKE_BLAAS_URL,
 };

@@ -31,7 +31,7 @@ describe(`Run in Stream mode`, () => {
     });
 
     it("Should activate WP-CRON", async () => {
-        // Enable and disable usage metrcis before all to make WP-cron working
+        // Enable and disable usage metrics before all to make WP-cron working
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await onAdvancedPageEnableUsageMetrics();

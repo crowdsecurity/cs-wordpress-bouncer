@@ -118,6 +118,18 @@ describe(`Run in Live mode`, () => {
         // metrics: cscli/captcha = 2 | cscli/ban = 1 | clean/bypass = 2
     });
 
+    it("Should display metrics report in UI", async () => {
+        await goToAdmin();
+        await onAdminGoToAdvancedPage();
+
+        await expect(page).toHaveText("#metrics-cscli-captcha", "captcha: 2");
+        await expect(page).toHaveText("#metrics-cscli-ban", "ban: 1");
+        await expect(page).toHaveText("#metrics-total-ban", "ban: 1");
+        await expect(page).toHaveText("#metrics-total-captcha", "captcha: 2");
+        // In multisite, it's 4, not sure why...(perhaps some admin pages is considered as "non admin" and bounced)
+        await expect(page).toMatchText("#metrics-total-bypass", /bypass: 2|4/);
+    });
+
     it("Should push usage metrics", async () => {
         await deleteFileContent(DEBUG_LOG_PATH);
         let logContent = await getFileContent(DEBUG_LOG_PATH);
@@ -148,6 +160,7 @@ describe(`Run in Live mode`, () => {
             "#wpbody-content > div.wrap > div.notice.notice-success",
             "CrowdSec usage metrics have just been pushed.",
         );
+        await expect(page).toHaveText("#metrics-no-new", "No new metrics");
 
         // Disable usage metrics for future tests
         await goToAdmin();

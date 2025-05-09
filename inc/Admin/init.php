@@ -1,5 +1,6 @@
 <?php
 
+use CrowdSec\RemediationEngine\CacheStorage\AbstractCache;
 use CrowdSecWordPressBouncer\Constants;
 use CrowdSecBouncer\BouncerException;
 use CrowdSec\RemediationEngine\Geolocation;
@@ -26,16 +27,6 @@ function crowdsec_option_update_callback($name, $oldValue, $newValue)
 
 if (is_admin()) {
     add_action('updated_option', 'crowdsec_option_update_callback', 10, 3);
-    function wrapErrorMessage(string $errorMessage)
-    {
-        return "CrowdSec: $errorMessage";
-    }
-
-    function wrapBlockingErrorMessage(string $errorMessage)
-    {
-        return wrapErrorMessage($errorMessage).
-    '<br>Important: Until you fix this problem, <strong>the website will not be protected against attacks</strong>.';
-    }
 
     function clearBouncerCacheInAdminPage()
     {
@@ -129,6 +120,210 @@ if (is_admin()) {
             AdminNotice::displayError('Technical error while pushing usage metrics: '.$e->getMessage());
         }
     }
+
+    function resetBouncerMetricsInAdminPage()
+    {
+        try {
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
+            $bouncer->resetUsageMetrics();
+            AdminNotice::displaySuccess(__('CrowdSec usage metrics have been reset successfully.'));
+        } catch (Exception $e) {
+            if(isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type' => 'WP_EXCEPTION_WHILE_RESETTING_USAGE_METRICS',
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            }
+            AdminNotice::displayError('Technical error while resetting usage metrics: '.$e->getMessage());
+        }
+    }
+
+    function displayBouncerMetricsInAdminPage()
+    {
+        try {
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
+            $metrics = $bouncer->getRemediationEngine()->getOriginsCount();
+            $html = '<h3 style="margin-bottom: 5px;">Current metrics</h3>';
+            $html .= '<p style="margin-top: 0px; margin-bottom: 10px;">Only metrics collected since last push or cache reset are displayed here.</p>';
+
+            $cacheItem = $bouncer->getRemediationEngine()->getCacheStorage()->getItem(AbstractCache::CONFIG);
+            $cacheConfig = $cacheItem->isHit() ? $cacheItem->get() : [];
+            $lastSent = $cacheConfig[AbstractCache::LAST_METRICS_SENT] ?? null;
+
+            $lastSentDate = $lastSent
+                ? (new DateTime("@$lastSent"))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s') . ' UTC'
+                : 'Not available';
+
+            $totalCounts = [];
+            $totalCountsByOrigin = [];
+            $totalRemediations = 0;
+
+            // Sort origins alphabetically by key
+            ksort($metrics);
+
+            $html .= '<table class="widefat striped" style="max-width:700px; margin-top:20px; margin-bottom:50px;">
+<thead>
+    <tr>
+        <th style="text-align:left; padding-left:10px;">Origin</th>
+        <th style="text-align:left; padding-left:10px;">Remediation</th>
+    </tr>
+</thead>
+<tbody>';
+
+            foreach ($metrics as $origin => $remediations) {
+                // Always add to totalCounts
+                foreach ($remediations as $type => $count) {
+                    $totalCounts[$type] = ($totalCounts[$type] ?? 0) + $count;
+                    $totalCountsByOrigin[$origin] = ($totalCountsByOrigin[$origin] ?? 0) + $count;
+                    $totalRemediations += $count;
+                }
+
+                if ($origin === AbstractCache::CLEAN || $origin === AbstractCache::CLEAN_APPSEC  ||
+                $totalCountsByOrigin[$origin] <= 0) {
+                    continue; // Don't display "clean" origin or origin with 0 remediations
+                }
+
+                // Sort remediations by remediation type
+                ksort($remediations);
+
+                $html .= '<tr>
+                <td style="padding-left:10px;">' . esc_html($origin) . '</td>
+                <td style="padding-left:10px;">
+                    <ul style="margin:0; padding-left:0px;">';
+
+                foreach ($remediations as $type => $count) {
+                    $html .= '<li id="metrics-'.$origin.'-'.$type.'">' . esc_html($type) . ': ' . intval($count) . '</li>';
+                }
+
+                $html .= '</ul>
+                </td>
+            </tr>';
+            }
+
+            if ($totalRemediations === 0) {
+                $html .= '<tr>
+                    <td id="metrics-no-new" colspan=2 style="padding-left:10px;text-align:left;">No new metrics</td>
+                </tr>';
+
+            }
+
+            // Sort total counts
+            ksort($totalCounts);
+
+            // Total row
+            $html .= '<tr style="font-weight:bold;">
+            <td style="padding-left:10px;">Total</td>
+            <td style="padding-left:10px;">
+                <ul style="margin:0; padding-left:0px;">';
+
+
+            foreach ($totalCounts as $type => $count) {
+                if ($type === Constants::REMEDIATION_BYPASS || $count <= 0) {
+                    continue; // Display "bypass" type after other types
+                }
+                $html .= '<li id="metrics-total-'.$type.'">' . esc_html($type) . ': ' . intval($count) . '</li>';
+            }
+            if (!empty($totalCounts[Constants::REMEDIATION_BYPASS])) {
+                $html .= '<li id="metrics-total-bypass">' . esc_html(Constants::REMEDIATION_BYPASS) . ': ' . intval
+                    ($totalCounts[Constants::REMEDIATION_BYPASS]) . '</li>';
+            }
+
+            $html .= '</ul>
+            </td>
+        </tr>';
+
+            // Last Push row
+            $html .= '<tr>
+            <td colspan="2" style="padding-left:10px;">
+                <strong>Last Push:</strong> ' . esc_html($lastSentDate) . '
+            </td>
+        </tr>';
+
+            $html .= '</tbody></table>';
+
+            return $html;
+        } catch (Exception $e) {
+            if (isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type'    => 'WP_EXCEPTION_WHILE_DISPLAYING_USAGE_METRICS',
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'file'    => $e->getFile(),
+                    'line'    => $e->getLine(),
+                ]);
+            }
+
+            AdminNotice::displayError('Technical error while displaying usage metrics: ' . esc_html($e->getMessage()));
+            return '';
+        }
+    }
+
+
+    function displayResetMetricsInAdminPage()
+    {
+        try {
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
+            if ($bouncer->hasBaasUri()) {
+                return '<p><input id="crowdsec_reset_usage_metrics" style="margin-right:10px" type="button" value="Reset usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_reset_usage_metrics\').submit();"></p>';
+            }
+
+            return '';
+        }
+        catch (Exception $e) {
+            if (isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type'    => 'WP_EXCEPTION_WHILE_DISPLAYING_RESET_METRICS',
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'file'    => $e->getFile(),
+                    'line'    => $e->getLine(),
+                ]);
+            }
+
+            AdminNotice::displayError('Technical error while displaying reset metrics button: ' . esc_html($e->getMessage()));
+            return '';
+        }
+
+    }
+
+    function displayPushMetricsInAdminPage($isPushEnabled = false)
+    {
+        try {
+            $configs = getDatabaseConfigs();
+            $bouncer = new Bouncer($configs);
+            if($bouncer->hasBaasUri()) {
+                return '';
+            }
+            if( $isPushEnabled) {
+                return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>';
+            }
+            return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push usage metrics now" class="button button-secondary button-small"></p>';
+
+        }
+        catch (Exception $e) {
+            if (isset($bouncer) && $bouncer->getLogger()) {
+                $bouncer->getLogger()->error('', [
+                    'type'    => 'WP_EXCEPTION_WHILE_DISPLAYING_RESET_METRICS',
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'file'    => $e->getFile(),
+                    'line'    => $e->getLine(),
+                ]);
+            }
+
+            AdminNotice::displayError('Technical error while displaying reset metrics button: ' . esc_html($e->getMessage()));
+            return '';
+        }
+
+    }
+
+
 
     function pruneBouncerCacheInAdminPage()
     {
@@ -245,6 +440,15 @@ if (is_admin()) {
         header("Location: {$_SERVER['HTTP_REFERER']}");
         exit(0);
     });
+    add_action('admin_post_crowdsec_reset_usage_metrics', function () {
+        if (
+            !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_reset_usage_metrics')) {
+            die('This link expired.');
+        }
+        resetBouncerMetricsInAdminPage();
+        header("Location: {$_SERVER['HTTP_REFERER']}");
+        exit(0);
+    });
     add_action('admin_post_crowdsec_prune_cache', function () {
         if (
             !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'crowdsec_prune_cache')) {
@@ -309,14 +513,14 @@ if (is_admin()) {
 
                 if ($previousState !== $currentState) {
                     if (!$previousState && $currentState) {
-                        $onActivation();
+                        $currentState = $onActivation($currentState);
                     }
                     if ($previousState && !$currentState) {
-                        $onDeactivation();
+                        $currentState = $onDeactivation($currentState);
                     }
                 }
 
-                return $input;
+                return $currentState;
             });
             add_settings_field($optionName, $label, function ($args) use ($optionName, $descriptionHtml) {
                 $name = $args['label_for'];

@@ -98,9 +98,16 @@ function adminAdvancedSettings()
         $message = __('Settings saved.<br>As the stream mode is enabled, the cache has just been refreshed. New decision(s): '.$new.'. Deleted decision(s): '. $deleted);
         AdminNotice::displaySuccess($message);
         scheduleBlocklistRefresh();
+        return true;
     }, function () {
+        $lapiUrl = is_multisite() ? get_site_option('crowdsec_api_url') : get_option('crowdsec_api_url');
+        if (0 === strpos($lapiUrl, Constants::BAAS_URL)) {
+            AdminNotice::displayError("Using Live mode with a Block As A Service LAPI ($lapiUrl) is not supported. Rolling back to Stream mode.");
+            return true;
+        }
         // Stream mode just deactivated.
         unscheduleBlocklistRefresh();
+        return false;
     }, '
     <p>With the stream mode, every decision is retrieved in an asynchronous way. 3 advantages: <br>&nbsp;1) Invisible latency when loading pages<br>&nbsp;2) The IP verifications works even if your CrowdSec is not reachable.<br>&nbsp;3) The API can never be overloaded by the WordPress traffic</p>
     <p>Note: This method has one limit: all the decisions updates since the previous resync will not be taken in account until the next resync.</p>'.
@@ -155,19 +162,27 @@ function adminAdvancedSettings()
 
     // Field "crowdsec_usage_metrics"
     addFieldCheckbox('crowdsec_usage_metrics', 'Enable Usage Metrics', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_usage_metrics', function () {
-        // Usage metrics just activated.
+        // Usage metrics push just activated.
+        $lapiUrl = is_multisite() ? get_site_option('crowdsec_api_url') : get_option('crowdsec_api_url');
+        if (0 === strpos($lapiUrl, Constants::BAAS_URL)) {
+            AdminNotice::displayError('Pushing usage metrics with a Block as a Service LAPI ('.esc_html($lapiUrl).') is not supported. ');
+            return false;
+        }
         scheduleUsageMetricsPush();
+        return true;
     }, function () {
-        // Stream mode just deactivated.
+        // Usage metrics push just deactivated.
         unscheduleUsageMetricsPush();
+        return false;
     }, '
     <p>Enable usage metrics to gain visibility: monitor incoming traffic and blocked threats for better security insights.</p>
     <p>If this option is enabled, a cron job will push usage metrics to the Local API every 15 minutes.</p>
     <p>For more information about usage metrics, please refer to the <a href="https://doc.crowdsec.net/docs/next/observability/usage_metrics/" target="_blank">documentation</a>.</p>
-    '.
-       ($isUsageMetricsEnabled ?
-           '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>' :
-           '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push usage metrics now" class="button button-secondary button-small"></p>'));
+    <div id="usage-metrics-report">
+            <p>'.displayBouncerMetricsInAdminPage().'</p> 
+            </div>
+    ' .displayPushMetricsInAdminPage($isUsageMetricsEnabled).displayResetMetricsInAdminPage()
+    );
 
 
     /*********************
@@ -380,7 +395,16 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
     // Field "AppSec enabled"
     addFieldCheckbox('crowdsec_use_appsec', 'Enable AppSec', 'crowdsec_plugin_advanced_settings',
-        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_appsec', function () {}, function () {}, '
+        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_appsec', function () {
+        $lapiUrl = is_multisite() ? get_site_option('crowdsec_api_url') : get_option('crowdsec_api_url');
+        if (0 === strpos($lapiUrl, Constants::BAAS_URL)) {
+            AdminNotice::displayError('Using AppSec with a Block as a Service LAPI ('.esc_html($lapiUrl).') is not supported. ');
+            return false;
+        }
+        return true;
+
+        }, function ()
+        {return false;}, '
     <p>Enable if you want to ask the AppSec component for a remediation based on the current request, in case the initial LAPI remediation is a bypass.</p>
     <p>For more information on the AppSec component, please refer to the <a href="https://docs.crowdsec.net/docs/appsec/intro" target="_blank">documentation</a>.</p>
     <p>This AppSec feature is not available when using TLS certificates for authentication.</p>');
@@ -560,7 +584,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     'fill the IPs or IPs ranges here...', '');
 
     // Field "crowdsec_hide_mentions"
-    addFieldCheckbox('crowdsec_hide_mentions', 'Hide CrowdSec mentions', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function () {}, function () {}, '
+    addFieldCheckbox('crowdsec_hide_mentions', 'Hide CrowdSec mentions', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_remediations', function () {return true;}, function () {return false;}, '
     <p>Enable if you want to hide CrowdSec mentions on the Ban and Captcha pages</p>');
 
     /***************************
@@ -575,7 +599,8 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 
     // Field "Geolocation enabled"
     addFieldCheckbox('crowdsec_geolocation_enabled', 'Enable geolocation feature', 'crowdsec_plugin_advanced_settings',
-        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function () {}, function () {}, '
+        'crowdsec_advanced_settings', 'crowdsec_admin_advanced_geolocation', function () {return true;}, function ()
+        {return false;}, '
     <p>Enable if you want to use also CrowdSec country scoped decisions.<br>If enabled, bounced IP will be geolocalized and the final remediation will take into account any country related decision.</p>');
 
     $geolocationTypes = [Constants::GEOLOCATION_TYPE_MAXMIND => 'MaxMind database' ];
@@ -645,11 +670,11 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     }, 'crowdsec_advanced_settings', ['after_section' => '<hr>']);
 
     // Field "crowdsec_debug_mode"
-    addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
+    addFieldCheckbox('crowdsec_debug_mode', 'Enable debug mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {return true;}, function () {return false;}, '
     <p>Should not be used in production.<br>When this mode is enabled, a <i>debug.log</i> file will be written in the <i>wp-content/uploads/crowdsec/logs</i> folder.</p>');
 
     // Field "crowdsec_disable_prod_log"
-    addFieldCheckbox('crowdsec_disable_prod_log', 'Disable prod log', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {}, function () {}, '
+    addFieldCheckbox('crowdsec_disable_prod_log', 'Disable prod log', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_debug', function () {return true;}, function () {return false;}, '
     <p>By default, a <i>prod.log</i> file is written in the <i>wp-content/uploads/crowdsec/logs</i> folder.<br>You can disable this log here.</p>');
 
     // Field "Custom User Agent"
@@ -678,7 +703,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
 	}, 'crowdsec_advanced_settings', ['after_section' => '<hr>']);
 
 	// Field "crowdsec_display_errors"
-	addFieldCheckbox('crowdsec_display_errors', 'Enable errors display', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_display_errors', function () {}, function () {}, '
+	addFieldCheckbox('crowdsec_display_errors', 'Enable errors display', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_display_errors', function () {return true;}, function () {return false;}, '
     <p><strong>Do not use in production.</strong> When this mode is enabled, you will see every unexpected bouncing errors in the browser.</p>');
 
 
@@ -691,7 +716,7 @@ Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wor
     }, 'crowdsec_advanced_settings', ['after_section' => '<hr>']);
 
     // Field "crowdsec_standalone_mode"
-    addFieldCheckbox('crowdsec_auto_prepend_file_mode', 'Enable auto_prepend_file mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_auto_prepend_file_mode', function () {}, function () {}, '
+    addFieldCheckbox('crowdsec_auto_prepend_file_mode', 'Enable auto_prepend_file mode', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_auto_prepend_file_mode', function () {return true;}, function () {return false;}, '
     <p>This setting allows the bouncer to bounce IPs before running any PHP script in the project. <a href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#auto-prepend-file-mode" target="_blank">Discover how to setup with this guide</a>.</p><p>Enable this option <b>before</b> adding the "<em>auto_prepend_file</em>" directive for your PHP setup.</p>
     <p><b>Important note: </b> If you use this feature, make sure the <em>"standalone-settings"</em> file is not publicly accessible.<br>
 Please refer to <a target="_blank" href="https://github.com/crowdsecurity/cs-wordpress-bouncer/blob/main/docs/USER_GUIDE.md#security">the documentation to deny direct access to this file.</a></p>');
