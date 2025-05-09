@@ -205,7 +205,7 @@ jobs:
           file_path: 11-appsec.js
 
       - name: Prepare CrowdSec for AppSec timeout tests
-        run: ddev exec -s crowdsec tc qdisc add dev eth0 root netem delay 500ms
+        run: ddev exec -s crowdsec tc qdisc add dev eth0 root netem delay 600ms
 
       - name: Run AppSec timeout tests
         uses: ./wp-content/plugins/crowdsec/.github/workflows/end-to-end/run-single-test
