@@ -13,7 +13,7 @@ const {
     onAdminGoToAdvancedPage,
     selectByName,
     onAdminSaveSettings,
-    wait,
+    setToggle,
 } = require("../utils/helpers");
 const { CURRENT_IP } = require("../utils/constants");
 
@@ -24,11 +24,13 @@ describe(`Should be captcha by AppSec because of timeout`, () => {
         await goToAdmin();
         await onLoginPageLoginAsAdmin();
         await setDefaultConfig();
+        await onAdminGoToSettingsPage();
+        await setToggle("crowdsec_use_curl", true);
+        await onAdminSaveSettings();
         await enableAppSec();
     });
 
     it("Should captcha for home page as this is the appsec fallback remediation", async () => {
-        await wait(1000);
         await publicHomepageShouldBeCaptchaWall();
     });
 

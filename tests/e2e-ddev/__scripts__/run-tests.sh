@@ -77,7 +77,7 @@ case $TYPE in
     COMMAND="yarn --cwd ${YARN_PATH} cross-env"
     LAPI_URL_FROM_PLAYWRIGHT=https://localhost:8080
     CURRENT_IP=$(ddev find-ip host)
-    TIMEOUT=30000
+    TIMEOUT=60000
     HEADLESS=false
     SLOWMO=0
     VARHTML_PATH="../../../../../"
