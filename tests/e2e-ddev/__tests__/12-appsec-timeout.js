@@ -13,6 +13,7 @@ const {
     onAdminGoToAdvancedPage,
     selectByName,
     onAdminSaveSettings,
+    wait,
 } = require("../utils/helpers");
 const { CURRENT_IP } = require("../utils/constants");
 
@@ -27,6 +28,7 @@ describe(`Should be captcha by AppSec because of timeout`, () => {
     });
 
     it("Should captcha for home page as this is the appsec fallback remediation", async () => {
+        await wait(1000);
         await publicHomepageShouldBeCaptchaWall();
     });
 
