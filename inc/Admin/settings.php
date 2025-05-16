@@ -59,9 +59,22 @@ function adminSettings()
      ** Section "Connection details" **
      *********************************/
 
+    function getIntro()
+    {
+
+        $intro ='<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam at magna vitae nunc commodo lacinia sit
+            amet et dolor. <br>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam at magna vitae nunc
+                                  commodo lacinia sit amet et dolor.
+        <p class="submit"><a class="button button-primary crowdsec-button"  href="https://buy.stripe.com/00g3cIcu59JVfewaES"
+                             target="_blank">Subscribe</a></p>
+        </p>';
+
+        return $intro;
+    }
+
     add_settings_section('crowdsec_admin_connection', 'Connection details', function () {
         echo 'Connect WordPress to your CrowdSec Local API.';
-    }, 'crowdsec_settings', ['after_section' => '<hr>']);
+    }, 'crowdsec_settings', ['after_section' => '<hr>', 'before_section' => getIntro()]);
 
     // Field "crowdsec_api_url"
     addFieldString('crowdsec_api_url', 'Local API URL', 'crowdsec_plugin_settings', 'crowdsec_settings', 'crowdsec_admin_connection', function ($input, $default ='') {

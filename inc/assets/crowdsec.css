@@ -108,3 +108,30 @@ div.ui-toggle label>div:hover {
 .time-text {
     width: 5%;
 }
+
+.crowdsec-button.button-primary {
+	height: 48px;
+	box-shadow: 0 2px 24px 0 rgba(248,171,19,.1),0 2px 12px 0 rgba(248,171,19,.25),0 2px 8px 0 rgba(248,171,19,.3),0 2px 4px 0 rgba(4,4,31,.15),0 1px 2px 0 rgba(4,4,31,.2),inset 0 1px 2px 0 hsla(48,95%,74%,.5);
+	background-image: linear-gradient(180deg,hsla(0,0%,100%,.1) 0,hsla(0,0%,100%,0) 92%),linear-gradient(180deg,#f8ab13,#f8ab13);
+	display: inline-flex;
+	cursor: pointer;
+	align-items: center;
+	justify-content: center;
+	border-radius: .5rem;
+	padding: .5rem 1.25rem;
+	font-size: 1rem;
+	font-weight: 500;
+	line-height: 1.5rem;
+	color: rgb(17, 24, 28);
+	transition-property: all;
+	transition-timing-function: cubic-bezier(.4,0,.2,1);
+	transition-duration: .3s;
+	opacity: .9;
+}
+
+.crowdsec-button.button-primary:hover {
+	opacity: 1;
+	background-image: linear-gradient(180deg,hsla(0,0%,100%,.1) 0,hsla(0,0%,100%,0) 92%),linear-gradient(180deg,#f8ab13,#f8ab13);
+	color: rgb(17, 24, 28);
+}
+
