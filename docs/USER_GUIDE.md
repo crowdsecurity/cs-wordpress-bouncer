@@ -12,7 +12,7 @@
 - [Usage](#usage)
   - [Features](#features)
     - [Apply a remediation: captcha or ban](#apply-a-remediation-captcha-or-ban)
-    - [Usage metrics](#usage-metrics)
+    - [Remediation metrics](#remediation-metrics)
     - [Understanding the limitations of the bouncer](#understanding-the-limitations-of-the-bouncer)
   - [Configurations](#configurations)
     - [General settings](#general-settings)
@@ -71,9 +71,9 @@ Please note that it is possible to customize all the colors of these pages in a 
 
 On the other hand, all texts are also fully customizable. This will allow you, for example, to present translated pages in your users’ language.
 
-#### Usage metrics
+#### Remediation metrics
 
-If you activate usage metrics push, the bouncer will provide usage data to the Local API, allowing for a unified view of its behavior and insights.
+If you activate remediation metrics push, the bouncer will provide usage data to the Local API, allowing for a unified view of its behavior and insights.
 
 Please see [below setting](#advanced-settings) and [CrowdSec documentation](https://doc.crowdsec.net/docs/next/observability/usage_metrics/) for more information.
 
@@ -140,8 +140,8 @@ If you are using a Block as a Service (BLaaS) LAPI URL (i.e. starting with `http
 note the following:
 
 - The Authentication type must be "Bouncer API key"
-- Stream mode must be enabled (see Communication mode with the Local API in Advanced Settings)
-- Usage Metrics cannot be sent (see Usage Metrics in [Advanced settings](#advanced-settings)).
+- Stream mode must be enabled (see Communication mode with the Local API in [Advanced settings](#advanced-settings)).
+- Remediation Metrics cannot be sent (see Remediation Metrics in [Advanced settings](#advanced-settings)).
 - AppSec component cannot be used (see Appsec Component in [Advanced settings](#advanced-settings))
 
 ***
@@ -272,7 +272,7 @@ In the `Theme customization` part, you can modify texts and colors of ban and ca
 
 #### Advanced settings
 
-In the `Advanced` part, you can enable/disable the stream mode, enable/disable usage metrics, choose your cache system for your CrowdSec Local API, handle your remediation policy, manage geolocation feature, adjust some debug parameters and testing parameters. 
+In the `Advanced` part, you can enable/disable the stream mode, enable/disable remediation metrics, choose your cache system for your CrowdSec Local API, handle your remediation policy, manage geolocation feature, adjust some debug parameters and testing parameters. 
 
 ![Communication mode](images/screenshots/config-communication-mode.png)
 
@@ -298,17 +298,17 @@ With the stream mode, every decision is retrieved in an asynchronous way. Here y
 
 ***
 
-![Usage Metrics](images/screenshots/config-usage-metrics.png)
+![Remediation Metrics](images/screenshots/config-usage-metrics.png)
 
 ***
 
-`Usage Metrics → Enable the Usage Metrics`
+`Remediation Metrics → Enable the Remediation Metrics`
 
-Enable usage metrics to gain visibility: monitor incoming traffic and blocked threats for better security insights.
+Enable remediation metrics to gain visibility: monitor incoming traffic and blocked threats for better security insights.
 
-If this option is enabled, a cron job will push usage metrics to the Local API every 15 minutes.
+If this option is enabled, a cron job will push remediation metrics to the Local API every 15 minutes.
 
-**N.B** : There is also a push button if you want to push usage metrics manually.
+**N.B** : There is also a push button if you want to push remediation metrics manually.
 
 ***
 

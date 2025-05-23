@@ -1,3 +1,16 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [CrowdSec WordPress Bouncer](#crowdsec-wordpress-bouncer)
+  - [Usage](#usage)
+  - [Installation](#installation)
+  - [Technical notes](#technical-notes)
+  - [Developer guide](#developer-guide)
+  - [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # CrowdSec WordPress Bouncer
 
 ![CrowdSec WordPress Bouncer](https://raw.githubusercontent.com/crowdsecurity/cs-wordpress-bouncer/main/.wordpress-org/banner-1544x500.png "CrowdSec WordPress Bouncer")

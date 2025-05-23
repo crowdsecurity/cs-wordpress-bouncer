@@ -157,15 +157,16 @@ function adminAdvancedSettings()
      ** Section "Usage Metrics" **
      **************************/
     $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics') : get_option('crowdsec_usage_metrics');
-    add_settings_section('crowdsec_admin_advanced_usage_metrics', 'Usage Metrics', function () {
+    add_settings_section('crowdsec_admin_advanced_usage_metrics', 'Remediation Metrics', function () {
     }, 'crowdsec_advanced_settings',['after_section' => '<hr>']);
 
     // Field "crowdsec_usage_metrics"
-    addFieldCheckbox('crowdsec_usage_metrics', 'Enable Usage Metrics', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_usage_metrics', function () {
+    addFieldCheckbox('crowdsec_usage_metrics', 'Enable Remediation Metrics', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_usage_metrics', function () {
         // Usage metrics push just activated.
         $lapiUrl = is_multisite() ? get_site_option('crowdsec_api_url') : get_option('crowdsec_api_url');
         if (0 === strpos($lapiUrl, Constants::BAAS_URL)) {
-            AdminNotice::displayError('Pushing usage metrics with a Block as a Service LAPI ('.esc_html($lapiUrl).') is not supported. ');
+            AdminNotice::displayError('Pushing remediation metrics with a Block as a Service LAPI ('.esc_html
+                ($lapiUrl).') is not supported. ');
             return false;
         }
         scheduleUsageMetricsPush();
@@ -175,9 +176,9 @@ function adminAdvancedSettings()
         unscheduleUsageMetricsPush();
         return false;
     }, '
-    <p>Enable usage metrics to gain visibility: monitor incoming traffic and blocked threats for better security insights.</p>
-    <p>If this option is enabled, a cron job will push usage metrics to the Local API every 15 minutes.</p>
-    <p>For more information about usage metrics, please refer to the <a href="https://doc.crowdsec.net/docs/next/observability/usage_metrics/" target="_blank">documentation</a>.</p>
+    <p>Enable remediation metrics to gain visibility: monitor incoming traffic and blocked threats for better security insights.</p>
+    <p>If this option is enabled, a cron job will push remediation metrics to the Local API every 15 minutes.</p>
+    <p>For more information about remediation metrics, please refer to the <a href="https://doc.crowdsec.net/docs/next/observability/usage_metrics/" target="_blank">documentation</a>.</p>
     <div id="usage-metrics-report">
             <p>'.displayBouncerMetricsInAdminPage().'</p> 
             </div>

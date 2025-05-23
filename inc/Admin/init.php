@@ -301,9 +301,9 @@ if (is_admin()) {
                 return '';
             }
             if( $isPushEnabled) {
-                return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>';
+                return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push remediation metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>';
             }
-            return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push usage metrics now" class="button button-secondary button-small"></p>';
+            return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push remediation metrics now" class="button button-secondary button-small"></p>';
 
         }
         catch (Exception $e) {
