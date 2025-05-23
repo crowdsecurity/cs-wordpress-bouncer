@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.11.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.11.0) - 2025-05-30
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.10.0...v2.11.0)
+
+
+### Added
+
+- Add Blocklist as a Service (BLaaS) subscription button
+
+
+---
+
 ## [2.10.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.10.0) - 2025-05-09
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.9.0...v2.10.0)
 
@@ -312,7 +323,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v1.11.0...v2.0.0)
 
 ### Changed
-- All source code has been refactored using new CrowdSec PHP librairies:
+- All source code has been refactored using new CrowdSec PHP libraries:
   - Logs messages have been changed
   - User Agent sent to CrowdSec LAPI has been changed to `csphplapi_WordPress/vX.Y.Z`
 

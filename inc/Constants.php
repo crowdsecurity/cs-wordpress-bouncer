@@ -7,7 +7,7 @@ namespace CrowdSecWordPressBouncer;
 use CrowdSecBouncer\Constants as LibConstants;
 
 /**
- * Every constant of the plugin are set here.
+ * All plugin constants are defined here.
  *
  * @author    CrowdSec team
  *
@@ -21,5 +21,5 @@ class Constants extends LibConstants
     public const BOUNCER_NAME = 'wordpress-bouncer';
     public const DEFAULT_BASE_FILE_PATH = __DIR__ . '/../../../../wp-content/uploads/crowdsec/';
     public const STANDALONE_CONFIG_PATH = __DIR__ . '/standalone-settings.php';
-    public const VERSION = 'v2.10.0';
+    public const VERSION = 'v2.11.0';
 }
