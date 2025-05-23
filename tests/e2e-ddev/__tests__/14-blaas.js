@@ -39,7 +39,7 @@ describe("Check BLaaS URL behavior", () => {
     });
 
     it("Should activate WP-CRON", async () => {
-        // Enable and disable usage metrics before all to make WP-cron working
+        // Enable and disable remediation metrics before all to make WP-cron working
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await onAdvancedPageEnableUsageMetrics();
@@ -129,7 +129,7 @@ describe("Check BLaaS URL behavior", () => {
         }
     });
 
-    it("Should block Usage Metrics", async () => {
+    it("Should block remediation metrics", async () => {
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await setToggle("crowdsec_usage_metrics", true);
@@ -137,7 +137,7 @@ describe("Check BLaaS URL behavior", () => {
         await onAdminSaveSettings(false);
         await expect(page).toHaveText(
             ".notice-error",
-            `Pushing usage metrics with a Block as a Service LAPI (${FAKE_BLAAS_URL}) is not supported.`,
+            `Pushing remediation metrics with a Block as a Service LAPI (${FAKE_BLAAS_URL}) is not supported.`,
         );
     });
 
@@ -153,7 +153,7 @@ describe("Check BLaaS URL behavior", () => {
         );
     });
 
-    it("Should interact with usage metrics", async () => {
+    it("Should interact with remediation metrics", async () => {
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await expect(page).toHaveText("#metrics-cscli-ban", "ban: 1");
@@ -167,7 +167,7 @@ describe("Check BLaaS URL behavior", () => {
 
         await expect(page).toHaveText(
             "#wpbody-content > div.wrap > div.notice.notice-success",
-            "CrowdSec usage metrics have been reset successfully.",
+            "CrowdSec remediation metrics have been reset successfully.",
         );
         await expect(page).toHaveText("#metrics-no-new", "No new metrics");
     });
