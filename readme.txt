@@ -13,13 +13,22 @@ This plugin blocks detected attackers or displays them a captcha to check they a
 
 == Description ==
 
-Note: You must first have CrowdSec [installed on your server. The installation is very simple](https://docs.crowdsec.net/docs/next/bouncers/wordpress/).
+The CrowdSec plugin proactively blocks requests coming from known attackers.
+It does so using CrowdSec Blocklists and applying remediation within WordPress.
+Note: You can also connect your CrowdSec security engine directly in the plugin.
 
-CrowdSec is composed of a behavior detection engine, able to block classical attacks like credential bruteforce, port scans, web scans, etc.
+= Key Features: =
+- **Instant CrowdSec Blocklist**: Quickly block known WordPress attackers in a few clicks.
+- **Detect and block** admin bruteforce attempts and scans of your WordPress Site.
+- (Console Users) Plug any of your existing Blocklist Integrations.
+- (CrowdSec Security Engine Users) Apply decisions and subscribed blocklist of your security engine within WordPress.
 
-Based on the type and number of blocked attacks, and after curation of those signals to avoid false positives and poisoning, a global IP reputation DB is maintained and shared with all network members.
+You can:
 
-This WordPress plugin is a "bouncer", which purpose is to block detected attacks with two remediation systems: ban or challenge detected attackers with a Captcha.
+1. Block aggressive IPs
+2. Display a captcha for less aggressive IPs
+
+Full Documentation [HERE](https://doc.crowdsec.net/u/bouncers/wordpress)
 
 
 == Frequently Asked Questions ==
@@ -35,12 +44,13 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 2. Customize the wall pages - Adapt the "captcha wall" page text content with your own
 3. Customize the wall pages - Adapt the "ban wall" page text content with your own
 4. Customize the wall pages - Adapt the pages with your colors. You can also add custom CSS rules.
-5. Advanced settings - Select the live or the stream mode. Select a cache engine (Classical file system, Redis or Memcached). Adjust the cache durations.
+5. Advanced settings - Select live or stream mode. Select a cache engine (Classical file system, Redis or Memcached). Adjust the cache durations.
 6. Advanced settings - Set the CDN or Reverse Proxies to trust and configure Geolocation feature.
 7. The standard Captcha page
 8. The standard Ban page
-9. A Captcha wall page customization (text and colors)
-10. A Ban wall page customization (text and colors)
+9. Captcha wall page customization (text and colors)
+10. Ban wall page customization (text and colors)
+11. The remediation metrics table
 
 == Changelog ==
 
@@ -180,12 +190,3 @@ If you are using the standalone mode, you should upgrade as this release fixes s
 = 1.1 =
 With this release, you can enable debug log without throwing error on browser as there are now two separate configurations.
 
-
-== CrowdSec ==
-
-You can:
-
-1. Block aggressive IPs
-2. Display a captcha for less aggressive IPs
-
-Get more info on the [CrowdSec official website](https://crowdsec.net).

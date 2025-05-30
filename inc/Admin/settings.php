@@ -62,12 +62,12 @@ function adminSettings()
     function getIntro()
     {
 
-        $intro ='<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam at magna vitae nunc commodo lacinia sit
-            amet et dolor. <br>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam at magna vitae nunc
-                                  commodo lacinia sit amet et dolor.
-        <p class="submit"><a class="button button-primary crowdsec-button"  href="https://buy.stripe.com/00g3cIcu59JVfewaES"
-                             target="_blank">Subscribe</a></p>
-        </p>';
+        $intro ='<p>The <b>Instant WordPress Blocklist</b> is an exclusive feature available through the CrowdSec plugin. <br>
+        <p class="submit blaas-button"><a class="button button-primary crowdsec-button"  href="https://buy.stripe.com/00g3cIcu59JVfewaES"
+                             target="_blank">Subscribe now</a></p>for only $5/month, proactively block thousands of attackers\' IPs currently targeting WordPress sites.
+        </p>'
+        . '<p><i>Instructions are available in the <a target="_blank" href="https://doc.crowdsec.net/u/bouncers/wordpress#instant-wordpress-blocklist">public documentation</a></i></p>'
+        ;
 
         return $intro;
     }
