@@ -322,7 +322,7 @@ Choose the cache technology that will use your CrowdSec Local API.
 
 The File system cache is faster than calling Local API. Redis or Memcached is faster than the File System cache.
 
-**N.B**. : There are also a `Clear now` button fo all cache technologies and a `Prune now` button dedicated to the file system cache.
+**N.B**. : There are also a `Clear now` button for all cache technologies and a `Prune now` button dedicated to the file system cache.
 
 ***
 
@@ -330,7 +330,7 @@ The File system cache is faster than calling Local API. Redis or Memcached is fa
 
 The duration between re-asking Local API about an already checked clean IP.
 
-Minimum 1 second.  Note that this setting can not be apply in stream mode.
+Minimum 1 second.  Note that this setting cannot be used in stream mode.
 
 ***
 
@@ -338,7 +338,7 @@ Minimum 1 second.  Note that this setting can not be apply in stream mode.
 
 The duration between re-asking Local API about an already checked bad IP.
 
-Minimum 1 second.  Note that this setting can not be apply in stream mode.
+Minimum 1 second.  Note that this setting cannot be used in stream mode.
 
 
 ***
@@ -378,7 +378,7 @@ Example of DSN: memcached://localhost:11211.
 
 Enable if you want to ask the AppSec component for a remediation based on the current request, in case the initial LAPI remediation is a bypass.
 
-Not available if you use TLS certficates as authentication type.
+Not available if you use TLS certificates as authentication type.
 
 For more information on the AppSec component, please refer to the [documentation](https://docs.crowdsec.net/docs/appsec/intro/).
 
