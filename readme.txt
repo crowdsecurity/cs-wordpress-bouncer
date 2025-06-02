@@ -14,12 +14,12 @@ This plugin blocks detected attackers or displays them a captcha to check they a
 == Description ==
 
 The CrowdSec plugin proactively blocks requests coming from known attackers.
-It does so using CrowdSec Blocklists and applying remediation within WordPress.
-Note: You can also connect your CrowdSec security engine directly in the plugin.
+It does so by either directly using CrowdSec Blocklists Integration or by connecting to your CrowdSec Security Engine.
 
 = Key Features: =
 - **Instant CrowdSec Blocklist**: Quickly block known WordPress attackers in a few clicks.
 - **Detect and block** admin bruteforce attempts and scans of your WordPress Site.
+- Remediation metrics: Enabling you to see the efficiency of the protection.
 - (Console Users) Plug any of your existing Blocklist Integrations.
 - (CrowdSec Security Engine Users) Apply decisions and subscribed blocklist of your security engine within WordPress.
 
@@ -28,15 +28,24 @@ You can:
 1. Block aggressive IPs
 2. Display a captcha for less aggressive IPs
 
-Full Documentation [HERE](https://doc.crowdsec.net/u/bouncers/wordpress)
+== Installation ==
 
+Check [Full Documentation](https://doc.crowdsec.net/u/bouncers/wordpress) for more details
+
+Multiple ways you can use the plugin
+- [Instant WordPress Blocklist](https://doc.crowdsec.net/u/bouncers/wordpress/#instant-wordpress-blocklist) - easiest
+- [Blocklist as a Service Integration](https://doc.crowdsec.net/u/bouncers/wordpress/#blocklist-as-a-service-integration) - your blocklist catalog
+- [Connect it to your CrowdSec Security Engine](https://doc.crowdsec.net/u/bouncers/wordpress/#crowdsec-wordpress-bouncer-plugin---user-guide) - advanced & most complete
 
 == Frequently Asked Questions ==
 
-= What do I need to make CrowdSec work? =
+= Do I need to install CrowdSec Security Engine? =
 
-- You have to install a CrowdSec instance on this server.
-- You have to generate a bouncer key on the server on which CrowdSec is running.
+- Not necessarily, you can connect it directly to a CrowdSec Blocklist Integration endpoint
+    - Via [Instant WordPress Blocklist](https://doc.crowdsec.net/u/bouncers/wordpress/#instant-wordpress-blocklist)
+    - Or [Blocklist as a Service Integration](https://doc.crowdsec.net/u/bouncers/wordpress/#blocklist-as-a-service-integration)
+
+- You can of course [connect it to a security engine](https://doc.crowdsec.net/u/bouncers/wordpress/#crowdsec-wordpress-bouncer-plugin---user-guide) if you have one
 
 == Screenshots ==
 
@@ -54,7 +63,7 @@ Full Documentation [HERE](https://doc.crowdsec.net/u/bouncers/wordpress)
 
 == Changelog ==
 
-= 2.11 (2025-05-30) =
+= 2.11 (2025-06-02) =
 
 - Add Blocklist as a Service (BLaaS) subscription button
 

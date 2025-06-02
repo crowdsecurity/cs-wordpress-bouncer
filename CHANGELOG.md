@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.11.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.11.0) - 2025-05-30
+## [2.11.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.11.0) - 2025-06-02
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.10.0...v2.11.0)
 
 
