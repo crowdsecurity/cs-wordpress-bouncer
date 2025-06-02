@@ -31,7 +31,7 @@ describe(`Run in Stream mode`, () => {
     });
 
     it("Should activate WP-CRON", async () => {
-        // Enable and disable usage metrics before all to make WP-cron working
+        // Enable and disable remediation metrics before all to make WP-cron working
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await onAdvancedPageEnableUsageMetrics();
@@ -106,7 +106,7 @@ describe(`Run in Stream mode`, () => {
         );
     });
 
-    it("Should push usage metrics", async () => {
+    it("Should push remediation metrics", async () => {
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await onAdvancedPageEnableUsageMetrics();
@@ -116,7 +116,7 @@ describe(`Run in Stream mode`, () => {
         await page.click("#crowdsec_push_usage_metrics");
         await expect(page).toHaveText(
             "#wpbody-content > div.wrap > div.notice.notice-success",
-            "CrowdSec usage metrics have just been pushed.",
+            "CrowdSec remediation metrics have just been pushed.",
         );
 
         const logContent = await getFileContent(DEBUG_LOG_PATH);
@@ -127,7 +127,7 @@ describe(`Run in Stream mode`, () => {
             ),
         );
 
-        // Disable usage metrics for future tests
+        // Disable remediation metrics for future tests
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await onAdvancedPageDisableUsageMetrics();

@@ -130,7 +130,7 @@ describe(`Run in Live mode`, () => {
         await expect(page).toMatchText("#metrics-total-bypass", /bypass: 2|4/);
     });
 
-    it("Should push usage metrics", async () => {
+    it("Should push remediation metrics", async () => {
         await deleteFileContent(DEBUG_LOG_PATH);
         let logContent = await getFileContent(DEBUG_LOG_PATH);
         await expect(logContent).toBe("");
@@ -158,11 +158,11 @@ describe(`Run in Live mode`, () => {
 
         await expect(page).toHaveText(
             "#wpbody-content > div.wrap > div.notice.notice-success",
-            "CrowdSec usage metrics have just been pushed.",
+            "CrowdSec remediation metrics have just been pushed.",
         );
         await expect(page).toHaveText("#metrics-no-new", "No new metrics");
 
-        // Disable usage metrics for future tests
+        // Disable remediation metrics for future tests
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await onAdvancedPageDisableUsageMetrics();

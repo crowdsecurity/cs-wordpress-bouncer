@@ -4,7 +4,7 @@ Donate link: https://crowdsec.net/
 Tags: security, captcha, ip-blocker, crowdsec, hacker-protection
 Requires at least: 4.9
 Tested up to: 6.8
-Stable tag: 2.10.0
+Stable tag: 2.11.0
 Requires PHP: 7.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
@@ -13,21 +13,39 @@ This plugin blocks detected attackers or displays them a captcha to check they a
 
 == Description ==
 
-Note: You must first have CrowdSec [installed on your server. The installation is very simple](https://docs.crowdsec.net/docs/next/bouncers/wordpress/).
+The CrowdSec plugin proactively blocks requests coming from known attackers.
+It does so by either directly using CrowdSec Blocklists Integration or by connecting to your CrowdSec Security Engine.
 
-CrowdSec is composed of a behavior detection engine, able to block classical attacks like credential bruteforce, port scans, web scans, etc.
+= Key Features: =
+- **Instant CrowdSec Blocklist**: Quickly block known WordPress attackers in a few clicks.
+- **Detect and block** admin bruteforce attempts and scans of your WordPress Site.
+- Remediation metrics: Enabling you to see the efficiency of the protection.
+- (Console Users) Plug any of your existing Blocklist Integrations.
+- (CrowdSec Security Engine Users) Apply decisions and subscribed blocklist of your security engine within WordPress.
 
-Based on the type and number of blocked attacks, and after curation of those signals to avoid false positives and poisoning, a global IP reputation DB is maintained and shared with all network members.
+You can:
 
-This WordPress plugin is a "bouncer", which purpose is to block detected attacks with two remediation systems: ban or challenge detected attackers with a Captcha.
+1. Block aggressive IPs
+2. Display a captcha for less aggressive IPs
 
+== Installation ==
+
+Check [Full Documentation](https://doc.crowdsec.net/u/bouncers/wordpress) for more details
+
+Multiple ways you can use the plugin
+- [Instant WordPress Blocklist](https://doc.crowdsec.net/u/bouncers/wordpress/#instant-wordpress-blocklist) - easiest
+- [Blocklist as a Service Integration](https://doc.crowdsec.net/u/bouncers/wordpress/#blocklist-as-a-service-integration) - your blocklist catalog
+- [Connect it to your CrowdSec Security Engine](https://doc.crowdsec.net/u/bouncers/wordpress/#crowdsec-wordpress-bouncer-plugin---user-guide) - advanced & most complete
 
 == Frequently Asked Questions ==
 
-= What do I need to make CrowdSec work? =
+= Do I need to install CrowdSec Security Engine? =
 
-- You have to install a CrowdSec instance on this server.
-- You have to generate a bouncer key on the server on which CrowdSec is running.
+- Not necessarily, you can connect it directly to a CrowdSec Blocklist Integration endpoint
+    - Via [Instant WordPress Blocklist](https://doc.crowdsec.net/u/bouncers/wordpress/#instant-wordpress-blocklist)
+    - Or [Blocklist as a Service Integration](https://doc.crowdsec.net/u/bouncers/wordpress/#blocklist-as-a-service-integration)
+
+- You can of course [connect it to a security engine](https://doc.crowdsec.net/u/bouncers/wordpress/#crowdsec-wordpress-bouncer-plugin---user-guide) if you have one
 
 == Screenshots ==
 
@@ -35,14 +53,19 @@ This WordPress plugin is a "bouncer", which purpose is to block detected attacks
 2. Customize the wall pages - Adapt the "captcha wall" page text content with your own
 3. Customize the wall pages - Adapt the "ban wall" page text content with your own
 4. Customize the wall pages - Adapt the pages with your colors. You can also add custom CSS rules.
-5. Advanced settings - Select the live or the stream mode. Select a cache engine (Classical file system, Redis or Memcached). Adjust the cache durations.
+5. Advanced settings - Select live or stream mode. Select a cache engine (Classical file system, Redis or Memcached). Adjust the cache durations.
 6. Advanced settings - Set the CDN or Reverse Proxies to trust and configure Geolocation feature.
 7. The standard Captcha page
 8. The standard Ban page
-9. A Captcha wall page customization (text and colors)
-10. A Ban wall page customization (text and colors)
+9. Captcha wall page customization (text and colors)
+10. Ban wall page customization (text and colors)
+11. The remediation metrics table
 
 == Changelog ==
+
+= 2.11 (2025-06-02) =
+
+- Add Blocklist as a Service (BLaaS) subscription button
 
 = 2.10 (2025-05-09) =
 
@@ -176,12 +199,3 @@ If you are using the standalone mode, you should upgrade as this release fixes s
 = 1.1 =
 With this release, you can enable debug log without throwing error on browser as there are now two separate configurations.
 
-
-== CrowdSec ==
-
-You can:
-
-1. Block aggressive IPs
-2. Display a captcha for less aggressive IPs
-
-Get more info on the [CrowdSec official website](https://crowdsec.net).

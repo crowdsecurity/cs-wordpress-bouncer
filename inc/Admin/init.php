@@ -32,7 +32,7 @@ if (is_admin()) {
     {
         try {
             $configs = getDatabaseConfigs();
-            // If usage metrics are enabled, we need to push them before clearing the cache.
+            // If remediation metrics are enabled, we need to push them before clearing the cache.
             $isUsageMetricsEnabled = is_multisite() ? get_site_option('crowdsec_usage_metrics') : get_option('crowdsec_usage_metrics');
             $bouncer = new Bouncer($configs);
             if ($isUsageMetricsEnabled) {
@@ -42,7 +42,7 @@ if (is_admin()) {
             $bouncer->clearCache();
             $message = __('CrowdSec cache has just been cleared.');
             if ($isUsageMetricsEnabled){
-                $message .= __('<br>As usage metrics push is enabled, metrics have been pushed before clearing the cache.');
+                $message .= __('<br>As remediation metrics push is enabled, metrics have been pushed before clearing the cache.');
             }
             // In stream mode, immediately warm the cache up.
             $streamMode = is_multisite() ? get_site_option('crowdsec_stream_mode') : get_option('crowdsec_stream_mode');
@@ -106,7 +106,7 @@ if (is_admin()) {
             $configs = getDatabaseConfigs();
             $bouncer = new Bouncer($configs);
             $bouncer->pushUsageMetrics(Constants::BOUNCER_NAME, Constants::VERSION);
-            AdminNotice::displaySuccess(__('CrowdSec usage metrics have just been pushed.'));
+            AdminNotice::displaySuccess(__('CrowdSec remediation metrics have just been pushed.'));
         } catch (Exception $e) {
             if(isset($bouncer) && $bouncer->getLogger()) {
                 $bouncer->getLogger()->error('', [
@@ -117,7 +117,7 @@ if (is_admin()) {
                     'line' => $e->getLine(),
                 ]);
             }
-            AdminNotice::displayError('Technical error while pushing usage metrics: '.$e->getMessage());
+            AdminNotice::displayError('Technical error while pushing remediation metrics: '.$e->getMessage());
         }
     }
 
@@ -127,7 +127,7 @@ if (is_admin()) {
             $configs = getDatabaseConfigs();
             $bouncer = new Bouncer($configs);
             $bouncer->resetUsageMetrics();
-            AdminNotice::displaySuccess(__('CrowdSec usage metrics have been reset successfully.'));
+            AdminNotice::displaySuccess(__('CrowdSec remediation metrics have been reset successfully.'));
         } catch (Exception $e) {
             if(isset($bouncer) && $bouncer->getLogger()) {
                 $bouncer->getLogger()->error('', [
@@ -138,7 +138,7 @@ if (is_admin()) {
                     'line' => $e->getLine(),
                 ]);
             }
-            AdminNotice::displayError('Technical error while resetting usage metrics: '.$e->getMessage());
+            AdminNotice::displayError('Technical error while resetting remediation metrics: '.$e->getMessage());
         }
     }
 
@@ -258,7 +258,7 @@ if (is_admin()) {
                 ]);
             }
 
-            AdminNotice::displayError('Technical error while displaying usage metrics: ' . esc_html($e->getMessage()));
+            AdminNotice::displayError('Technical error while displaying remediation metrics: ' . esc_html($e->getMessage()));
             return '';
         }
     }
@@ -270,7 +270,7 @@ if (is_admin()) {
             $configs = getDatabaseConfigs();
             $bouncer = new Bouncer($configs);
             if ($bouncer->hasBaasUri()) {
-                return '<p><input id="crowdsec_reset_usage_metrics" style="margin-right:10px" type="button" value="Reset usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_reset_usage_metrics\').submit();"></p>';
+                return '<p><input id="crowdsec_reset_usage_metrics" style="margin-right:10px" type="button" value="Reset remediation metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_reset_usage_metrics\').submit();"></p>';
             }
 
             return '';
@@ -301,9 +301,9 @@ if (is_admin()) {
                 return '';
             }
             if( $isPushEnabled) {
-                return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push usage metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>';
+                return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push remediation metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>';
             }
-            return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push usage metrics now" class="button button-secondary button-small"></p>';
+            return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push remediation metrics now" class="button button-secondary button-small"></p>';
 
         }
         catch (Exception $e) {
