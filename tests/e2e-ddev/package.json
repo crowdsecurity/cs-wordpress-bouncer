@@ -23,7 +23,7 @@
     "jest-playwright-preset": "^3.0.1",
     "jest-runner": "^29.4.2",
     "lodash": "^4.17.21",
-    "playwright-chromium": "^1.26.1",
+    "playwright-chromium": "1.52.0",
     "ws": "^7.4.6"
   }
 }
