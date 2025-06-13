@@ -433,6 +433,21 @@ class Bouncer extends AbstractBouncer
         return $this->renderTemplate('captcha-wall.php', $configs);
     }
 
+    protected function sendResponse(string $body, int $statusCode): void
+    {
+        /**
+         * Ban and Captcha walls should not be cached.
+         * If the status code is 401 or 403, we define DONOTCACHEPAGE to true because some WordPress "cache" plugins
+         * use this constant to prevent caching of the page.
+         */
+        if(in_array($statusCode, [401, 403]) && !defined('DONOTCACHEPAGE')) {
+            define('DONOTCACHEPAGE', true);
+        }
+
+        parent::sendResponse($body,  $statusCode);
+    }
+
+
     protected function specialcharsDecodeEntQuotes(string $value): string
     {
         return htmlspecialchars_decode($value, \ENT_QUOTES);
