@@ -112,7 +112,7 @@ jobs:
 
       - name: Clone files from last release
         if: github.event.inputs.check_head_zip != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: raw_sources
           ref: "v${{ env.LAST_TAG }}"
@@ -120,7 +120,7 @@ jobs:
 
       - name: Clone files from HEAD
         if: github.event.inputs.check_head_zip == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: raw_sources
 
