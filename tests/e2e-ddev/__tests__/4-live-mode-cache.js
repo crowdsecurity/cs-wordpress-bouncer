@@ -11,7 +11,7 @@ const {
     banOwnIpForSeconds,
     removeAllDecisions,
     onLoginPageLoginAsAdmin,
-    setDefaultConfig,
+    setDefaultConfig, runCacheAction,
 } = require("../utils/helpers");
 
 const { CURRENT_IP } = require("../utils/constants");
@@ -40,12 +40,14 @@ describe(`Run in Live mode`, () => {
         await onAdminAdvancedSettingsPageSetCleanIpCacheDurationTo(60);
         await onAdminAdvancedSettingsPageSetBadIpCacheDurationTo(60);
         await onAdminSaveSettings();
+        // Needed since 6.9 as it seems that some admin page are now bounced eve if "bounce public web only" is set to true
+        await runCacheAction("clear");
         await banOwnIpForSeconds(15 * 60, CURRENT_IP);
         await publicHomepageShouldBeBanWall();
-        wait(2000);
+        await wait(2000);
         await publicHomepageShouldBeBanWall();
         await removeAllDecisions();
-        wait(2000);
+        await wait(2000);
         await publicHomepageShouldBeBanWall();
 
         await goToAdmin();

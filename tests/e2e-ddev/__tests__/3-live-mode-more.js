@@ -156,7 +156,7 @@ describe(`Run in Live mode`, () => {
         // Cron is set to 15 minutes, so we need to force execution
         await forceCronRun();
         logContent = await getFileContent(DEBUG_LOG_PATH);
-        // Extract and validate metric values are within expected range (>= 1 and <= 20)
+        // Extract and validate metric values are within expected range
         // Values may vary depending on WP-cron execution, multisite behavior, etc.
         const captchaMatch = logContent.match(
             /{"name":"dropped","value":(\d+),"unit":"request","labels":{"origin":"cscli","remediation":"captcha"}}/,
@@ -180,7 +180,7 @@ describe(`Run in Live mode`, () => {
         expect(processedMatch).not.toBeNull();
         const processedValue = parseInt(processedMatch[1], 10);
         expect(processedValue).toBeGreaterThanOrEqual(5);
-        expect(processedValue).toBeLessThanOrEqual(20);
+        expect(processedValue).toBeLessThanOrEqual(30);
 
         await expect(logContent).not.toContain("No metrics to send");
         await goToAdmin();

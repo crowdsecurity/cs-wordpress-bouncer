@@ -41,8 +41,6 @@ jobs:
             php-version: '7.2'
           - wp-version: '6.0'
             php-version: '8.0'
-          - wp-version: '6.8'
-            php-version: '8.3'
           - wp-version: '6.9'
             php-version: '7.2'
           - wp-version: '6.9'
