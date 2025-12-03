@@ -6,9 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.12.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.12.0) - 2025-??-??
+## [2.12.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.12.0) - 2025-12-05
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.11.0...v2.12.0)
 
+### Added
+
+- Add compatibility with WordPress 6.9
 
 ### Removed
 

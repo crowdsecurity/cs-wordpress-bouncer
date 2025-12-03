@@ -41,9 +41,9 @@ jobs:
             php-version: '7.2'
           - wp-version: '6.0'
             php-version: '8.0'
-          - wp-version: '6.8'
+          - wp-version: '6.9'
             php-version: '7.2'
-          - wp-version: '6.8'
+          - wp-version: '6.9'
             php-version: '8.3'
 
     name: End-to-end test suite

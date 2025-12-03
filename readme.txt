@@ -3,7 +3,7 @@ Contributors: crowdsec
 Donate link: https://crowdsec.net/
 Tags: security, captcha, ip-blocker, crowdsec, hacker-protection
 Requires at least: 4.9
-Tested up to: 6.8
+Tested up to: 6.9
 Stable tag: 2.12.0
 Requires PHP: 7.2
 License: MIT
