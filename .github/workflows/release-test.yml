@@ -39,9 +39,9 @@ jobs:
             php-version: '7.2'
           - wp-version: '6.0'
             php-version: '8.0'
-          - wp-version: '6.8'
+          - wp-version: '6.9'
             php-version: '7.2'
-          - wp-version: '6.8'
+          - wp-version: '6.9'
             php-version: '8.3'
 
     name: End-to-end release test suite
@@ -112,7 +112,7 @@ jobs:
 
       - name: Clone files from last release
         if: github.event.inputs.check_head_zip != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: raw_sources
           ref: "v${{ env.LAST_TAG }}"
@@ -120,7 +120,7 @@ jobs:
 
       - name: Clone files from HEAD
         if: github.event.inputs.check_head_zip == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: raw_sources
 

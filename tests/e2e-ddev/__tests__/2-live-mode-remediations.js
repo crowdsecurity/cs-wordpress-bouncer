@@ -132,6 +132,7 @@ describe(`Run in Live mode`, () => {
         await publicHomepageShouldBeCaptchaWall();
         await page.click("#refresh_link");
         await runCacheAction("captcha-phrase", `&ip=${CURRENT_IP}`);
+        await wait(1000);
         const newPhrase = await page.$eval("h1", (el) => el.innerText);
         await expect(newPhrase).not.toEqual(phrase);
     });

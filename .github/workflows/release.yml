@@ -6,6 +6,7 @@ on:
             tag_name:
                 type: string
                 required: true
+                description: Tag with v prefix
             deploy_to_wordpress:
                 type: boolean
                 description: Deploy to WordPress
@@ -41,7 +42,7 @@ jobs:
                     echo "version_number=$(echo ${{ github.event.inputs.tag_name }} | sed 's/v//g' )" >> $GITHUB_OUTPUT
 
             -   name: Clone sources
-                uses: actions/checkout@v4
+                uses: actions/checkout@v5
 
             -   name: Check version consistency in files
                 # Check crowdsec.php (2), readme.txt (1), inc/Constants.php (1) and CHANGELOG.md (3)

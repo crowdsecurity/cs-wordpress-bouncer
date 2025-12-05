@@ -3,8 +3,8 @@ Contributors: crowdsec
 Donate link: https://crowdsec.net/
 Tags: security, captcha, ip-blocker, crowdsec, hacker-protection
 Requires at least: 4.9
-Tested up to: 6.8
-Stable tag: 2.11.1
+Tested up to: 6.9
+Stable tag: 2.12.0
 Requires PHP: 7.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
@@ -62,6 +62,10 @@ Multiple ways you can use the plugin
 11. The remediation metrics table
 
 == Changelog ==
+
+= 2.12 (2025-12-05) =
+
+- Remove Blocklist as a Service (BLaaS) subscription button
 
 = 2.11 (2025-06-02) =
 
