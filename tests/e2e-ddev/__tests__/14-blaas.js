@@ -129,18 +129,6 @@ describe("Check BLaaS URL behavior", () => {
         }
     });
 
-    it("Should block remediation metrics", async () => {
-        await goToAdmin();
-        await onAdminGoToAdvancedPage();
-        await setToggle("crowdsec_usage_metrics", true);
-
-        await onAdminSaveSettings(false);
-        await expect(page).toHaveText(
-            ".notice-error",
-            `Pushing remediation metrics with a Block as a Service LAPI (${FAKE_BLAAS_URL}) is not supported.`,
-        );
-    });
-
     it('Should block AppSec"', async () => {
         await goToAdmin();
         await onAdminGoToAdvancedPage();

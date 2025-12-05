@@ -163,12 +163,6 @@ function adminAdvancedSettings()
     // Field "crowdsec_usage_metrics"
     addFieldCheckbox('crowdsec_usage_metrics', 'Enable Remediation Metrics', 'crowdsec_plugin_advanced_settings', 'crowdsec_advanced_settings', 'crowdsec_admin_advanced_usage_metrics', function () {
         // Usage metrics push just activated.
-        $lapiUrl = is_multisite() ? get_site_option('crowdsec_api_url') : get_option('crowdsec_api_url');
-        if (0 === strpos($lapiUrl, Constants::BAAS_URL)) {
-            AdminNotice::displayError('Pushing remediation metrics with a Block as a Service LAPI ('.esc_html
-                ($lapiUrl).') is not supported. ');
-            return false;
-        }
         scheduleUsageMetricsPush();
         return true;
     }, function () {

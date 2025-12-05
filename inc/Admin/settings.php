@@ -77,7 +77,6 @@ function adminSettings()
             $message .= '<br><b>Please note the following: </b><ul>';
             $message .= '<li>- The Authentication type must be "Bouncer API key".</li>';
             $message .= '<li>- Stream mode must be enabled (see Communication mode with the Local API in Advanced Settings).</li>';
-            $message .= '<li>- Usage Metrics cannot be sent (see Usage Metrics in Advanced Settings).</li>';
             $message .= '<li>- AppSec component cannot be used (see Appsec Component in Advanced Settings).</li>';
             $message .= '</ul>';
             AdminNotice::displayWarning($message);
