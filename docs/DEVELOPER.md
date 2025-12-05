@@ -36,7 +36,7 @@
 
 There are many ways to install this plugin on a local WordPress environment.
 
-We are using [DDEV](https://ddev.readthedocs.io/en/stable/) because it is quite simple to use and customize.
+We are using [DDEV](https://docs.ddev.com/en/stable/) because it is quite simple to use and customize.
 
 Of course, you may use your own local stack, but we provide here some useful tools that depends on DDEV.
 
@@ -50,7 +50,7 @@ __We will suppose here that you want to install WordPress 5.9. Please change "5.
 
 #### DDEV installation
 
-This project is fully compatible with DDEV 1.21.4, and it is recommended to use this specific version. For the DDEV installation, please follow the [official instructions](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/).
+For the DDEV installation, please follow the [official instructions](https://docs.ddev.com/en/stable/users/install/ddev-installation/).
 
 ### Prepare DDEV WordPress environment
 
