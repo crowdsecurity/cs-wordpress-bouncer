@@ -141,7 +141,6 @@ note the following:
 
 - The Authentication type must be "Bouncer API key"
 - Stream mode must be enabled (see Communication mode with the Local API in [Advanced settings](#advanced-settings)).
-- Remediation Metrics cannot be sent (see Remediation Metrics in [Advanced settings](#advanced-settings)).
 - AppSec component cannot be used (see Appsec Component in [Advanced settings](#advanced-settings))
 
 ***
