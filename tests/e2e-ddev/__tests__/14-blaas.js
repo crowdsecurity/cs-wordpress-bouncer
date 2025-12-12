@@ -141,7 +141,7 @@ describe("Check BLaaS URL behavior", () => {
         );
     });
 
-    it("Should interact with remediation metrics", async () => {
+    it("Should have remediation metrics", async () => {
         await goToAdmin();
         await onAdminGoToAdvancedPage();
         await expect(page).toHaveText("#metrics-cscli-ban", "ban: 1");
@@ -149,14 +149,6 @@ describe("Check BLaaS URL behavior", () => {
         const count = await page
             .locator("#crowdsec_push_usage_metrics")
             .count();
-        await expect(count).toBe(0);
-
-        await page.click("#crowdsec_reset_usage_metrics");
-
-        await expect(page).toHaveText(
-            "#wpbody-content > div.wrap > div.notice.notice-success",
-            "CrowdSec remediation metrics have been reset successfully.",
-        );
-        await expect(page).toHaveText("#metrics-no-new", "No new metrics");
+        await expect(count).toBe(1);
     });
 });

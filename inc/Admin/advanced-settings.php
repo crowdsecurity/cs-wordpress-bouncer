@@ -176,7 +176,7 @@ function adminAdvancedSettings()
     <div id="usage-metrics-report">
             <p>'.displayBouncerMetricsInAdminPage().'</p> 
             </div>
-    ' .displayPushMetricsInAdminPage($isUsageMetricsEnabled).displayResetMetricsInAdminPage()
+    ' .displayPushMetricsInAdminPage($isUsageMetricsEnabled)
     );
 
 

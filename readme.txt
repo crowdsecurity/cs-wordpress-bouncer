@@ -4,7 +4,7 @@ Donate link: https://crowdsec.net/
 Tags: security, captcha, ip-blocker, crowdsec, hacker-protection
 Requires at least: 4.9
 Tested up to: 6.9
-Stable tag: 2.12.0
+Stable tag: 2.13.0
 Requires PHP: 7.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
@@ -62,6 +62,10 @@ Multiple ways you can use the plugin
 11. The remediation metrics table
 
 == Changelog ==
+
+= 2.13 (2025-12-12) =
+
+- Allow sending remediation metrics even with a Blocklist as a Service (BLaaS) LAPI
 
 = 2.12 (2025-12-05) =
 
