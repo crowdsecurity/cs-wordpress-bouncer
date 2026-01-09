@@ -235,39 +235,20 @@ if (is_admin()) {
                     'file'    => $e->getFile(),
                     'line'    => $e->getLine(),
                 ]);
+                AdminNotice::displayError('Technical error while displaying remediation metrics: ' . esc_html($e->getMessage()));
             }
 
-            AdminNotice::displayError('Technical error while displaying remediation metrics: ' . esc_html($e->getMessage()));
             return '';
         }
     }
 
     function displayPushMetricsInAdminPage($isPushEnabled = false)
     {
-        try {
-            $configs = getDatabaseConfigs();
-            $bouncer = new Bouncer($configs);
-            if( $isPushEnabled) {
-                return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push remediation metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>';
-            }
-            return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push remediation metrics now" class="button button-secondary button-small"></p>';
 
+        if( $isPushEnabled) {
+            return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" value="Push remediation metrics now" class="button button-secondary button-small" onclick="document.getElementById(\'crowdsec_action_push_usage_metrics\').submit();"></p>';
         }
-        catch (Exception $e) {
-            if (isset($bouncer) && $bouncer->getLogger()) {
-                $bouncer->getLogger()->error('', [
-                    'type'    => 'WP_EXCEPTION_WHILE_DISPLAYING_RESET_METRICS',
-                    'message' => $e->getMessage(),
-                    'code'    => $e->getCode(),
-                    'file'    => $e->getFile(),
-                    'line'    => $e->getLine(),
-                ]);
-            }
-
-            AdminNotice::displayError('Technical error while displaying reset metrics button: ' . esc_html($e->getMessage()));
-            return '';
-        }
-
+        return '<p><input id="crowdsec_push_usage_metrics" style="margin-right:10px" type="button" disabled="disabled" value="Push remediation metrics now" class="button button-secondary button-small"></p>';
     }
 
 

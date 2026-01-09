@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.13.1](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.13.1) - 2026-01-09
+[_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.13.0...v2.13.1)
+
+### Fixed
+
+- Do not display configuration errors during activation as it is normal for configurations not to be defined yet
+
+
+---
+
+
 ## [2.13.0](https://github.com/crowdsecurity/cs-wordpress-bouncer/releases/tag/v2.13.0) - 2025-12-12
 [_Compare with previous release_](https://github.com/crowdsecurity/cs-wordpress-bouncer/compare/v2.12.0...v2.13.0)
 
